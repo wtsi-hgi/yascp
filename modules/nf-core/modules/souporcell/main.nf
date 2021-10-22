@@ -1,7 +1,7 @@
 
 process SOUPORCELL {
     tag "${samplename}"
-    label 'process_medium'
+    label 'process_high'
     publishDir "${params.outdir}/souporcell/",
     mode: "${params.souporcell.copy_mode}",
     pattern: "${samplename}",
