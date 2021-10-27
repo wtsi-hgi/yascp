@@ -1,7 +1,9 @@
 
 process CELLSNP {
     tag "${samplename}"
+    
     label 'process_high'
+    
     publishDir "${params.outdir}/cellsnp/", mode: "${params.cellsnp.copy_mode}", pattern: "cellsnp_${samplename}", overwrite: true
 
     
