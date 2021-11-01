@@ -15,7 +15,7 @@
 [![Watch on YouTube](http://img.shields.io/badge/youtube-nf--core-FF0000?labelColor=000000&logo=youtube)](https://www.youtube.com/c/nf-core)
 
 ## Introduction
-## Pipeline is currently under develpment.
+- ![#f03c15](https://via.placeholder.com/15/f03c15/000000?text=+) `## Pipeline is currently under develpment.`
 This is a merged pipeline wrapped in an nfCore template for transferability between institutes and HPC setups, based on our deconvolution, cellbender and qc metrics pipelines. Input requires a tsv seperated file with paths to the 10x runs and if running in an genotype  additional input is required to be provided in an input.nf file pointing to the vcf location.
 
 <!-- TODO nf-core: Write a 1-2 sentence summary of what data the pipeline is for and what it does -->
@@ -65,7 +65,7 @@ The nf-core/scdecon pipeline comes with documentation about the pipeline [usage]
 
 ## Credits
 
-nf-core/scdecon was originally written by HGI Sanger (Matiss Ozols, Guillaume Noell, Hannes Ponstingl, Leland Taylor Vivek Iyer).
+nf-core/scdecon was originally written by HGI Sanger (Leland Taylor, Matiss Ozols, Guillaume Noell, Hannes Ponstingl, Vivek Iyer).
 
 We thank the following people for their extensive assistance in the development of this pipeline:
 
