@@ -78,6 +78,7 @@ workflow SCDECON {
         log.info ' ---- using cellbender to remove background---'
         cellbender(prepare_inputs.out.ch_experimentid_paths10x_raw,
             prepare_inputs.out.ch_experimentid_paths10x_filtered)
+        cellbender.out.results_list.view()
     }else{
         log.info '--- using cellranger filtered data (skipping cellbender)---'
     }
