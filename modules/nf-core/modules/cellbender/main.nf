@@ -90,8 +90,10 @@ workflow CELLBENDER {
             cellbender__remove_background.out.results_list.collect()
         )
 
+        results_list = cellbender__remove_background.out.results_list
+
         emit:
-            cellbender__gather_qc_input.out.outdir
+            results_list
             // TODO here need to emmit the files from cellbender.
 }
 
