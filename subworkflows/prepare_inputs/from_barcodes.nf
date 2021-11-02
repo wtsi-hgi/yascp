@@ -10,10 +10,20 @@ workflow from_barcodes {
 	.map{row->tuple(row.experiment_id, row.n_pooled)}
 	.set{ch_experiment_npooled}
 
+
     channel_input_data_table
         .splitCsv(header: true, sep: params.input_tables_column_delimiter)
 	.map{row->tuple(row.experiment_id, "${row.data_path_10x_format}/possorted_genome_bam.bam" ,row.data_path_10x_format+'/filtered_feature_bc_matrix/barcodes.tsv.gz')}
 	.set{pre_ch_experiment_bam_barcodes}
+
+
+    channel_input_data_table
+        .splitCsv(header: true, sep: params.input_tables_column_delimiter)
+        .map{row -> tuple(row.experiment_id, file(row.data_path_10x_format+'/raw_feature_bc_matrix'))}.set{ch_experimentid_paths10x_raw}
+
+    channel_input_data_table
+        .splitCsv(header: true, sep: params.input_tables_column_delimiter)
+        .map{row -> tuple(row.experiment_id, file(row.data_path_10x_format+'/filtered_feature_bc_matrix'))}.set{ch_experimentid_paths10x_filtered}
 
 
     if (params.split_h5ad_per_donor.run) {
@@ -63,50 +73,25 @@ workflow from_barcodes {
     // if params.replace_in_path set to true:
     // used if path to input files are mounted differently on the file-system
     // (e.g. if /lustre is mounted in Openstack on a different absolute path in nextflow  worker nodes)
-    if (params.replace_in_path) {
-        log.info "replace in path."
 
-        pre_ch_experiment_filth5
-            .map{experiment, path -> tuple(experiment, path.replaceFirst(/${params.replace_in_path_from}/,
-                                        params.replace_in_path_to))}
-            .set{ch_experiment_filth5}
 
-        pre_ch_experiment_bam_barcodes
-            .map{experiment, pathbam, pathbarcodes -> tuple(experiment,
-                                    pathbam.replaceFirst(/${params.replace_in_path_from}/,
-                                            params.replace_in_path_to),
-                                    pathbam.replaceFirst(/${params.replace_in_path_from}/,
-                                            params.replace_in_path_to).replaceFirst(/$/, ".bai"),
-                                    pathbarcodes.replaceFirst(/${params.replace_in_path_from}/,
-                                                params.replace_in_path_to))}
-            .set{ch_experiment_bam_bai_barcodes}
+    pre_ch_experiment_filth5
+        .set{ch_experiment_filth5}
 
-        pre_ch_experiment_donorsvcf_donorslist
-            .map{experiment, donorsvcf, donorslist -> tuple(experiment,
-                                    donorsvcf.replaceFirst(/${params.replace_in_path_from}/,
-                                            params.replace_in_path_to),
-                                    donorslist.replaceFirst(/${params.replace_in_path_from}/,
-                                                params.replace_in_path_to))}
-            .set{ch_experiment_donorsvcf_donorslist}
+    pre_ch_experiment_bam_barcodes
+        .map { a,b,c -> tuple(a, file(b), file("${b}.bai"), file(c))}
+        .set {ch_experiment_bam_bai_barcodes}
 
-    } else {
-        log.info "no replace in path."
+    pre_ch_experiment_donorsvcf_donorslist
+        .set{ch_experiment_donorsvcf_donorslist}
 
-        pre_ch_experiment_filth5
-            .set{ch_experiment_filth5}
-
-        pre_ch_experiment_bam_barcodes
-            .map { a,b,c -> tuple(a, file(b), file("${b}.bai"), file(c))}
-            .set {ch_experiment_bam_bai_barcodes}
-
-        pre_ch_experiment_donorsvcf_donorslist
-            .set{ch_experiment_donorsvcf_donorslist}
-    }
 
 
     emit:
-    ch_experiment_bam_bai_barcodes
-    ch_experiment_npooled
-    ch_experiment_filth5
-    ch_experiment_donorsvcf_donorslist
+        ch_experiment_bam_bai_barcodes
+        ch_experiment_npooled
+        ch_experiment_filth5
+        ch_experiment_donorsvcf_donorslist
+        ch_experimentid_paths10x_raw
+        ch_experimentid_paths10x_filtered
 }
