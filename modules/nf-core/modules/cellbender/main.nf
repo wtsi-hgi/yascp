@@ -27,7 +27,10 @@ params.cellbender_rb = [
 ]
 
 workflow CELLBENDER {
-
+    take:
+        ch_experimentid_paths10x_raw
+		ch_experimentid_paths10x_filtered
+        
     main:
         channel__file_paths_10x = Channel
         .fromPath(params.input_data_table)
@@ -60,8 +63,35 @@ workflow CELLBENDER {
         )
 
 
+        // Make some basic plots
+        cellbender__remove_background__qc_plots(
+            cellbender__remove_background.out.cb_plot_input
+        )
 
+        // if (params.cellbender__remove_background__qc_plots_2.run_task) {
+ 
+            log.info "will run 'cellbender__remove_background__qc_plots_2' Nextflow task"
+            
+            cellbender__remove_background.out.experimentid_outdir_cellbenderunfiltered_expectedcells_totaldropletsinclude
+                .combine(ch_experimentid_paths10x_raw, by: 0)
+                .combine(ch_experimentid_paths10x_filtered, by: 0)
+                .combine(Channel.from("${params.cellbender_rb.fpr.value}"
+                        .replaceFirst(/]$/,"")
+                        .replaceFirst(/^\[/,"")
+                        .split()))
+                .set{input_channel_qc_plots_2}
+            
+            cellbender__remove_background__qc_plots_2(input_channel_qc_plots_2)
+            
+        // }
+    
+        cellbender__gather_qc_input(
+            params.output_dir,
+            cellbender__remove_background.out.results_list.collect()
+        )
 
-
+        emit:
+            cellbender__gather_qc_input.out.outdir
+            // TODO here need to emmit the files from cellbender.
 }
 

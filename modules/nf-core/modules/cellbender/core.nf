@@ -179,7 +179,7 @@ process cellbender__remove_background {
                         filename.replaceAll("${runid}-", "")
                     }
                 },
-                mode: "${task.publish_mode}",
+                mode: "${params.cellsnp.copy_mode}",
                 overwrite: "true"
 
     input:
@@ -331,12 +331,9 @@ process cellbender__remove_background {
 }
 
 process cellbender__remove_background__qc_plots {
-
+    label 'process_low'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/nf_qc_cluster_2.4.img"
-        maxRetries = 1
-        memory = 25.GB
-        cpus = 2
     } else {
         container "quay.io/biocontainers/multiqc:1.10.1--py_0"
     }
@@ -362,7 +359,7 @@ process cellbender__remove_background__qc_plots {
                         filename.replaceAll("${runid}-", "")
                     }
                 },
-                mode: "${task.publish_mode}",
+                mode: "${params.cellsnp.copy_mode}",
                 overwrite: "true"
 
     input:
@@ -412,6 +409,14 @@ process cellbender__remove_background__qc_plots {
 }
 
 process cellbender__remove_background__qc_plots_2 {
+
+    label 'process_low'
+    if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
+        container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/nf_qc_cluster_2.4.img"
+    } else {
+        container "quay.io/biocontainers/multiqc:1.10.1--py_0"
+    }
+
     // Second set of QC plots from cellbdender.
     // This task compare the cellbender output with both the cellranger filtered and cellragner raw outputs
     // ------------------------------------------------------------------------
@@ -420,7 +425,7 @@ process cellbender__remove_background__qc_plots_2 {
         saveAs: {filename ->
         filename.replaceAll("fpr_${fpr}/${experiment_id}/", "fpr_${fpr}/")
     },
-        mode: "${task.publish_mode}",
+        mode: "${params.cellsnp.copy_mode}",
         overwrite: "true"
     
     //cache false        // cache results from run
@@ -461,16 +466,23 @@ process cellbender__remove_background__qc_plots_2 {
 
 
 process cellbender__gather_qc_input {
+
+
+    label 'process_low'
+    if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
+        container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/nf_qc_cluster_2.4.img"
+    } else {
+        container "quay.io/biocontainers/multiqc:1.10.1--py_0"
+    }
+
     // Prepare cell bender output for qc_cluster pipeline. For each epoch and
     // learning rate, and fpr, gather 10x matrix files into format for
     // qc_cluster.
     // ------------------------------------------------------------------------
-    scratch false        // use tmp directory
-    echo echo_mode       // echo output from script
 
     publishDir  path: "${outdir}",
                 saveAs: {filename -> filename.replaceAll("${runid}-", "")},
-                mode: "${task.publish_mode}",
+                mode: "${params.cellsnp.copy_mode}",
                 overwrite: "true"
 
     input:

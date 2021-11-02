@@ -7,6 +7,8 @@ __version__ = '0.0.1'
 
 
 import os
+os.environ['NUMBA_CACHE_DIR']='/tmp'
+os.environ['MPLCONFIGDIR']='/tmp'
 import argparse
 import tables
 import pandas as pd

@@ -1,19 +1,20 @@
 
 // Load base.config by default for all pipelines - typically included in the nextflow config.
-include { prepare_inputs } from './prepare_inputs.nf'
 include { main_deconvolution } from './main_deconvolution.nf'
 include { CELLTYPIST } from '../modules/nf-core/modules/celltypist/main'
 
 workflow deconvolution {
-    // prepare input channels, depending on which input mode was chosen:
-    //if (! file(params.input_data_table).isEmpty()) {
-	prepare_inputs(Channel.fromPath(params.input_data_table, followLinks: true, checkIfExists: true))
-
-    // // run main deconvolution pipeline on prepared input channels:
-    main_deconvolution(prepare_inputs.out.ch_experiment_bam_bai_barcodes,
-		       prepare_inputs.out.ch_experiment_npooled,
-		       prepare_inputs.out.ch_experiment_filth5,
-		       prepare_inputs.out.ch_experiment_donorsvcf_donorslist)
+    take:
+        ch_experiment_bam_bai_barcodes
+        ch_experiment_npooled
+        ch_experiment_filth5
+        ch_experiment_donorsvcf_donorslist
+    main:
+        // // run main deconvolution pipeline on prepared input channels:
+        main_deconvolution(ch_experiment_bam_bai_barcodes,
+                ch_experiment_npooled,
+                ch_experiment_filth5,
+                ch_experiment_donorsvcf_donorslist)
 
 	// if (params.celltypist.run) {
 	// 	// read filtered barcodes straight from cellranger outputs
