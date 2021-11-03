@@ -10,10 +10,14 @@
 
 ## Pipeline tools
 
-* [FastQC](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/)
+* [Cellbender](https://github.com/broadinstitute/CellBender)
 
-* [MultiQC](https://www.ncbi.nlm.nih.gov/pubmed/27312411/)
-    > Ewels P, Magnusson M, Lundin S, Käller M. MultiQC: summarize analysis results for multiple tools and samples in a single report. Bioinformatics. 2016 Oct 1;32(19):3047-8. doi: 10.1093/bioinformatics/btw354. Epub 2016 Jun 16. PubMed PMID: 27312411; PubMed Central PMCID: PMC5039924.
+* [cellSNP](https://github.com/single-cell-genetics/cellSNP)
+
+* [souporcell](https://github.com/wheaton5/souporcell)
+
+* [Vireo](https://github.com/single-cell-genetics/vireo)
+
 
 ## Software packaging/containerisation tools
 

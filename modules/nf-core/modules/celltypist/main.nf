@@ -13,7 +13,7 @@ process CELLTYPIST {
     }
 
     when: 
-    params.celltypist.run
+      params.celltypist.run
 
     input: 
       tuple val(sample), val(filtered_matrix_h5), val(celltypist_model)

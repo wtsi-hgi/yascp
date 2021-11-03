@@ -41,28 +41,8 @@ workflow prepare_inputs {
 			ch_experiment_npooled = from_barcodes.out.ch_experiment_npooled
 			ch_experiment_filth5 = from_barcodes.out.ch_experiment_filth5
 			ch_experiment_donorsvcf_donorslist = from_barcodes.out.ch_experiment_donorsvcf_donorslist
-
-		} else if(params.cellsnp_input_table_mode == 'from_h5') {
-
-			log.info "input mode: from_h5"
-			from_h5(channel_input_data_table)
-
-			ch_experiment_bam_bai_barcodes = from_h5.out.ch_experiment_bam_bai_barcodes
-			ch_experiment_npooled = from_h5.out.ch_experiment_npooled
-			ch_experiment_filth5 = from_h5.out.ch_experiment_filth5
-			ch_experiment_donorsvcf_donorslist = from_h5.out.ch_experiment_donorsvcf_donorslist
-
-		} else if(params.cellsnp_input_table_mode == 'from_cellbender') {
-
-			log.info "input mode: from_cellbender"
-
-
-			from_cellbender(channel_input_data_table)
-
-			ch_experiment_bam_bai_barcodes = from_cellbender.out.ch_experiment_bam_bai_barcodes
-			ch_experiment_npooled = from_cellbender.out.ch_experiment_npooled
-			ch_experiment_filth5 = from_cellbender.out.ch_experiment_filth5
-			ch_experiment_donorsvcf_donorslist = from_cellbender.out.ch_experiment_donorsvcf_donorslist
+            ch_experimentid_paths10x_raw = from_barcodes.out.ch_experimentid_paths10x_raw
+            ch_experimentid_paths10x_filtered=from_barcodes.out.ch_experimentid_paths10x_filtered
 
 		} else {
 			log.info "Error: input parameter 'cellsnp_input_table_mode' should be set to either 'from_barcodes' or 'from_h5' or 'from_cellbender'"
@@ -77,4 +57,6 @@ workflow prepare_inputs {
 		ch_experiment_npooled
 		ch_experiment_filth5
 		ch_experiment_donorsvcf_donorslist
+        ch_experimentid_paths10x_raw
+        ch_experimentid_paths10x_filtered
 }

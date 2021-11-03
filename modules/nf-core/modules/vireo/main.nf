@@ -1,7 +1,7 @@
 
 process VIREO {
     tag "${samplename}"
-    label 'process_medium'
+    label 'process_high'
     publishDir "${params.outdir}/vireo/${samplename}/", mode: "${params.vireo.copy_mode}", overwrite: true,
 	  saveAs: {filename -> filename.replaceFirst("vireo_${samplename}/","") }
     
