@@ -7,6 +7,8 @@ include { SUBSET_GENOTYPE } from '../modules/nf-core/modules/subset_genotype/mai
 include { VIREO } from '../modules/nf-core/modules/vireo/main'
 include { GUZIP_VCF } from '../modules/nf-core/modules/guzip_vcf/main'
 include { SOUPORCELL } from '../modules/nf-core/modules/souporcell/main'
+include { SPLIT_DONOR_H5AD } from '../modules/nf-core/modules/split_donor_h5ad/main'
+include { PLOT_DONOR_CELLS } from '../modules/nf-core/modules/plot_donor_cells/main'
 
 workflow  main_deconvolution {
 
@@ -50,7 +52,7 @@ workflow  main_deconvolution {
 				log.info "---We are using subset genotypes running Vireo----"
                 CELLSNP.out.cellsnp_output_dir.combine(ch_experiment_npooled, by: 0)
                     .combine(SUBSET_GENOTYPE.out.samplename_subsetvcf, by: 0).set{full_vcf}
-                full_vcf.view()
+
 			}else{
 				log.info "---We are using a full genotype input for Vireo----"
 
@@ -139,6 +141,63 @@ workflow  main_deconvolution {
 			Channel.fromPath(params.souporcell.reference_fasta).collect())
 
 	}
+
+    	if (params.vireo.run){
+
+
+            SPLIT_DONOR_H5AD(vireo_out_sample_donor_ids.combine(ch_experiment_filth5, by: 0))
+
+            // collect file paths to h5ad files in tsv tables:
+            SPLIT_DONOR_H5AD.out.donors_h5ad_tsv
+            .collectFile(name: "donors_h5ad.tsv",
+                    newLine: false, sort: true,
+                    seed: "experiment_id\tdonor\th5ad_filepath\n",
+                    storeDir:params.outdir)
+
+            // paste experiment_id and donor ID columns with __ separator
+            SPLIT_DONOR_H5AD.out.exp__donors_h5ad_tsv
+            .collectFile(name: "exp__donors_h5ad.tsv",
+                    newLine: false, sort: true,
+                    seed: "experiment_id\th5ad_filepath\n",
+                    storeDir:params.outdir)
+
+            SPLIT_DONOR_H5AD.out.donors_h5ad_assigned_tsv
+            .collectFile(name: "donors_h5ad_assigned.tsv",
+                    newLine: false, sort: true,
+                    seed: "experiment_id\tdonor\th5ad_filepath\n",
+                    storeDir:params.outdir)
+
+            // paste experiment_id and donor ID columns with __ separator
+            SPLIT_DONOR_H5AD.out.exp__donors_h5ad_assigned_tsv
+            .collectFile(name: "exp__donors_h5ad_assigned.tsv",
+                    newLine: false, sort: true,
+                    seed: "experiment_id\th5ad_filepath\n",
+                    storeDir:params.outdir)
+
+            SPLIT_DONOR_H5AD.out.h5ad_tsv
+            .collectFile(name: "cellranger_as_h5ad.tsv",
+                    newLine: true, sort: true, // only one line in each file to collate, without ending new line character, so add it here.
+                    seed: "experiment_id\th5ad_filepath", // don't need \n here since newLine: true
+                    storeDir:params.outdir)
+
+            // all vireo() outputs collected -> plot_donor_ncells():
+            vireo_out_sample_summary_tsv
+            .collectFile(name: "vireo_donor_n_cells.tsv",
+                    newLine: false, sort: true,
+                    seed: "experiment_id\tdonor\tn_cells\n",
+                    storeDir:params.outdir)
+            .set{ch_vireo_donor_n_cells_tsv} // donor column: donor0, .., donorx, doublet, unassigned
+
+            // paste experiment_id and donor ID columns with __ separator
+            vireo_out_sample__exp_summary_tsv
+            .collectFile(name: "vireo_exp__donor_n_cells.tsv",
+                    newLine: false, sort: true,
+                    seed: "experiment_id\tn_cells\n",
+                    storeDir:params.outdir)
+
+            PLOT_DONOR_CELLS(ch_vireo_donor_n_cells_tsv)
+	}
+
 
 
 }

@@ -31,6 +31,15 @@ process SOUPORCELL {
 
 
     script:
+
+      if (params.run_with_genotype_input){
+        known_genotypes = "--known_genotypes ${genotypes}"
+        known_genotypes_sample_names ="--known_genotypes_sample_names ${donors}"
+      }else{
+        known_genotypes = ''
+        known_genotypes_sample_names =''
+      }
+
       """
         umask 2 # make files group_writable
 
@@ -49,7 +58,7 @@ process SOUPORCELL {
           -t ${task.cpus} \\
           -o ${samplename} \\
           -k ${souporcell_n_clusters} \\
-          --known_genotypes ${genotypes} \\
-          --known_genotypes_sample_names ${donors}
+          ${known_genotypes} \\
+          ${known_genotypes_sample_names}
       """
 }

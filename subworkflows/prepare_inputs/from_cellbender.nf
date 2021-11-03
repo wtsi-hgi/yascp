@@ -18,7 +18,7 @@ workflow from_cellbender {
 		channel_input_data_table
 			.splitCsv(header: true, sep: params.input_tables_column_delimiter)
 			.map{row->tuple(row.experiment_id, row.data_path_10x_format)}
-			.map{a,b->tuple(a, "${b}/raw_feature_bc_matrix/barcodes.tsv.gz")}
+			.map{a,b->tuple(a, "${b}/filtered_feature_bc_matrix/barcodes.tsv.gz")}
 			.set{pre_ch_experiment_barcodes}
 
 		channel_input_data_table
