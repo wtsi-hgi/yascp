@@ -90,7 +90,11 @@ workflow CELLBENDER {
             cellbender__remove_background.out.results_list.collect()
         )
 
-        results_list = cellbender__remove_background.out.results_list
+        results_list = cellbender__remove_background.out.out_paths
+
+        // prepeare the output channel for utilising in the deconvolution instead of barcode input.
+        
+
 
         emit:
             results_list

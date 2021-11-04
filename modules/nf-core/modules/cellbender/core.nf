@@ -32,20 +32,8 @@ process cellbender__rb__get_input_cells {
     // Calculates thresholds for input cells of cellbender__remove_background
     // ------------------------------------------------------------------------
  // use tmp directory
-    echo echo_mode       // echo output from script
 
-    publishDir  path: "${outdir}",
-                saveAs: {filename ->
-                    if (filename.equalsIgnoreCase("barcodes.tsv.gz")) {
-                        null
-                    } else if(filename.equalsIgnoreCase("features.tsv.gz")) {
-                        null
-                    } else if(filename.equalsIgnoreCase("matrix.mtx.gz")) {
-                        null
-                    } else {
-                        filename.replaceAll("${runid}-", "")
-                    }
-                },
+    publishDir  "${outdir}",
                 mode: "${params.cellsnp.copy_mode}",
                 overwrite: "true"
 
@@ -107,7 +95,7 @@ process cellbender__rb__get_input_cells {
         ln --physical ${file_10x_features} txd_input/features.tsv.gz
         ln --physical ${file_10x_matrix} txd_input/matrix.mtx.gz
 
-        python ${projectDir}/bin/015-get_estimates_from_umi_counts.py \\
+        015-get_estimates_from_umi_counts.py \\
             --tenxdata_path txd_input \\
             --output_file ${outfile} \\
             --expected_nemptydroplets_umi_cutoff \\
@@ -244,6 +232,11 @@ process cellbender__remove_background {
             path(expected_cells),
             path(total_droplets_include),
             emit: experimentid_outdir_cellbenderunfiltered_expectedcells_totaldropletsinclude
+        )
+        tuple(
+            val(experiment_id),
+            val(outdir),
+            emit: out_paths
         )
 
     script:
