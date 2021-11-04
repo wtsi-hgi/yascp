@@ -12,7 +12,7 @@ process VIREO {
     }
 
      when: 
-      params.run_with_genotype_input
+      params.vireo.run
 
     input:
       tuple val(samplename), path(cell_data), val(n_pooled), path(donors_gt_vcf)

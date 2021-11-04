@@ -1,18 +1,23 @@
 
 // Load base.config by default for all pipelines - typically included in the nextflow config.
 include { CELLBENDER } from '../modules/nf-core/modules/cellbender/main'
+// Modules to include.
+include {
+    wf__multiplet;
+} from "../modules/nf-core/modules/multiplet/main"
 
-workflow cellbender {
-    take:
-        ch_experimentid_paths10x_raw
-		ch_experimentid_paths10x_filtered
 
+workflow qc {
     main:
-        log.info params.input_data_table
-        log.info """---Running Cellbender pipeline ---"""
-        CELLBENDER(ch_experimentid_paths10x_raw,ch_experimentid_paths10x_filtered)
-        results_list = CELLBENDER.out.results_list
+        log.info "running QC metrics"
+        // log.info params.metadata_key_column.value
+        if (run_multiplet_filters) {
+	      log.info "Running multiplet filters."
+        } else {
+            file_cellmetadata = file(params.file_cellmetadata)
+            multiplet_calls = null
+        }
 
-    emit:
-        results_list
+        // The mode of input may change - Conventional and Subclustering
+
 }

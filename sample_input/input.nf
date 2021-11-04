@@ -1,12 +1,70 @@
 params {
+     /////////////////////////
+        // QC inputs:
+     /////////////////////////
 
-    cellsnp_input_table_mode = "from_cellbender"//"from_barcodes"
+
+    file_paths_10x = "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/mo11_work/outputs/test_qc/inputs/file_paths_10x.tsv"
+
+    mode = "conventional_h5ad"
+    // tsv table with columns "experiment_id" "donor" and "h5ad_filepath"
+    file_paths_h5ad = "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/mo11_work/outputs/test_qc/inputs/file_paths_h5ad.tsv"
+
+    // Tab-delimited file containing sample metadata.
+    file_metadata = "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/mo11_work/outputs/test_qc/inputs/file_metadata.tsv"
+
+    //    --genes_score Tab-delimited file with genes to use to score cells. Must contain ensembl_gene_id and score_id columns. If one score_id == "cell_cycle", then requires a grouping_id column with "G2/M" and "S". If no filter, then pass an empty file.
+    genes_score = "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/mo11_work/outputs/test_qc/inputs/genes_score_v001.tsv"
+
+    //    --genes_exclude_hvg Tab-delimited file with genes to exclude from highly variable gene list. Must contain ensembl_gene_id column. If no filter, then pass an empty file.
+    genes_exclude_hvg = "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/mo11_work/outputs/test_qc/inputs/genes_remove_hvg_v001.tsv"
+
+    //    --output_dir Directory name to save results to. (Defaults to 'nf-qc_cluster')
+    output_dir = "${projectDir}/../results_nf_qc_cluster"
+
+    run_multiplet = true
+
+    // data_handover{
+    //     run_process = true
+    //     output_dir = 'Franke_with_genotypes_data_handover'
+    //     //cellranger_raw_files_table = "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/fetch/Connect_Val_2/results/raw.Submission_Data_Pilot_UKB.file_paths_10x.tsv"
+    //     cellranger_raw_files_table = "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/deconv/franke_data_postcellbender/inputs/franke_data.Pilot_3.raw.file_paths_10x_farm_paths.tsv"
+    //     cellbender_files_table = "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/cellbender/franke_data/outputs/qc_cluster_input_files/file_paths_10x-cellbender_params__epochs_250__learnrt_1pt0Eneg7__zdim_100__zlayer_500__lowcount_10-FPR_0pt05.tsv"
+    //     deconvolution_dir = "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/deconv/Franke_with_genotypes/results/split_donor_h5ad"
+    //     Fetch_path = ''
+    //     Cellbender_path = '/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/cellbender/franke_data'
+    //     Deconvolution_path = '/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/deconv/Franke_with_genotypes'
+    //     deconvolution_files_table =  "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/deconv/Franke_with_genotypes/results/exp__donors_h5ad.tsv"
+
+    // }
+
+
+    // transfer_to_web{
+    //     run_process = true
+    //     //# destination: 'ubuntu@172.27.22.139:/volume/scRNA_test_app/scrna_static_and_media_files/bin'
+    //     destination = 'ubuntu@172.27.22.139:/volume/scRNA_test_app/scrna_static_and_media_files/media'
+    //     tranche{
+    //         tranche_run_name = 'Franke_with_genotypes' //its important that the name is unique, if not this will overwrite the existing run
+    //         Fetch_path = ''
+    //         Cellbender_path = '/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/cellbender/franke_data'
+    //         Deconvolution_path = '/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/deconv/Franke_with_genotypes'
+    //     }
+    // }
+
+
+    /////////////////////////
+    // QC input finish
+    /////////////////////////
+
+
+    input = 'cellbender'
+    cellsnp_input_table_mode = "from_barcodes"//"from_barcodes"
     // input_data_table colums: experiment_id   data_path_10x_format
     // hgi note: from nf_cellbender pipeline
     utilise_gpu = true
     ///////////////////////
     // Cellbender output
-    input_data_table = '/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/mo11_work/outputs/test_cellbender/inputs/vcf_names_pooled.tsv'
+    input_data_table = '/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/mo11_work/outputs/test_qc/inputs/vcf_names_pooled.tsv'
 
     input_tables_column_delimiter = '\t' // set 'tsv' or 'csv': whether input_data_table (and other input tables) have tab-separted ('tsv') or comma-separated columns ('csv').
 
