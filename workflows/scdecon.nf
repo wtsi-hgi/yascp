@@ -80,20 +80,20 @@ workflow SCDECON {
         cellbender(prepare_inputs.out.ch_experimentid_paths10x_raw,
             prepare_inputs.out.ch_experimentid_paths10x_filtered)
         log.info ' ---- Out results - cellbender to remove background---'
-        cellbender.out.results_list.view()
+        cellbender.out.results_list.view() //TODO
         cellbender.out.results_list
-            .map{row->tuple(row.experiment_id, row.data_path_10x_format)}
-            .map{experiment, path -> tuple(experiment, path.replaceFirst(/_10x_mtx/,".h5"))}
-            .map{experiment, path -> tuple(experiment, path.replaceFirst(/cellbender-FPR/,"cellbender_FPR"))}
-            .map{experiment, path -> tuple(experiment, path.replaceFirst(/-filtered.h5/,"_filtered.h5"))}.set{ch_experiment_filth5} // this channel is used for task 'split_donor_h5ad'
-        
+            .map{experiment, path -> tuple(experiment, path+'/cellbender_FPR_0pt01_filtered.h5')}
+            .set{ch_experiment_filth5} // this channel is used for task 'split_donor_h5ad'
+
         prepare_inputs.out.ch_experiment_bam_bai_barcodes.map { experiment, bam, bai, barcodes -> tuple(experiment,
                     bam,
                     bai)}.set{pre_ch_experiment_bam_bai_barcodes}
 
-        cellbender.out.results_list.map{row->tuple(row.experiment_id, file(row.data_path_10x_format+'/barcodes.tsv.gz'))}.set{barcodes}
+        cellbender.out.results_list
+            .map{experiment, path -> tuple(experiment, file(path+'/cellbender-FPR_0pt01-filtered_10x_mtx/barcodes.tsv.gz'))}.set{barcodes}
+
         pre_ch_experiment_bam_bai_barcodes.combine(barcodes, by: 0).set{ch_experiment_bam_bai_barcodes}
-        
+        ch_experiment_bam_bai_barcodes.view()
         // TODO - have to alter 2 channels - ch_experiment_filth5 and ch_experiment_bam_bai_barcodes based on the cellbender output paths cellbender.out.results_list
 
 
@@ -109,20 +109,19 @@ workflow SCDECON {
         prepare_inputs.out.ch_experiment_bam_bai_barcodes.map { experiment, bam, bai, barcodes -> tuple(experiment,
 							bam,
 							bai)}.set{pre_ch_experiment_bam_bai_barcodes}
-        
+
 
         Channel.fromPath(params.cellbender_file, followLinks: true, checkIfExists: true)
             .splitCsv(header: true, sep: params.input_tables_column_delimiter).map{row->tuple(row.experiment_id, file(row.data_path_10x_format+'/barcodes.tsv.gz'))}.set{barcodes}
-        
+
         pre_ch_experiment_bam_bai_barcodes.combine(barcodes, by: 0).set{ch_experiment_bam_bai_barcodes}
 
     }else{
         log.info '--- using cellranger filtered data instead of cellbender (skipping cellbender)---'
         ch_experiment_bam_bai_barcodes=prepare_inputs.out.ch_experiment_bam_bai_barcodes
         ch_experiment_filth5=prepare_inputs.out.ch_experiment_filth5
-
     }
-    
+
     // Performing Deconvolution of Samples.
     deconvolution(ch_experiment_bam_bai_barcodes, // activate this to run deconvolution pipeline
 		       prepare_inputs.out.ch_experiment_npooled,
