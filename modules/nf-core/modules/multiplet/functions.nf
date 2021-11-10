@@ -3,12 +3,10 @@ process make_cellmetadata_pipeline_input {
     // ------------------------------------------------------------------------
     //tag { output_dir }
     //cache false        // cache results from run
-    scratch false      // use tmp directory
-    echo echo_mode          // echo output from script
 
     publishDir  path: "${outdir}",
                 saveAs: {filename -> filename.replaceAll("${runid}-", "")},
-                mode: "${task.publish_mode}",
+                mode: "${params.copy_mode}",
                 overwrite: "true"
 
     input:

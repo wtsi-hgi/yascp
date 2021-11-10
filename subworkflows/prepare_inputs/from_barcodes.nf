@@ -1,5 +1,7 @@
 nextflow.enable.dsl=2
 
+include {prep_collectmetadata; merge_metadata} from "$projectDir/modules/nf-core/modules/merge_metadata/main"
+
 workflow from_barcodes {
     take: channel_input_data_table
     main:
@@ -11,10 +13,43 @@ workflow from_barcodes {
 	.set{ch_experiment_npooled}
 
 
+    // max2 = channel_input_data_table
+    //     .splitCsv(header: true, sep: params.input_tables_column_delimiter)
+	// .map{row->row.n_pooled}
+	// .max()
+    // max2.view()
+    // Channel.from('1').view()
+    // if (max2Channel.from('1')){
+    //     log.info 'dont do demultiplex'
+    // }else{
+    //     log.info 'do demultiplex'
+    // }
+
+
+
     channel_input_data_table
         .splitCsv(header: true, sep: params.input_tables_column_delimiter)
 	.map{row->tuple(row.experiment_id, "${row.data_path_10x_format}/possorted_genome_bam.bam" ,row.data_path_10x_format+'/filtered_feature_bc_matrix/barcodes.tsv.gz')}
 	.set{pre_ch_experiment_bam_barcodes}
+
+    channel__file_paths_10x =  channel_input_data_table
+        .splitCsv(header: true, sep: params.input_tables_column_delimiter)
+	    .map{row -> tuple(
+        row.experiment_id,
+        file("${row.data_path_10x_format}/filtered_feature_bc_matrix/barcodes.tsv.gz"),
+        file("${row.data_path_10x_format}/filtered_feature_bc_matrix/features.tsv.gz"),
+        file("${row.data_path_10x_format}/filtered_feature_bc_matrix/matrix.mtx.gz")
+    )}
+
+    channel__metadata =  channel_input_data_table
+        .splitCsv(header: true, sep: params.input_tables_column_delimiter)
+	    .map{row -> tuple(
+        row.experiment_id,
+        file("${row.data_path_10x_format}/metrics_summary.csv")
+    )}
+
+    prep_collectmetadata(channel__metadata)
+    channel__metadata=merge_metadata(prep_collectmetadata.out.metadata.collect())
 
 
     channel_input_data_table
@@ -94,4 +129,6 @@ workflow from_barcodes {
         ch_experiment_donorsvcf_donorslist
         ch_experimentid_paths10x_raw
         ch_experimentid_paths10x_filtered
+        channel__file_paths_10x
+        channel__metadata
 }

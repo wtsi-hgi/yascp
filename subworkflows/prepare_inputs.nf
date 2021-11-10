@@ -43,7 +43,8 @@ workflow prepare_inputs {
 			ch_experiment_donorsvcf_donorslist = from_barcodes.out.ch_experiment_donorsvcf_donorslist
             ch_experimentid_paths10x_raw = from_barcodes.out.ch_experimentid_paths10x_raw
             ch_experimentid_paths10x_filtered=from_barcodes.out.ch_experimentid_paths10x_filtered
-
+            channel__file_paths_10x=from_barcodes.out.channel__file_paths_10x
+            channel__metadata=from_barcodes.out.channel__metadata
 		} else {
 			log.info "Error: input parameter 'cellsnp_input_table_mode' should be set to either 'from_barcodes' or 'from_h5' or 'from_cellbender'"
 			exit 1
@@ -59,4 +60,6 @@ workflow prepare_inputs {
 		ch_experiment_donorsvcf_donorslist
         ch_experimentid_paths10x_raw
         ch_experimentid_paths10x_filtered
+        channel__file_paths_10x
+        channel__metadata
 }
