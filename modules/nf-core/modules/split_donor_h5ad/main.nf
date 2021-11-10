@@ -2,7 +2,7 @@ process SPLIT_DONOR_H5AD {
     tag "${samplename}"
     
     label 'process_low'
-    publishDir "${params.outdir}/split_donor_h5ad/${sample}/", mode: "${params.split_h5ad_per_donor.copy_mode}", overwrite: true,
+    publishDir "${params.outdir}/split_donor_h5ad/${sample}/", mode: "${params.copy_mode}", overwrite: true,
 	  saveAs: {filename -> filename.replaceFirst("outputs/","") }
     
 
@@ -11,13 +11,13 @@ process SPLIT_DONOR_H5AD {
     } else {
         container "quay.io/biocontainers/multiqc:1.10.1--py_0"
     }
-
+  
 
     when: 
       params.split_h5ad_per_donor.run
 
     input: 
-      tuple val(sample), path(donor_ids_tsv), path(filtered_matrix_h5)
+      tuple val(sample), val(donor_ids_tsv), path(filtered_matrix_h5)
 
     output: 
       tuple val(sample), path("outputs/vireo_annot.${sample}.h5ad"), emit: sample_vireo_annot_h5ad
@@ -26,10 +26,12 @@ process SPLIT_DONOR_H5AD {
       path("${sample}.donors.h5ad.tsv"), emit: donors_h5ad_tsv
       path("${sample}__donors.h5ad.tsv"), emit: exp__donors_h5ad_tsv
       path("${sample}.donors.h5ad.assigned.tsv"), emit: donors_h5ad_assigned_tsv 
+      
       path("${sample}__donors.h5ad.assigned.tsv"), emit: exp__donors_h5ad_assigned_tsv 
       path("${sample}.h5ad.tsv"), emit: h5ad_tsv
     
     script:
+    dir = workflow.workDir+'/../results'
     """
         mkdir -p outputs
 
@@ -49,7 +51,7 @@ process SPLIT_DONOR_H5AD {
         printf \"$sample\\t\$(find outputs -maxdepth 1 -name '*.h5ad')\" > ${sample}.h5ad.tsv
     
 
-        sed -i s\"/outputs/${params.split_h5ad_per_donor.absolute_results_path}\\/split_donor_h5ad\\/${sample}/\"g ${sample}.h5ad.tsv 
+        sed -i 's|outputs/|$dir/split_donor_h5ad/${sample}/|g' ${sample}.h5ad.tsv 
 
         # deconvoluted donors h5ad file paths to tsv:
         find outputs/donor_level_anndata -maxdepth 1 -name '*.h5ad' -type f -printf \"%f\\n\" | sort | cut -f1 -d'.' > donors.list
@@ -57,9 +59,9 @@ process SPLIT_DONOR_H5AD {
         paste donors.list donors.h5ad.list > ${sample}.donors.h5ad.tsv
         # paste sample and donor columns 1 and 2 with __
         sed s\"/^/${sample}__/\"g ${sample}.donors.h5ad.tsv > ${sample}__donors.h5ad.tsv
-        sed -i s\"/outputs/${params.split_h5ad_per_donor.absolute_results_path}\\/split_donor_h5ad\\/${sample}/\"g ${sample}__donors.h5ad.tsv
+        sed -i 's|outputs/|$dir/split_donor_h5ad/${sample}/|g' ${sample}__donors.h5ad.tsv
         sed -i s\"/^/$sample\\t/\"g ${sample}.donors.h5ad.tsv 
-        sed -i s\"/outputs/${params.split_h5ad_per_donor.absolute_results_path}\\/split_donor_h5ad\\/${sample}/\"g ${sample}.donors.h5ad.tsv
+        sed -i 's|outputs/|$dir/split_donor_h5ad/${sample}/|g' ${sample}.donors.h5ad.tsv
         rm donors.list
         rm donors.h5ad.list
 

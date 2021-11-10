@@ -20,15 +20,15 @@ workflow MULTIPLET {
             multiplet_threshold_method,
             scale_log10
         )   
-                // Generate input file for merge based in multiplets
+        // Generate input file for merge based in multiplets
         make_cellmetadata_pipeline_input(
             output_dir,
-            run_scrublet.out.multiplet_calls_published.collect()
+            SCRUBLET.out.multiplet_calls_published.collect()
         )
     emit:
         // Return merged input data file.
         outdir = make_cellmetadata_pipeline_input.out.outdir
         file__cellmetadata = make_cellmetadata_pipeline_input.out.file__cellmetadata
-        multiplet_calls = run_scrublet.out.multiplet_calls 
+        multiplet_calls = SCRUBLET.out.multiplet_calls 
 }
 

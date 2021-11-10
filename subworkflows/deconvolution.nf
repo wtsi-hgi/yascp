@@ -15,7 +15,11 @@ workflow deconvolution {
                 ch_experiment_npooled,
                 ch_experiment_filth5,
                 ch_experiment_donorsvcf_donorslist)
-
+        out_h5ad = main_deconvolution.out.out_h5ad
+        vireo_out_sample__exp_summary_tsv=main_deconvolution.out.vireo_out_sample__exp_summary_tsv
+    emit:
+        out_h5ad
+        vireo_out_sample__exp_summary_tsv
 	// if (params.celltypist.run) {
 	// 	// read filtered barcodes straight from cellranger outputs
 	// 	log.info "--- Running celltypist ---"

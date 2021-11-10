@@ -17,8 +17,6 @@ process cellbender__rb__get_input_cells {
 
     label 'process_low'
     
-
-    
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/nf_cellbender_v1.2.img"
         maxRetries = 1
@@ -95,7 +93,7 @@ process cellbender__rb__get_input_cells {
         ln --physical ${file_10x_features} txd_input/features.tsv.gz
         ln --physical ${file_10x_matrix} txd_input/matrix.mtx.gz
 
-        015-get_estimates_from_umi_counts.py \\
+        python ${projectDir}/bin/get_estimates_from_umi_counts.py \\
             --tenxdata_path txd_input \\
             --output_file ${outfile} \\
             --expected_nemptydroplets_umi_cutoff \\
@@ -414,7 +412,7 @@ process cellbender__remove_background__qc_plots_2 {
     // This task compare the cellbender output with both the cellranger filtered and cellragner raw outputs
     // ------------------------------------------------------------------------
     tag { "$experiment_id" }
-    publishDir "${params.output_dir}/$experiment_id/compare_cellranger/", pattern: "fpr_${fpr}/${experiment_id}/*.png", 
+    publishDir "results/cellbender_vs_cellranger/$experiment_id/compare_cellranger/", pattern: "fpr_${fpr}/${experiment_id}/*.png", 
         saveAs: {filename ->
         filename.replaceAll("fpr_${fpr}/${experiment_id}/", "fpr_${fpr}/")
     },
@@ -497,7 +495,7 @@ process cellbender__gather_qc_input {
         echo "cellbender__gather_qc_input: ${process_info}"
         echo "outdir: ${outdir}"
         echo "results paths: ${cb_results_tsvs}"
-        045-prepare_nf_qc_cluster_input.py \\
+        python ${projectDir}/bin/045-prepare_nf_qc_cluster_input.py \\
             --cb_results_tsvs ${cb_results_tsvs}
         """
 }
