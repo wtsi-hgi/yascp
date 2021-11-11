@@ -22,6 +22,9 @@ import csv
 import random
 import numpy as np
 import pandas as pd
+import os
+os.environ['NUMBA_CACHE_DIR']='/tmp'
+os.environ['MPLCONFIGDIR']='/tmp'
 import scanpy as sc
 import celltypist
 from celltypist import models
@@ -74,20 +77,26 @@ def run_celltypist(samplename, filtered_matrix_h5, celltypist_model,
     fixed_h5 = 'fixed_genome.h5'
     try:
         adata = sc.read_10x_h5(filtered_matrix_h5)
+        
     except:
-        import tables
-        logging.info('fixing orig_h5')
-        orig_h5 = filtered_matrix_h5
-        fixed_h5 = 'fixed_genome.h5'
-        tables.copy_file(orig_h5, fixed_h5, overwrite = True)
-        with tables.open_file(fixed_h5, "r+") as f:
-            n = f.get_node("/matrix/features")
-            n_genes = f.get_node("/matrix/shape")[0]
-            if "genome" not in n:
-                f.create_array(n, "genome", np.repeat(input_h5_genome_version, n_genes))
-        # read-in cellranger 10x data produced by 'cellranger count':
-        logging.info('fixed orig_h5 into fixed_h5')
-        adata = sc.read_10x_h5(fixed_h5) #, genome='background_removed')
+        try:
+            # We are loading h5ad instad of h5
+            adata = sc.read_h5ad(filtered_matrix_h5)
+        except:
+            # h5 file may have amissing genome version
+            import tables
+            logging.info('fixing orig_h5')
+            orig_h5 = filtered_matrix_h5
+            fixed_h5 = 'fixed_genome.h5'
+            tables.copy_file(orig_h5, fixed_h5, overwrite = True)
+            with tables.open_file(fixed_h5, "r+") as f:
+                n = f.get_node("/matrix/features")
+                n_genes = f.get_node("/matrix/shape")[0]
+                if "genome" not in n:
+                    f.create_array(n, "genome", np.repeat(input_h5_genome_version, n_genes))
+            # read-in cellranger 10x data produced by 'cellranger count':
+            logging.info('fixed orig_h5 into fixed_h5')
+            adata = sc.read_10x_h5(fixed_h5) #, genome='background_removed')
         
     try:
         os.remove(fixed_h5)

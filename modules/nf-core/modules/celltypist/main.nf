@@ -8,7 +8,7 @@ process CELLTYPIST {
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "/software/hgi/containers/scrna_deconvolution_latest.img"
     } else {
-        log.info 'wrong docker container, please change this'
+        log.info 'wrong docker container, please change this in production'
         container "quay.io/biocontainers/multiqc:1.10.1--py_0"
     }
 
@@ -34,18 +34,15 @@ process CELLTYPIST {
         
       }else{
         filtered_matrix_h5_path = file("${filtered_matrix_h5}/../cellbender_FPR_0pt05_filtered.h5")
-        
       }
 
 
       """
         umask 2 # make files group_writable 
-
         mkdir -p outputs
-        echo ${filtered_matrix_h5}
-        python $workflow.projectDir/bin/run_celltypist.py \\
+        run_celltypist.py \\
           --samplename ${sample} \\
-          --filtered_matrix_h5 ${filtered_matrix_h5_path} \\
+          --filtered_matrix_h5 ${filtered_matrix_h5} \\
           --celltypist_model ${celltypist_model}  \\
           --output_dir \$PWD/outputs  \\
           --input_h5_genome_version ${params.split_h5ad_per_donor.input_h5_genome_version}

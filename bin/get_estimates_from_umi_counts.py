@@ -2,7 +2,6 @@
 
 
 __author__ = 'Leland Taylor'
-__modified_by__ = 'Matiss Ozols'
 __date__ = '2020-07-03'
 __version__ = '0.0.1'
 

@@ -19,7 +19,8 @@ workflow MULTIPLET {
             n_simulated_multiplet,
             multiplet_threshold_method,
             scale_log10
-        )   
+        )
+        
         // Generate input file for merge based in multiplets
         make_cellmetadata_pipeline_input(
             output_dir,

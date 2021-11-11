@@ -55,14 +55,9 @@ workflow  main_deconvolution {
 
                 }else{
                     log.info "---We are using a full genotype input for Vireo----"
-
-                    // cellsnp.out.cellsnp_output_dir.combine(cellsnp.out.cellsnp_output_dir, by:0).view()
                     CELLSNP.out.cellsnp_output_dir.combine(ch_experiment_npooled, by: 0).set{full_vcf}
                     full_vcf.map { experiment, cellsnpvcf, npooled -> tuple(experiment,cellsnpvcf,npooled,file(params.genotype_input.full_vcf_file))}.set {full_vcf}
-
                 }
-
-
             }
             // Vireo without genotype input:
             else {
