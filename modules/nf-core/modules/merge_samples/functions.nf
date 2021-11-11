@@ -10,7 +10,7 @@ process merge_samples_from_h5ad {
     tag "${samplename}"
     
     label 'process_low' 
-    publishDir  path: "${outdir}",
+    publishDir  path: "${outdir}/merged_h5ad",
                 saveAs: {filename -> filename.replaceAll("${runid}-", "")},
                 mode: "${params.copy_mode}",
                 overwrite: "true"
@@ -92,7 +92,7 @@ process merge_samples {
     
     label 'process_low'
 
-    publishDir  path: "${outdir}",
+    publishDir  path: "${outdir}/merged_h5ad",
                 saveAs: {filename -> filename.replaceAll("${runid}-", "")},
                 mode: "${params.copy_mode}",
                 overwrite: "true"

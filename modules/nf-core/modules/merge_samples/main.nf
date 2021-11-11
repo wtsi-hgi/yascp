@@ -20,8 +20,7 @@ workflow MERGE_SAMPLES{
             
             channel__file_paths_10x.splitCsv(header: true, sep: "\t", by: 1)
                 .map{row -> tuple(row.experiment_id, file(row.h5ad_filepath))}.set{channel__file_paths_10x_paths}
-            
-            file_metadata.view()
+        
             prep_merge_samples_from_h5ad(channel__file_paths_10x_paths)
             merge_samples_from_h5ad(
                     params.output_dir,

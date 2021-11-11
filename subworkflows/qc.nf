@@ -3,10 +3,33 @@
 // Modules to include.
 include {MULTIPLET} from "../modules/nf-core/modules/multiplet/main"
 include {OUTLIER_FILTER} from "../modules/nf-core/modules/outlier_filter/main"
+include {PLOT_STATS} from "../modules/nf-core/modules/plot_stats/main"
+include {CELL_TYPE_ASSIGNEMT} from "../modules/nf-core/modules/cell_type_assignment/main"
+include {ESTIMATE_PCA_ELBOW} from "../modules/nf-core/modules/estimate_pca_elbow/main"
+include {SUBSET_PCS} from "../modules/nf-core/modules/subset_pcs/main"
+include {NORMALISE_AND_PCA} from "../modules/nf-core/modules/normalise_and_pca/main"
+include {HARMONY} from "../modules/nf-core/modules/harmony/main"
+include {BBKNN} from "../modules/nf-core/modules/bbknn/main"
+include {LISI} from "../modules/nf-core/modules/lisi/main"
+include {UMAP; UMAP as UMAP_HARMONY; UMAP as UMAP_BBKNN;} from "../modules/nf-core/modules/umap/main"
+include {CLUSTERING; CLUSTERING as CLUSTERING_HARMONY; CLUSTERING as CLUSTERING_BBKNN;} from "../modules/nf-core/modules/clustering/main"
+
+
+// Set default parameters.
+params.output_dir           = "nf-qc_cluster"
+params.help                 = false
+params.run_multiplet        = false
+params.mode                 = "conventional"
+params.layer                = "none"
+params.file_sample_qc       = "no_file__file_sample_qc"
+params.file_cellmetadata    = "no_file__file_cellmetadata"
+params.file_anndata         = "no_file__file_anndata"
+params.genes_exclude_hvg    = "no_file__genes_exclude_hvg"
+params.genes_score          = "no_file__genes_score"
+params.anndata_compression_opts = 9
 
 workflow qc {
     take:
-        channel__file_paths_10x
         file__anndata_merged
         file__cells_filtered
     main:
@@ -52,7 +75,188 @@ workflow qc {
             file__cells_filtered = OUTLIER_FILTER.out.cells_filtered
         }
 
+        
+        CELL_TYPE_ASSIGNEMT(file__anndata_merged,file__cells_filtered)
 
-        // The mode of input may change - Conventional and Subclustering
-        //  if input is h5ad merge all the h5ads, else convert the 10x to h5ad and merge them.
+        NORMALISE_AND_PCA(params.output_dir,
+            file__anndata_merged,
+            params.mode,
+            params.layer,
+            params.genes_exclude_hvg,
+            params.genes_score,
+            params.reduced_dims.vars_to_regress.value)
+
+        ESTIMATE_PCA_ELBOW(
+            NORMALISE_AND_PCA.out.outdir,
+            NORMALISE_AND_PCA.out.anndata,
+            params.reduced_dims.n_dims.add_n_to_estimate
+        )
+
+
+        if (params.reduced_dims.n_dims.auto_estimate) {
+            log.info "n_pcs = automatically estimated."
+            n_pcs = ESTIMATE_PCA_ELBOW.out.auto_elbow
+        } else {
+            log.info "n_pcs = Channel.from(params.reduced_dims.n_dims.value)"
+            n_pcs = Channel.from(params.reduced_dims.n_dims.value)
+        }
+
+
+        SUBSET_PCS(
+            NORMALISE_AND_PCA.out.outdir,
+            NORMALISE_AND_PCA.out.anndata,
+            NORMALISE_AND_PCA.out.metadata,
+            NORMALISE_AND_PCA.out.pcs,
+            NORMALISE_AND_PCA.out.param_details,
+            n_pcs
+        )
+
+        PLOT_STATS(file__anndata_merged,file__cells_filtered,SUBSET_PCS.out.outdir,SUBSET_PCS.out.anndata,n_pcs)
+
+
+        if (params.cluster.known_markers.run_process) {
+            channel__cluster__known_markers = Channel
+                .fromList(params.cluster.known_markers.value)
+                .map{row -> tuple(row.file_id, file(row.file))}
+        } else {
+            channel__cluster__known_markers = tuple('', '')
+        }
+
+        // "Correct" PCs using Harmony or BBKNN
+        if (params.harmony.run_process) {
+            HARMONY(
+                NORMALISE_AND_PCA.out.outdir,
+                NORMALISE_AND_PCA.out.anndata,
+                NORMALISE_AND_PCA.out.metadata,
+                NORMALISE_AND_PCA.out.pcs,
+                NORMALISE_AND_PCA.out.param_details,
+                n_pcs,
+                params.harmony.variables_and_thetas.value
+            )
+
+            UMAP_HARMONY(
+                HARMONY.out.outdir,
+                HARMONY.out.anndata,
+                HARMONY.out.metadata,
+                HARMONY.out.pcs,
+                HARMONY.out.reduced_dims,
+                "False",
+                params.umap.n_neighbors.value,
+                params.umap.umap_init.value,
+                params.umap.umap_min_dist.value,
+                params.umap.umap_spread.value,
+                params.umap.colors_quantitative.value,
+                params.umap.colors_categorical.value
+            )
+
+            cluster_harmony__outdir = UMAP_HARMONY.out.outdir
+            cluster_harmony__anndata = UMAP_HARMONY.out.anndata
+            anndata =  UMAP_HARMONY.out.anndata
+            outdir = UMAP_HARMONY.out.outdir
+            cluster_harmony__metadata = UMAP_HARMONY.out.metadata
+            cluster_harmony__pcs = UMAP_HARMONY.out.pcs
+            cluster_harmony__reduced_dims = UMAP_HARMONY.out.reduced_dims
+
+            CLUSTERING_HARMONY(
+                cluster_harmony__outdir,
+                cluster_harmony__anndata,
+                cluster_harmony__metadata,
+                cluster_harmony__pcs,
+                cluster_harmony__reduced_dims,
+                "False",  // use_pcs_as_reduced_dims
+                params.cluster.number_neighbors.value,
+                params.cluster.methods.value,
+                params.cluster.resolutions.value,
+                params.cluster.variables_boxplot.value,
+                channel__cluster__known_markers,
+                params.cluster_validate_resolution.sparsity.value,
+                params.cluster_validate_resolution.train_size_cells.value,
+                params.cluster_marker.methods.value,
+                params.umap.n_neighbors.value,
+                params.umap.umap_init.value,
+                params.umap.umap_min_dist.value,
+                params.umap.umap_spread.value,
+                params.sccaf.min_accuracy         
+            )
+        }
+
+        if (params.bbknn.run_process) {
+            BBKNN(
+                NORMALISE_AND_PCA.out.outdir,
+                NORMALISE_AND_PCA.out.anndata,
+                NORMALISE_AND_PCA.out.metadata,
+                NORMALISE_AND_PCA.out.pcs,
+                NORMALISE_AND_PCA.out.param_details,
+                n_pcs,
+                params.bbknn.batch_variable.value
+            )
+
+            UMAP_BBKNN(
+                BBKNN.out.outdir,
+                BBKNN.out.anndata,
+                BBKNN.out.metadata,
+                BBKNN.out.pcs,
+                BBKNN.out.reduced_dims,
+                "True",  // Don't look at the reduced_dims parameter
+                ["-1"],  // params.cluster.number_neighbors.value,
+                params.umap.umap_init.value,
+                params.umap.umap_min_dist.value,
+                params.umap.umap_spread.value,
+                params.umap.colors_quantitative.value,
+                params.umap.colors_categorical.value
+            )
+
+            cluster_bbknn__outdir = UMAP_BBKNN.out.outdir
+            cluster_bbknn__anndata = UMAP_BBKNN.out.anndata
+            outdir = UMAP_BBKNN.out.outdir
+            anndata = UMAP_BBKNN.out.anndata
+            cluster_bbknn__metadata = UMAP_BBKNN.out.metadata
+            cluster_bbknn__pcs = UMAP_BBKNN.out.pcs
+            cluster_bbknn__reduced_dims = UMAP_BBKNN.out.reduced_dims
+
+            CLUSTERING_BBKNN(
+                cluster_bbknn__outdir,
+                cluster_bbknn__anndata,
+                cluster_bbknn__metadata,
+                cluster_bbknn__pcs,
+                cluster_bbknn__reduced_dims,
+                "True",  // use_pcs_as_reduced_dims
+                ["-1"],  // params.cluster.number_neighbors.value,
+                params.cluster.methods.value,
+                params.cluster.resolutions.value,
+                params.cluster.variables_boxplot.value,
+                channel__cluster__known_markers,
+                params.cluster_validate_resolution.sparsity.value,
+                params.cluster_validate_resolution.train_size_cells.value,
+                params.cluster_marker.methods.value,
+                ["-1"],  // params.umap.n_neighbors.value,
+                params.umap.umap_init.value,
+                params.umap.umap_min_dist.value,
+                params.umap.umap_spread.value,
+                params.sccaf.min_accuracy
+            )
+        }
+
+
+        if (params.lisi.run_process) {
+            lisi_input = SUBSET_PCS.out.reduced_dims_params.collect()
+            if (params.harmony.run_process) {
+                lisi_input = lisi_input.mix(
+                    HARMONY.out.reduced_dims_params.collect()
+                )
+            }
+            if (params.bbknn.run_process) {
+                lisi_input = lisi_input.mix(
+                    BBKNN.out.reduced_dims_params.collect()
+                )
+            }
+
+            LISI(
+                NORMALISE_AND_PCA.out.outdir,
+                NORMALISE_AND_PCA.out.metadata,
+                params.lisi.variables.value,
+                lisi_input.collect()
+            )
+        }
+
 }

@@ -5,7 +5,7 @@ include {
     cellbender__remove_background__qc_plots;
     cellbender__remove_background__qc_plots_2;
     cellbender__gather_qc_input;
-} from "./core.nf"
+} from "./functions.nf"
 
 // Set default parameters.
 params.output_dir           = "nf-preprocessing"
