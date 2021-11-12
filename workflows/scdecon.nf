@@ -39,8 +39,10 @@ include { GET_SOFTWARE_VERSIONS } from '../modules/local/get_software_versions' 
 include {deconvolution} from "$projectDir/subworkflows/deconvolution"
 include {cellbender} from "$projectDir/subworkflows/cellbender"
 include {qc} from "$projectDir/subworkflows/qc"
+include {data_handover} from "$projectDir/subworkflows/data_handover"
 include { prepare_inputs } from "$projectDir/subworkflows/prepare_inputs"
 include {MERGE_SAMPLES} from "$projectDir/modules/nf-core/modules/merge_samples/main"
+include {MULTIPLET} from "../modules/nf-core/modules/multiplet/main"
 //
 // SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
 //
@@ -161,6 +163,28 @@ workflow SCDECON {
             }
 
         }
+
+        // // DETECTING MULTIPLETS
+        if (params.run_multiplet) {
+            log.info "Running multiplet filters."
+            
+            MULTIPLET(
+            params.output_dir,
+            channel__file_paths_10x,
+            params.sample_qc.cell_filters.filter_multiplets.expected_multiplet_rate,
+            params.sample_qc.cell_filters.filter_multiplets.n_simulated_multiplet,
+            params.sample_qc.cell_filters.filter_multiplets.multiplet_threshold_method,
+            params.sample_qc.cell_filters.filter_multiplets.scale_log10
+            )
+            file_cellmetadata = MULTIPLET.out.file__cellmetadata
+            multiplet_calls = MULTIPLET.out.multiplet_calls
+
+        } else {
+            file_cellmetadata = file(params.file_cellmetadata)
+            multiplet_calls = null
+        }
+
+
         file__anndata_merged = MERGE_SAMPLES.out.file__anndata_merged
         file__cells_filtered = MERGE_SAMPLES.out.file__cells_filtered
     }else{
@@ -175,8 +199,11 @@ workflow SCDECON {
     // Performing QC metrics -
     // TODO we may want to split this in the Clustring, QC, Celltype, Web_transfer
 
+
     qc(file__anndata_merged,file__cells_filtered)
 
+
+    // data_handover()
 
 
     // Performing eQTL mapping.

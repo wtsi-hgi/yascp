@@ -12,7 +12,7 @@ process sccaf_assess_clustering {
 
 
   publishDir path: "${outdir}",
-             mode: "${task.publish_mode}",
+             mode: "${params.copy_mode}",
              overwrite: "true"
 
   when:
@@ -59,7 +59,7 @@ process sccaf_optimize_clustering {
 
   publishDir path: "${outdir}",
              saveAs: {filename -> outfil_prfx.plus(filename)},
-             mode: "${task.publish_mode}",
+             mode: "${params.copy_mode}",
              overwrite: "true"
              //saveAs: {filename -> outfil_prfx.plus(filename)},
 

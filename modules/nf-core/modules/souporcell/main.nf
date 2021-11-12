@@ -4,7 +4,7 @@ process SOUPORCELL {
     
     label 'process_high'
     
-    publishDir "${params.outdir}/souporcell/",
+    publishDir "${params.outdir}/deconvolution/souporcell/",
     mode: "${params.souporcell.copy_mode}",
     pattern: "${samplename}",
     overwrite: true

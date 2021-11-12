@@ -2,7 +2,7 @@ process SPLIT_DONOR_H5AD {
     tag "${samplename}"
     
     label 'process_low'
-    publishDir "${params.outdir}/split_donor_h5ad/${sample}/", mode: "${params.copy_mode}", overwrite: true,
+    publishDir "${params.outdir}/deconvolution/split_donor_h5ad/${sample}/", mode: "${params.copy_mode}", overwrite: true,
 	  saveAs: {filename -> filename.replaceFirst("outputs/","") }
     
 

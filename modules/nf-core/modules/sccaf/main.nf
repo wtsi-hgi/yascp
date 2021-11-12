@@ -16,13 +16,13 @@ workflow SCCAF {
     sccaf_assess_clustering(
         outdir,
         anndata,
-        exernal_clustering
+        external_clustering
     )
 
     sccaf_optimize_clustering(
         outdir,
         anndata,
-        exernal_clustering,
+        external_clustering,
         min_accuracy
     )
 }

@@ -346,7 +346,6 @@ process cluster_validate_resolution_sklearn {
         process_info = "${process_info}, ${task.cpus} (cpus)"
         process_info = "${process_info}, ${task.memory} (memory)"
         """
-
         rm -fr plots
         0057-scanpy_cluster_validate_resolution-sklearn.py \
             --h5_anndata ${file__anndata} \
@@ -371,7 +370,6 @@ process cluster_validate_resolution_keras {
     //maxForks 2         // hard to control memory usage. limit to 3 concurrent
     label 'gpu'        // use GPU
     scratch false      // use tmp directory
-    label 'process_medium'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/nf_qc_cluster_2.4.img"
         
@@ -462,8 +460,6 @@ process cluster_validate_resolution_keras {
         process_info = "${process_info}, ${task.memory} (memory)"
         tf_memory = "${task.memory}".replaceAll(" GB", "")
         """
-        echo "cluster_validate_resolution: ${process_info}"
-        echo "publish_directory: ${outdir}"
         rm -fr plots
         0057-scanpy_cluster_validate_resolution-keras.py \
             --h5_anndata ${file__anndata} \
@@ -648,8 +644,6 @@ process cluster_markers {
         process_info = "${process_info}, ${task.cpus} (cpus)"
         process_info = "${process_info}, ${task.memory} (memory)"
         """
-        echo "cluster: ${process_info}"
-        echo "publish_directory: ${outdir}"
         rm -fr plots
         0056-scanpy_cluster_markers.py \
             --h5_anndata ${file__anndata} \
@@ -668,7 +662,7 @@ process cellex_cluster_markers {
     // ------------------------------------------------------------------------
     //tag { output_dir }
     //cache false        // cache results from run
-    label 'long_job'     // use GPU
+    
     scratch false      // use tmp directory
     label 'process_medium'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
@@ -713,8 +707,7 @@ process cellex_cluster_markers {
         process_info = "${process_info}, ${task.cpus} (cpus)"
         process_info = "${process_info}, ${task.memory} (memory)"
         """
-        echo "cluster: ${process_info}"
-        echo "publish_directory: ${outdir}"
+
         0060-cellex_cluster_markers.py \
             --h5_anndata ${file__anndata} \
             --output_file ${runid}-${outfile} \
@@ -833,8 +826,7 @@ process prep_cellxgene {
         process_info = "${process_info}, ${task.cpus} (cpus)"
         process_info = "${process_info}, ${task.memory} (memory)"
         """
-        echo "prep_cellxgene: ${process_info}"
-        echo "publish_directory: ${outdir}"
+
         cellxgene.py \
             --h5_anndata ${file__anndata} \
             --drop_extra_info \

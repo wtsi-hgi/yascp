@@ -2,7 +2,7 @@
 process VIREO {
     tag "${samplename}"
     label 'process_high'
-    publishDir "${params.outdir}/vireo/${samplename}/", mode: "${params.vireo.copy_mode}", overwrite: true,
+    publishDir "${params.outdir}/deconvolution/vireo/${samplename}/", mode: "${params.vireo.copy_mode}", overwrite: true,
 	  saveAs: {filename -> filename.replaceFirst("vireo_${samplename}/","") }
     
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {

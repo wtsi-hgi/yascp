@@ -1,3 +1,9 @@
+
+def random_hex(n) {
+    Long.toUnsignedString(new Random().nextLong(), n).toUpperCase()
+}
+
+
 process make_cellmetadata_pipeline_input {
     // Makes a input tsv file for the main pipeline.
     // ------------------------------------------------------------------------
@@ -24,8 +30,6 @@ process make_cellmetadata_pipeline_input {
         process_info = "${process_info}, ${task.cpus} (cpus)"
         process_info = "${process_info}, ${task.memory} (memory)"
         """
-        echo "make_pipeline_input_file: ${process_info}"
-        echo "publish_directory: ${outdir}"
         # Note: the default paste delim is tab
         cat *multiplet_calls_published.txt \
             | awk 'BEGIN{print "experiment_id\tdata_path_cellmetadata"}1' \

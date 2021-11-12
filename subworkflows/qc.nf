@@ -1,7 +1,7 @@
 
 // Load base.config by default for all pipelines - typically included in the nextflow config.
 // Modules to include.
-include {MULTIPLET} from "../modules/nf-core/modules/multiplet/main"
+
 include {OUTLIER_FILTER} from "../modules/nf-core/modules/outlier_filter/main"
 include {PLOT_STATS} from "../modules/nf-core/modules/plot_stats/main"
 include {CELL_TYPE_ASSIGNEMT} from "../modules/nf-core/modules/cell_type_assignment/main"
@@ -34,30 +34,7 @@ workflow qc {
         file__cells_filtered
     main:
         log.info "--- Running QC metrics --- "
-        
-
-
-        // // DETECTING MULTIPLETS
-        // if (params.run_multiplet) {
-	    //   log.info "Running multiplet filters."
-          
-        //   MULTIPLET(
-        //     params.output_dir,
-        //     channel__file_paths_10x,
-        //     params.sample_qc.cell_filters.filter_multiplets.expected_multiplet_rate,
-        //     params.sample_qc.cell_filters.filter_multiplets.n_simulated_multiplet,
-        //     params.sample_qc.cell_filters.filter_multiplets.multiplet_threshold_method,
-        //     params.sample_qc.cell_filters.filter_multiplets.scale_log10
-        //     )
-        //     file_cellmetadata = MULTIPLET.out.file__cellmetadata
-        //     multiplet_calls = MULTIPLET.out.multiplet_calls
-
-        // } else {
-        //     file_cellmetadata = file(params.file_cellmetadata)
-        //     multiplet_calls = null
-        // }
-
-
+  
         //FILTERING OUTLIER CELLS
         if (params.sample_qc.cell_filters.filter_outliers.run_process) {
             log.info """---Running automatic outlier cell filtering.----"""
@@ -75,10 +52,12 @@ workflow qc {
             file__cells_filtered = OUTLIER_FILTER.out.cells_filtered
         }
 
-        
-        CELL_TYPE_ASSIGNEMT(file__anndata_merged,file__cells_filtered)
+        if (params.run_celltype_assignment){
+            CELL_TYPE_ASSIGNEMT(file__anndata_merged,file__cells_filtered)
+            file__anndata_merged=CELL_TYPE_ASSIGNEMT.out.file__anndata_merged2
+        }
 
-        NORMALISE_AND_PCA(params.output_dir,
+        NORMALISE_AND_PCA(params.output_dir+'/clustering',
             file__anndata_merged,
             params.mode,
             params.layer,
