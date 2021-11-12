@@ -309,7 +309,7 @@ process cellbender__remove_background__qc_plots {
         filename.replaceAll("${runid}-", "")
         }
       },
-      mode: "${params.cellsnp.copy_mode}",
+      mode: "${params.copy_mode}",
       overwrite: "true"
 
   input:

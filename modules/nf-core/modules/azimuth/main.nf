@@ -25,6 +25,7 @@ process AZIMUTH{
 
     output:
         path(celltype_table, emit:predicted_celltypes)
+        path(celltype_table, emit:predicted_celltype_labels)
         path "ncells_by_type_barplot.pdf"
         path "query_umap.pdf"
         path "prediction_score_umap.pdf"

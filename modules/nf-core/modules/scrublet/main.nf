@@ -16,7 +16,7 @@ process SCRUBLET {
 
     tag "${samplename}"
     scratch true        // use tmp directory
-    echo echo_mode       // echo output from script
+
 
     label 'process_medium'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
@@ -36,9 +36,6 @@ process SCRUBLET {
                 },
                 mode: "${params.copy_mode}",
                 overwrite: "true"
-
-
-
 
     input:
         val(outdir_prev)
@@ -79,8 +76,7 @@ process SCRUBLET {
         process_info = "${process_info}, ${task.cpus} (cpus)"
         process_info = "${process_info}, ${task.memory} (memory)"
         """
-        echo "run_scrublet: ${process_info}"
-        echo "publish_directory: ${outdir}"
+
         rm -fr plots
         TMP_DIR=\$(mktemp -d -p \$(pwd))
         ln --physical ${file_10x_barcodes} \$TMP_DIR

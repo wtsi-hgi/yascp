@@ -137,6 +137,7 @@ def run_celltypist(samplename, filtered_matrix_h5, celltypist_model,
     
     # Indeed, the `model` argument defaults to `Immune_All_Low.pkl`.
     logging.info("celltypist_model: " + celltypist_model)
+    celltypist_model1 = celltypist_model.split('.')[0]
     model = models.Model.load(model = celltypist_model ) # model = 'Immune_All_Low.pkl')
     model.description
 
@@ -159,7 +160,7 @@ def run_celltypist(samplename, filtered_matrix_h5, celltypist_model,
 
     # Export the three results to csv tables.
     logging.info("... predictions.to_table in folder " + output_dir)
-    predictions.to_table(folder = output_dir, prefix = samplename + '_')
+    predictions.to_table(folder = output_dir, prefix = samplename + '___'+celltypist_model1+'___')
     ###predictions.to_table(folder = os.getcwd())
     logging.info("... predictions.to_plots")
 

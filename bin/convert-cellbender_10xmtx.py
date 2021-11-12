@@ -7,6 +7,8 @@ __version__ = '0.0.1'
 
 import argparse
 import os
+os.environ['NUMBA_CACHE_DIR']='/tmp'
+os.environ['MPLCONFIGDIR']='/tmp'
 from distutils.version import LooseVersion
 from typing import Dict
 import tables

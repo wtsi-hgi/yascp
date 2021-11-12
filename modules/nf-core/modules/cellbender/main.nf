@@ -8,7 +8,7 @@ include {
 } from "./functions.nf"
 
 // Set default parameters.
-params.output_dir           = "nf-preprocessing"
+ outdir           = "nf-preprocessing"
 params.help                 = false
 
 params.cellbender_rb = [
@@ -42,17 +42,17 @@ workflow CELLBENDER {
             file("${row.data_path_10x_format}/raw_feature_bc_matrix/matrix.mtx.gz")
         )}
     
-
+        outdir =  outdir+'/cellbender'
         
         cellbender__rb__get_input_cells(
-            params.output_dir,
+             outdir,
             channel__file_paths_10x,
             params.cellbender_rb.estimate_params_umis.value
         )
         
         // Correct counts matrix to remove ambient RNA
         cellbender__remove_background(
-            params.output_dir,
+             outdir,
             cellbender__rb__get_input_cells.out.cb_input,
             params.cellbender_rb.epochs.value,
             params.cellbender_rb.learning_rate.value,
@@ -86,7 +86,7 @@ workflow CELLBENDER {
         // }
     
         cellbender__gather_qc_input(
-            params.output_dir,
+             outdir,
             cellbender__remove_background.out.results_list.collect()
         )
 

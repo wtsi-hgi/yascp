@@ -97,6 +97,31 @@ process umap_calculate {
         //--calculate_densities \
 }
 
+process generate_final_UMAPS{
+  publishDir  path: "${outdir}",
+              mode: "${task.publish_mode}",
+              overwrite: "true"
+  input:
+    path(file__anndata_QC)
+    path(file__anndata)
+    val(outdir_prev)
+  output:
+    path("umap-*")
+  
+  script:
+    outdir = "${outdir_prev}/UMAPs"
+    """
+        umap_plot_final.py \
+            --h5_anndata ${file__anndata} \
+            --h5_anndata_QC ${file__anndata_QC} \
+            --number_cpu 1 \
+            --colors_quantitative n_cells,total_counts,pct_counts_gene_group__mito_transcript,prob_doublet,pct_counts_gene_group__ribo_rna,predicted.celltype.l2.score,mapping.score \
+            --colors_categorical experiment_id,predicted.celltype.l2,donor_id  \
+            --drop_legend_n 40 \
+            --output_file UMAP
+    """
+
+}
 
 process umap_gather {
     // Merge UMAP from reduced_dims (reduce or gather).

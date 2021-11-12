@@ -2,7 +2,7 @@
 process CELLTYPIST {
     tag "${samplename}"
     label 'process_medium'
-    publishDir "${params.outdir}/celltypist/${model}/${sample}/", mode: "${params.celltypist.copy_mode}", overwrite: true,
+    publishDir "${params.outdir}/celltype/celltypist/${model}/${sample}/", mode: "${params.celltypist.copy_mode}", overwrite: true,
 	  saveAs: {filename -> filename.replaceFirst("outputs/","").replaceFirst("figures/","") }
     
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
@@ -19,11 +19,11 @@ process CELLTYPIST {
       tuple val(sample), val(filtered_matrix_h5), val(celltypist_model)
 
     output: 
-      tuple val(sample), path("outputs/${sample}_predicted_labels.csv"), emit: sample_predicted_labels_csv
-      tuple val(sample), path("outputs/${sample}_probability_matrix.csv"), emit: sample_probability_matrix_csv
-      tuple val(sample), path("outputs/${sample}_decision_matrix.csv"), emit: sample_decision_matrix_csv
-      tuple val(sample), path("outputs/${sample}_*.pdf"), emit: sample_plots_pdf
-      tuple val(sample), path("outputs/plot_prob/${sample}_*.pdf"), emit: sample_plots_prob_pdf
+      tuple val(sample), path("outputs/*_predicted_labels.csv"), emit: sample_predicted_labels_csv
+      tuple val(sample), path("outputs/*_probability_matrix.csv"), emit: sample_probability_matrix_csv
+      tuple val(sample), path("outputs/*_decision_matrix.csv"), emit: sample_decision_matrix_csv
+      tuple val(sample), path("outputs/*_*.pdf"), emit: sample_plots_pdf
+      tuple val(sample), path("outputs/plot_prob/*_*.pdf"), emit: sample_plots_prob_pdf
 
     script:
       model="${celltypist_model}".replaceFirst(".pkl","")
@@ -38,6 +38,7 @@ process CELLTYPIST {
 
 
       """
+
         umask 2 # make files group_writable 
         mkdir -p outputs
         run_celltypist.py \\
