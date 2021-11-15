@@ -111,7 +111,7 @@ process cellbender__remove_background {
   if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
     container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/nf_cellbender_v1.2.img"
     maxRetries = 1
-    memory = 250.GB
+    // memory = 250.GB
     cpus = 1
   } else {
     container "quay.io/biocontainers/multiqc:1.10.1--py_0"

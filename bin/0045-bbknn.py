@@ -14,6 +14,7 @@ import random
 import numpy as np
 import pandas as pd
 import scanpy as sc
+import bbknn
 # import csv
 
 # Set seed for reproducibility
@@ -122,13 +123,14 @@ def main():
     # Run bbknn
     # Total number of neighbours = neighbors_within_batch x the number of
     # batches.
-    sc.external.pp.bbknn(
-        adata=adata,
-        batch_key=batch_key,
-        copy=False,
-        # neighbors_within_batch=5
-        n_pcs=n_pcs
-    )
+    bbknn.bbknn(adata,batch_key=batch_key,copy=False,n_pcs=n_pcs)
+    # sc.external.pp.bbknn(
+    #     adata=adata,
+    #     batch_key=batch_key,
+    #     copy=False,
+    #     # neighbors_within_batch=5
+    #     n_pcs=n_pcs
+    # )
     adata.uns['neighbors']['params']['bbknn'] = True
     adata.uns['neighbors']['params']['n_pcs'] = n_pcs
 

@@ -30,7 +30,7 @@ process SPLIT_DONOR_H5AD {
       path("${sample}.h5ad.tsv"), emit: h5ad_tsv
     
     script:
-    dir = workflow.workDir+'/../results'
+    dir = workflow.workDir+'/../results/deconvolution'
     """
         mkdir -p outputs
 

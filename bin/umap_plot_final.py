@@ -192,13 +192,13 @@ def main():
         help='H5 AnnData file.'
     )
 
-    parser.add_argument(
-        '-h5_QC', '--h5_anndata_QC',
-        action='store',
-        dest='h5_QC',
-        required=True,
-        help='H5 AnnData file.'
-    )
+    # parser.add_argument(
+    #     '-h5_QC', '--h5_anndata_QC',
+    #     action='store',
+    #     dest='h5_QC',
+    #     required=True,
+    #     help='H5 AnnData file.'
+    # )
 
     parser.add_argument(
         '-cq', '--colors_quantitative',
@@ -260,14 +260,14 @@ def main():
 
     # Load the AnnData file.
     adata = sc.read_h5ad(filename=options.h5)
-    adata_QC = sc.read_h5ad(filename=options.h5_QC)
-    adata_QC = sc.read_h5ad(filename='/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/qc/Franke_with_genotypes/work/c5/2ead02a35b945b2fded83b6402ffee/adata_celltypes.h5ad')
+    # adata_QC = sc.read_h5ad(filename=options.h5_QC)
+    # adata_QC = sc.read_h5ad(filename='/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/qc/Franke_with_genotypes/work/c5/2ead02a35b945b2fded83b6402ffee/adata_celltypes.h5ad')
     
     
-    adata.obs['predicted.celltype.l2']=adata_QC.obs['predicted.celltype.l2']
-    adata.obs['predicted.celltype.l2.score']=adata_QC.obs['predicted.celltype.l2.score']
-    adata.obs['mapping.score']=adata_QC.obs['mapping.score']
-    adata.obs['prob_doublet']=adata_QC.obs['prob_doublet']
+    # adata.obs['predicted.celltype.l2']=adata_QC.obs['predicted.celltype.l2']
+    # adata.obs['predicted.celltype.l2.score']=adata_QC.obs['predicted.celltype.l2.score']
+    # adata.obs['mapping.score']=adata_QC.obs['mapping.score']
+    # adata.obs['prob_doublet']=adata_QC.obs['prob_doublet']
     
     # Get the out file base.
     out_file_base = options.of

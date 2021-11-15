@@ -2,7 +2,7 @@ include {
     umap_calculate;
     umap_gather;
     umap_plot_swarm;
-    umap_calculate_and_plot;
+    umap_calculate_and_plot;generate_final_UMAPS;
 } from "./functions.nf"
 
 workflow UMAP {
@@ -68,6 +68,10 @@ workflow UMAP {
             // umap_calculate.out.outdir_anndata.groupTuple()
             //umap_calculate.out.original_plus_umap.groupTuple()
         )
+        if (params.run_celltype_assignment){
+            generate_final_UMAPS(umap_gather.out.anndata,params.output_dir)
+        }
+
         // Make plots
         umap_plot_swarm(
             umap_gather.out.outdir,

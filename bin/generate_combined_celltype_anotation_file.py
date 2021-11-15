@@ -59,7 +59,7 @@ def main():
     Data_All=pd.DataFrame()
     for azimuth_file1 in azimuth_files:
         Data=pd.read_csv(azimuth_file1,compression='gzip',sep='\t')
-        Data = Data.rename(columns={'predicted.celltype.l2':'Azimuth:predicted.celltype.l2'})
+        Data = Data.rename(columns={'predicted.celltype.l2':'Azimuth:predicted.celltype.l2','predicted.celltype.l2.score':'Azimuth:predicted.celltype.l2.score','mapping.score':'Azimuth:mapping.score'})
         Data_All = pd.concat([Data_All,Data])
 
     celltypist_files = options.all_celltypist_files.split('::')
@@ -79,8 +79,7 @@ def main():
     adata = options.andata
     ad = scanpy.read(adata)
     for col in Data_All.columns:
-        print(col)
-    ad.obs[col]=Data_All[col]
+        ad.obs[col]=Data_All[col]
     ad.write(
         'adata.h5ad',
         compression='gzip',
