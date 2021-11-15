@@ -81,7 +81,7 @@ The nf-core/scdecon pipeline comes with documentation about the pipeline [usage]
 
 ## Credits
 
-nf-core/scdecon was originally written by HGI Sanger (Leland Taylor, Matiss Ozols, Guillaume Noell, Hannes Ponstingl, Vivek Iyer).
+nf-core/scdecon was originally written by HGI Sanger (Leland Taylor, Matiss Ozols, Guillaume Noell, Hannes Ponstingl, Vivek Iyer, Monika Krzak, Henry Taylor).
 
 We thank the following people for their extensive assistance in the development of this pipeline:
 
