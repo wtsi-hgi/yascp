@@ -1,4 +1,4 @@
-include { generate_final_UMAPS } from '../modules/nf-core/modules/umap/functions'
+include { GATHER_DATA } from '../modules/nf-core/modules/gather_data/main'
 
 workflow data_handover{
     take:
@@ -15,6 +15,5 @@ workflow data_handover{
         anndata
     main:
         log.info 'running data handover'
-
-        generate_final_UMAPS(gather_handover_dataset.out.adata_celltypes,anndata,outdir)
+        GATHER_DATA()
 }

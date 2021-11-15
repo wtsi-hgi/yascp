@@ -61,16 +61,16 @@ workflow CLUSTERING {
 
         // // Validate the resolution
         // // Do not use cluster_validate_resolution_sklearn process.
-        cluster_validate_resolution_sklearn(
-            cluster.out.outdir,
-            cluster.out.anndata,
-            cluster.out.metadata,
-            cluster.out.pcs,
-            cluster.out.reduced_dims,
-            cluster.out.clusters,
-            cluster_validate_resolution__sparsity,
-            cluster_validate_resolution__train_size_cells
-        )
+        // cluster_validate_resolution_sklearn(
+        //     cluster.out.outdir,
+        //     cluster.out.anndata,
+        //     cluster.out.metadata,
+        //     cluster.out.pcs,
+        //     cluster.out.reduced_dims,
+        //     cluster.out.clusters,
+        //     cluster_validate_resolution__sparsity,
+        //     cluster_validate_resolution__train_size_cells
+        // )
 
         cluster_validate_resolution_keras( 
             cluster.out.outdir,

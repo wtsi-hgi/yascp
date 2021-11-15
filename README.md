@@ -34,6 +34,15 @@ On release, automated continuous integration tests run the pipeline on a full-si
 2. CellSNP
 3. Vireo
 4. Souporcell
+5. Celltypist
+6. Azimuth
+7. BBKNN
+8. Harmony
+9. Scrublet
+10. Sccaf
+11. Lisi
+12. Isolation Forest
+
 
 ## Quick Start
 Easyest to do is using a conda enviroment.

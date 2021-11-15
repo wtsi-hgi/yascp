@@ -98,11 +98,19 @@ process umap_calculate {
 }
 
 process generate_final_UMAPS{
+
+    label 'process_low'
+    if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
+        container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/nf_qc_cluster_2.4.img"
+        
+    } else {
+        container "quay.io/biocontainers/multiqc:1.10.1--py_0"
+    }
+
   publishDir  path: "${outdir}",
-              mode: "${task.publish_mode}",
+              mode: "${params.copy_mode}",
               overwrite: "true"
   input:
-    path(file__anndata_QC)
     path(file__anndata)
     val(outdir_prev)
   output:
@@ -113,10 +121,9 @@ process generate_final_UMAPS{
     """
         umap_plot_final.py \
             --h5_anndata ${file__anndata} \
-            --h5_anndata_QC ${file__anndata_QC} \
             --number_cpu 1 \
-            --colors_quantitative n_cells,total_counts,pct_counts_gene_group__mito_transcript,prob_doublet,pct_counts_gene_group__ribo_rna,predicted.celltype.l2.score,mapping.score \
-            --colors_categorical experiment_id,predicted.celltype.l2,donor_id  \
+            --colors_quantitative n_cells,total_counts,pct_counts_gene_group__mito_transcript,prob_doublet,pct_counts_gene_group__ribo_rna,Azimuth:predicted.celltype.l2.score,Azimuth:mapping.score \
+            --colors_categorical experiment_id,Azimuth:predicted.celltype.l2,Celltypist:Immune_All_Low,Celltypist:Immune_All_High,Celltypist:Immune_Blood_High,Celltypist:Immune_Blood_Low,donor_id  \
             --drop_legend_n 40 \
             --output_file UMAP
     """
@@ -194,9 +201,9 @@ process umap_gather {
         // Two ways to call --h5_anndata_list
         // --h5_anndata_list ${files__anndata}
         // --h5_anndata_list \$(ls -1 *h5ad | paste -sd "," -)
+        //sleep 5m
         """
-
-        sleep 5m
+       
         umap_gather.py \
             --h5_root ${original__file__anndata} \
             --output_file ${runid}-${outfile} \
@@ -266,6 +273,7 @@ process umap_plot_swarm {
             ${cmd__colors_cat} \
             --drop_legend_n ${drop_legend_n} \
             --output_file ${runid}-${outfile}
+
         mkdir plots
         mv *pdf plots/ 2>/dev/null || true
         mv *png plots/ 2>/dev/null || true

@@ -16,6 +16,13 @@ process BBKNN{
     //tag { output_dir }
     //cache false        // cache results from run
     scratch false      // use tmp directory
+    label 'process_medium'
+    if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
+        container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/nf_qc_cluster_2.4.img"
+        
+    } else {
+        container "quay.io/biocontainers/multiqc:1.10.1--py_0"
+    }
 
     publishDir  path: "${outdir}",
                 saveAs: {filename ->

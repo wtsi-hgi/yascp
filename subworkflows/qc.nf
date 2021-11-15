@@ -135,6 +135,7 @@ workflow qc {
             cluster_harmony__metadata = UMAP_HARMONY.out.metadata
             cluster_harmony__pcs = UMAP_HARMONY.out.pcs
             cluster_harmony__reduced_dims = UMAP_HARMONY.out.reduced_dims
+            
 
             CLUSTERING_HARMONY(
                 cluster_harmony__outdir,
@@ -216,6 +217,7 @@ workflow qc {
             )
         }
 
+       
 
         if (params.lisi.run_process) {
             lisi_input = SUBSET_PCS.out.reduced_dims_params.collect()

@@ -18,7 +18,7 @@ process HARMONY{
     //tag { output_dir }
     //cache false        // cache results from run
     scratch false      // use tmp directory
-    storeDir '/tmp'
+    // storeDir '/tmp'
     label 'process_medium'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/nf_qc_cluster_2.4.img"
