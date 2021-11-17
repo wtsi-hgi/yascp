@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-#!/usr/bin/env python
 
 
 __author__ = 'Matiss Ozols and Hannes Ponstingl'

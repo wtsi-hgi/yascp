@@ -2,6 +2,31 @@ def random_hex(n) {
     Long.toUnsignedString(new Random().nextLong(), n).toUpperCase()
 }
 
+process dummy_filtered_channel{
+    label 'process_low' 
+    if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
+        container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/nf_qc_cluster_2.4.img"
+    } else {
+        container "quay.io/biocontainers/multiqc:1.10.1--py_0"
+    }
+
+    input:
+        path(file_paths_h5ad)
+        val(id_in)
+    output:
+        path("filtered_cell_dummy.tsv", emit: anndata_metadata)
+        
+    script:
+        """
+            echo 'lets do it' > test.txt
+            dummy_filtered_channel.py --h5_anndata ${file_paths_h5ad} -id ${id_in}
+        """
+
+}
+
+
+
+
 process merge_samples_from_h5ad {
     // Takes a list of h5ad files and merges them into one anndata object.
     // ------------------------------------------------------------------------

@@ -22,6 +22,7 @@ import csv
 import random
 import numpy as np
 import pandas as pd
+import pandas
 import os
 os.environ['NUMBA_CACHE_DIR']='/tmp'
 os.environ['MPLCONFIGDIR']='/tmp'
@@ -78,10 +79,14 @@ def run_celltypist(samplename, filtered_matrix_h5, celltypist_model,
     try:
         adata = sc.read_10x_h5(filtered_matrix_h5)
         
+        
     except:
         try:
             # We are loading h5ad instad of h5
             adata = sc.read_h5ad(filtered_matrix_h5)
+            
+            # adata = sc.read_h5ad(filtered_matrix_h5)
+
         except:
             # h5 file may have amissing genome version
             import tables
@@ -105,6 +110,8 @@ def run_celltypist(samplename, filtered_matrix_h5, celltypist_model,
         logging.info('no file to remove')
     logging.info('loadin sc.read_10x_h5() done.')
     logging.info(adata.var)
+    # adata.var['ENSG']=adata.var.index
+    # adata.var.index=adata.var['gene_symbols']
     logging.info(adata.obsm)
     logging.info("n cells len(adata.obs): " + str(len(adata.obs)))
     # logging.info('exiting..'); sys.exit()

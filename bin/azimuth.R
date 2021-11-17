@@ -456,6 +456,7 @@ cat("inputfile.h5seurat = ", inputfile.h5seurat, "\n")
 # Load the reference
 # Change the file path based on where the reference is located on your system.
 ## reference <- LoadReference(path = "https://seurat.nygenome.org/azimuth/references/v1.0.0/human_pbmc")
+print('Loading reference')
 reference <- LoadReference(REFERENCE_DIR)
 
 # Load the query object for mapping
@@ -468,6 +469,7 @@ reference <- LoadReference(REFERENCE_DIR)
 #  )
 cat("Loading file", inputfile.h5seurat, "\n")
 query <- LoadH5Seurat(inputfile.h5seurat)
+# query <- LoadH5Seurat(inputfile.h5seurat,assays = "RNA")
 cat("query file loaded.\n")
 # Calculate nCount_RNA and nFeature_RNA if the query does not
 # contain them already
