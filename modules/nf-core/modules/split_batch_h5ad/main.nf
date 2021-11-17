@@ -11,6 +11,7 @@ process SPLIT_BATCH_H5AD {
     
     input:
         path(file__anndata) // anndata h5ad file seurat_azimuth_pbmc_1.0
+        val(mode)
 
     output:
         path("${outfil_prfx}_*.h5ad", emit:files_anndata_batch)
@@ -22,7 +23,10 @@ process SPLIT_BATCH_H5AD {
         outfil_prfx = "${file__anndata}".minus(".h5ad")
         outfile = "${outfil_prfx}".plus("_files.txt")
         """
-           scanpy_split_h5ad.py ${file__anndata} ${outfil_prfx}
+
+           scanpy_split_h5ad.py ${file__anndata} ${outfil_prfx} ${mode}
         """
 
 }
+
+

@@ -43,6 +43,7 @@ include {data_handover} from "$projectDir/subworkflows/data_handover"
 include { prepare_inputs } from "$projectDir/subworkflows/prepare_inputs"
 include {MERGE_SAMPLES} from "$projectDir/modules/nf-core/modules/merge_samples/main"
 include {MULTIPLET} from "../modules/nf-core/modules/multiplet/main"
+include {dummy_filtered_channel} from "../modules/nf-core/modules/merge_samples/functions"
 //
 // SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
 //
@@ -73,10 +74,12 @@ multiqc_options.args += params.multiqc_title ? Utils.joinModuleArgs(["--title \"
 def multiqc_report = []
 
 workflow SCDECON {
-    input_channel = Channel.fromPath(params.input_data_table, followLinks: true, checkIfExists: true)
-    // prepearing the inputs from a standard 10x dataset folders.
-	prepare_inputs(input_channel)
+
     if (!params.skip_preprocessing.value){
+        input_channel = Channel.fromPath(params.input_data_table, followLinks: true, checkIfExists: true)
+        // prepearing the inputs from a standard 10x dataset folders.
+        prepare_inputs(input_channel)
+
         log.info 'The preprocessing has been already performed, skippingdirectly to h5ad input'
            // // Removing the background using cellbender which is then used in the deconvolution.
         if (params.input == 'cellbender'){
@@ -190,7 +193,16 @@ workflow SCDECON {
     }else{
         log.info '''----Skipping Preprocessing since we already have prepeared h5ad input file----'''
         file__anndata_merged = Channel.from(params.skip_preprocessing.file__anndata_merged)
-        file__cells_filtered = Channel.from(params.skip_preprocessing.file__cells_filtered)
+       
+        if (params.skip_preprocessing.file__cells_filtered ==''){
+            log.info '''---No cells filtered input'''
+            dummy_filtered_channel(file__anndata_merged,params.skip_preprocessing.id_in)
+            file__cells_filtered = dummy_filtered_channel.out.anndata_metadata
+            
+        }else{
+            file__cells_filtered = Channel.from(params.skip_preprocessing.file__cells_filtered)
+        }   
+        
     }
  
 
@@ -203,7 +215,14 @@ workflow SCDECON {
     qc(file__anndata_merged,file__cells_filtered)
 
 
-    // data_handover()
+    // data_handover(        outdir
+        // file__anndata_merged
+        // file__cellranger_raw_files_table_tsv
+        // file__cellbender_files_table_tsv
+        // file__deconv_files_table_tsv
+        // multiplet_calls
+        // deconvolution_path
+        // qc_output_dir)
 
 
     // Performing eQTL mapping.
