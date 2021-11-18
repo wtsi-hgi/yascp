@@ -37,7 +37,7 @@ def main():
     )
 
     parser.add_argument(
-        '-ad', '--adata',
+        '-ad', '--andata',
         action='store',
         dest='andata',
         required=True,
@@ -45,12 +45,11 @@ def main():
     )
 
     parser.add_argument(
-        '-ct', '--all_celltypist_files',
+        '-c', '--anndata_compression_level',
         action='store',
-        dest='all_celltypist_files',
+        dest='anndata_compression_level',
         required=True,
-        help='String of labels for each reduced_dims_tsv file. List should be\
-            split by "::".'
+        help='Gzip compression level for scanpy write of AnnData hdf5 objects. Integer in range 1 to 9'
     )
 
     options = parser.parse_args()
