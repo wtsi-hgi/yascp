@@ -77,6 +77,7 @@ process BBKNN{
         process_info = "${process_info}, ${task.cpus} (cpus)"
         process_info = "${process_info}, ${task.memory} (memory)"
         """
+        
         0045-bbknn.py \
             --h5_anndata ${file__anndata} \
             --batch_key ${batch_var} \

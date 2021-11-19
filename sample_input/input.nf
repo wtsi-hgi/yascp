@@ -1,15 +1,30 @@
 params {
 
-    cellsnp_input_table_mode = "from_cellbender"//"from_barcodes"
+    /////////////////////////
+    // QC input finish
+    /////////////////////////
+    copy_mode = "rellink"
+    extra_metadata = '/lustre/scratch119/humgen/projects/anderson_organoids/otar_mucosal/stimulation_IFNg/full_run/input/INFg_metadata2.txt'
+    input = 'cellbender'
+    do_deconvolution = true // we need to chose whether we do the deconvolution or not: can choose between:
+    bbknn{
+        run_process=true
+    }
     // input_data_table colums: experiment_id   data_path_10x_format
     // hgi note: from nf_cellbender pipeline
     utilise_gpu = true
+
+    skip_preprocessing{
+        value=true
+        file__anndata_merged = '/lustre/scratch119/humgen/projects/anderson_organoids/otar_mucosal/stimulation_IFNg/full_run/results/merged_h5ad/adata.h5ad'
+        file__cells_filtered = '/lustre/scratch119/humgen/projects/anderson_organoids/otar_mucosal/stimulation_IFNg/full_run/results/merged_h5ad/adata-cell_filtered_per_experiment.tsv.gz'
+    }
     ///////////////////////
     // Cellbender output
-    input_data_table = '/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/mo11_work/outputs/test_cellbender/inputs/vcf_names_pooled.tsv'
+    input_data_table = '/lustre/scratch119/humgen/projects/anderson_organoids/otar_mucosal/stimulation_IFNg/full_run/input/input3.tsv'
 
     input_tables_column_delimiter = '\t' // set 'tsv' or 'csv': whether input_data_table (and other input tables) have tab-separted ('tsv') or comma-separated columns ('csv').
-
+    run_celltype_assignment = false
     celltypist { // cf. https://github.com/Teichlab/celltypist
         run = false // whether to run 'celltypist' task
 
@@ -28,12 +43,18 @@ params {
         models = ['Immune_All_High.pkl','Immune_All_Low.pkl',
             'Immune_Blood_High.pkl','Immune_Blood_Low.pkl']
     }
+    genes_score = "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/mo11_work/outputs/test_qc/inputs/genes_score_v001.tsv"
+    //    --genes_exclude_hvg Tab-delimited file with genes to exclude from highly variable gene list. Must contain ensembl_gene_id column. If no filter, then pass an empty file.
+    genes_exclude_hvg = "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/mo11_work/outputs/test_qc/inputs/genes_remove_hvg_v001.tsv"
+    //    --output_dir Directory name to save results to. (Defaults to 'nf-qc_cluster')
+    output_dir = "results" //what dir name to use to store the data
+    run_multiplet = true
 
-    run_with_genotype_input=true
+    run_with_genotype_input=false
 	genotype_input {
-        subset_genotypes = true
+        subset_genotypes = false
 	    // path to donor vcfs:
-        full_vcf_file = '/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/deconv/Franke_with_genotypes/inputs/franke_gt.vcf.gz'
+        full_vcf_file = ''
     }
 
     cellsnp {
@@ -93,7 +114,7 @@ params {
     }
 
     subset_genotype {
-        remove_workdir = true // // whether to remove all work dirs of this task when workflow{} is finished.
+        remove_workdir = false // // whether to remove all work dirs of this task when workflow{} is finished.
         copy_mode = "rellink" // choose "rellink", "symlink", "move" or "copy".
         // Make sure copy_mode is either "copy" or "move" when remove_workdir = true
     }
@@ -102,10 +123,6 @@ params {
 
         // run souporcell on raw or filtered barcodes:
         use_raw_barcodes = false
-
-        // provides RAW cellranger barcodes as input to souporcell:
-        //  must have columns experiment_id and data_path_barcodes
-        path_raw_barcodes_table = '/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/fetch/Franke_with_genotypes/results/raw.Submission_Data_Pilot_UKB.file_paths_10x.tsv'
 
         remove_workdir = false // // whether to remove all work dirs of this task when workflow{} is finished.
         copy_mode = "rellink" // choose "rellink", "symlink", "move" or "copy".
