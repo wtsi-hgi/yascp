@@ -112,63 +112,63 @@ workflow qc {
         }
 
         // "Correct" PCs using Harmony or BBKNN
-        // if (params.harmony.run_process) {
-        //     HARMONY(
-        //         NORMALISE_AND_PCA.out.outdir,
-        //         NORMALISE_AND_PCA.out.anndata,
-        //         NORMALISE_AND_PCA.out.metadata,
-        //         NORMALISE_AND_PCA.out.pcs,
-        //         NORMALISE_AND_PCA.out.param_details,
-        //         n_pcs,
-        //         params.harmony.variables_and_thetas.value
-        //     )
+        if (params.harmony.run_process) {
+            HARMONY(
+                NORMALISE_AND_PCA.out.outdir,
+                NORMALISE_AND_PCA.out.anndata,
+                NORMALISE_AND_PCA.out.metadata,
+                NORMALISE_AND_PCA.out.pcs,
+                NORMALISE_AND_PCA.out.param_details,
+                n_pcs,
+                params.harmony.variables_and_thetas.value
+            )
 
-        //     UMAP_HARMONY(
-        //         HARMONY.out.outdir,
-        //         HARMONY.out.anndata,
-        //         HARMONY.out.metadata,
-        //         HARMONY.out.pcs,
-        //         HARMONY.out.reduced_dims,
-        //         "False",
-        //         params.umap.n_neighbors.value,
-        //         params.umap.umap_init.value,
-        //         params.umap.umap_min_dist.value,
-        //         params.umap.umap_spread.value,
-        //         params.umap.colors_quantitative.value,
-        //         params.umap.colors_categorical.value
-        //     )
+            UMAP_HARMONY(
+                HARMONY.out.outdir,
+                HARMONY.out.anndata,
+                HARMONY.out.metadata,
+                HARMONY.out.pcs,
+                HARMONY.out.reduced_dims,
+                "False",
+                params.umap.n_neighbors.value,
+                params.umap.umap_init.value,
+                params.umap.umap_min_dist.value,
+                params.umap.umap_spread.value,
+                params.umap.colors_quantitative.value,
+                params.umap.colors_categorical.value
+            )
 
-        //     cluster_harmony__outdir = UMAP_HARMONY.out.outdir
-        //     cluster_harmony__anndata = UMAP_HARMONY.out.anndata
-        //     anndata =  UMAP_HARMONY.out.anndata
-        //     outdir = UMAP_HARMONY.out.outdir
-        //     cluster_harmony__metadata = UMAP_HARMONY.out.metadata
-        //     cluster_harmony__pcs = UMAP_HARMONY.out.pcs
-        //     cluster_harmony__reduced_dims = UMAP_HARMONY.out.reduced_dims
+            cluster_harmony__outdir = UMAP_HARMONY.out.outdir
+            cluster_harmony__anndata = UMAP_HARMONY.out.anndata
+            anndata =  UMAP_HARMONY.out.anndata
+            outdir = UMAP_HARMONY.out.outdir
+            cluster_harmony__metadata = UMAP_HARMONY.out.metadata
+            cluster_harmony__pcs = UMAP_HARMONY.out.pcs
+            cluster_harmony__reduced_dims = UMAP_HARMONY.out.reduced_dims
             
 
-        //     CLUSTERING_HARMONY(
-        //         cluster_harmony__outdir,
-        //         cluster_harmony__anndata,
-        //         cluster_harmony__metadata,
-        //         cluster_harmony__pcs,
-        //         cluster_harmony__reduced_dims,
-        //         "False",  // use_pcs_as_reduced_dims
-        //         params.cluster.number_neighbors.value,
-        //         params.cluster.methods.value,
-        //         params.cluster.resolutions.value,
-        //         params.cluster.variables_boxplot.value,
-        //         channel__cluster__known_markers,
-        //         params.cluster_validate_resolution.sparsity.value,
-        //         params.cluster_validate_resolution.train_size_cells.value,
-        //         params.cluster_marker.methods.value,
-        //         params.umap.n_neighbors.value,
-        //         params.umap.umap_init.value,
-        //         params.umap.umap_min_dist.value,
-        //         params.umap.umap_spread.value,
-        //         params.sccaf.min_accuracy         
-        //     )
-        // }
+            CLUSTERING_HARMONY(
+                cluster_harmony__outdir,
+                cluster_harmony__anndata,
+                cluster_harmony__metadata,
+                cluster_harmony__pcs,
+                cluster_harmony__reduced_dims,
+                "False",  // use_pcs_as_reduced_dims
+                params.cluster.number_neighbors.value,
+                params.cluster.methods.value,
+                params.cluster.resolutions.value,
+                params.cluster.variables_boxplot.value,
+                channel__cluster__known_markers,
+                params.cluster_validate_resolution.sparsity.value,
+                params.cluster_validate_resolution.train_size_cells.value,
+                params.cluster_marker.methods.value,
+                params.umap.n_neighbors.value,
+                params.umap.umap_init.value,
+                params.umap.umap_min_dist.value,
+                params.umap.umap_spread.value,
+                params.sccaf.min_accuracy         
+            )
+        }
 
         if (params.bbknn.run_process) {
             BBKNN(
@@ -229,25 +229,25 @@ workflow qc {
 
        
 
-        // if (params.lisi.run_process) {
-        //     lisi_input = SUBSET_PCS.out.reduced_dims_params.collect()
-        //     if (params.harmony.run_process) {
-        //         lisi_input = lisi_input.mix(
-        //             HARMONY.out.reduced_dims_params.collect()
-        //         )
-        //     }
-        //     if (params.bbknn.run_process) {
-        //         lisi_input = lisi_input.mix(
-        //             BBKNN.out.reduced_dims_params.collect()
-        //         )
-        //     }
+        if (params.lisi.run_process) {
+            lisi_input = SUBSET_PCS.out.reduced_dims_params.collect()
+            if (params.harmony.run_process) {
+                lisi_input = lisi_input.mix(
+                    HARMONY.out.reduced_dims_params.collect()
+                )
+            }
+            if (params.bbknn.run_process) {
+                lisi_input = lisi_input.mix(
+                    BBKNN.out.reduced_dims_params.collect()
+                )
+            }
 
-        //     LISI(
-        //         NORMALISE_AND_PCA.out.outdir,
-        //         NORMALISE_AND_PCA.out.metadata,
-        //         params.lisi.variables.value,
-        //         lisi_input.collect()
-        //     )
-        // }
+            LISI(
+                NORMALISE_AND_PCA.out.outdir,
+                NORMALISE_AND_PCA.out.metadata,
+                params.lisi.variables.value,
+                lisi_input.collect()
+            )
+        }
 
 }
