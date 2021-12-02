@@ -1,0 +1,2 @@
+experiment_id	in_vitro_condition	INFg	INFg_dose	Stimulation_time	Sample
+Card_Val11211772	undifferentiated	unstimulated	0ng/ul	0h	undifferentiated
