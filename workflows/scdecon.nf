@@ -80,7 +80,7 @@ workflow SCDECON {
         // prepearing the inputs from a standard 10x dataset folders.
         prepare_inputs(input_channel)
 
-        log.info 'The preprocessing has been already performed, skippingdirectly to h5ad input'
+        log.info 'The preprocessing has been already performed, skipping directly to h5ad input'
            // // Removing the background using cellbender which is then used in the deconvolution.
         if (params.input == 'cellbender'){
             log.info ' ---- using cellbender to remove background---'
@@ -167,17 +167,17 @@ workflow SCDECON {
 
         }
 
-        // // DETECTING MULTIPLETS
+        // // DETECTING MULTIPLETS - this is currently not used in any downstram analysis, since vireo already detects the multiplets.
         if (params.run_multiplet) {
             log.info "Running multiplet filters."
             
             MULTIPLET(
-            params.output_dir,
-            channel__file_paths_10x,
-            params.sample_qc.cell_filters.filter_multiplets.expected_multiplet_rate,
-            params.sample_qc.cell_filters.filter_multiplets.n_simulated_multiplet,
-            params.sample_qc.cell_filters.filter_multiplets.multiplet_threshold_method,
-            params.sample_qc.cell_filters.filter_multiplets.scale_log10
+                params.output_dir,
+                channel__file_paths_10x,
+                params.sample_qc.cell_filters.filter_multiplets.expected_multiplet_rate,
+                params.sample_qc.cell_filters.filter_multiplets.n_simulated_multiplet,
+                params.sample_qc.cell_filters.filter_multiplets.multiplet_threshold_method,
+                params.sample_qc.cell_filters.filter_multiplets.scale_log10
             )
             file_cellmetadata = MULTIPLET.out.file__cellmetadata
             multiplet_calls = MULTIPLET.out.multiplet_calls
@@ -186,7 +186,6 @@ workflow SCDECON {
             file_cellmetadata = file(params.file_cellmetadata)
             multiplet_calls = null
         }
-
 
         file__anndata_merged = MERGE_SAMPLES.out.file__anndata_merged
         file__cells_filtered = MERGE_SAMPLES.out.file__cells_filtered
@@ -204,17 +203,18 @@ workflow SCDECON {
         }   
         
     }
- 
-
-    // TODO - MULTIPLET filter is aplied as part of the QC pipeline, however this should be done in the preprocessing pipeline. 
-
-    // Performing QC metrics -
-    // TODO we may want to split this in the Clustring, QC, Celltype, Web_transfer
-
 
     qc(file__anndata_merged,file__cells_filtered)
 
 
+
+
+
+    // Performing eQTL mapping.
+    // This part will contain code from Hannes and the potentially additional LIMIX runs.
+
+
+    // Transfer plots to the website and gather the outputs.
     // data_handover(        outdir
         // file__anndata_merged
         // file__cellranger_raw_files_table_tsv
@@ -223,14 +223,6 @@ workflow SCDECON {
         // multiplet_calls
         // deconvolution_path
         // qc_output_dir)
-
-
-    // Performing eQTL mapping.
-    // This part will contain code from Hannes and the potentially additional LIMIX runs.
-
-
-    // Transfer plots to the website and gather the outputs.
-
 
 
 }
