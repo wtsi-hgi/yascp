@@ -206,11 +206,14 @@ workflow  main_deconvolution {
                 .set{ch_vireo_donor_n_cells_tsv} // donor column: donor0, .., donorx, doublet, unassigned
 
                 // paste experiment_id and donor ID columns with __ separator
-                vireo_out_sample__exp_summary_tsv = vireo_out_sample__exp_summary_tsv
+                vireo_out_sample__exp_summary_tsv = SPLIT_DONOR_H5AD.out.donor_n_cells
                 .collectFile(name: "vireo_exp__donor_n_cells.tsv",
                         newLine: false, sort: true,
                         seed: "experiment_id\tn_cells\n",
                         storeDir:params.outdir+'/deconvolution/filepaths')
+                
+                vireo_out_sample_summary_tsv.view()
+                vireo_out_sample__exp_summary_tsv.view()
 
                 PLOT_DONOR_CELLS(ch_vireo_donor_n_cells_tsv)
                 

@@ -150,6 +150,7 @@ def split_h5ad_per_donor(vireo_donor_ids_tsv, filtered_matrix_h5, samplename,
                 logging.info('adding vireo annotation ' + new_cell_annotation + ' to AnnData object.')
                 adata.obs[new_cell_annotation] = vireo_anno_deconv_cells[new_cell_annotation]
             else:
+                adata.obs[new_cell_annotation] = 'nan'
                 logging.info('warning: column ' + new_cell_annotation + ' is not in input Vireo annotation tsv.')
     else:
         logging.info('Samples are not deconvoluted')
@@ -169,8 +170,12 @@ def split_h5ad_per_donor(vireo_donor_ids_tsv, filtered_matrix_h5, samplename,
         scrublet_data['donor_id']='donor'
         scrublet_data.loc[list(doublets['cell_barcode']),'donor_id']='doublet'
         scrublet_data['prob_doublet']=scrublet_data['scrublet__multiplet_scores']
-        for new_cell_annotation in ['donor_id','prob_doublet']:
-            adata.obs[new_cell_annotation] = scrublet_data[new_cell_annotation]
+        for new_cell_annotation in ['donor_id','prob_max','prob_doublet','n_vars','best_singlet','best_doublet']:
+            try:
+                adata.obs[new_cell_annotation] = scrublet_data[new_cell_annotation]
+            except:
+                adata.obs[new_cell_annotation] = 'nan'
+                
 
             
     
@@ -206,19 +211,25 @@ def split_h5ad_per_donor(vireo_donor_ids_tsv, filtered_matrix_h5, samplename,
             os.makedirs(output_dir + '/donor_level_anndata')
 
         adata_donors = []
+        adata_nr_cells = {}
+        count=0
         for donor_id in adata.obs['donor_id'].unique():
             donor_id = str(donor_id)
             logging.info('filtering cells of AnnData to donor ' + donor_id)
             adata_donor = adata[adata.obs['donor_id'] == donor_id, :]
             logging.info("n cells len(adata_donor.obs) for " + donor_id  + ': ' + str(len(adata_donor.obs)) + '/' + str(len(adata.obs)))
             if len(adata_donor.obs) > 0:
+                count+=1
                 logging.info("more than 0 cells for donor")
+                adata_nr_cells[count]={'experiment_id':f'{samplename}__{donor_id}','n_cells':len(adata_donor.obs)}
                 adata_donors.append((donor_id, adata_donor))
                 output_file = output_dir + '/donor_level_anndata/' + donor_id + '.' + samplename
                 logging.info('Write h5ad donor AnnData to ' + output_file)
                 adata_donor.write('{}.h5ad'.format(output_file), compression='gzip', compression_opts= anndata_compression_level)
             else:
                 logging.info("0 cells for donor, therefore no writing donor-specific h5ad.")
+        adata_nr_cells_df = pd.DataFrame(adata_nr_cells).T
+        adata_nr_cells_df.to_csv('exp__donor_n_cells.tsv',sep='\t', index=False,header=False)
 
 if __name__ == '__main__':
     # set logging level and handler:
