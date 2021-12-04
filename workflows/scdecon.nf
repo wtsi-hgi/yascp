@@ -108,9 +108,6 @@ workflow SCDECON {
 
             pre_ch_experiment_bam_bai_barcodes.combine(barcodes, by: 0).set{ch_experiment_bam_bai_barcodes}
 
-            // TODO - have to alter 2 channels - ch_experiment_filth5 and ch_experiment_bam_bai_barcodes based on the cellbender output paths cellbender.out.results_list
-
-
         }else if (params.input == 'existing_cellbender'){
             log.info ' ---- using existing cellbender output for deconvolution---'
             Channel.fromPath(params.cellbender_file, followLinks: true, checkIfExists: true)
@@ -135,7 +132,6 @@ workflow SCDECON {
                                                         file(row.data_path_10x_format+'/matrix.mtx.gz'))}
 
             pre_ch_experiment_bam_bai_barcodes.combine(barcodes, by: 0).set{ch_experiment_bam_bai_barcodes}
-            // Merge the Samples Now from h5ad
 
         }else if (params.input == 'cellranger'){
             log.info '--- using cellranger filtered data instead of cellbender (skipping cellbender)---'
@@ -148,51 +144,22 @@ workflow SCDECON {
             log.info '--- input mode is not selected - please choose --- (existing_cellbender| cellbender | cellranger)'
         }
         
-        // // Performing Deconvolution of Samples - skip this if the samples contain only 1 individual.
         if (params.do_deconvolution){
             deconvolution(ch_experiment_bam_bai_barcodes, // activate this to run deconvolution pipeline
                 prepare_inputs.out.ch_experiment_npooled,
                 ch_experiment_filth5,
-                prepare_inputs.out.ch_experiment_donorsvcf_donorslist)
-
-            MERGE_SAMPLES(deconvolution.out.out_h5ad,deconvolution.out.vireo_out_sample__exp_summary_tsv,'h5ad')
+                prepare_inputs.out.ch_experiment_donorsvcf_donorslist,channel__file_paths_10x)
+                MERGE_SAMPLES(deconvolution.out.out_h5ad,deconvolution.out.vireo_out_sample__exp_summary_tsv,'h5ad')
         }else{        
             channel__metadata = prepare_inputs.out.channel__metadata
-            if (params.input == 'cellranger'){
-                log.info('Here merging samples directly from cellranger filters')
-                MERGE_SAMPLES(channel__file_paths_10x,channel__metadata,'barcodes')}
-            else{
-                log.info('Here merging samples that have gone through cellbender but no deconvolution')
-            }
-
+            MERGE_SAMPLES(channel__file_paths_10x,channel__metadata,'barcodes')
         }
-
-        // // DETECTING MULTIPLETS - this is currently not used in any downstram analysis, since vireo already detects the multiplets.
-        if (params.run_multiplet) {
-            log.info "Running multiplet filters."
-            
-            MULTIPLET(
-                params.output_dir,
-                channel__file_paths_10x,
-                params.sample_qc.cell_filters.filter_multiplets.expected_multiplet_rate,
-                params.sample_qc.cell_filters.filter_multiplets.n_simulated_multiplet,
-                params.sample_qc.cell_filters.filter_multiplets.multiplet_threshold_method,
-                params.sample_qc.cell_filters.filter_multiplets.scale_log10
-            )
-            file_cellmetadata = MULTIPLET.out.file__cellmetadata
-            multiplet_calls = MULTIPLET.out.multiplet_calls
-
-        } else {
-            file_cellmetadata = file(params.file_cellmetadata)
-            multiplet_calls = null
-        }
-
+        // Here add a fundtion to take an extra h5ad and merge it together with the current run.
         file__anndata_merged = MERGE_SAMPLES.out.file__anndata_merged
         file__cells_filtered = MERGE_SAMPLES.out.file__cells_filtered
     }else{
         log.info '''----Skipping Preprocessing since we already have prepeared h5ad input file----'''
         file__anndata_merged = Channel.from(params.skip_preprocessing.file__anndata_merged)
-       
         if (params.skip_preprocessing.file__cells_filtered ==''){
             log.info '''---No cells filtered input'''
             dummy_filtered_channel(file__anndata_merged,params.skip_preprocessing.id_in)
@@ -204,11 +171,7 @@ workflow SCDECON {
         
     }
 
-    qc(file__anndata_merged,file__cells_filtered)
-
-
-
-
+    // qc(file__anndata_merged,file__cells_filtered)
 
     // Performing eQTL mapping.
     // This part will contain code from Hannes and the potentially additional LIMIX runs.

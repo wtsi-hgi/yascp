@@ -31,5 +31,6 @@ workflow MULTIPLET {
         outdir = make_cellmetadata_pipeline_input.out.outdir
         file__cellmetadata = make_cellmetadata_pipeline_input.out.file__cellmetadata
         multiplet_calls = SCRUBLET.out.multiplet_calls 
+        scrublet_paths = SCRUBLET.out.scrublet_paths
 }
 

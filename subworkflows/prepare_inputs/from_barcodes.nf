@@ -65,7 +65,7 @@ workflow from_barcodes {
         log.info "params.split_h5ad_per_donor.run=true: create pre_ch_experiment_filth5 from params.input_tables_column_delimiter"
         channel_input_data_table
             .splitCsv(header: true, sep: params.input_tables_column_delimiter)
-        .map{row->tuple(row.experiment_id, "${row.data_path_10x_format}/filtered_feature_bc_matrix.h5")}
+        .map{row->tuple(row.experiment_id, "${row.data_path_10x_format}/filtered_feature_bc_matrix")}
         .set{pre_ch_experiment_filth5} // this channel is used for task 'split_donor_h5ad'
     }
     else {

@@ -52,6 +52,7 @@ process SCRUBLET {
 
     output:
         val(outdir, emit: outdir)
+        tuple val(experiment_id), path("${runid}-${outfile}-scrublet.tsv.gz"), emit: scrublet_paths
         val(experiment_id, emit: experiment_id)
         path("${runid}-${outfile}-scrublet.tsv.gz", emit: multiplet_calls)
         path(
