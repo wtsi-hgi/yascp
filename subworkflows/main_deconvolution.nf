@@ -9,6 +9,8 @@ include { GUZIP_VCF } from '../modules/nf-core/modules/guzip_vcf/main'
 include { SOUPORCELL } from '../modules/nf-core/modules/souporcell/main'
 include { SPLIT_DONOR_H5AD } from '../modules/nf-core/modules/split_donor_h5ad/main'
 include { PLOT_DONOR_CELLS } from '../modules/nf-core/modules/plot_donor_cells/main'
+include {MULTIPLET} from "../modules/nf-core/modules/multiplet/main"
+
 
 workflow  main_deconvolution {
 
@@ -17,6 +19,7 @@ workflow  main_deconvolution {
 		ch_experiment_npooled
 		ch_experiment_filth5
 		ch_experiment_donorsvcf_donorslist
+        channel__file_paths_10x
 
     main:
 		log.info "#### running workflow main_deconvolution() ..."
@@ -34,14 +37,24 @@ workflow  main_deconvolution {
         }
 
         ch_experiment_donorsvcf_donorslist.map { experiment, donorsvcf, donorslist -> tuple(experiment, donorslist.replaceAll(/,/, " ").replaceAll(/"/, ""))}.set{donors_in_lane}
-
+        
+        CELLSNP(ch_experiment_bam_bai_barcodes,
+            Channel.fromPath(params.cellsnp.vcf_candidate_snps).collect())
+        
+        MULTIPLET(
+            params.output_dir,
+            channel__file_paths_10x,
+            params.sample_qc.cell_filters.filter_multiplets.expected_multiplet_rate,
+            params.sample_qc.cell_filters.filter_multiplets.n_simulated_multiplet,
+            params.sample_qc.cell_filters.filter_multiplets.multiplet_threshold_method,
+            params.sample_qc.cell_filters.filter_multiplets.scale_log10
+        )
 
         // cellsnp() outputs -> vireo():
         if (params.vireo.run){
 
             // cellsnp() from pipeline provided inputs:
-            CELLSNP(ch_experiment_bam_bai_barcodes,
-                Channel.fromPath(params.cellsnp.vcf_candidate_snps).collect())
+
 
             // Vireo:
             if (params.run_with_genotype_input) {
@@ -65,8 +78,13 @@ workflow  main_deconvolution {
                 full_vcf.map {experiment, cellsnp, npooled -> tuple(experiment, cellsnp, npooled,[])}.set{full_vcf}
 
             }
-
-            VIREO(full_vcf)
+            // TODO - filter out the full_vcf to only samples with more than 1 pooled id.
+            // full_vcf.view()
+            full_vcf.filter { experiment, cellsnp, npooled, t -> npooled != '1' }.set{full_vcf2}
+            full_vcf.filter { experiment, cellsnp, npooled, t -> npooled == '1' }.set{not_deconvoluted}
+            
+            // full_vcf2.view()
+            VIREO(full_vcf2)
             vireo_out_sample_summary_tsv = VIREO.out.sample_summary_tsv
             vireo_out_sample__exp_summary_tsv = VIREO.out.sample__exp_summary_tsv
             vireo_out_sample_donor_ids = VIREO.out.sample_donor_ids
@@ -123,15 +141,28 @@ workflow  main_deconvolution {
 
 
             // Now that channel is created run suporcell
+            full_vcf.filter { samplename, bam_file, bai_file, barcodes_tsv_gz, souporcell_n_clusters, t1, t2 -> souporcell_n_clusters != '1' }.set{full_vcf2}
+            full_vcf.filter { samplename, bam_file, bai_file, barcodes_tsv_gz, souporcell_n_clusters, t1, t2 -> souporcell_n_clusters == '1' }.set{not_deconvoluted}
+            
             SOUPORCELL(full_vcf,
                 Channel.fromPath(params.souporcell.reference_fasta).collect())
 
         }
 
-            if (params.vireo.run){
+        if (params.vireo.run){
 
+                // If sample is not deconvoluted we will use scrublet to detect the doublets and remove them.
+                not_deconvoluted.map{ experiment, donorsvcf, npooled,t -> tuple(experiment, 'None')}.set{not_deconvoluted}
+                file_cellmetadata = MULTIPLET.out.file__cellmetadata
+                scrublet_paths = MULTIPLET.out.scrublet_paths
+                split_channel = vireo_out_sample_donor_ids.combine(ch_experiment_filth5, by: 0)
+                split_channel2 = not_deconvoluted.combine(ch_experiment_filth5, by: 0)
+                split_channel = split_channel.mix(split_channel2)
+                split_channel = split_channel.combine(scrublet_paths, by: 0)
+                
+                // run a multiplet detection and when splitting the donor specific h5ad remove these from non deconvoluted samples
 
-                SPLIT_DONOR_H5AD(vireo_out_sample_donor_ids.combine(ch_experiment_filth5, by: 0))
+                SPLIT_DONOR_H5AD(split_channel)
 
                 // collect file paths to h5ad files in tsv tables:
                 SPLIT_DONOR_H5AD.out.donors_h5ad_tsv
@@ -185,9 +216,10 @@ workflow  main_deconvolution {
                 
 
         }else{
-            out_h5ad ='None'
+            out_h5ad =Channel.fromPath(params.cellsnp.vcf_candidate_snps).collect()
+            vireo_out_sample__exp_summary_tsv=Channel.fromPath(params.cellsnp.vcf_candidate_snps).collect()
         }
-        
+
     emit:
         out_h5ad
         vireo_out_sample__exp_summary_tsv

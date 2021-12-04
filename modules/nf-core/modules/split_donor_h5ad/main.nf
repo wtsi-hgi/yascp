@@ -17,7 +17,7 @@ process SPLIT_DONOR_H5AD {
       params.split_h5ad_per_donor.run
 
     input: 
-      tuple val(sample), val(donor_ids_tsv), path(filtered_matrix_h5)
+      tuple val(sample), val(donor_ids_tsv), path(filtered_matrix_h5), path(scrublet)
 
     output: 
       tuple val(sample), path("outputs/vireo_annot.${sample}.h5ad"), emit: sample_vireo_annot_h5ad
@@ -37,6 +37,7 @@ process SPLIT_DONOR_H5AD {
         split_h5ad_per_donor.py \\
         --vireo_donor_ids_tsv ${donor_ids_tsv} \\
         --filtered_matrix_h5 ${filtered_matrix_h5} \\
+        --scrublet ${scrublet} \\
         --samplename ${sample} \\
         --output_dir \$PWD/outputs \\
         --input_h5_genome_version ${params.split_h5ad_per_donor.input_h5_genome_version} \\
