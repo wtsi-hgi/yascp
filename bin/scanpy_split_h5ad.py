@@ -25,7 +25,6 @@ def split_h5ad_by_batch(ad, oufnprfx, colnam_batch = 'batch', anndata_compressio
     oufn_list = []
     batch_labels = pandas.Categorical(ad.obs[colnam_batch].apply(lambda a: a.split('__')[0])) # <class 'pandas.core.series.Series'>
     samples = {}
-    ad2 = scanpy.read('/lustre/scratch123/hgi/teams/hgi/mo11/Nieks_PBMC_Run/Deconv/work/7d/e6c53e079730337e053ab450a6e15b/C2629626238C6079-adata_SLE_map11126741.h5ad')
     count=0
     if (option == 'true'):
         print("Here we split the h5ad we just normalise for celltype assignmet")

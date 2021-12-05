@@ -38,17 +38,6 @@ random.seed(seed_value)
 # 2. Set `numpy` pseudo-random generator at a fixed value
 np.random.seed(seed_value)
 
-# NOTE: There are two ways we could write this script.
-# Version 1:
-# 1. Save pickle of connectivities dict.
-# 2. Save umap params tsv files.
-# 3. Save umap matrix to tsv.
-#
-# Version 2:
-# 1. Save adata
-#
-# We are doing #2 because the merge of many UMAPS saved in adata will be
-# easier.
 
 
 def main():

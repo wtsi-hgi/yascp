@@ -337,15 +337,6 @@ def main():
         compression=compression_opts
     )
 
-    # Get resolutin column
-    # if 'resolution' not in df.columns:
-    #     if 'cluster__resolution' in df.columns:
-    #         df['resolution'] = df[
-    #             'cluster__resolution'
-    #         ]
-    #     # else:
-    #     #     df['resolution'] = df['file']
-
     # Make a combined plot for all n_neighbors values
     _make_plots(
         df,

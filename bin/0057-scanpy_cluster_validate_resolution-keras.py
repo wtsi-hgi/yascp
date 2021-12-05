@@ -259,7 +259,6 @@ def fit_model_keras(
     train_size_fraction=0.67,
     verbose=True
 ):
-    # bsub -gpu "num=1" -q gpu-normal -G team152 -g /lt9/logins -Is -XF -M 28192 -R "select[mem>28192] rusage[mem=28192]" /bin/bash
     # References:
     # https://machinelearningmastery.com/multi-class-classification-tutorial-keras-deep-learning-library/
     # https://stackoverflow.com/questions/59643062/scikit-learn-vs-keras-tensorflow-for-multinomial-logistic-regression
@@ -388,17 +387,7 @@ def main():
         help='H5 AnnData file where clusters have been saved to cluster slot.'
     )
 
-    # parser.add_argument(
-    #     '-ncpu', '--number_cpu',
-    #     action='store',
-    #     dest='number_cpu',
-    #     default=50,
-    #     type=int,
-    #     help='Number of CPUs to use. Since we are testing the dask backend,\
-    #         this corresponds to the number of CPUs available across all of\
-    #         the worker jobs we spin out.\
-    #         (default: %(default)s)'
-    # )
+
 
     parser.add_argument(
         '-s', '--sparsity_l1',
@@ -553,8 +542,6 @@ def main():
     # Set X to cp10k
     # adata.X = np.expm1(adata.layers['log1p_cp10k'])
     # Set X to ln(cp10k+1)
-    # NOTE: Testing with 100k TI dataset, we were able to achieve higher
-    # accuracy with log1p_cp10k - likely becuase better spread in distribution.
     adata.X = adata.layers['log1p_cp10k']
     # Set X to raw counts
     # adata.X = adata.layers['counts']

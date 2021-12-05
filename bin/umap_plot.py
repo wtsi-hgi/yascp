@@ -76,20 +76,6 @@ def save_plot(
         num_panels=len(dict__umap_dim_and_params)
     )
     i__ax = 0
-    # try:
-    #     import pandas as pd
-    #     import json
-    #     PCAs =pd.DataFrame(adata.obsm['X_pca']).set_index(adata.obs.index).iloc[:,1:20]
-    #     UMAPs =pd.DataFrame(adata.obsm['X_umap']).set_index(adata.obs.index)
-    #     params = pd.DataFrame(adata.obs)
-    #     data_dict={}
-    #     data_dict["PCAs"]=PCAs.to_dict()
-    #     data_dict["UMAPs"]=UMAPs.to_dict()
-    #     data_dict["params"]=params.to_dict()
-    #     with open(f"Data.json", 'w') as json_file:
-    #         json.dump(data_dict, json_file)
-    # except:
-    #     print('no metadata.s')
 
     for i__umap in dict__umap_dim_and_params:
 

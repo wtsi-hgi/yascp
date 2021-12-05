@@ -47,15 +47,6 @@ def main():
             (default: %(default)s)'
     )
 
-    # parser.add_argument(
-    #     '--force_recalculate_neighbors',
-    #     action='store_true',
-    #     dest='calculate_neighbors',
-    #     default=False,
-    #     help='Calculate neighbor graph even if it already exists in the\
-    #         AnnData (which it my do so if you already ran BBKNN).\
-    #         (default: %(default)s)'
-    # )
 
     parser.add_argument(
         '-of', '--output_file',

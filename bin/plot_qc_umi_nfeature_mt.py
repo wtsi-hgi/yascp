@@ -13,13 +13,6 @@ os.environ['MPLCONFIGDIR']='/tmp'
 import scanpy as sc
 import plotnine as plt9
 import scipy.stats as stat
-# altair: good python plotting package
-# import altair
-# Seaborn imports below - another good python plotting package
-# import seaborn as sns
-# import matplotlib
-# import matplotlib.pyplot as plt
-
 
 def comma_labels(x_list):
     """Change list of int to comma format."""
@@ -145,75 +138,6 @@ def plot_umi_ngene_mt(
             height=4
         )
 
-    # Same plot as above but using seaborn.
-    # NOTE: I was having issues setting color scale break points and eventually
-    #       gave up
-
-    # Set basic seaborn config.
-    # rc = {
-    #     'font.size': 12, 'axes.labelsize': 12, 'legend.fontsize': 12,
-    #     'axes.titlesize': 12, 'xtick.labelsize': 10, 'ytick.labelsize': 10
-    # }
-    # sns.set(rc=rc, style='whitegrid')
-    #
-    # # Set color palette.
-    # palette_zissou1 = ["#3B9AB2", "#78B7C5", "#EBCC2A", "#E1AF00", "#F21A00"]
-    # sns.set_palette(sns.color_palette(palette_zissou1))
-    #
-    # fig, ax = plt.subplots(figsize=(3, 3.5))
-    # df_plt['% MT'] = df_plt['pct_counts_gene_group__mito_transcript']
-    # ax = sns.scatterplot(
-    #     data=df_plt,
-    #     ax=ax,
-    #     x="total_counts",
-    #     y="n_genes_by_counts",
-    #     s=5,  # point size
-    #     alpha=.5,
-    #     hue="% MT",
-    #     palette=sns.cubehelix_palette(light=.8, n_colors=6),
-    #     linewidth=0
-    # )
-    # ax.set(xlabel='Number of molecules', ylabel='Number of genes detected')
-    # ax.set_xscale('log', basex=10)
-    # ax.set_yscale('log', basey=10)
-    # for axis in [ax.xaxis, ax.yaxis]:
-    #     # Option 1:
-    #     # axis.set_major_formatter(
-    #     #     matplotlib.ticker.FuncFormatter(
-    #     #         lambda y, pos: ('{{:.{:1d}f}}'.format(
-    #     #             int(np.maximum(-np.log10(y), 0))
-    #     #         )).format(y)
-    #     #     )
-    #     # )
-    #     # Option 2:
-    #     # axis.set_major_formatter(matplotlib.ticker.ScalarFormatter())
-    #     # Option 3:
-    #     axis.set_major_formatter(
-    #         matplotlib.ticker.FuncFormatter(lambda x, p: format(int(x), ','))
-    #     )
-    # ax.legend(
-    #     frameon=False,
-    #     loc='center left',
-    #     bbox_to_anchor=(1, 0.5),
-    #     ncol=1,
-    #     fontsize=10,
-    # )
-    # fig.savefig(
-    #     '{}.png'.format('test'),
-    #     dpi=300,
-    #     bbox_inches='tight'
-    # )
-    # plt.close(fig)  # Close the figure.
-    #
-    # # Seaborn fact plot.
-    # g = sns.FacetGrid(df_plot, col="sanger_sample_id")
-    # g = g.map(plt.hist, "n_genes_by_counts")
-    # g.savefig(
-    #     '{}.png'.format('test'),
-    #     dpi=300,
-    #     bbox_inches='tight'
-    # )
-    # plt.close(g)   # Close the figure.
 
 
 def main():

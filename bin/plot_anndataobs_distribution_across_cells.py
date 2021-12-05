@@ -11,12 +11,6 @@ import argparse
 import numpy as np
 import scanpy as sc
 import plotnine as plt9
-# altair: good python plotting package
-# import altair
-# Seaborn imports below - another good python plotting package
-# import seaborn as sns
-# import matplotlib
-# import matplotlib.pyplot as plt
 
 
 def comma_labels(x_list):

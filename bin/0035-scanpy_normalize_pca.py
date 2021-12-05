@@ -613,16 +613,7 @@ def scanpy_normalize_and_pca(
         adata.uns['df_score_genes'] = score_genes_df_updated
 
     # Calculate PCs.
-    # 20/06/17 DLT: We achieved reproducible results with the same user;
-    # However, we found different results when different people ran this.
-    # 20/06/17 DLT: Very confusing results with PCA here. On smaller datasets,
-    # I find exactly the same results no matter what the solver. However,
-    # on TI freeze_002 (~160k cells) there was very minor variablity between
-    # runs that resulted in more substantial differences in downstream BBKNN.
-    # Here variability = differences as small as 1x10-6. However, re-setting
-    # all of these seeds right at this point seems to resolve the issue when
-    # zero_center=True and svd_solver='arpack'. It makes no sense to me, but
-    # at least it works. Leaving this for now.
+
     seed_value = 0
     # 0. Set `PYTHONHASHSEED` environment variable at a fixed value
     os.environ['PYTHONHASHSEED'] = str(seed_value)
@@ -630,8 +621,7 @@ def scanpy_normalize_and_pca(
     random.seed(seed_value)
     # 2. Set `numpy` pseudo-random generator at a fixed value
     np.random.seed(seed_value)
-    # print("sp.sparse.sp.sparse.issparse(adata.X)")
-    # print(sp.sparse.sp.sparse.issparse(adata.X))
+
     sc.tl.pca(
         adata,
         n_comps=min(200, adata.var['highly_variable'].sum()),
