@@ -89,7 +89,7 @@ workflow SCDECON {
             log.info ' ---- Out results - cellbender to remove background---'
             
             cellbender.out.results_list
-                .map{experiment, path -> tuple(experiment, file(path+'/cellbender_FPR_0pt01_filtered.h5'))}
+                .map{experiment, path -> tuple(experiment, file(path+'/cellbender-FPR_0pt1-filtered_10x_mtx'))}
                 .set{ch_experiment_filth5} // this channel is used for task 'split_donor_h5ad'
 
             prepare_inputs.out.ch_experiment_bam_bai_barcodes.map { experiment, bam, bai, barcodes -> tuple(experiment,
@@ -97,13 +97,13 @@ workflow SCDECON {
                         bai)}.set{pre_ch_experiment_bam_bai_barcodes}
 
             cellbender.out.results_list
-                .map{experiment, path -> tuple(experiment, file(path+'/cellbender-FPR_0pt01-filtered_10x_mtx/barcodes.tsv.gz'))}.set{barcodes}
+                .map{experiment, path -> tuple(experiment, file(path+'/cellbender-FPR_0pt1-filtered_10x_mtx/barcodes.tsv.gz'))}.set{barcodes}
 
             channel__file_paths_10x= cellbender.out.results_list
                 .map{experiment, path -> tuple(experiment,
-                file(path+'/cellbender-FPR_0pt01-filtered_10x_mtx/barcodes.tsv.gz'),
-                file(path+'/cellbender-FPR_0pt01-filtered_10x_mtx/features.tsv.gz'),
-                file(path+'/cellbender-FPR_0pt01-filtered_10x_mtx/matrix.mtx.gz'))}
+                file(path+'/cellbender-FPR_0pt1-filtered_10x_mtx/barcodes.tsv.gz'),
+                file(path+'/cellbender-FPR_0pt1-filtered_10x_mtx/features.tsv.gz'),
+                file(path+'/cellbender-FPR_0pt1-filtered_10x_mtx/matrix.mtx.gz'))}
 
 
             pre_ch_experiment_bam_bai_barcodes.combine(barcodes, by: 0).set{ch_experiment_bam_bai_barcodes}
@@ -115,7 +115,7 @@ workflow SCDECON {
                 .map{row->tuple(row.experiment_id, row.data_path_10x_format)}
                 .map{experiment, path -> tuple(experiment, path.replaceFirst(/_10x_mtx/,".h5"))}
                 .map{experiment, path -> tuple(experiment, path.replaceFirst(/cellbender-FPR/,"cellbender_FPR"))}
-                .map{experiment, path -> tuple(experiment, path.replaceFirst(/-filtered.h5/,"_filtered.h5"))}.set{ch_experiment_filth5} // this channel is used for task 'split_donor_h5ad'
+                .map{experiment, path -> tuple(experiment, path.replaceFirst(/-filtered.h5/,"_filtered"))}.set{ch_experiment_filth5} // this channel is used for task 'split_donor_h5ad'
 
             prepare_inputs.out.ch_experiment_bam_bai_barcodes.map { experiment, bam, bai, barcodes -> tuple(experiment,
                                 bam,
@@ -171,7 +171,7 @@ workflow SCDECON {
         
     }
 
-    // qc(file__anndata_merged,file__cells_filtered)
+    qc(file__anndata_merged,file__cells_filtered)
 
     // Performing eQTL mapping.
     // This part will contain code from Hannes and the potentially additional LIMIX runs.
