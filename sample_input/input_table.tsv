@@ -1,2 +1,3 @@
 experiment_id	n_pooled	donor_vcf_ids	data_path_10x_format
-Card_Val11211772	12	'none1'	/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/mo11_work/nfCore/standalone/mo11_scRNA_dev/sample_input/test_input
+Card_Val11211767	2	'none1'	/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/mo11_work/nfCore/standalone/mo11_scRNA_dev/sample_input/data/Card_Val11211767
+Card_Val11211771	1	'none1'	/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/mo11_work/nfCore/standalone/mo11_scRNA_dev/sample_input/data/Card_Val11211771
