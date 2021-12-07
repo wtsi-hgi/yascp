@@ -113,9 +113,7 @@ workflow SCDECON {
             Channel.fromPath(params.cellbender_file, followLinks: true, checkIfExists: true)
                 .splitCsv(header: true, sep: params.input_tables_column_delimiter)
                 .map{row->tuple(row.experiment_id, row.data_path_10x_format)}
-                .map{experiment, path -> tuple(experiment, path.replaceFirst(/_10x_mtx/,".h5"))}
-                .map{experiment, path -> tuple(experiment, path.replaceFirst(/cellbender-FPR/,"cellbender_FPR"))}
-                .map{experiment, path -> tuple(experiment, path.replaceFirst(/-filtered.h5/,"_filtered"))}.set{ch_experiment_filth5} // this channel is used for task 'split_donor_h5ad'
+                .set{ch_experiment_filth5} // this channel is used for task 'split_donor_h5ad'
 
             prepare_inputs.out.ch_experiment_bam_bai_barcodes.map { experiment, bam, bai, barcodes -> tuple(experiment,
                                 bam,
@@ -171,7 +169,7 @@ workflow SCDECON {
         
     }
 
-    qc(file__anndata_merged,file__cells_filtered)
+    // qc(file__anndata_merged,file__cells_filtered)
 
     // Performing eQTL mapping.
     // This part will contain code from Hannes and the potentially additional LIMIX runs.

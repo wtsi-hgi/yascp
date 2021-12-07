@@ -41,13 +41,14 @@ workflow from_barcodes {
         file("${row.data_path_10x_format}/filtered_feature_bc_matrix/matrix.mtx.gz")
     )}
 
+    // need to create a dummy file if metadata is not present.
     channel__metadata =  channel_input_data_table
         .splitCsv(header: true, sep: params.input_tables_column_delimiter)
 	    .map{row -> tuple(
         row.experiment_id,
         file("${row.data_path_10x_format}/metrics_summary.csv")
     )}
-
+    
     prep_collectmetadata(channel__metadata)
     channel__metadata=merge_metadata(prep_collectmetadata.out.metadata.collect())
 
