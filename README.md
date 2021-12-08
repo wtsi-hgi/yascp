@@ -76,6 +76,35 @@ Easyest to do is using a conda enviroment.
     ```
 
 input.nf sample is located in ./sample_input/input.nf
+
+Which points to multiple files as input, but the main is a pointer to input file in input_data_table
+
+params{
+    input = 'cellbender' 
+    cellbender_file='' //if cellbender is run already then can skip this by selecting existing_cellbender and input 
+    extra_metadata = ''
+    skip_preprocessing{
+        value=false //this is only activated to skip all the filtering - ie cellbender and restart with qc analysis once the parametes are changed
+        file__anndata_merged = ''
+        file__cells_filtered = ''
+    }
+    
+    run_celltype_assignment=true
+    input_data_table = '../inputs.tsv'
+    run_with_genotype_input=true
+	genotype_input {
+        subset_genotypes = false
+        full_vcf_file = 'lifted.vcf.gz'
+    }
+}
+
+1. input = default 'cellbender' which indicates cellbender will be run. Other options - [cellranger|existing_cellbender]
+2. full_vcf_file = points to vcf file to be used.
+4. subset_genotypes = indicates to subset genotypes for an input to be used in Vireo.
+5. run_celltype_assignment = runs celltypist and Azimuth if PBMC data is used.
+6. file__anndata_merged = if all preprocession has already been doe can input a marged h5ad which will skio all the cellbender and deconvolution.
+7. extra_metadata = any extra metadata to be added for samples.
+8. input_data_table = is a file pointing to the 10x files as per:
 Main file required is a paths to 10x files in a format:
 
 
