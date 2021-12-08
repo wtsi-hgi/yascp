@@ -169,7 +169,7 @@ workflow SCDECON {
         
     }
 
-    // qc(file__anndata_merged,file__cells_filtered)
+    qc(file__anndata_merged,file__cells_filtered)
 
     // Performing eQTL mapping.
     // This part will contain code from Hannes and the potentially additional LIMIX runs.
