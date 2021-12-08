@@ -18,6 +18,19 @@
 
 * [Vireo](https://github.com/single-cell-genetics/vireo)
 
+* [Azimuth](https://azimuth.hubmapconsortium.org/)
+
+* [Cellsnp](https://github.com/single-cell-genetics/cellSNP)
+
+* [Sccaf](https://github.com/SCCAF/sccaf)
+
+* [Harmony](https://github.com/immunogenomics/harmony)
+
+* [BBKNN](https://github.com/Teichlab/bbknn)
+
+* [Lisi](https://github.com/immunogenomics/LISI)
+
+* [Scrublet](https://github.com/swolock/scrublet)
 
 ## Software packaging/containerisation tools
 

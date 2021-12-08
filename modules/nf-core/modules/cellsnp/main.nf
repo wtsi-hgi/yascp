@@ -4,7 +4,7 @@ process CELLSNP {
     
     label 'process_high'
     
-    publishDir "${params.outdir}/cellsnp/", mode: "${params.cellsnp.copy_mode}", pattern: "cellsnp_${samplename}", overwrite: true
+    publishDir "${params.outdir}/cellsnp/", mode: "${params.copy_mode}", pattern: "cellsnp_${samplename}", overwrite: true
 
     
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {

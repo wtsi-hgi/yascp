@@ -25,7 +25,7 @@ process PLOT_DONOR_CELLS {
 
     script:
     """
-        python $workflow.projectDir/bin/plot_donor_ncells.py \\
+        python plot_donor_ncells.py \\
         --output_dir \$PWD/outputs \\
         --sample_donor_summary_tsv ${sample_donor_summary_tsv} \\
         --plotnine_dpi ${params.plot_donor_ncells.plotnine_dpi}

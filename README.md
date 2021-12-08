@@ -34,6 +34,15 @@ On release, automated continuous integration tests run the pipeline on a full-si
 2. CellSNP
 3. Vireo
 4. Souporcell
+5. Celltypist
+6. Azimuth
+7. BBKNN
+8. Harmony
+9. Scrublet
+10. Sccaf
+11. Lisi
+12. Isolation Forest
+
 
 ## Quick Start
 Easyest to do is using a conda enviroment.
@@ -66,13 +75,29 @@ Easyest to do is using a conda enviroment.
     nextflow run /path/to/cloned/nfCore_scRNA -profile sanger -resume -c input.nf
     ```
 
+input.nf sample is located in ./sample_input/input.nf
+Main file required is a paths to 10x files in a format:
+
+.-------------------------------------------------------------------------.
+| experiment_id   | n_pooled | donor_vcf_ids    |  data_path_10x_format   |
+|-----------------|----------|------------------|-------------------------|
+| 5892STDY8039553 |   1      | "id3"            | path/to/10x_folder      |
+| 6123STDY11066014|   2      | "id1,id2"        | path/to/10x_folder      |
+'-------------------------------------------------------------------------'
+
+where:
+experiment_id - is the name of the sample
+n_pooled - indicates how many donors are pooled in the 10x run
+donor_vcf_ids - if using genotyes, here an id of individuals can be added (need to be as listed in vcf file provided)
+data_path_10x_format - path to a 10x folder containing bam, bai, metrics_summary.csv files and raw_barcodes folder
+
 ## Documentation
 
 The nf-core/scdecon pipeline comes with documentation about the pipeline [usage](https://nf-co.re/scdecon/usage), [parameters](https://nf-co.re/scdecon/parameters) and [output](https://nf-co.re/scdecon/output).
 
 ## Credits
 
-nf-core/scdecon was originally written by HGI Sanger (Leland Taylor, Matiss Ozols, Guillaume Noell, Hannes Ponstingl, Vivek Iyer).
+nf-core/scdecon was originally written by HGI Sanger (Leland Taylor, Matiss Ozols, Guillaume Noell, Hannes Ponstingl, Vivek Iyer, Monika Krzak, Henry Taylor, Tobi Alegbe, Moritz Przybilla ).
 
 We thank the following people for their extensive assistance in the development of this pipeline:
 

@@ -9,26 +9,17 @@ workflow deconvolution {
         ch_experiment_npooled
         ch_experiment_filth5
         ch_experiment_donorsvcf_donorslist
+        channel__file_paths_10x
     main:
         // // run main deconvolution pipeline on prepared input channels:
         main_deconvolution(ch_experiment_bam_bai_barcodes,
                 ch_experiment_npooled,
                 ch_experiment_filth5,
-                ch_experiment_donorsvcf_donorslist)
-
-	// if (params.celltypist.run) {
-	// 	// read filtered barcodes straight from cellranger outputs
-	// 	log.info "--- Running celltypist ---"
-
-	// 	channel.fromPath(params.input_data_table)
-	// 			.splitCsv(header: true, sep: params.input_tables_column_delimiter)
-	// 		.map{row->tuple(row.experiment_id, row.data_path_10x_format)}
-	// 		.set{ch_experiment_filth5}
-	// 	// to finish implementing
-	// 	channel.fromList(params.celltypist.models)
-	// 		.set{ch_celltypist_models}
-	// 	// ch_experiment_filth5.combine(ch_celltypist_models).view()
-	// 	CELLTYPIST(ch_experiment_filth5.combine(ch_celltypist_models))
-	// }
+                ch_experiment_donorsvcf_donorslist,channel__file_paths_10x)
+        out_h5ad = main_deconvolution.out.out_h5ad
+        vireo_out_sample__exp_summary_tsv=main_deconvolution.out.vireo_out_sample__exp_summary_tsv
+    emit:
+        out_h5ad
+        vireo_out_sample__exp_summary_tsv
 
 }

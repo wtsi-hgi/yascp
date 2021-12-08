@@ -22,6 +22,10 @@ import csv
 import random
 import numpy as np
 import pandas as pd
+import pandas
+import os
+os.environ['NUMBA_CACHE_DIR']='/tmp'
+os.environ['MPLCONFIGDIR']='/tmp'
 import scanpy as sc
 import celltypist
 from celltypist import models
@@ -74,20 +78,30 @@ def run_celltypist(samplename, filtered_matrix_h5, celltypist_model,
     fixed_h5 = 'fixed_genome.h5'
     try:
         adata = sc.read_10x_h5(filtered_matrix_h5)
+        
+        
     except:
-        import tables
-        logging.info('fixing orig_h5')
-        orig_h5 = filtered_matrix_h5
-        fixed_h5 = 'fixed_genome.h5'
-        tables.copy_file(orig_h5, fixed_h5, overwrite = True)
-        with tables.open_file(fixed_h5, "r+") as f:
-            n = f.get_node("/matrix/features")
-            n_genes = f.get_node("/matrix/shape")[0]
-            if "genome" not in n:
-                f.create_array(n, "genome", np.repeat(input_h5_genome_version, n_genes))
-        # read-in cellranger 10x data produced by 'cellranger count':
-        logging.info('fixed orig_h5 into fixed_h5')
-        adata = sc.read_10x_h5(fixed_h5) #, genome='background_removed')
+        try:
+            # We are loading h5ad instad of h5
+            adata = sc.read_h5ad(filtered_matrix_h5)
+            
+            # adata = sc.read_h5ad(filtered_matrix_h5)
+
+        except:
+            # h5 file may have amissing genome version
+            import tables
+            logging.info('fixing orig_h5')
+            orig_h5 = filtered_matrix_h5
+            fixed_h5 = 'fixed_genome.h5'
+            tables.copy_file(orig_h5, fixed_h5, overwrite = True)
+            with tables.open_file(fixed_h5, "r+") as f:
+                n = f.get_node("/matrix/features")
+                n_genes = f.get_node("/matrix/shape")[0]
+                if "genome" not in n:
+                    f.create_array(n, "genome", np.repeat(input_h5_genome_version, n_genes))
+            # read-in cellranger 10x data produced by 'cellranger count':
+            logging.info('fixed orig_h5 into fixed_h5')
+            adata = sc.read_10x_h5(fixed_h5) #, genome='background_removed')
         
     try:
         os.remove(fixed_h5)
@@ -96,6 +110,8 @@ def run_celltypist(samplename, filtered_matrix_h5, celltypist_model,
         logging.info('no file to remove')
     logging.info('loadin sc.read_10x_h5() done.')
     logging.info(adata.var)
+    # adata.var['ENSG']=adata.var.index
+    # adata.var.index=adata.var['gene_symbols']
     logging.info(adata.obsm)
     logging.info("n cells len(adata.obs): " + str(len(adata.obs)))
     # logging.info('exiting..'); sys.exit()
@@ -128,6 +144,7 @@ def run_celltypist(samplename, filtered_matrix_h5, celltypist_model,
     
     # Indeed, the `model` argument defaults to `Immune_All_Low.pkl`.
     logging.info("celltypist_model: " + celltypist_model)
+    celltypist_model1 = celltypist_model.split('.')[0]
     model = models.Model.load(model = celltypist_model ) # model = 'Immune_All_Low.pkl')
     model.description
 
@@ -150,7 +167,7 @@ def run_celltypist(samplename, filtered_matrix_h5, celltypist_model,
 
     # Export the three results to csv tables.
     logging.info("... predictions.to_table in folder " + output_dir)
-    predictions.to_table(folder = output_dir, prefix = samplename + '_')
+    predictions.to_table(folder = output_dir, prefix = samplename + '___'+celltypist_model1+'___')
     ###predictions.to_table(folder = os.getcwd())
     logging.info("... predictions.to_plots")
 

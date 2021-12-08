@@ -4,20 +4,28 @@ def random_hex(n) {
     Long.toUnsignedString(new Random().nextLong(), n).toUpperCase()
 }
 
-
 if (binding.hasVariable("echo_mode") == false) {
     echo_mode = true
 }
-
 
 process SCRUBLET {
     // Runs scrublet for each sample.
     // ------------------------------------------------------------------------
     //tag { output_dir }
     //cache false        // cache results from run
-    scratch false        // use tmp directory
-    echo echo_mode       // echo output from script
 
+    tag "${samplename}"
+    scratch true        // use tmp directory
+
+
+    label 'process_medium'
+    if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
+        container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/nf_qc_cluster_2.4.img"
+        
+    } else {
+        container "quay.io/biocontainers/multiqc:1.10.1--py_0"
+    }
+    
     publishDir  path: "${outdir}",
                 saveAs: {filename ->
                     if (filename.endsWith("multiplet_calls_published.txt")) {
@@ -26,10 +34,9 @@ process SCRUBLET {
                         filename.replaceAll("${runid}-", "")
                     }
                 },
-                mode: "${task.publish_mode}",
+                mode: "${params.copy_mode}",
                 overwrite: "true"
 
-    //each smplid_and_datapath
     input:
         val(outdir_prev)
         tuple(
@@ -45,6 +52,7 @@ process SCRUBLET {
 
     output:
         val(outdir, emit: outdir)
+        tuple val(experiment_id), path("${runid}-${outfile}-scrublet.tsv.gz"), emit: scrublet_paths
         val(experiment_id, emit: experiment_id)
         path("${runid}-${outfile}-scrublet.tsv.gz", emit: multiplet_calls)
         path(
@@ -69,14 +77,12 @@ process SCRUBLET {
         process_info = "${process_info}, ${task.cpus} (cpus)"
         process_info = "${process_info}, ${task.memory} (memory)"
         """
-        echo "run_scrublet: ${process_info}"
-        echo "publish_directory: ${outdir}"
         rm -fr plots
         TMP_DIR=\$(mktemp -d -p \$(pwd))
         ln --physical ${file_10x_barcodes} \$TMP_DIR
         ln --physical ${file_10x_features} \$TMP_DIR
         ln --physical ${file_10x_matrix} \$TMP_DIR
-        0015-run_scrublet.py \
+        run_scrublet.py \
             --tenxdata_dir \$TMP_DIR \
             --expected_multiplet_rate ${expected_multiplet_rate} \
             --n_simulated_multiplet ${n_simulated_multiplet} \
