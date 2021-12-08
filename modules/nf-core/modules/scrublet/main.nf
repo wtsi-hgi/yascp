@@ -77,6 +77,7 @@ process SCRUBLET {
         process_info = "${process_info}, ${task.cpus} (cpus)"
         process_info = "${process_info}, ${task.memory} (memory)"
         """
+
         rm -fr plots
         TMP_DIR=\$(mktemp -d -p \$(pwd))
         ln --physical ${file_10x_barcodes} \$TMP_DIR
