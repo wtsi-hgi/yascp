@@ -2,7 +2,7 @@
 process SUBSET_GENOTYPE {
     tag "${samplename}.${sample_subset_file}"
     label 'process_medium'
-    publishDir "${params.outdir}/subset_genotype/", mode: "${params.subset_genotype.copy_mode}", pattern: "${samplename}.${sample_subset_file}.subset.vcf.gz"
+    publishDir "${params.outdir}/subset_genotype/", mode: "${params.copy_mode}", pattern: "${samplename}.${sample_subset_file}.subset.vcf.gz"
     
     
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
@@ -12,11 +12,8 @@ process SUBSET_GENOTYPE {
         container "quay.io/biocontainers/multiqc:1.10.1--py_0"
     }
 
-    when: 
-    params.genotype_input.subset_genotypes
-
     input:
-    tuple val(samplename), path(cellsnp_vcf), path(donor_vcf), val(sample_subset_file)
+    tuple val(samplename), path(donor_vcf), val(sample_subset_file)
 
 
     output:
@@ -26,9 +23,7 @@ process SUBSET_GENOTYPE {
     """
         echo ${sample_subset_file}
         tabix -p vcf ${donor_vcf} || echo 'not typical VCF'
-        # tabix -p vcf ${cellsnp_vcf}
         bcftools view ${donor_vcf} -s ${sample_subset_file} -Oz -o ${samplename}.subset.vcf.gz
         rm ${donor_vcf}.tbi || echo 'not typical VCF'
-        # rm ${cellsnp_vcf}.tbi
     """
 }
