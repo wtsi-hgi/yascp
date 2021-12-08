@@ -79,6 +79,7 @@ input.nf sample is located in ./sample_input/input.nf
 
 Which points to multiple files as input, but the main is a pointer to input file in input_data_table
 
+```console
 params{
     input = 'cellbender' 
     cellbender_file='' //if cellbender is run already then can skip this by selecting existing_cellbender and input 
@@ -97,6 +98,7 @@ params{
         full_vcf_file = 'lifted.vcf.gz'
     }
 }
+```
 
 1. input = default 'cellbender' which indicates cellbender will be run. Other options - [cellranger|existing_cellbender]
 2. full_vcf_file = points to vcf file to be used.
@@ -116,9 +118,28 @@ Main file required is a paths to 10x files in a format:
 
 where:
 experiment_id - is the name of the sample
-n_pooled - indicates how many donors are pooled in the 10x run
-donor_vcf_ids - if using genotyes, here an id of individuals can be added (need to be as listed in vcf file provided)
+n_pooled - indicates how many donors are pooled in the 10x run (if only 1 then scrubblet will be used to remove doublets)
+donor_vcf_ids - if using genotyes, here an id of individuals can be added to subset vcfs used to deconvolute samples (need to be as listed in vcf file provided)
 data_path_10x_format - path to a 10x folder containing bam, bai, metrics_summary.csv files and raw_barcodes folder
+
+
+path/to/10x_folder should contain the folowing files:
+
+```console
+10x_folder/
+    ./possorted_genome_bam.bai
+    ./possorted_genome_bam.bam
+    ./raw_feature_bc_matrix
+        ./matrix.mtx.gz
+        ./features.tsv.gz
+        ./barcodes.tsv.gz
+    .filtered_feature_bc_matrix
+        ./matrix.mtx.gz
+        ./features.tsv.gz
+        ./barcodes.tsv.gz
+    ./metrics_summary.csv
+```
+
 
 ## Documentation
 
