@@ -78,12 +78,12 @@ Easyest to do is using a conda enviroment.
 input.nf sample is located in ./sample_input/input.nf
 Main file required is a paths to 10x files in a format:
 
-.-------------------------------------------------------------------------.
+
 | experiment_id   | n_pooled | donor_vcf_ids    |  data_path_10x_format   |
 |-----------------|----------|------------------|-------------------------|
 | 5892STDY8039553 |   1      | "id3"            | path/to/10x_folder      |
 | 6123STDY11066014|   2      | "id1,id2"        | path/to/10x_folder      |
-'-------------------------------------------------------------------------'
+
 
 where:
 experiment_id - is the name of the sample
