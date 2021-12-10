@@ -120,7 +120,7 @@ workflow qc {
                 NORMALISE_AND_PCA.out.pcs,
                 NORMALISE_AND_PCA.out.param_details,
                 n_pcs,
-                params.harmony.variables_and_thetas.value
+                Channel.fromList( params.harmony.variables_and_thetas.value)
             )
 
             UMAP_HARMONY(
