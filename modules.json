@@ -1,6 +1,6 @@
 {
-    "name": "nf-core/scdecon",
-    "homePage": "https://github.com/nf-core/scdecon",
+    "name": "nf-core/yascp",
+    "homePage": "https://github.com/nf-core/yascp",
     "repos": {
         "nf-core/modules": {
             "fastqc": {
