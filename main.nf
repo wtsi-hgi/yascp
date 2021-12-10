@@ -1,11 +1,11 @@
 #!/usr/bin/env nextflow
 /*
 ========================================================================================
-    nf-core/scdecon
+    nf-core/yascp
 ========================================================================================
-    Github : https://github.com/nf-core/scdecon
-    Website: https://nf-co.re/scdecon
-    Slack  : https://nfcore.slack.com/channels/scdecon
+    Github : https://github.com/nf-core/yascp
+    Website: https://nf-co.re/yascp
+    Slack  : https://nfcore.slack.com/channels/yascp
 ----------------------------------------------------------------------------------------
 */
 
@@ -24,10 +24,10 @@ nextflow.enable.dsl = 2
 ========================================================================================
 */
 
-include { SCDECON } from './workflows/scdecon'
+include { SCDECON } from './workflows/yascp'
 
 //
-// WORKFLOW: Run main nf-core/scdecon analysis pipeline
+// WORKFLOW: Run main nf-core/yascp analysis pipeline
 //
 workflow NFCORE_SCDECON {
     SCDECON ()

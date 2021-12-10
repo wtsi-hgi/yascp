@@ -8,7 +8,7 @@ for version_file in version_files:
 
     software = version_file.replace(".version.txt", "")
     if software == "pipeline":
-        software = "nf-core/scdecon"
+        software = "nf-core/yascp"
 
     with open(version_file) as fin:
         version = fin.read().strip()
@@ -18,8 +18,8 @@ for version_file in version_files:
 print(
     """
 id: 'software_versions'
-section_name: 'nf-core/scdecon Software Versions'
-section_href: 'https://github.com/nf-core/scdecon'
+section_name: 'nf-core/yascp Software Versions'
+section_href: 'https://github.com/nf-core/yascp'
 plot_type: 'html'
 description: 'are collected at run time from the software output.'
 data: |

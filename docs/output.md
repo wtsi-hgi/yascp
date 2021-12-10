@@ -1,4 +1,4 @@
-# nf-core/scdecon: Output
+# nf-core/yascp: Output
 
 ## Introduction
 

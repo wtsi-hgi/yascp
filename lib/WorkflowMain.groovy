@@ -1,5 +1,5 @@
 //
-// This file holds several functions specific to the main.nf workflow in the nf-core/scdecon pipeline
+// This file holds several functions specific to the main.nf workflow in the nf-core/yascp pipeline
 //
 
 class WorkflowMain {

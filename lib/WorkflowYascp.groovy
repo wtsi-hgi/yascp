@@ -2,7 +2,7 @@
 // This file holds several functions specific to the workflow/yascp.nf in the nf-core/yascp pipeline
 //
 
-class WorkflowScdecon {
+class WorkflowYascp {
 
     //
     // Check and validate parameters
