@@ -16,7 +16,7 @@
 
 ## Introduction
 - ![#f03c15](https://via.placeholder.com/15/f03c15/000000?text=+) `Pipeline is currently under develpment.`
-This is a merged pipeline wrapped in an nfCore template for transferability between institutes and HPC setups, based on our deconvolution, cellbender and qc metrics pipelines. Input requires a tsv seperated file with paths to the 10x runs and if running in an genotype  additional input is required to be provided in an input.nf file pointing to the vcf location.
+This is a merged pipeline wrapped in an nfCore template for transferability between institutes and HPC setups, based on our deconvolution (https://github.com/wtsi-hgi/nf_scrna_deconvolution.git ), cellbender (https://github.com/wtsi-hgi/nf_cellbender ) and qc (https://github.com/wtsi-hgi/nf_qc_cluster/tree/main ) pipelines. Input requires a tsv seperated file with paths to the 10x runs and if running in an genotype  additional input is required to be provided in an input.nf file pointing to the vcf location.
 
 <!-- TODO nf-core: Write a 1-2 sentence summary of what data the pipeline is for and what it does -->
 **nf-core/scdecon** is a bioinformatics best-practice analysis pipeline for deconvolution of a single cell datasets.

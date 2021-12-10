@@ -73,6 +73,8 @@ multiqc_options.args += params.multiqc_title ? Utils.joinModuleArgs(["--title \"
 // Info required for completion email and summary
 def multiqc_report = []
 
+
+
 workflow SCDECON {
 
     if (!params.skip_preprocessing.value){
