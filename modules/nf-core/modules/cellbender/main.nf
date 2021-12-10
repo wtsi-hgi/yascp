@@ -8,7 +8,7 @@ include {
 } from "./functions.nf"
 
 // Set default parameters.
- outdir           = "nf-preprocessing"
+outdir           = "${params.output_dir}/nf-preprocessing"
 params.help                 = false
 
 params.cellbender_rb = [
