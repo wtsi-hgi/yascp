@@ -41,7 +41,11 @@ def split_h5ad_by_batch(ad, oufnprfx, colnam_batch = 'batch', anndata_compressio
             # ad.var = ad.var[['feature_types', 'genome', 'gene_symbols']]
             adb.obs = pandas.DataFrame(adb.obs.index, index = adb.obs.index, columns = ["cell_barcode"])
 
-            vdf = adb.var[["feature_types", "genome"]]
+            try:
+                vdf = adb.var[["feature_types", "genome"]]
+            except:
+                adb.var['genome']='GRCh38'
+                vdf = adb.var[["feature_types", "genome"]]
             vdf.insert(1,"gene_ids", vdf.index)
             vdf.index = pandas.Index(adb.var['gene_symbols'].astype('str'))
             #ad.var = vdf.set_index("gene_symbols", drop = True, verify_integrity = False)
