@@ -140,7 +140,7 @@ def run_celltypist(samplename, filtered_matrix_h5, celltypist_model,
     # https://colab.research.google.com/github/Teichlab/celltypist/blob/main/notebook/celltypist_tutorial.ipynb#scrollTo=ultimate-pilot
     # Enabling `force_update = True` will overwrite existing (old) models.
     logging.info(os.getcwd())
-    models.download_models(force_update = True)
+    models.download_models(force_update = False)
     
     # Indeed, the `model` argument defaults to `Immune_All_Low.pkl`.
     logging.info("celltypist_model: " + celltypist_model)
