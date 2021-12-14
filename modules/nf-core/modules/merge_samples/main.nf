@@ -41,7 +41,7 @@ workflow MERGE_SAMPLES{
             // for deconvolution the default output -i.e - /lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/mo11_work/outputs/test_qc/inputs/file_metadata.tsv
             // format - experiment_id \t celldata1 \celldata2
             prep_merge_samples(channel__file_paths_10x)
-            file_metadata.view()
+            
             merge_samples(
                 params.output_dir,
                 params.input_data_table,

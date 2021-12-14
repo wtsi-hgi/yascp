@@ -21,15 +21,15 @@ def main(andata,anndata_compression_level,metadata):
     for col1 in metadata_data.columns:
         print(col1)
         try:
-            
-            sys.exit(f'Metadata column {col1} is already in andata, please rename or remove this from metadata file!')
-        except:
             adata.obs[col1]=''
             for experiment_id in metadata_data.index:
                 
                 metadata_val = metadata_data.loc[experiment_id,col1]
                 adata.obs.loc[adata.obs['convoluted_samplename']==experiment_id,col1]=metadata_val
-                print(experiment_id+'val : '+metadata_val)
+                print(f"{experiment_id} val : {metadata_val}")           
+        except:
+            sys.exit(f'Metadata column {col1} is already in andata, please rename or remove this from metadata file!')
+        
                 # t = adata.obs
 
     adata.write(

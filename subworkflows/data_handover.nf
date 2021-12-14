@@ -3,24 +3,17 @@ include { GATHER_DATA } from '../modules/nf-core/modules/gather_data/main'
 workflow data_handover{
     take:
         outdir
-        file__anndata_merged
-        file__cellranger_raw_files_table_tsv
-        file__cellbender_files_table_tsv
-        file__deconv_files_table_tsv
-        multiplet_calls
-        deconvolution_path
-        qc_output_dir
+        cellbender_input
+        qc_input
         
         
     main:
         log.info 'running data handover'
+        GATHER_DATA(outdir,cellbender_input)
+        
+        SUMMARY_STATISTICS_PLOTS(outdir,cellbender_input,GATHER_DATA.out.outfiles_dataset2)
+        // We also generate a report.
 
-        GATHER_DATA(outdir,
-                file__anndata_merged,
-                file__cellranger_raw_files_table_tsv,
-                file__cellbender_files_table_tsv,
-                file__deconv_files_table_tsv,
-                multiplet_calls,
-                deconvolution_path,
-                qc_output_dir)
+        // If we run it in sanger we transfer the data to the local website.
+        
 }
