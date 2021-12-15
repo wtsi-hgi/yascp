@@ -248,6 +248,11 @@ workflow qc {
                 params.lisi.variables.value,
                 lisi_input.collect()
             )
+            LI = LISI.out.outdir
+        }else{
+            LI = ''
         }
-
+    emit:
+        LI
+        
 }

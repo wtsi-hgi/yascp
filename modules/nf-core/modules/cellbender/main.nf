@@ -81,7 +81,7 @@ workflow CELLBENDER {
                         .split()))
                 .set{input_channel_qc_plots_2}
             
-            cellbender__remove_background__qc_plots_2(input_channel_qc_plots_2)
+            cellbender__remove_background__qc_plots_2(input_channel_qc_plots_2,outdir)
             
         // }
     

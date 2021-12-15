@@ -175,17 +175,10 @@ workflow SCDECON {
 
     // Performing eQTL mapping.
     // This part will contain code from Hannes and the potentially additional LIMIX runs.
-
-
+    // qc_finish_dummy= 'qc.out.LI'
+    qc_finish_dummy= qc.out.LI
     // Transfer plots to the website and gather the outputs.
-    // data_handover(        outdir
-        // file__anndata_merged
-        // file__cellranger_raw_files_table_tsv
-        // file__cellbender_files_table_tsv
-        // file__deconv_files_table_tsv
-        // multiplet_calls
-        // deconvolution_path
-        // qc_output_dir)
+    data_handover("${workDir}/../${params.output_dir}",qc_finish_dummy)
 
 
 }
