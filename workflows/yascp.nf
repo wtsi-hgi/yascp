@@ -176,7 +176,7 @@ workflow SCDECON {
     // Performing eQTL mapping.
     // This part will contain code from Hannes and the potentially additional LIMIX runs.
     // qc_finish_dummy= 'qc.out.LI'
-
+    qc_finish_dummy= qc.out.LI
     // Transfer plots to the website and gather the outputs.
     data_handover("${workDir}/../${params.output_dir}",qc_finish_dummy)
 
