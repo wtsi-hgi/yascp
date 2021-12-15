@@ -367,7 +367,7 @@ process cellbender__remove_background__qc_plots_2 {
   // This task compare the cellbender output with both the cellranger filtered and cellragner raw outputs
   // ------------------------------------------------------------------------
   tag { "$experiment_id" }
-  publishDir "results/cellbender_vs_cellranger/$experiment_id/compare_cellranger/", pattern: "fpr_${fpr}/${experiment_id}/*.png", 
+  publishDir "${outdir2}/$experiment_id/compare_cellranger/", pattern: "fpr_${fpr}/${experiment_id}/*.png", 
     saveAs: {filename ->
     filename.replaceAll("fpr_${fpr}/${experiment_id}/", "fpr_${fpr}/")
   },
@@ -380,6 +380,7 @@ process cellbender__remove_background__qc_plots_2 {
   echo echo_mode   // echo output from script
   input:
     tuple val(experiment_id), val(outdir), path(cellbender_unfiltered_h5s), path(expectedcells), path(totaldropletsinclude), path(raw_cellranger_mtx), path(filtered_cellranger_mtx), val(fpr)
+    val(outdir2)
   output:
     val(outdir, emit: outdir)
     path("fpr_${fpr}/${experiment_id}/*.png"), emit: plots_png 
