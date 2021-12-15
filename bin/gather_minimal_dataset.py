@@ -406,8 +406,12 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
     Cells_before_QC_filters=len(all_QC_lane.obs['cell_passes_qc'])
     Cells_passing_QC=len(all_QC_lane.obs[all_QC_lane.obs['cell_passes_qc']])
     Cells_failing_QC=len(all_QC_lane.obs[all_QC_lane.obs['cell_passes_qc']==False])
-    Azimuth_Cell_Assignments_data=Azimuth_Cell_Assignments_data.set_index('mangled_cell_id')
-    all_QC_lane.obs['predicted celltype']=Azimuth_Cell_Assignments_data['predicted.celltype.l2']
+    try:
+        Azimuth_Cell_Assignments_data=Azimuth_Cell_Assignments_data.set_index('mangled_cell_id')
+        all_QC_lane.obs['predicted celltype']=Azimuth_Cell_Assignments_data['predicted.celltype.l2']
+    
+    except:
+        print('skipped az')
     UMIS_mapped_to_mitochondrial_genes = sum(all_QC_lane.obs['total_counts_gene_group__mito_transcript'])
     UMIS_mapped_to_ribo_genes = sum(all_QC_lane.obs['total_counts_gene_group__ribo_protein'])
     UMIS_mapped_to_ribo_rna = sum(all_QC_lane.obs['total_counts_gene_group__ribo_rna'])
@@ -422,6 +426,7 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
     }
     all_probs = pd.DataFrame()
     for i in df_donors.index:
+        i=0
         # feeds in the individual assignments here.
         row = df_donors.loc[i]
         path1 = row['file_path_h5ad']
@@ -514,8 +519,25 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
 
         fctr += 1
     
+    all_probs = all_probs[~all_probs.index.duplicated(keep='first')]
     azt['prob_doublet']=all_probs['prob_doublet']
     Donor_df = pd.DataFrame(data_donor)
+
+    try:
+        Median_cells_passes_qc=statistics.median(data_donor_for_stats['cells passing QC'])
+        Median_cells_fails_qc=statistics.median(data_donor_for_stats['cells failing QC'])
+        Median_Nr_cells_for_donor=statistics.median(data_donor_for_stats['cells before QC filters'])
+        Stdev_cells_passes_qc=statistics.stdev(data_donor_for_stats['cells passing QC'])
+        Stdev_cells_fails_qc=statistics.stdev(data_donor_for_stats['cells failing QC'])
+        Stdev_Nr_cells_for_donor=statistics.stdev(data_donor_for_stats['cells before QC filters'])
+    except:
+        Median_cells_passes_qc=data_donor_for_stats['cells passing QC'][0]
+        Median_cells_fails_qc=data_donor_for_stats['cells failing QC'][0]
+        Median_Nr_cells_for_donor=data_donor_for_stats['cells before QC filters'][0]
+        Stdev_cells_passes_qc=0
+        Stdev_cells_fails_qc=0
+        Stdev_Nr_cells_for_donor=0       
+
     data_tranche = {
         'Experiment id':expid,
         'Pool id':list(set(Donor_df['Pool ID']))[0],
@@ -539,12 +561,12 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
         'Cells before QC filters':Cells_before_QC_filters,
         'Total Cells failing QC':Cells_failing_QC,
         'Total Cells passing QC':Cells_passing_QC,
-        'Median cells passes qc':statistics.median(data_donor_for_stats['cells passing QC']),
-        'Median cells fails qc':statistics.median(data_donor_for_stats['cells failing QC']),
-        'Median Nr cells for donor':statistics.median(data_donor_for_stats['cells before QC filters']),
-        'Stdev cells passes qc':statistics.stdev(data_donor_for_stats['cells passing QC']),
-        'Stdev cells fails qc':statistics.stdev(data_donor_for_stats['cells failing QC']),
-        'Stdev Nr cells for donor':statistics.stdev(data_donor_for_stats['cells before QC filters']),
+        'Median cells passes qc':Median_cells_passes_qc,
+        'Median cells fails qc':Median_cells_fails_qc,
+        'Median Nr cells for donor':Median_Nr_cells_for_donor,
+        'Stdev cells passes qc':Stdev_cells_passes_qc,
+        'Stdev cells fails qc':Stdev_cells_fails_qc,
+        'Stdev Nr cells for donor':Stdev_Nr_cells_for_donor,
         'Total UMIs after cellbender':Total_UMIs_after_cellbender,
     }
     return fctr, data_tranche, data_donor,azt
