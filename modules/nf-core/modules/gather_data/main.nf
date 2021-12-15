@@ -13,6 +13,7 @@ process GATHER_DATA{
 
     input:
       path(outdir_prev)
+      val(dummy_val)
       
     output:
       path("${subdir}", emit:outfiles_dataset)
