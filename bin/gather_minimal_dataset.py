@@ -3,7 +3,7 @@
 
 __author__ = 'Matiss Ozols and Hannes Ponstingl'
 __date__ = '2021-11-04'
-__version__ = '0.0.1'
+__version__ = '0.0.2'
 # DEBUG = True
 
 DEFAULT_SAMPLE_SIZE_PERC = 10
@@ -93,15 +93,28 @@ def load_raw_file_table(fnam):
 def gather_azimuth_annotation(expid, datadir_azimuth, index_label = None):
     # e.g. A4C06803ACD34DFB-adata_franke_Pilot_3_lane_3_predicted_celltype.tsv.gz
     filpath = None
+    expid2=expid
     fnsfx = '_{}{}'.format(expid, AZIMUTH_ASSIGNMENTS_FNSUFFIX)
     for fn in os.listdir(datadir_azimuth):
         if fn.endswith(fnsfx):
             filpath = os.path.join(datadir_azimuth, fn)
             break
     if not filpath:
+        expid ='full'
+        fnsfx = '_{}{}'.format(expid, AZIMUTH_ASSIGNMENTS_FNSUFFIX)
+        for fn in os.listdir(datadir_azimuth):
+            if fn.endswith(fnsfx):
+                filpath = os.path.join(datadir_azimuth, fn)
+                break
+            
+    if not filpath:
         sys.exit("ERROR: could not find filename suffix '{}' in direcotry {}\n"
             .format(fnsfx, datadir_azimuth))
     azt = pandas.read_table(filpath)
+    if (expid=='full'):
+        expid=expid2
+        azt = azt[azt.index.str.contains(expid2)]
+        # filter to only the experiment id inputs.
     df = get_df_from_mangled_index(azt, expid)
     azt.insert(0, "barcode", df["barcode"])
     azt.insert(1, "donor", df["donor"])
@@ -158,7 +171,12 @@ def fetch_qc_obs_from_anndata(adqc, expid, df_cellbender = None):
 
 def fetch_cellbender_annotation(df_cellbender, expid):
     dirpath = df_cellbender.loc[expid, 'data_path_10x_format']
-    h5_path = f"{args.results_dir}/{os.path.dirname(dirpath)}/cellbender_FPR_0pt05_filtered.h5"
+    try:
+        h5_path = f"{args.results_dir}/{os.path.dirname(dirpath)}/cellbender_FPR_0pt05_filtered.h5"
+        f = h5py.File(h5_path, 'r')
+    except:
+        h5_path = f"{os.path.dirname(dirpath)}/cellbender_FPR_0pt05_filtered.h5"
+        f = h5py.File(h5_path, 'r')
     # ad = scanpy.read_10x_h5(h5_path, genome='background_removed')
     # interesting data is in /matrix/barcodes and matrix/latent_cell_probability
     f = h5py.File(h5_path, 'r')
@@ -276,7 +294,12 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
     df_total_counts_cellranger_raw['dataset']='Cellranger Raw'
 
     if df_cellbender is not None:
-        ad_lane_filtered = scanpy.read_10x_mtx(f"{args.results_dir}/{df_cellbender.loc[expid, 'data_path_10x_format']}")
+        try:
+            # depends whether the absolute or relative path was recorded.
+            ad_lane_filtered = scanpy.read_10x_mtx(f"{df_cellbender.loc[expid, 'data_path_10x_format']}")
+        except:
+            ad_lane_filtered = scanpy.read_10x_mtx(f"{args.results_dir}/{df_cellbender.loc[expid, 'data_path_10x_format']}")
+        
         dfcb = fetch_cellbender_annotation(df_cellbender, expid)
         columns_output = {**columns_output, **COLUMNS_CELLBENDER}
     else:
@@ -303,10 +326,13 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
     #############
     datadir_azimuth = f'{args.results_dir}/celltype/azimuth' 
     if os.path.isdir(datadir_azimuth):
-        azt = gather_azimuth_annotation(
-            expid, datadir_azimuth=datadir_azimuth,
-            index_label = 'barcode')
-        columns_output = {**columns_output, **COLUMNS_AZIMUTH}
+        try:
+            azt = gather_azimuth_annotation(
+                expid, datadir_azimuth=datadir_azimuth,
+                index_label = 'barcode')
+            columns_output = {**columns_output, **COLUMNS_AZIMUTH}
+        except:
+            azt = None
     else:
         azt = None
 
@@ -411,7 +437,11 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
         elif (row["donor_id"] == 'doublet'):
             Doublets_donor = len(Deconvoluted_Donor_Data.obs)
         else:
-            Mengled_barcodes_donor = list(azt.loc[Donor_barcodes,'mangled_cell_id'])
+            data = all_QC_lane.obs
+            s = data['donor_id']
+            s=s.reset_index()
+            s = s.set_index('donor_id')
+            Mengled_barcodes_donor = list(s.loc[row["donor_id"]]['index'])
             donor_number =row["donor_id"].replace('donor','') #Todo - will need to change upon Vireo runs with genotype, can just pick it as an fctr
             donor_id = row["donor_id"]
             intersect_set = set(Donor_barcodes).intersection(set(ad_lane_filtered.obs.index))
@@ -535,7 +565,9 @@ def set_argument_parser():
     parser.add_argument("--cellbender", required = True,
                 help="Cellbender paths if not cellranger filtering used",
                 dest='cellbender')
-
+    parser.add_argument("--resolution", required = True,
+                help="Cellbender resolution used",
+                dest='resolution')
     return parser.parse_args()
 
 if __name__ == '__main__':
@@ -548,10 +580,16 @@ if __name__ == '__main__':
     oufh = open(os.path.join(args.outdir, "files.tsv"), 'w')
     oufh.write("experiment_id\tdonor_id\tfilename_h5ad\tfilename_annotation_tsv\n")
     df_raw = pandas.read_table(args.input_table, index_col = 'experiment_id')
-    if (args.cellbender)!='none':
-        df_cellbender = pandas.read_table(f'{args.cellbender}', index_col = 'experiment_id')
-    else:
+    if (args.cellbender)=='cellranger':
+        # here we do not use cellbender and go with default cellranger
         df_cellbender = None
+    elif (args.cellbender)=='cellbender':
+        # here we have run the cellbender as par of pipeline. 
+        file_path = glob.glob(f'{args.results_dir}/nf-preprocessing/cellbender/qc_cluster_input_files/*{args.resolution}*')[0]
+        df_cellbender = pandas.read_table(file_path, index_col = 'experiment_id')
+    else:
+        # this is existing_cellbender, hence using this input
+        df_cellbender = pandas.read_table(f'{args.cellbender}', index_col = 'experiment_id')
 
     adqc = anndata.read_h5ad(f'{args.results_dir}/adata.h5ad')
     fctr = 0

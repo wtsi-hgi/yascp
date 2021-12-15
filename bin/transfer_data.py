@@ -13,9 +13,9 @@ import pandas as pd
 
 
 
-def main_data_colection(pipeline='',name='',directory='',out_directory='',input_table=None,cb_res=None):
+def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res=None):
     
-    name_dir=f"{directory}/{out_directory}/handover/{name}"
+    name_dir=f"Summary_plots/{name}"
     try:
         os.makedirs(f'{name_dir}')
     except:
@@ -28,23 +28,36 @@ def main_data_colection(pipeline='',name='',directory='',out_directory='',input_
         os.mkdir(f'{name_dir}/Cellbender')
     except:
         print('dire exists')
-
-    folder1 = f'{directory}/nf-preprocessing/cellbender'
-    folder2 = f'{directory}/cellbender_vs_cellranger'
-    resolution='0pt1'
-    resolution2=resolution.replace('pt','.')
-    if os.path.isdir(folder1):
-        Folders = listdir(folder1)
-        for folder in Folders:
-            if (folder == 'qc_cluster_input_files'):
-                continue
-            Fold1 = glob.glob(f'{folder1}/{folder}/cellbender-epochs*')[0].split('/')[-1]
-            copyfile(f'{folder1}/{folder}/{Fold1}/plots/cellbender_results-cellbender_FPR_{resolution}_filtered-ambient_signature-scatter_genenames.png', f'{name_dir}/Cellbender/{folder}_ambient_signature-scatter_genenames.png')
-            copyfile(f'{folder1}/{folder}/{Fold1}/plots/cellbender_results-cellbender_FPR_{resolution}_filtered-abs_count_difference-boxplot.png', f'{name_dir}/Cellbender/{folder}_ount_difference-boxplot.png')
-            copyfile(f'{folder1}/{folder}/{Fold1}/plots/cellbender.pdf', f'{name_dir}/Cellbender/cellbender_{folder}.pdf')
-            copyfile(f'{folder2}/{folder}/compare_cellranger/fpr_{resolution2}/boxplots_cellranger_vs_cellbender.png', f'{name_dir}/Cellbender/{folder}_boxplots_cellranger_vs_cellbender.png')
-            copyfile(f'{folder2}/{folder}/compare_cellranger/fpr_{resolution2}/barcode_vs_total_counts.png', f'{name_dir}/Cellbender/{folder}_barcode_vs_total_counts.png')
-            copyfile(f'{folder2}/{folder}/compare_cellranger/fpr_{resolution2}/boxplot_topgenes_cellranger_vs_cellbender.png', f'{name_dir}/Cellbender/{folder}_boxplot_topgenes_cellranger_vs_cellbender.png')
+    
+    if (cellbender)=='cellranger':
+        # here we do not use cellbender and go with default cellranger
+        df_cellbender = None
+    elif (cellbender)=='cellbender':
+        # here we have run the cellbender as par of pipeline. 
+        file_path = glob.glob(f'{results_dir}/nf-preprocessing/cellbender/qc_cluster_input_files/*{cb_res}*')[0]
+        df_cellbender = pd.read_table(file_path, index_col = 'experiment_id')
+    else:
+        # this is existing_cellbender, hence using this input
+        df_cellbender = pd.read_table(f'{cellbender}', index_col = 'experiment_id')
+    
+    
+    # folder1 = f'{directory}/nf-preprocessing/cellbender'
+    # folder2 = f'{directory}/cellbender_vs_cellranger'
+    
+    resolution2=cb_res.replace('pt','.')
+    if (df_cellbender is not None):
+        print('t')
+        for folder in df_cellbender.index:
+            print(folder)
+            dir1 = f"{df_cellbender.loc[folder,'data_path_10x_format']}/.."
+            dir = f"{df_cellbender.loc[folder,'data_path_10x_format']}/../.."
+            if os.path.isdir(dir1):
+                copyfile(f'{dir1}/plots/cellbender_results-cellbender_FPR_{cb_res}_filtered-ambient_signature-scatter_genenames.png', f'{name_dir}/Cellbender/{folder}_ambient_signature-scatter_genenames.png')
+                copyfile(f'{dir1}/plots/cellbender_results-cellbender_FPR_{cb_res}_filtered-abs_count_difference-boxplot.png', f'{name_dir}/Cellbender/{folder}_ount_difference-boxplot.png')
+                copyfile(f'{dir1}/plots/cellbender.pdf', f'{name_dir}/Cellbender/cellbender_{folder}.pdf')
+                copyfile(f'{dir}/compare_cellranger/fpr_{resolution2}/boxplots_cellranger_vs_cellbender.png', f'{name_dir}/Cellbender/{folder}_boxplots_cellranger_vs_cellbender.png')
+                copyfile(f'{dir}/compare_cellranger/fpr_{resolution2}/barcode_vs_total_counts.png', f'{name_dir}/Cellbender/{folder}_barcode_vs_total_counts.png')
+                copyfile(f'{dir}/compare_cellranger/fpr_{resolution2}/boxplot_topgenes_cellranger_vs_cellbender.png', f'{name_dir}/Cellbender/{folder}_boxplot_topgenes_cellranger_vs_cellbender.png')
 
     # Fetch Gather
     df_raw = pd.read_table(input_table, index_col = 'experiment_id')
@@ -123,24 +136,21 @@ def main_data_colection(pipeline='',name='',directory='',out_directory='',input_
             print('dire exists')
         Coloured_UMAPS = glob.glob(f'{folder1}/*')
         for umap1 in Coloured_UMAPS:
-            
             name = umap1.split('/')[-1]
-            print(name)
-            
             copyfile(umap1, f'{name_dir}/Clustering/{name}')                    
     
     
     folder1 = f'{directory}/handover/minimal_dataset_summary'
     if os.path.isdir(folder1):
         try:
-            os.mkdir(f'{name_dir}/Summary')
+            copytree(folder1, f'{name_dir}/Summary')
         except:
             print('dire exists')
         
-        copytree(f'{folder1}', f'{name_dir}/Summary')
+        
 
     # if secret params exist then transfer data to web. 
-    # rsync -vr ELGH_nfCore ubuntu@1xxxxx:/volume/scRNA_test_app/scrna_static_and_media_files/media
+    # rsync -vr Summary_plots ubuntu@1xxxxx:/volume/scRNA_test_app/scrna_static_and_media_files/media
 
 if __name__ == "__main__":
     # This code will gather the most important graphs and place them in a summary folder.
@@ -181,19 +191,19 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
-        '-od', '--output-dir',
+        '-cb', '--cellbender',
         action='store',
-        dest='out_directory',
+        dest='cellbender',
         required=True,
         help='The path to cellbender runs, since this may be external.'
     )
-
     options = parser.parse_args()
     
-    
+    t=os.getcwd()
     results_dir = options.results_dir
-    name = results_dir.split('/')[-2]
-    out_directory=options.out_directory
+    name = t.split('/')[-4]
+    
     input_table=options.input_table
     cb_res=options.cb_res
-    main_data_colection(name=f"{name}",directory=results_dir,out_directory=out_directory,input_table=input_table,cb_res=cb_res)
+    cellbender = options.cellbender
+    main_data_colection(name=f"{name}",directory=results_dir,input_table=input_table,cb_res=cb_res)
