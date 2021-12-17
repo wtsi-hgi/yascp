@@ -18,13 +18,14 @@ process cellbender__rb__get_input_cells {
   label 'process_low'
   
   if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-    container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/nf_cellbender_v1.2.img"
+    container "/software/hgi/containers/wtsihgi_nf_cellbender_container_3cc9983-2021-12-14-5e3143ef9e66.sif"
+    //// container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/wtsihgi_nf_cellbender_v1.2.img"
     maxRetries = 1
     // workdir /tmp
 
     
   } else {
-    container "quay.io/biocontainers/multiqc:1.10.1--py_0"
+    container "wtsihgi/wtsihgi_nf_cellbender_container:3cc9983"
   }
 
   // Calculates thresholds for input cells of cellbender__remove_background
@@ -109,12 +110,13 @@ process cellbender__remove_background {
 
   
   if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-    container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/nf_cellbender_v1.2.img"
+    container "/software/hgi/containers/wtsihgi_nf_cellbender_container_3cc9983-2021-12-14-5e3143ef9e66.sif"
+    //// container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/wtsihgi_nf_cellbender_v1.2.img"
     maxRetries = 1
     // memory = 250.GB
     cpus = 1
   } else {
-    container "quay.io/biocontainers/multiqc:1.10.1--py_0"
+    container "wtsihgi/wtsihgi_nf_cellbender_container:3cc9983"
   }
 
   //     // use GPU
@@ -283,9 +285,10 @@ process cellbender__remove_background {
 process cellbender__remove_background__qc_plots {
   label 'process_low'
   if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-    container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/nf_qc_cluster_2.4.img"
+    container "/software/hgi/containers/wtsihgi_nf_cellbender_container_3cc9983-2021-12-14-5e3143ef9e66.sif"
+    //// container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/wtsihgi_nf_cellbender_v1.2.img"
   } else {
-    container "quay.io/biocontainers/multiqc:1.10.1--py_0"
+    container "wtsihgi/nf_scrna_qc:0417190"
   }
 
 
@@ -358,9 +361,10 @@ process cellbender__remove_background__qc_plots_2 {
 
   label 'process_low'
   if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-    container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/nf_qc_cluster_2.4.img"
+    container "/software/hgi/containers/wtsihgi_nf_cellbender_container_3cc9983-2021-12-14-5e3143ef9e66.sif"
+    //// container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/wtsihgi_nf_cellbender_v1.2.img"
   } else {
-    container "quay.io/biocontainers/multiqc:1.10.1--py_0"
+    container "wtsihgi/nf_scrna_qc:0417190"
   }
 
   // Second set of QC plots from cellbdender.
@@ -411,9 +415,10 @@ process cellbender__gather_qc_input {
 
   label 'process_low'
   if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-    container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/nf_qc_cluster_2.4.img"
+    container "/software/hgi/containers/wtsihgi_nf_scrna_qc_0417190-2021-12-16-133460e8fb0b.sif"
+    //// container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/nf_qc_cluster_2.4.img"
   } else {
-    container "quay.io/biocontainers/multiqc:1.10.1--py_0"
+    container "wtsihgi/nf_scrna_qc:0417190"
   }
 
   // Prepare cell bender output for qc_cluster pipeline. For each epoch and

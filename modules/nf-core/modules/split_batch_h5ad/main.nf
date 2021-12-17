@@ -3,10 +3,11 @@ process SPLIT_BATCH_H5AD {
     label 'process_low'
    
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/nf_qc_cluster_2.4.img"
+        container "/software/hgi/containers/wtsihgi_nf_scrna_qc_0417190-2021-12-16-133460e8fb0b.sif"
+        //// container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/nf_qc_cluster_2.4.img"
         
     } else {
-        container "quay.io/biocontainers/multiqc:1.10.1--py_0"
+        container "wtsihgi/nf_scrna_qc:0417190"
     }
     
     input:
