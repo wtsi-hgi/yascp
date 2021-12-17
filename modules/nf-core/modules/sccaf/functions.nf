@@ -4,10 +4,11 @@ process sccaf_assess_clustering {
   
     label 'process_low'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/nf_qc_cluster_sccaf_1.5.img"
+        container "/software/hgi/containers/wtsihgi_nf_scrna_qc_1c77f49-2021-12-13-97dd91720f42.sif"
+        //// container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/nf_qc_cluster_sccaf_1.5.img"
         
     } else {
-        container "quay.io/biocontainers/multiqc:1.10.1--py_0"
+        container "wtsihgi/wtsihgi_nf_scrna_qc_scaaf:1c77f49"
     }
 
 
@@ -51,10 +52,11 @@ process sccaf_optimize_clustering {
 
     label 'process_low'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/nf_qc_cluster_sccaf_1.5.img"
+        container "/software/hgi/containers/wtsihgi_nf_scrna_qc_1c77f49-2021-12-13-97dd91720f42.sif"
+        //// container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/nf_qc_cluster_sccaf_1.5.img"
         
     } else {
-        container "quay.io/biocontainers/multiqc:1.10.1--py_0"
+        container "wtsihgi/wtsihgi_nf_scrna_qc_scaaf:1c77f49"
     }
 
   publishDir path: "${outdir}",
