@@ -7,7 +7,7 @@ process AZIMUTH{
         //// container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/seurat_azimuth_pbmc_1.0.img"
         
     } else {
-        container "wtsihgi/wtsihgi_nf_scrna_qc_azimuth:d54db9b"
+        container "wtsihgi/nf_scrna_qc_azimuth:d54db9b"
     }
 
     publishDir  path: "${params.outdir}/celltype/azimuth/",
