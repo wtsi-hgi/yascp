@@ -18,7 +18,7 @@ process GATHER_DATA{
     input:
       path(outdir_prev)
       val(dummy_val)
-      
+      path(input_data_table)
     output:
       path("${subdir}", emit:outfiles_dataset)
       path("${subdir}_summary", emit:outfiles_dataset2)
@@ -40,7 +40,7 @@ process GATHER_DATA{
         gather_minimal_dataset.py \
           --output-dir=${subdir} \
           --results_dir=${outdir_prev} \
-          --input_table=${params.input_data_table} \
+          --input_table=${input_data_table} \
           --cellbender=${cellbender_input} \
           --resolution=${params.resolution}
       """

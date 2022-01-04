@@ -83,7 +83,7 @@ workflow CLUSTERING {
             cluster_validate_resolution__train_size_cells,
             cluster.out.outdir__reduced_dims
         )
-
+        dummy_output=cluster_validate_resolution_keras.out.outdir
         SCCAF(cluster.out.outdir,
           cluster.out.anndata,
           cluster.out.clusters,
@@ -130,5 +130,8 @@ workflow CLUSTERING {
             cluster.out.outdir,
             cluster.out.anndata
         )
+
+        emit:
+            dummy_output
 
 }
