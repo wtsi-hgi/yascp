@@ -9,8 +9,8 @@ workflow data_handover{
         
     main:
         log.info 'running data handover'
-        GATHER_DATA(outdir,qc_input)
-        SUMMARY_STATISTICS_PLOTS(outdir,GATHER_DATA.out.outfiles_dataset)
+        //fix (doesnt use singularity)): GATHER_DATA(outdir,qc_input)
+        //fix: SUMMARY_STATISTICS_PLOTS(outdir,GATHER_DATA.out.outfiles_dataset)
         // We also generate a report.
 
         // If we run it in sanger we transfer the data to the local website.

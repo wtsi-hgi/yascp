@@ -1,4 +1,7 @@
 params {
+
+    run_gather_data = true
+    
     input = 'existing_cellbender'
     cellbender_file='/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/cellbender/Deconvolution_Exp4/outputs/qc_cluster_input_files/file_paths_10x-cellbender_params__epochs_250__learnrt_1pt0Eneg7__zdim_100__zlayer_500__lowcount_10-FPR_0pt1.tsv' //if cellbender is run already then can skip this by selecting existing_cellbender and input 
     extra_metadata = ''
