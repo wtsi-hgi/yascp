@@ -80,7 +80,7 @@ workflow qc {
             NORMALISE_AND_PCA.out.anndata,
             params.reduced_dims.n_dims.add_n_to_estimate
         )
-
+        LI = ''
 
         if (params.reduced_dims.n_dims.auto_estimate) {
             log.info "n_pcs = automatically estimated."
@@ -168,6 +168,7 @@ workflow qc {
                 params.umap.umap_spread.value,
                 params.sccaf.min_accuracy         
             )
+            LI = CLUSTERING_HARMONY.out.dummy_output
         }
 
         if (params.bbknn.run_process) {
@@ -225,6 +226,7 @@ workflow qc {
                 params.umap.umap_spread.value,
                 params.sccaf.min_accuracy
             )
+            LI = CLUSTERING_BBKNN.out.dummy_output
         }
 
        
@@ -249,8 +251,6 @@ workflow qc {
                 lisi_input.collect()
             )
             LI = LISI.out.outdir
-        }else{
-            LI = ''
         }
     emit:
         LI

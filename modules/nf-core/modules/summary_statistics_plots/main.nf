@@ -16,6 +16,7 @@ process SUMMARY_STATISTICS_PLOTS {
     input: 
         path(outdir_prev)
         val(gather_dummy_input)
+        path(input_data_table)
 
     output: 
         path('Summary_plots')
@@ -33,7 +34,7 @@ process SUMMARY_STATISTICS_PLOTS {
           transfer_data.py    --results_dir ${outdir_prev} \
                               --cb_res ${params.resolution} \
                               --cellbender ${cellbender_input} \
-                              --input_table ${params.input_data_table}
+                              --input_table ${input_data_table}
           
       """
 }
