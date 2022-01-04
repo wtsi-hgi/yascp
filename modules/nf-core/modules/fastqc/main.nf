@@ -13,10 +13,10 @@ process FASTQC {
 
     conda (params.enable_conda ? "bioconda::fastqc=0.11.9" : null)
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "/software/hgi/containers/wtsihgi_nf_scrna_qc_0417190-2021-12-16-133460e8fb0b.sif"
+        container "/software/hgi/containers/wtsihgi_nf_scrna_qc_6bb6af5-2021-12-23-3270149cf265.sif"
         //// container "https://depot.galaxyproject.org/singularity/fastqc:0.11.9--0"
     } else {
-        container "wtsihgi/nf_scrna_qc:0417190"
+        container "wtsihgi/nf_scrna_qc:6bb6af5"
         // container "quay.io/biocontainers/fastqc:0.11.9--0"
     }
 

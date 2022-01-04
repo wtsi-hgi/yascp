@@ -8,7 +8,7 @@ process sccaf_assess_clustering {
         //// container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/nf_qc_cluster_sccaf_1.5.img"
         
     } else {
-        container "wtsihgi/wtsihgi_nf_scrna_qc_scaaf:1c77f49"
+        container "wtsihgi/nf_scrna_qc_scaaf:1c77f49"
     }
 
 
@@ -56,7 +56,7 @@ process sccaf_optimize_clustering {
         //// container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/nf_qc_cluster_sccaf_1.5.img"
         
     } else {
-        container "wtsihgi/wtsihgi_nf_scrna_qc_scaaf:1c77f49"
+        container "wtsihgi/nf_scrna_qc_scaaf:1c77f49"
     }
 
   publishDir path: "${outdir}",
