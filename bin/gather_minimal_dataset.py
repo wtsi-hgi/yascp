@@ -426,7 +426,7 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
     }
     all_probs = pd.DataFrame()
     for i in df_donors.index:
-        i=0
+        
         # feeds in the individual assignments here.
         row = df_donors.loc[i]
         path1 = row['file_path_h5ad']
