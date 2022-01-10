@@ -9,5 +9,5 @@ mkdir -p $SINGULARITY_CACHEDIR
 nextflow run main.nf \
 	 -profile sanger \
 	 --singularity_pull_docker_container \
-	 -c sample_input/gn5_dev/input.nf \
+	 -c sample_input/gn5_dev/input_preexisting_cellbender.nf \
 	 -resume
