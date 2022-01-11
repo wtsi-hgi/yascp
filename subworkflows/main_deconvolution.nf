@@ -10,7 +10,7 @@ include { SOUPORCELL } from '../modules/nf-core/modules/souporcell/main'
 include { SPLIT_DONOR_H5AD } from '../modules/nf-core/modules/split_donor_h5ad/main'
 include { PLOT_DONOR_CELLS } from '../modules/nf-core/modules/plot_donor_cells/main'
 include {MULTIPLET} from "../modules/nf-core/modules/multiplet/main"
-
+include {SOUPORCELL_VS_VIREO} from "../modules/nf-core/modules/plot_souporcell_vs_vireo/main"
 
 workflow  main_deconvolution {
 
@@ -138,12 +138,15 @@ workflow  main_deconvolution {
                     tuple(samplename, bam_file, bai_file, barcodes_tsv_gz, souporcell_n_clusters,[],[])
                     }.set{full_vcf}
             }
-
+            // full_vcf.filter { experiment, cellsnp, npooled, t -> npooled != '1' }.set{full_vcf2}
+            // full_vcf.filter { experiment, cellsnp, npooled, t -> npooled == '1' }.set{not_deconvoluted}
+            
 
             // Now that channel is created run suporcell
-            full_vcf.filter { samplename, bam_file, bai_file, barcodes_tsv_gz, souporcell_n_clusters, t1, t2 -> souporcell_n_clusters != '1' }.set{full_vcf2}
-            full_vcf.filter { samplename, bam_file, bai_file, barcodes_tsv_gz, souporcell_n_clusters, t1, t2 -> souporcell_n_clusters == '1' }.set{not_deconvoluted}
-            
+            // full_vcf.filter { samplename, bam_file, bai_file, barcodes_tsv_gz, souporcell_n_clusters, t1, t2 -> souporcell_n_clusters != 1 }.set{full_vcf2}
+            // full_vcf.filter { samplename, bam_file, bai_file, barcodes_tsv_gz, souporcell_n_clusters, t1, t2 -> souporcell_n_clusters == 1 }.set{not_deconvoluted}
+            // // full_vcf.view()
+            // full_vcf2.view()
             SOUPORCELL(full_vcf,
                 Channel.fromPath(params.souporcell.reference_fasta).collect())
 
@@ -222,6 +225,15 @@ workflow  main_deconvolution {
             out_h5ad =Channel.fromPath(params.cellsnp.vcf_candidate_snps).collect()
             vireo_out_sample__exp_summary_tsv=Channel.fromPath(params.cellsnp.vcf_candidate_snps).collect()
         }
+
+
+        if (params.souporcell.run && params.vireo.run) {
+            SOUPORCELL_VS_VIREO(
+                vireo_out_sample_donor_ids // tuple val(samplename), file("${samplename}/donor_ids.tsv")
+                // combine with tuple val(samplename), file("${samplename}/clusters.tsv"):
+                .combine(SOUPORCELL.out.souporcell_output_files.map {a,b,c,d -> tuple(a,b)},
+                    by: 0))
+        } 
 
     emit:
         out_h5ad
