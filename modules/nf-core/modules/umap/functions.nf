@@ -123,11 +123,11 @@ process generate_final_UMAPS{
             --h5_anndata ${file__anndata} \
             --number_cpu 1 \
             --colors_quantitative n_cells,total_counts,pct_counts_gene_group__mito_transcript,prob_doublet,pct_counts_gene_group__ribo_rna,Azimuth:predicted.celltype.l2.score,Azimuth:mapping.score \
-            --colors_categorical experiment_id,Azimuth:predicted.celltype.l2,Celltypist:Immune_All_Low,Celltypist:Immune_All_High,Celltypist:Immune_Blood_High,Celltypist:Immune_Blood_Low,donor_id  \
+            --colors_categorical experiment_id,Azimuth:predicted.celltype.l2,Celltypist:Immune_All_Low,Celltypist:Immune_All_High,donor_id  \
             --drop_legend_n 40 \
             --output_file UMAP
     """
-
+    //,Celltypist:Immune_Blood_High,Celltypist:Immune_Blood_Low
 }
 
 process umap_gather {
