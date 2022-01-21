@@ -19,7 +19,6 @@ import gzip
 import pandas as pd
 import numpy as np
 import anndata
-import scanpy as sc
 
 
 def dict_from_h5(file: str) -> Dict[str, np.ndarray]:
