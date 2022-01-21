@@ -9,10 +9,11 @@ process plot_filtered_cells {
     //cache false        // cache results from run
     label 'process_low'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/nf_qc_cluster_2.4.img"
+        container "/software/hgi/containers/wtsihgi_nf_scrna_qc_6bb6af5-2021-12-23-3270149cf265.sif"
+        //// container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/nf_qc_cluster_2.4.img"
         
     } else {
-        container "quay.io/biocontainers/multiqc:1.10.1--py_0"
+        container "wtsihgi/nf_scrna_qc:6bb6af5"
     }
 
     publishDir  path: "${outdir}",
@@ -59,10 +60,11 @@ process plot_pcs {
 
     label 'process_low'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/nf_qc_cluster_2.4.img"
+        container "/software/hgi/containers/wtsihgi_nf_scrna_qc_6bb6af5-2021-12-23-3270149cf265.sif"
+        //// container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/nf_qc_cluster_2.4.img"
         
     } else {
-        container "quay.io/biocontainers/multiqc:1.10.1--py_0"
+        container "wtsihgi/nf_scrna_qc:6bb6af5"
     }
 
     publishDir  path: "${outdir}",
@@ -128,10 +130,11 @@ process plot_predicted_sex {
     //cache false        // cache results from run
     label 'process_low'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/nf_qc_cluster_2.4.img"
+        container "/software/hgi/containers/wtsihgi_nf_scrna_qc_6bb6af5-2021-12-23-3270149cf265.sif"
+        //// container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/nf_qc_cluster_2.4.img"
         
     } else {
-        container "quay.io/biocontainers/multiqc:1.10.1--py_0"
+        container "wtsihgi/nf_scrna_qc:6bb6af5"
     }
 
     publishDir  path: "${outdir}",
@@ -176,10 +179,20 @@ process plot_qc {
     //cache false        // cache results from run
     label 'process_low'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/nf_qc_cluster_2.4.img"
+	
+        container "/software/hgi/containers/wtsihgi_nf_scrna_qc_6bb6af5-2021-12-23-3270149cf265.sif"
+        //// working but deprecated: container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/nf_qc_cluster_2.4.img"
         
     } else {
-        container "quay.io/biocontainers/multiqc:1.10.1--py_0"
+        container "wtsihgi/nf_scrna_qc:6bb6af5"
+	
+	//// container "wtsihgi/nf_scrna_qc:6bb6af5"
+        //// 0417190 fails:
+	////   with error:     File "/home/container_user/conda/envs/cenv/lib/python3.9/site-packages/numpy/core/shape_base.py", line 283, in vstack               
+            // return _nx.concatenate(arrs, 0)                                    
+            // File "<__array_function__ internals>", line 5, in concatenate     
+            // ValueError: all the input arrays must have same number of dimensions, but the array at index 0 has 2 dimension(s) and the array at index 2 has 3 dimension(s)
+	
     }
 
     publishDir  path: "${outdir}",
@@ -251,10 +264,11 @@ process plot_distributions {
 
     label 'process_low'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/nf_qc_cluster_2.4.img"
+        container "/software/hgi/containers/wtsihgi_nf_scrna_qc_6bb6af5-2021-12-23-3270149cf265.sif"
+        //// container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/nf_qc_cluster_2.4.img"
         
     } else {
-        container "quay.io/biocontainers/multiqc:1.10.1--py_0"
+        container "wtsihgi/nf_scrna_qc:6bb6af5"
     }
 
     publishDir  path: "${outdir}",
