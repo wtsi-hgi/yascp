@@ -25,7 +25,7 @@ process cellbender__rb__get_input_cells {
 
     
   } else {
-    container "wtsihgi/wtsihgi_nf_cellbender_container:3cc9983"
+    container "wtsihgi/nf_cellbender_container:3cc9983"
   }
 
   // Calculates thresholds for input cells of cellbender__remove_background
@@ -116,7 +116,7 @@ process cellbender__remove_background {
     // memory = 250.GB
     cpus = 1
   } else {
-    container "wtsihgi/wtsihgi_nf_cellbender_container:3cc9983"
+    container "wtsihgi/nf_cellbender_container:3cc9983"
   }
 
   //     // use GPU
@@ -288,7 +288,7 @@ process cellbender__remove_background__qc_plots {
     container "/software/hgi/containers/wtsihgi_nf_cellbender_container_3cc9983-2021-12-14-5e3143ef9e66.sif"
     //// container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/wtsihgi_nf_cellbender_v1.2.img"
   } else {
-    container "wtsihgi/nf_scrna_qc:6bb6af5"
+    container "wtsihgi/nf_cellbender_container:3cc9983"
   }
 
 
@@ -361,10 +361,11 @@ process cellbender__remove_background__qc_plots_2 {
 
   label 'process_low'
   if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-    container "/software/hgi/containers/wtsihgi_nf_cellbender_container_3cc9983-2021-12-14-5e3143ef9e66.sif"
-    //// container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/wtsihgi_nf_cellbender_v1.2.img"
-  } else {
-    container "wtsihgi/nf_scrna_qc:6bb6af5"
+        container "/software/hgi/containers/wtsihgi_nf_scrna_qc_6bb6af5-2021-12-23-3270149cf265.sif"
+        //// container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/nf_qc_cluster_2.4.img"
+        
+    } else {
+        container "wtsihgi/nf_scrna_qc:6bb6af5"
   }
 
   // Second set of QC plots from cellbdender.
@@ -418,7 +419,7 @@ process cellbender__gather_qc_input {
     container "/software/hgi/containers/wtsihgi_nf_scrna_qc_6bb6af5-2021-12-23-3270149cf265.sif"
     //// container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/nf_qc_cluster_2.4.img"
   } else {
-    container "wtsihgi/nf_scrna_qc:6bb6af5"
+    container "wtsihgi/nf_cellbender_container:3cc9983"
   }
 
   // Prepare cell bender output for qc_cluster pipeline. For each epoch and
