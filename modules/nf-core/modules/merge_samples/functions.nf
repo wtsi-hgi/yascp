@@ -5,9 +5,10 @@ def random_hex(n) {
 process dummy_filtered_channel{
     label 'process_low' 
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/nf_qc_cluster_2.4.img"
+        container "/software/hgi/containers/wtsihgi_nf_scrna_qc_6bb6af5-2021-12-23-3270149cf265.sif"
+        //// container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/nf_qc_cluster_2.4.img"
     } else {
-        container "quay.io/biocontainers/multiqc:1.10.1--py_0"
+        container "wtsihgi/nf_scrna_qc:6bb6af5"
     }
 
     input:
@@ -40,9 +41,11 @@ process merge_samples_from_h5ad {
                 mode: "${params.copy_mode}",
                 overwrite: "true"
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/nf_qc_cluster_2.4.img"
+        container "/software/hgi/containers/wtsihgi_nf_scrna_qc_6bb6af5-2021-12-23-3270149cf265.sif"
+        //// container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/nf_qc_cluster_2.4.img"
     } else {
-        container "quay.io/biocontainers/multiqc:1.10.1--py_0"
+        container "wtsihgi/nf_scrna_qc:6bb6af5"
+        //// container "quay.io/biocontainers/multiqc:1.10.1--py_0"
     }
 
     input:
@@ -122,9 +125,11 @@ process merge_samples {
                 mode: "${params.copy_mode}",
                 overwrite: "true"
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/nf_qc_cluster_2.4.img"
+        container "/software/hgi/containers/wtsihgi_nf_scrna_qc_6bb6af5-2021-12-23-3270149cf265.sif"
+        //// container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/nf_qc_cluster_2.4.img"
     } else {
-        container "quay.io/biocontainers/multiqc:1.10.1--py_0"
+        container "wtsihgi/nf_scrna_qc:6bb6af5"
+        //// container "quay.io/biocontainers/multiqc:1.10.1--py_0"
     }
 
     input:

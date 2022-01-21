@@ -7,9 +7,11 @@ process SPLIT_DONOR_H5AD {
     
 
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "/software/hgi/containers/scrna_deconvolution_latest.img"
+        container "/software/hgi/containers/mercury_scrna_deconvolution_62bd56a-2021-12-15-4d1ec9312485.sif"
+        //// container "/software/hgi/containers/mercury_scrna_deconvolution_latest.img"
+	
     } else {
-        container "quay.io/biocontainers/multiqc:1.10.1--py_0"
+        container "mercury/scrna_deconvolution:62bd56a"
     }
   
 

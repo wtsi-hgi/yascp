@@ -3,10 +3,11 @@ process AZIMUTH{
     label 'process_low'
    
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/seurat_azimuth_pbmc_1.0.img"
+        container "/software/hgi/containers/wtsihgi_nf_scrna_qc_azimuth_d54db9b-2021-12-13-8dd0b7fce918.sif"
+        //// container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/seurat_azimuth_pbmc_1.0.img"
         
     } else {
-        container "quay.io/biocontainers/multiqc:1.10.1--py_0"
+        container "wtsihgi/nf_scrna_qc_azimuth:d54db9b"
     }
 
     publishDir  path: "${params.outdir}/celltype/azimuth/",
