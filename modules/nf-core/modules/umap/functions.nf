@@ -129,12 +129,8 @@ process generate_final_UMAPS{
             --drop_legend_n 40 \
             --output_file UMAP
     """
-<<<<<<< HEAD
-    //,Celltypist:Immune_Blood_High,Celltypist:Immune_Blood_Low
-=======
           //--colors_categorical experiment_id,Azimuth:predicted.celltype.l2,Celltypist:Immune_All_Low,Celltypist:Immune_All_High,Celltypist:Immune_Blood_High,Celltypist:Immune_Blood_Low,donor_id  \
 
->>>>>>> dockerhub
 }
 
 process umap_gather {
