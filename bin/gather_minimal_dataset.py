@@ -267,6 +267,7 @@ def gather_donor(donor_id, ad, ad_lane_raw, azimuth_annot, qc_obs, columns_outpu
     ad.obs.index.name = 'barcode'
     dt.to_csv(os.path.join(outdir, oufnam + '.tsv'), sep = "\t", na_rep = "N/A")
     sys.stderr.write("writing file {} ...\n".format(oufnam))
+    ad.write(os.path.join(outdir, oufnam + '.h5ad'))
 
     return {
         'Experiment ID':experiment_id,
