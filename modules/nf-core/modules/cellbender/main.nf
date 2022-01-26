@@ -30,6 +30,7 @@ workflow CELLBENDER {
     take:
         ch_experimentid_paths10x_raw
 		ch_experimentid_paths10x_filtered
+        channel__metadata
         
     main:
         channel__file_paths_10x = Channel
@@ -44,10 +45,18 @@ workflow CELLBENDER {
     
         outdir =  outdir+'/cellbender'
         
+        // here pass in the number of cells detected by cellranger/ 
+        channel__metadata.splitCsv(header: true, sep: "\t", by: 1).map{row -> tuple(
+            row.experiment_id,
+            row.Estimated_Number_of_Cells,
+        )}.set{ncells_cellranger}
+        
+        channel__file_paths_10x.combine(ncells_cellranger, by: 0).set{channel__file_paths_10x_with_ncells}
+        
         cellbender__rb__get_input_cells(
-             outdir,
-            channel__file_paths_10x,
-            params.cellbender_rb.estimate_params_umis.value
+            outdir,
+            channel__file_paths_10x_with_ncells,
+            params.cellbender_rb.estimate_params_umis.value,
         )
         
         // Correct counts matrix to remove ambient RNA
@@ -98,6 +107,6 @@ workflow CELLBENDER {
 
         emit:
             results_list
-            // TODO here need to emmit the files from cellbender.
+            
 }
 
