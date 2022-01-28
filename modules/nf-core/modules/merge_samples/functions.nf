@@ -35,9 +35,11 @@ process merge_samples_from_h5ad {
     //cache true        // cache results from run
     tag "${samplename}"
     
-    label 'process_low' 
+    label 'process_medium' 
+    label 'process_high_memory'
+
     publishDir  path: "${outdir}/merged_h5ad",
-                saveAs: {filename -> filename.replaceAll("${runid}-", "")},
+                saveAs: {filename -> filename.replaceAll("${runid}-", "pre_QC_")},
                 mode: "${params.copy_mode}",
                 overwrite: "true"
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
@@ -118,10 +120,10 @@ process merge_samples {
     
     tag "${samplename}"
     
-    label 'process_low'
-
+    label 'process_medium'
+    label 'process_high_memory'
     publishDir  path: "${outdir}/merged_h5ad",
-                saveAs: {filename -> filename.replaceAll("${runid}-", "")},
+                saveAs: {filename -> filename.replaceAll("${runid}-", "pre_QC_")},
                 mode: "${params.copy_mode}",
                 overwrite: "true"
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {

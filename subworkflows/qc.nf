@@ -168,7 +168,12 @@ workflow qc {
                 params.umap.umap_spread.value,
                 params.sccaf.min_accuracy         
             )
-            LI = CLUSTERING_HARMONY.out.dummy_output
+            LI1 = CLUSTERING_HARMONY.out.dummy_output
+            lisi_input2 = HARMONY.out.reduced_dims_params.collect()
+                
+        }else{
+            lisi_input2 = Channel.create()
+            LI1 = Channel.create()
         }
 
         if (params.bbknn.run_process) {
@@ -226,23 +231,18 @@ workflow qc {
                 params.umap.umap_spread.value,
                 params.sccaf.min_accuracy
             )
-            LI = CLUSTERING_BBKNN.out.dummy_output
+            LI2 = CLUSTERING_BBKNN.out.dummy_output
+            lisi_input3 = BBKNN.out.reduced_dims_params.collect()
+                
+        }else{
+            lisi_input3 = Channel.create()
+            LI2 = Channel.create()
         }
-
-       
 
         if (params.lisi.run_process) {
             lisi_input = SUBSET_PCS.out.reduced_dims_params.collect()
-            if (params.harmony.run_process) {
-                lisi_input = lisi_input.mix(
-                    HARMONY.out.reduced_dims_params.collect()
-                )
-            }
-            if (params.bbknn.run_process) {
-                lisi_input = lisi_input.mix(
-                    BBKNN.out.reduced_dims_params.collect()
-                )
-            }
+            lisi_input = lisi_input.mix(lisi_input2)
+            lisi_input = lisi_input.mix(lisi_input3)
 
             LISI(
                 NORMALISE_AND_PCA.out.outdir,
@@ -250,8 +250,13 @@ workflow qc {
                 params.lisi.variables.value,
                 lisi_input.collect()
             )
-            LI = LISI.out.outdir
+            
+            LI3 = LISI.out.outdir
+        }else{
+            LI3 = Channel.create()
         }
+        LI=LI1.mix(LI2)
+        LI=LI.mix(LI3)
     emit:
         LI
         
