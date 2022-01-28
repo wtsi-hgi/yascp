@@ -1,8 +1,6 @@
 
 // Load base.config by default for all pipelines - typically included in the nextflow config.
 include { main_deconvolution } from './main_deconvolution.nf'
-include { CELLTYPIST } from '../modules/nf-core/modules/celltypist/main'
-
 workflow deconvolution {
     take:
         ch_experiment_bam_bai_barcodes

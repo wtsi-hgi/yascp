@@ -91,9 +91,9 @@ workflow SCDECON {
             log.info ' ---- Out results - cellbender to remove background---'
             
             cellbender.out.results_list
-                .map{experiment, path -> tuple(experiment, file(path+'/cellbender-FPR_0pt1-filtered_10x_mtx'))}
+                .map{experiment, path -> tuple(experiment, path+'/cellbender-FPR_0pt1-filtered_10x_mtx')}
                 .set{ch_experiment_filth5} // this channel is used for task 'split_donor_h5ad'
-
+            
             prepare_inputs.out.ch_experiment_bam_bai_barcodes.map { experiment, bam, bai, barcodes -> tuple(experiment,
                         bam,
                         bai)}.set{pre_ch_experiment_bam_bai_barcodes}
@@ -173,11 +173,11 @@ workflow SCDECON {
 
     qc(file__anndata_merged,file__cells_filtered)
 
-    // Performing eQTL mapping.
-    // This part will contain code from Hannes and the potentially additional LIMIX runs.
-    // qc_finish_dummy= 'qc.out.LI'
+    // // Performing eQTL mapping.
+    // // This part will contain code from Hannes and the potentially additional LIMIX runs.
+    // // qc_finish_dummy= 'qc.out.LI'
     qc_finish_dummy= qc.out.LI
-    // Transfer plots to the website and gather the outputs.
+    // // Transfer plots to the website and gather the outputs.
     data_handover("${workDir}/../${params.output_dir}",qc_finish_dummy)
 
 

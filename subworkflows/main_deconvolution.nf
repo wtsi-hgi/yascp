@@ -155,17 +155,24 @@ workflow  main_deconvolution {
         if (params.vireo.run){
 
                 // If sample is not deconvoluted we will use scrublet to detect the doublets and remove them.
-                not_deconvoluted.map{ experiment, donorsvcf, npooled,t -> tuple(experiment, 'None')}.set{not_deconvoluted}
+                not_deconvoluted.map{ experiment, donorsvcf, npooled,t -> tuple(experiment, 'None')}.set{not_deconvoluted2}
                 file_cellmetadata = MULTIPLET.out.file__cellmetadata
                 scrublet_paths = MULTIPLET.out.scrublet_paths
+                
+                // making 2 channels, 1 that is deconvoluted and another that isnt
                 split_channel = vireo_out_sample_donor_ids.combine(ch_experiment_filth5, by: 0)
-                split_channel2 = not_deconvoluted.combine(ch_experiment_filth5, by: 0)
-                split_channel = split_channel.mix(split_channel2)
-                split_channel = split_channel.combine(scrublet_paths, by: 0)
+                split_channel2 = not_deconvoluted2.combine(ch_experiment_filth5, by: 0)
+
+                // combining these 2 channels in one
+                split_channel3 = split_channel.mix(split_channel2)
+
+                // adding the scrublet paths to the channel.
+                split_channel4 = split_channel3.combine(scrublet_paths, by: 0)
                 
                 // run a multiplet detection and when splitting the donor specific h5ad remove these from non deconvoluted samples
 
-                SPLIT_DONOR_H5AD(split_channel)
+                SPLIT_DONOR_H5AD(split_channel4)
+                
 
                 // collect file paths to h5ad files in tsv tables:
                 SPLIT_DONOR_H5AD.out.donors_h5ad_tsv

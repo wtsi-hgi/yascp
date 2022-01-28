@@ -140,6 +140,7 @@ process umap_gather {
     //cache false        // cache results from run
     scratch false      // use tmp directory
     label 'process_medium'
+    label 'process_high_memory'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "/software/hgi/containers/wtsihgi_nf_scrna_qc_6bb6af5-2021-12-23-3270149cf265.sif"
         //// container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/nf_qc_cluster_2.4.img"
