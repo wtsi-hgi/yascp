@@ -86,6 +86,13 @@ process cellbender__rb__get_input_cells {
     process_info = "${runid} (runid)"
     process_info = "${process_info}, ${task.cpus} (cpus)"
     process_info = "${process_info}, ${task.memory} (memory)"
+
+    if (params.cellbender_rb.estimate_params_umis.value.method_estimate_ncells=='expected'){
+        cell_numbers = "--expected_ncells ${ncells}"
+    }else{
+        cell_numbers = ""
+    }
+
     """
 
     rm -fr plots
@@ -94,7 +101,7 @@ process cellbender__rb__get_input_cells {
     ln --physical ${file_10x_features} txd_input/features.tsv.gz
     ln --physical ${file_10x_matrix} txd_input/matrix.mtx.gz
 
-    get_estimates_from_umi_counts.py --expected_ncells ${ncells} --tenxdata_path txd_input --output_file ${outfile} --expected_nemptydroplets_umi_cutoff   ${estimate_params_umis.expected_nemptydroplets_umi_cutoff} --method_estimate_ncells   ${estimate_params_umis.method_estimate_ncells} --lower_bound_umis_estimate_ncells   ${estimate_params_umis.lower_bound_umis_estimate_ncells} --method_estimate_nemptydroplets   ${estimate_params_umis.method_estimate_nemptydroplets} --lower_bound_umis_estimate_nemptydroplets   ${estimate_params_umis.lower_bound_umis_estimate_nemptydroplets} --upper_bound_umis_estimate_nemptydroplets   ${estimate_params_umis.upper_bound_umis_estimate_nemptydroplets} --estimate_nemptydroplets_add_umifactor   ${estimate_params_umis.estimate_nemptydroplets_umi_add_factor} --estimate_nemptydroplets_subtract_dropletfactor   ${estimate_params_umis.estimate_nemptydroplets_subtract_cell_factor} --estimate_nemptydroplets_min_nemptydroplets ${estimate_params_umis.estimate_nemptydroplets_min_drop}    ${cmd__expected_ncells} ${cmd__droplets_include}
+    get_estimates_from_umi_counts.py ${cell_numbers} --tenxdata_path txd_input --output_file ${outfile} --expected_nemptydroplets_umi_cutoff   ${estimate_params_umis.expected_nemptydroplets_umi_cutoff} --method_estimate_ncells   ${estimate_params_umis.method_estimate_ncells} --lower_bound_umis_estimate_ncells   ${estimate_params_umis.lower_bound_umis_estimate_ncells} --method_estimate_nemptydroplets   ${estimate_params_umis.method_estimate_nemptydroplets} --lower_bound_umis_estimate_nemptydroplets   ${estimate_params_umis.lower_bound_umis_estimate_nemptydroplets} --upper_bound_umis_estimate_nemptydroplets   ${estimate_params_umis.upper_bound_umis_estimate_nemptydroplets} --estimate_nemptydroplets_add_umifactor   ${estimate_params_umis.estimate_nemptydroplets_umi_add_factor} --estimate_nemptydroplets_subtract_dropletfactor   ${estimate_params_umis.estimate_nemptydroplets_subtract_cell_factor} --estimate_nemptydroplets_min_nemptydroplets ${estimate_params_umis.estimate_nemptydroplets_min_drop}    ${cmd__expected_ncells} ${cmd__droplets_include}
 
     mkdir plots
     mv *pdf plots/ 2>/dev/null || true

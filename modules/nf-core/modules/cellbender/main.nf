@@ -46,11 +46,18 @@ workflow CELLBENDER {
         outdir =  outdir+'/cellbender'
         
         // here pass in the number of cells detected by cellranger/ 
-        channel__metadata.splitCsv(header: true, sep: "\t", by: 1).map{row -> tuple(
-            row.experiment_id,
-            row.Estimated_Number_of_Cells,
-        )}.set{ncells_cellranger}
-        
+        if (params.cellbender_rb.estimate_params_umis.value.method_estimate_ncells=='expected'){
+            channel__metadata.splitCsv(header: true, sep: "\t", by: 1).map{row -> tuple(
+                row.experiment_id,
+                row.Estimated_Number_of_Cells,
+            )}.set{ncells_cellranger}
+        }else{
+            channel__metadata.splitCsv(header: true, sep: "\t", by: 1).map{row -> tuple(
+                row.experiment_id,
+                '0',
+            )}.set{ncells_cellranger}
+        }
+
         channel__file_paths_10x.combine(ncells_cellranger, by: 0).set{channel__file_paths_10x_with_ncells}
         
         cellbender__rb__get_input_cells(
