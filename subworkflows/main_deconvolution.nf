@@ -64,7 +64,6 @@ workflow  main_deconvolution {
                     log.info "---We are using subset genotypes running Vireo----"
                     CELLSNP.out.cellsnp_output_dir.combine(ch_experiment_npooled, by: 0)
                         .combine(SUBSET_GENOTYPE.out.samplename_subsetvcf, by: 0).set{full_vcf}
-
                 }else{
                     log.info "---We are using a full genotype input for Vireo----"
                     CELLSNP.out.cellsnp_output_dir.combine(ch_experiment_npooled, by: 0).set{full_vcf}

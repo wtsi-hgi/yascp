@@ -40,7 +40,7 @@ def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res
         # this is existing_cellbender, hence using this input
         df_cellbender = pd.read_table(f'{cellbender}', index_col = 'experiment_id')
     
-    
+    print(df_cellbender)
     # folder1 = f'{directory}/nf-preprocessing/cellbender'
     # folder2 = f'{directory}/cellbender_vs_cellranger'
     
@@ -49,16 +49,36 @@ def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res
         print('t')
         for folder in df_cellbender.index:
             print(folder)
+            print("yes!!")
             dir1 = f"{df_cellbender.loc[folder,'data_path_10x_format']}/.."
             dir = f"{df_cellbender.loc[folder,'data_path_10x_format']}/../.."
+            print(dir1)
             if os.path.isdir(dir1):
-                copyfile(f'{dir1}/plots/cellbender_results-cellbender_FPR_{cb_res}_filtered-ambient_signature-scatter_genenames.png', f'{name_dir}/Cellbender/{folder}_ambient_signature-scatter_genenames.png')
-                copyfile(f'{dir1}/plots/cellbender_results-cellbender_FPR_{cb_res}_filtered-abs_count_difference-boxplot.png', f'{name_dir}/Cellbender/{folder}_ount_difference-boxplot.png')
-                copyfile(f'{dir1}/plots/cellbender.pdf', f'{name_dir}/Cellbender/cellbender_{folder}.pdf')
-                copyfile(f'{dir}/compare_cellranger/fpr_{resolution2}/boxplots_cellranger_vs_cellbender.png', f'{name_dir}/Cellbender/{folder}_boxplots_cellranger_vs_cellbender.png')
-                copyfile(f'{dir}/compare_cellranger/fpr_{resolution2}/barcode_vs_total_counts.png', f'{name_dir}/Cellbender/{folder}_barcode_vs_total_counts.png')
-                copyfile(f'{dir}/compare_cellranger/fpr_{resolution2}/boxplot_topgenes_cellranger_vs_cellbender.png', f'{name_dir}/Cellbender/{folder}_boxplot_topgenes_cellranger_vs_cellbender.png')
-
+                print("yes22!!")
+                try:
+                    copyfile(f'{dir1}/plots/cellbender_results-cellbender_FPR_{cb_res}_filtered-ambient_signature-scatter_genenames.png', f'{name_dir}/Cellbender/{folder}_ambient_signature-scatter_genenames.png')
+                except:
+                    print('missing')
+                try:
+                    copyfile(f'{dir1}/plots/cellbender_results-cellbender_FPR_{cb_res}_filtered-abs_count_difference-boxplot.png', f'{name_dir}/Cellbender/{folder}_ount_difference-boxplot.png')
+                except:
+                    print('missing')
+                try:
+                    copyfile(f'{dir1}/plots/cellbender.pdf', f'{name_dir}/Cellbender/cellbender_{folder}.pdf')
+                except:
+                    print('missing')
+                try:
+                    copyfile(f'{dir}/compare_cellranger/fpr_{resolution2}/boxplots_cellranger_vs_cellbender.png', f'{name_dir}/Cellbender/{folder}_boxplots_cellranger_vs_cellbender.png')
+                except:
+                    print('missing')                
+                try:
+                    copyfile(f'{dir}/compare_cellranger/fpr_{resolution2}/barcode_vs_total_counts.png', f'{name_dir}/Cellbender/{folder}_barcode_vs_total_counts.png')
+                except:
+                    print('missing')                
+                try:
+                    copyfile(f'{dir}/compare_cellranger/fpr_{resolution2}/boxplot_topgenes_cellranger_vs_cellbender.png', f'{name_dir}/Cellbender/{folder}_boxplot_topgenes_cellranger_vs_cellbender.png')
+                except:
+                    print('missing')
     # Fetch Gather
     df_raw = pd.read_table(input_table, index_col = 'experiment_id')
     # 'Note that the names for the future projects may be different - have to be handled on the Nextflow modules'

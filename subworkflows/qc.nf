@@ -172,8 +172,8 @@ workflow qc {
             lisi_input2 = HARMONY.out.reduced_dims_params.collect()
                 
         }else{
-            lisi_input2 = Channel.create()
-            LI1 = Channel.create()
+            lisi_input2 = Channel.of()
+            LI1 = Channel.of()
         }
 
         if (params.bbknn.run_process) {
@@ -235,25 +235,25 @@ workflow qc {
             lisi_input3 = BBKNN.out.reduced_dims_params.collect()
                 
         }else{
-            lisi_input3 = Channel.create()
-            LI2 = Channel.create()
+            lisi_input3 = Channel.of()
+            LI2 = Channel.of()
         }
 
         if (params.lisi.run_process) {
             lisi_input = SUBSET_PCS.out.reduced_dims_params.collect()
-            lisi_input = lisi_input.mix(lisi_input2)
-            lisi_input = lisi_input.mix(lisi_input3)
+            lisi_input_first = lisi_input.mix(lisi_input2)
+            lisi_input_second = lisi_input_first.mix(lisi_input3)
 
             LISI(
                 NORMALISE_AND_PCA.out.outdir,
                 NORMALISE_AND_PCA.out.metadata,
                 params.lisi.variables.value,
-                lisi_input.collect()
+                lisi_input_second.collect()
             )
             
             LI3 = LISI.out.outdir
         }else{
-            LI3 = Channel.create()
+            LI3 = Channel.of()
         }
         LI=LI1.mix(LI2)
         LI=LI.mix(LI3)
