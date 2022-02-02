@@ -135,7 +135,8 @@ process cellbender__remove_background {
   //     // use GPU
   if (params.utilise_gpu){
     label 'gpu'
-    label 'process_high_memory'
+	// only one label here, otherwise bsub -R -M will be doubled..
+	// label 'process_high_memory'
     gpu_text_info = '--cuda'
   }else{
     label 'process_high'
