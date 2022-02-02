@@ -122,10 +122,15 @@ process cellbender__remove_background {
     //// container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/wtsihgi_nf_cellbender_v1.2.img"
     maxRetries = 1
     // memory = 250.GB
-    cpus = 1
+	cpus = 1
+
   } else {
     container "wtsihgi/nf_cellbender_container:3cc9983"
-  }
+    }
+    
+  // set LD_PRELOAD to fix mkl / anaconda conflict
+  // cf. https://stackoverflow.com/questions/36659453/intel-mkl-fatal-error-cannot-load-libmkl-avx2-so-or-libmkl-def-so
+  containerOptions '--env LD_PRELOAD=/opt/conda/envs/conda_cellbender/lib/libmkl_core.so:/opt/conda/envs/conda_cellbender/lib/libmkl_sequential.so'
 
   //     // use GPU
   if (params.utilise_gpu){
