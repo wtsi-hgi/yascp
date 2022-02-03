@@ -88,7 +88,8 @@ process cellbender__rb__get_input_cells {
     process_info = "${process_info}, ${task.memory} (memory)"
 
     if (params.cellbender_rb.estimate_params_umis.value.method_estimate_ncells=='expected'){
-        cell_numbers = "--expected_ncells ${ncells}"
+        ncells2=ncells.toInteger()-1000
+        cell_numbers = "--expected_ncells ${ncells2}"
     }else{
         cell_numbers = ""
     }
