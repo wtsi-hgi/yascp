@@ -464,7 +464,7 @@ process cluster_validate_resolution_keras {
         process_info = "${runid} (runid)"
         process_info = "${process_info}, ${task.cpus} (cpus)"
         process_info = "${process_info}, ${task.memory} (memory)"
-        tf_memory = "${task.memory}".replaceAll(" GB", "")
+        tf_memory = "${params.mem1*task.attempt/1000}"
         """
         rm -fr plots
         0057-scanpy_cluster_validate_resolution-keras.py \

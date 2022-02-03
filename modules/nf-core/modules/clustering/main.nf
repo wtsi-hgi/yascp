@@ -71,28 +71,33 @@ workflow CLUSTERING {
         //     cluster_validate_resolution__sparsity,
         //     cluster_validate_resolution__train_size_cells
         // )
+        if (params.utilise_gpu){
+            cluster_validate_resolution_keras( 
+                cluster.out.outdir,
+                cluster.out.anndata,
+                cluster.out.metadata,
+                cluster.out.pcs,
+                cluster.out.reduced_dims,
+                cluster.out.clusters,
+                cluster_validate_resolution__sparsity,
+                cluster_validate_resolution__train_size_cells,
+                cluster.out.outdir__reduced_dims
+            )
 
-        cluster_validate_resolution_keras( 
-            cluster.out.outdir,
-            cluster.out.anndata,
-            cluster.out.metadata,
-            cluster.out.pcs,
-            cluster.out.reduced_dims,
-            cluster.out.clusters,
-            cluster_validate_resolution__sparsity,
-            cluster_validate_resolution__train_size_cells,
-            cluster.out.outdir__reduced_dims
-        )
-        dummy_output=cluster_validate_resolution_keras.out.outdir
+            plot_resolution_validate(
+                cluster_validate_resolution_keras.out.plot_input.groupTuple()
+            )
+
+            
+        }
+
         SCCAF(cluster.out.outdir,
           cluster.out.anndata,
           cluster.out.clusters,
           sccaf_minacc)
 
 
-        plot_resolution_validate(
-            cluster_validate_resolution_keras.out.plot_input.groupTuple()
-        )
+
 
         // // Generate UMAPs of the results.
         umap_calculate_and_plot(
@@ -108,6 +113,7 @@ workflow CLUSTERING {
             umap_min_dist,
             umap_spread
         )
+        dummy_output=umap_calculate_and_plot.out.dummy_output
         // // Find marker genes for clusters
         cluster_markers(
             cluster.out.outdir,

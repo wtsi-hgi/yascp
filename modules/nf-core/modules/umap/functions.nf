@@ -320,7 +320,7 @@ process umap_calculate_and_plot {
         each umap_spread
 
     output:
-        path("plots/*.png")
+        path("plots/*.png"), emit: dummy_output
         path("plots/*.pdf") optional true
         // path("plots/*.svg") optional true
 
