@@ -4,7 +4,7 @@ include {
     cellbender__remove_background;
     cellbender__remove_background__qc_plots;
     cellbender__remove_background__qc_plots_2;
-    cellbender__gather_qc_input;
+    cellbender__gather_qc_input;cellbender__preprocess_output;
 } from "./functions.nf"
 
 // Set default parameters.
@@ -78,24 +78,26 @@ workflow CELLBENDER {
             params.cellbender_rb.fpr.value
         )
 
+        cellbender__preprocess_output(
+             cellbender__remove_background.out.cleanup_input,
+                cellbender__remove_background.out.cb_plot_input,
+                cellbender__remove_background.out.experimentid_outdir_cellbenderunfiltered_expectedcells_totaldropletsinclude,
+                cellbender__remove_background.out.out_paths
+        )
 
         // Make some basic plots
         cellbender__remove_background__qc_plots(
-            cellbender__remove_background.out.cb_plot_input
+            cellbender__preprocess_output.out.cb_plot_input
         )
 
-        // if (params.cellbender__remove_background__qc_plots_2.run_task) {
- 
-            log.info "will run 'cellbender__remove_background__qc_plots_2' Nextflow task"
-            
-            cellbender__remove_background.out.experimentid_outdir_cellbenderunfiltered_expectedcells_totaldropletsinclude
-                .combine(ch_experimentid_paths10x_raw, by: 0)
-                .combine(ch_experimentid_paths10x_filtered, by: 0)
-                .combine(Channel.from("${params.cellbender_rb.fpr.value}"
-                        .replaceFirst(/]$/,"")
-                        .replaceFirst(/^\[/,"")
-                        .split()))
-                .set{input_channel_qc_plots_2}
+        cellbender__preprocess_output.out.experimentid_outdir_cellbenderunfiltered_expectedcells_totaldropletsinclude
+            .combine(ch_experimentid_paths10x_raw, by: 0)
+            .combine(ch_experimentid_paths10x_filtered, by: 0)
+            .combine(Channel.from("${params.cellbender_rb.fpr.value}"
+                    .replaceFirst(/]$/,"")
+                    .replaceFirst(/^\[/,"")
+                    .split()))
+            .set{input_channel_qc_plots_2}
             
             cellbender__remove_background__qc_plots_2(input_channel_qc_plots_2,outdir)
             
@@ -103,11 +105,10 @@ workflow CELLBENDER {
     
         cellbender__gather_qc_input(
              outdir,
-            cellbender__remove_background.out.results_list.collect()
+            cellbender__preprocess_output.out.results_list.collect()
         )
 
-        results_list = cellbender__remove_background.out.out_paths
-
+        results_list = cellbender__preprocess_output.out.out_paths
         // prepeare the output channel for utilising in the deconvolution instead of barcode input.
         
 

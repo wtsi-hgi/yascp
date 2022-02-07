@@ -110,12 +110,136 @@ process cellbender__rb__get_input_cells {
     """
 }
 
+
+process cellbender__preprocess_output{
+    label 'process_low'
+  
+    if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
+      container "/software/hgi/containers/wtsihgi_nf_cellbender_container_3cc9983-2021-12-14-5e3143ef9e66.sif"
+      //// container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/wtsihgi_nf_cellbender_v1.2.img"
+      maxRetries = 1
+      // memory = 250.GB
+      cpus = 1
+    } else {
+      container "wtsihgi/nf_cellbender_container:3cc9983"
+    }
+    publishDir  path: "${outdir}",
+        saveAs: {filename ->
+          if (filename == "barcodes.tsv.gz") {
+          null
+          } else if(filename.equalsIgnoreCase("features.tsv.gz")) {
+          null
+          } else if(filename.equalsIgnoreCase("matrix.mtx.gz")) {
+          null
+          } else {
+          filename.replaceAll("${runid}-", "")
+          }
+        },
+        mode: "${params.cellsnp.copy_mode}",
+        overwrite: "true" 
+ 
+  input:
+
+    tuple(
+      val(experiment_id),
+      val(fpr),
+      val(outdir),
+      path(filtered),
+      val(cb_params)
+    )
+
+    tuple(
+      val(outdir),
+      path(file_10x_barcodes),
+      path(file_10x_features),
+      path(file_10x_matrix)
+      
+    )
+
+    tuple(
+      val(experiment_id),
+      val(outdir),
+      
+      path(expected_cells),
+      path(total_droplets_include)
+    )
+
+    tuple(
+      val(experiment_id),
+      val(outdir)
+    )
+
+  output:
+    path("*filtered_10x_mtx/barcodes.tsv.gz", emit: tenx_barcodes)
+    path("*filtered_10x_mtx/features.tsv.gz", emit: tenx_features)
+    path("*filtered_10x_mtx/matrix.mtx.gz", emit: tenx_matrix)
+    // path(
+    //   "*filtered_10x_mtx-file_list.tsv",
+    //   emit: results_list
+    // )  
+    path(
+      "${runid}-${outfile}-filtered_10x_mtx-file_list.tsv",
+       emit: results_list
+    )  
+    tuple(
+      val(experiment_id),
+      val(outdir),
+      path("*_unfiltered.h5"),
+      path(expected_cells),
+      path(total_droplets_include),
+      emit: experimentid_outdir_cellbenderunfiltered_expectedcells_totaldropletsinclude
+    )
+    tuple(
+      val(outdir),
+      path(file_10x_barcodes),
+      path(file_10x_features),
+      path(file_10x_matrix),
+      path("*_filtered.h5"),
+      emit: cb_plot_input
+    )
+    // tuple(
+    //   val(outdir),
+    //   path(file_10x_barcodes),
+    //   path(file_10x_features),
+    //   path(file_10x_matrix),
+    //   emit: cb_plot_input
+    // )
+
+    tuple(
+      val(experiment_id),
+      val(outdir),
+      emit: out_paths
+    )
+
+  script:
+    // 032-clean_cellbender_results.py --nf_outdir_tag results/nf-preprocessing/cellbender/Card_Val11650914/cellbender-epochs_250__learnrt_1Eneg7__zdim_100__zlayer_500__lowcount_10 --cb_outfile_tag cellbender --experiment_id Card_Val11650914 --fpr '0.01 0.05 0.1' --cb_params cellbender_params-epochs_250__learnrt_1Eneg7__zdim_100__zlayer_500__lowcount_10
+    // cp cellbender-filtered_10x_mtx-file_list.tsv AA868D1A8EB8249-cellbender-filtered_10x_mtx-file_list.tsv
+
+    outfile = "cellbender"
+    runid = random_hex(16)
+    """
+      export LD_PRELOAD=/opt/conda/envs/conda_cellbender/lib/libmkl_core.so:/opt/conda/envs/conda_cellbender/lib/libmkl_sequential.so
+      for i in \$(ls *.h5); do
+        echo \$i
+        out_file=\$(echo \$i | sed s/"\\."/"pt"/g | sed s/"pth5"/"\\.h5"/)
+        # If outfile does not exist, move i to out_file
+        [ ! -f \$out_file ] && mv \$i \$out_file
+        echo \$out_file
+      done
+      032-clean_cellbender_results.py --nf_outdir_tag ${outdir} --cb_outfile_tag ${outfile} --experiment_id ${experiment_id} --fpr '${fpr}' --cb_params ${cb_params}
+      cp ${outfile}-filtered_10x_mtx-file_list.tsv ${runid}-${outfile}-filtered_10x_mtx-file_list.tsv
+    """
+
+}
+
+
 process cellbender__remove_background {
   // Remove ambient RNA
   // ------------------------------------------------------------------------
   //tag { output_dir }
   //cache false    // cache results from run
   //maxForks 2   // hard to control memory usage. limit to 3 concurrent
+// cb_plot_input,out_paths,results_list,experimentid_outdir_cellbenderunfiltered_expectedcells_totaldropletsinclude
 
   
   if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
@@ -123,7 +247,7 @@ process cellbender__remove_background {
     //// container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/wtsihgi_nf_cellbender_v1.2.img"
     maxRetries = 1
     // memory = 250.GB
-	cpus = 1
+	  cpus = 1
 
   } else {
     container "wtsihgi/nf_cellbender_container:3cc9983"
@@ -145,7 +269,7 @@ process cellbender__remove_background {
   }
   
   scratch false    // use tmp directory
-  echo echo_mode   // echo output from script
+  echo false   // echo output from script
 
   publishDir  path: "${outdir}",
       saveAs: {filename ->
@@ -182,66 +306,65 @@ process cellbender__remove_background {
   output:
     val(outdir, emit: outdir)
     tuple(
-    val(outdir),
-    val(experiment_id),
-    path("${outfile}-filtered_10x_mtx-file_list.tsv"),
-    val(epochs),
-    val(learning_rate),
-    val(zdims),
-    val(zlayers),
-    val(low_count_threshold),
-    val(fpr),
-    emit: cb_results_details
+      val(experiment_id),
+      val(fpr),
+      val(outdir),
+      path("*.h5"),val(cb_params),
+      emit: cleanup_input
     )
+
     tuple(
-    val(outdir),
-    path(file_10x_barcodes),
-    path(file_10x_features),
-    path(file_10x_matrix),
-    path("*_filtered.h5"),
-    emit: cb_plot_input
+      val(outdir),
+      val(experiment_id),
+      val(epochs),
+      val(learning_rate),
+      val(zdims),
+      val(zlayers),
+      val(low_count_threshold),
+      val(fpr),
+      emit: cb_results_details
     )
-    path(
-    "${runid}-${outfile}-filtered_10x_mtx-file_list.tsv",
-    emit: results_list
+
+    tuple(
+      val(outdir),
+      path(file_10x_barcodes),
+      path(file_10x_features),
+      path(file_10x_matrix),
+      emit: cb_plot_input
     )
-    path("${outfile}.log", emit: log)
+
     path("${outfile}_cell_barcodes.csv", emit: barcodes)
-    path("*_unfiltered.h5", emit: unfiltered_h5s)
-    path("*_filtered.h5", emit: filtered_h5s)
-    path("*filtered_10x_mtx/barcodes.tsv.gz", emit: tenx_barcodes)
-    path("*filtered_10x_mtx/features.tsv.gz", emit: tenx_features)
-    path("*filtered_10x_mtx/matrix.mtx.gz", emit: tenx_matrix)
+    
+    path("*.h5", emit: filtered_h5s)
     path(file_10x_barcodes, emit: raw_tenx_barcodes)
     path(file_10x_features, emit: raw_tenx_features)
     path(file_10x_matrix, emit: raw_tenx_matrix)
     path("plots/*.png") optional true
     path("plots/*.pdf") optional true
+
     tuple(
-    val(experiment_id),
-    val(outdir),
-    path("*_unfiltered.h5"),
-    path(expected_cells),
-    path(total_droplets_include),
-    emit: experimentid_outdir_cellbenderunfiltered_expectedcells_totaldropletsinclude
+      val(experiment_id),
+      val(outdir),
+      
+      path(expected_cells),
+      path(total_droplets_include),
+      emit: experimentid_outdir_cellbenderunfiltered_expectedcells_totaldropletsinclude
     )
+
     tuple(
-    val(experiment_id),
-    val(outdir),
-    emit: out_paths
+      val(experiment_id),
+      val(outdir),
+      emit: out_paths
     )
 
   script:
 
-    //     // use GPU
     if (params.utilise_gpu){
-    
-    gpu_text_info = '--cuda'
+      gpu_text_info = '--cuda'
     }else{
-     
-    gpu_text_info = ''
+      gpu_text_info = ''
     }
-    runid = random_hex(16)
+    
     outdir = "${outdir_prev}/${experiment_id}"
     lr_string = "${learning_rate}".replaceAll("\\.", "pt")
     lr_string = "${lr_string}".replaceAll("-", "neg")
@@ -252,15 +375,9 @@ process cellbender__remove_background {
     cb_params = "${cb_params}__zdim_${zdims}"
     cb_params = "${cb_params}__zlayer_${zlayers}"
     cb_params = "${cb_params}__lowcount_${low_count_threshold}"
-    outdir = "${outdir}/${cb_params}".replaceAll(
-    "cellbender_params",
-    "cellbender"
-    )
+    outdir = "${outdir}/${cb_params}".replaceAll("cellbender_params","cellbender")
     outfile = "cellbender"
-    // outdir = "${outdir}-fpr_${fpr_string}"
-    process_info = "${runid} (runid)"
-    process_info = "${process_info}, ${task.cpus} (cpus)"
-    process_info = "${process_info}, ${task.memory} (memory)"
+    
     """
     # LD_PRELOAD to fix mkl/anaconda python error
     # cf. https://stackoverflow.com/questions/36659453/intel-mkl-fatal-error-cannot-load-libmkl-avx2-so-or-libmkl-def-so
@@ -271,29 +388,11 @@ process cellbender__remove_background {
     ln --physical ${file_10x_barcodes} txd_input/barcodes.tsv.gz
     ln --physical ${file_10x_features} txd_input/features.tsv.gz
     ln --physical ${file_10x_matrix} txd_input/matrix.mtx.gz
-    # Run cellbender --cuda \\
+
     cellbender remove-background --input txd_input ${gpu_text_info} --output ${outfile} --expected-cells \$(cat ${expected_cells}) --total-droplets-included \$(cat ${total_droplets_include}) --model full --z-dim ${zdims} --z-layers ${zlayers} --low-count-threshold ${low_count_threshold} --epochs ${epochs} --learning-rate ${learning_rate} --fpr ${fpr}
     # If outfile does not have h5 appended to it, move it.
     [ -f ${outfile} ] && mv ${outfile} ${outfile}.h5
-    # Clean up file names (e.g., FPR_0.1 becomes FPR_0pt1)
-    # *.h5 will grep unfiltered and filtered
-    # NOTE: We assume the only h5 files in the dir are from cellbender
-    for i in \$(ls *.h5); do
-    echo \$i
-    out_file=\$(echo \$i | sed s/"\\."/"pt"/g | sed s/"pth5"/"\\.h5"/)
-    # If outfile does not exist, move i to out_file
-    [ ! -f \$out_file ] && mv \$i \$out_file
-    echo \$out_file
-    done
-    # Make a table of cellbender output matricies in reference to their
-    # final outdir... this will be used to make a group of files
-    # for input
-    032-clean_cellbender_results.py --nf_outdir_tag ${outdir} --cb_outfile_tag ${outfile} --experiment_id ${experiment_id} --fpr '${fpr}' --cb_params ${cb_params}
-    # Move the list of output matricies to one with a unique job id so
-    # that we can collect them all later in the pipeline across all job
-    # iterations and not overwrite anything.
-    cp ${outfile}-filtered_10x_mtx-file_list.tsv ${runid}-${outfile}-filtered_10x_mtx-file_list.tsv
-    # Move plots to a plot dir
+
     mkdir plots
     mv *pdf plots/ 2>/dev/null || true
     mv *png plots/ 2>/dev/null || true
