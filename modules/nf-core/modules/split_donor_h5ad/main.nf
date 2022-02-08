@@ -35,7 +35,8 @@ process SPLIT_DONOR_H5AD {
     
     script:
 
-          filtered_matrix_h5_2 = "${filtered_matrix_h5}".replaceAll("${params.output_dir}","${workflow.workDir}/../${params.outdir}")
+          filtered_matrix_h5_2 = "${filtered_matrix_h5}".replaceAll("${params.outdir}","${workflow.workDir}/../${params.outdir}")
+          // filtered_matrix_h5_2 = "${filtered_matrix_h5}".replaceAll("${params.output_dir}","${workflow.workDir}/../${params.outdir}")
 
     """
 
