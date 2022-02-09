@@ -15,7 +15,7 @@ process SCRUBLET {
     //cache false        // cache results from run
 
     tag "${samplename}"
-    scratch true        // use tmp directory
+    //scratch true        // use tmp directory
 
 
     label 'process_medium'

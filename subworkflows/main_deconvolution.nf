@@ -170,7 +170,18 @@ workflow  main_deconvolution {
                 
                 // run a multiplet detection and when splitting the donor specific h5ad remove these from non deconvoluted samples
 
-                SPLIT_DONOR_H5AD(split_channel4)
+                //tuple val(sample), path(donor_ids_tsv), path(filtered_matrix_h5), path(scrublet)
+                //filtered_matrix_h5_2 = "${filtered_matrix_h5}".replaceAll("${params.output_dir}","${workflow.workDir}/../${params.outdir}")
+        split_channel5 = split_channel4.map{
+	    val_sample, val_donor_ids_tsv, val_filtered_matrix_h5, path_scrublet ->
+	    [  val_sample,
+	       file(val_donor_ids_tsv),
+	       file(val_filtered_matrix_h5.replaceAll("${params.output_dir}","${workflow.workDir}/../${params.outdir}")),
+               path_scrublet,
+	       "${params.outdir}"]}
+
+	split_channel5.view()
+        SPLIT_DONOR_H5AD(split_channel5)
                 
 
                 // collect file paths to h5ad files in tsv tables:
