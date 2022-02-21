@@ -168,8 +168,9 @@ workflow qc {
                 params.umap.umap_spread.value,
                 params.sccaf.min_accuracy         
             )
-            LI1 = CLUSTERING_HARMONY.out.dummy_output
+            
             lisi_input2 = HARMONY.out.reduced_dims_params.collect()
+            LI1 = CLUSTERING_HARMONY.out.dummy_output
                 
         }else{
             lisi_input2 = Channel.of()
@@ -231,8 +232,9 @@ workflow qc {
                 params.umap.umap_spread.value,
                 params.sccaf.min_accuracy
             )
-            LI2 = CLUSTERING_BBKNN.out.dummy_output
+            
             lisi_input3 = BBKNN.out.reduced_dims_params.collect()
+            LI2 = CLUSTERING_BBKNN.out.dummy_output
                 
         }else{
             lisi_input3 = Channel.of()
