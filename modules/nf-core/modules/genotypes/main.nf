@@ -1,6 +1,13 @@
 process MATCH_GT_VIREO {
-  tag: "${pool_id}"
-  
+  tag "${pool_id}"
+
+  if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
+      container "/software/hgi/containers/mercury_scrna_deconvolution_62bd56a-2021-12-15-4d1ec9312485.sif"
+      //// container "/software/hgi/containers/mercury_scrna_deconvolution_latest.img"
+  } else {
+      container "mercury/scrna_deconvolution:62bd56a"
+  }
+
   input:
     val(pool_id)
     path(vireo_gt_vcf)
@@ -21,7 +28,7 @@ process MATCH_GT_VIREO {
 
     # sort and index vireo VCF file (bcftools sort bails out with an error)
     bcftools view ${pool_id}_GT_donors.vireo.headfix.vcf.gz | \
-      awk '$1 ~ /^#/ {print $0;next} {print $0 | "sort -k1,1V -k2,2n"}' > ${pool_id}_GT_donors.vireo.srt.vcf
+      awk '\$1 ~ /^#/ {print \$0;next} {print \$0 | "sort -k1,1V -k2,2n"}' > ${pool_id}_GT_donors.vireo.srt.vcf
     bgzip ${pool_id}_GT_donors.vireo.srt.vcf
     tabix -p vcf ${pool_id}_GT_donors.vireo.srt.vcf.gz
     bcftools gtcheck -g ${ref_gt_vcf} ${pool_id}_GT_donors.vireo.srt.vcf.gz > ${gt_check_output_txt}
