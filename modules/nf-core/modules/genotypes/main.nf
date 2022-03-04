@@ -2,10 +2,9 @@ process MATCH_GT_VIREO {
   tag "${pool_id}"
 
   if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-      container "/software/hgi/containers/mercury_scrna_deconvolution_62bd56a-2021-12-15-4d1ec9312485.sif"
-      //// container "/software/hgi/containers/mercury_scrna_deconvolution_latest.img"
+      container "/software/hgi/containers/wtsihgi-nf_genotype_match-1.0.sif"
   } else {
-      container "mercury/scrna_deconvolution:62bd56a"
+      container "mercury/wtsihgi-nf_genotype_match-1.0
   }
 
   input:
