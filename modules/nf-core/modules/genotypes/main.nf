@@ -4,12 +4,13 @@ process MATCH_GT_VIREO {
   if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
       container "/software/hgi/containers/wtsihgi-nf_genotype_match-1.0.sif"
   } else {
-      container "mercury/wtsihgi-nf_genotype_match-1.0
+      container "mercury/wtsihgi-nf_genotype_match-1.0"
   }
 
+  when: params.vireo.run_gtmatch_aposteriori
+  
   input:
-    val(pool_id)
-    path(vireo_gt_vcf)
+    tuple val(pool_id), path(vireo_gt_vcf)
     tuple path(ref_gt_vcf), path(ref_gt_vcf_tbi)
 
   output:

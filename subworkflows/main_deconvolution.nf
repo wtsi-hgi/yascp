@@ -37,10 +37,10 @@ workflow  main_deconvolution {
         }
 
         ch_experiment_donorsvcf_donorslist.map { experiment, donorsvcf, donorslist -> tuple(experiment, donorslist.replaceAll(/,/, " ").replaceAll(/"/, ""))}.set{donors_in_lane}
-        
+
         CELLSNP(ch_experiment_bam_bai_barcodes,
             Channel.fromPath(params.cellsnp.vcf_candidate_snps).collect())
-        
+
         MULTIPLET(
             params.output_dir,
             channel__file_paths_10x,
@@ -81,9 +81,10 @@ workflow  main_deconvolution {
             // full_vcf.view()
             full_vcf.filter { experiment, cellsnp, npooled, t -> npooled != '1' }.set{full_vcf2}
             full_vcf.filter { experiment, cellsnp, npooled, t -> npooled == '1' }.set{not_deconvoluted}
-            
+
             // full_vcf2.view()
             VIREO(full_vcf2)
+            vireo_out_sample_donor_vcf = VIREO.out.sample_donor_vcf
             vireo_out_sample_summary_tsv = VIREO.out.sample_summary_tsv
             vireo_out_sample__exp_summary_tsv = VIREO.out.sample__exp_summary_tsv
             vireo_out_sample_donor_ids = VIREO.out.sample_donor_ids
@@ -139,7 +140,7 @@ workflow  main_deconvolution {
             }
             // full_vcf.filter { experiment, cellsnp, npooled, t -> npooled != '1' }.set{full_vcf2}
             // full_vcf.filter { experiment, cellsnp, npooled, t -> npooled == '1' }.set{not_deconvoluted}
-            
+
 
             // Now that channel is created run suporcell
             // full_vcf.filter { samplename, bam_file, bai_file, barcodes_tsv_gz, souporcell_n_clusters, t1, t2 -> souporcell_n_clusters != 1 }.set{full_vcf2}
@@ -157,7 +158,7 @@ workflow  main_deconvolution {
                 not_deconvoluted.map{ experiment, donorsvcf, npooled,t -> tuple(experiment, 'None')}.set{not_deconvoluted2}
                 file_cellmetadata = MULTIPLET.out.file__cellmetadata
                 scrublet_paths = MULTIPLET.out.scrublet_paths
-                
+
                 // making 2 channels, 1 that is deconvoluted and another that isnt
                 split_channel = vireo_out_sample_donor_ids.combine(ch_experiment_filth5, by: 0)
                 split_channel2 = not_deconvoluted2.combine(ch_experiment_filth5, by: 0)
@@ -167,7 +168,7 @@ workflow  main_deconvolution {
 
                 // adding the scrublet paths to the channel.
                 split_channel4 = split_channel3.combine(scrublet_paths, by: 0)
-                
+
                 // run a multiplet detection and when splitting the donor specific h5ad remove these from non deconvoluted samples
 
                 //tuple val(sample), path(donor_ids_tsv), path(filtered_matrix_h5), path(scrublet)
@@ -182,7 +183,7 @@ workflow  main_deconvolution {
 
 	split_channel5.view()
         SPLIT_DONOR_H5AD(split_channel5)
-                
+
 
                 // collect file paths to h5ad files in tsv tables:
                 SPLIT_DONOR_H5AD.out.donors_h5ad_tsv
@@ -210,7 +211,7 @@ workflow  main_deconvolution {
                         newLine: false, sort: true,
                         seed: "experiment_id\th5ad_filepath\n",
                         storeDir:params.outdir+'/deconvolution/filepaths')
-                
+
                 SPLIT_DONOR_H5AD.out.h5ad_tsv
                 .collectFile(name: "cellranger_as_h5ad.tsv",
                         newLine: true, sort: true, // only one line in each file to collate, without ending new line character, so add it here.
@@ -231,16 +232,17 @@ workflow  main_deconvolution {
                         newLine: false, sort: true,
                         seed: "experiment_id\tn_cells\n",
                         storeDir:params.outdir+'/deconvolution/filepaths')
-                
+
                 vireo_out_sample_summary_tsv.view()
                 vireo_out_sample__exp_summary_tsv.view()
 
                 PLOT_DONOR_CELLS(ch_vireo_donor_n_cells_tsv)
-                
 
-        }else{
+
+        } else{
             out_h5ad =Channel.fromPath(params.cellsnp.vcf_candidate_snps).collect()
             vireo_out_sample__exp_summary_tsv=Channel.fromPath(params.cellsnp.vcf_candidate_snps).collect()
+            vireo_out_sample_donor_vcf = Channel.empty()
         }
 
 
@@ -250,10 +252,10 @@ workflow  main_deconvolution {
                 // combine with tuple val(samplename), file("${samplename}/clusters.tsv"):
                 .combine(SOUPORCELL.out.souporcell_output_files.map {a,b,c,d -> tuple(a,b)},
                     by: 0))
-        } 
+        }
 
     emit:
         out_h5ad
         vireo_out_sample__exp_summary_tsv
-
+        vireo_out_sample_donor_vcf
 }
