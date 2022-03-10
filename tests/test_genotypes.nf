@@ -2,8 +2,8 @@
 
 nextflow.enable.dsl = 2
 
-include { MATCH_GT_VIREO } from '../modules/nf-core/modules/genotypes/main.nf'
-
+//include { MATCH_GT_VIREO } from '../modules/nf-core/modules/genotypes/main.nf'
+include { match_genotypes } from '../subworkflows/deconvolution.nf'
 params.vireo.run_gtmatch_aposteriori = true
 
 
@@ -21,5 +21,5 @@ workflow TEST_MATCH_GT_VIREO {
   .set { ch_ref_vcf }
 
   ch_ref_vcf.subscribe { println "TEST_MATCH_GT_VIREO: ch_ref_vcf = ${it}" }
-  MATCH_GT_VIREO(ch_pool_id_vireo_vcf, ch_ref_vcf)
+  match_genotypes(ch_pool_id_vireo_vcf, ch_ref_vcf)
 }
