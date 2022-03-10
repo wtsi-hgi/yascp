@@ -27,7 +27,7 @@ nextflow.enable.dsl = 2
 include { TEST_MATCH_GT_VIREO } from './tests/test_genotypes'
 
 workflow NF_CORE_TEST {
-  println "running NF_CORE_TEST::TEST_MATCH_GT_VIREO"
+  println "**** running NF_CORE_TEST::TEST_MATCH_GT_VIREO"
   TEST_MATCH_GT_VIREO()
 }
 

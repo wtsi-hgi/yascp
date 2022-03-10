@@ -1,7 +1,7 @@
 
 // Load base.config by default for all pipelines - typically included in the nextflow config.
 include { main_deconvolution } from './main_deconvolution.nf'
-include { MATCH_GT_VIREO } from '../modules/nf-core/modules/genotypes/main'}
+include { MATCH_GT_VIREO } from '../modules/nf-core/modules/genotypes/main'
 
 workflow deconvolution {
     take:

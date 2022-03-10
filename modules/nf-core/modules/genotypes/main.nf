@@ -1,14 +1,21 @@
 process MATCH_GT_VIREO {
   tag "${pool_id}"
 
+  //publishDir  path: "${params.outdir}/gtmatch/",
+  //        pattern: "${pool_id}_{assignments.csv,gtcheck.txt}]",
+  //        saveAs: {filename -> "${outfil_prfx}_" + filename},
+  //        mode: "${params.copy_mode}",
+  //        overwrite: "true"
+
   if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
+      println "container: /software/hgi/containers/wtsihgi-nf_genotype_match-1.0.sif\n"
       container "/software/hgi/containers/wtsihgi-nf_genotype_match-1.0.sif"
   } else {
       container "mercury/wtsihgi-nf_genotype_match-1.0"
   }
 
-  when: params.vireo.run_gtmatch_aposteriori
-  
+  //when: params.vireo.run_gtmatch_aposteriori
+
   input:
     tuple val(pool_id), path(vireo_gt_vcf)
     tuple path(ref_gt_vcf), path(ref_gt_vcf_tbi)
