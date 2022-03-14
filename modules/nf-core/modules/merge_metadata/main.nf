@@ -1,4 +1,5 @@
 process prep_collectmetadata{
+    label 'process_tiny'
     input:
         tuple val(experiment_id), path(metadata_path)
     output:
