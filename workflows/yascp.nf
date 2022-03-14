@@ -36,7 +36,7 @@ def modules = params.modules.clone()
 // MODULE: Local to the pipeline
 //
 include { GET_SOFTWARE_VERSIONS } from '../modules/local/get_software_versions' addParams( options: [publish_files : ['tsv':'']] )
-include {deconvolution} from "$projectDir/subworkflows/deconvolution"
+include {deconvolution; match_genotypes} from "$projectDir/subworkflows/deconvolution"
 include {cellbender} from "$projectDir/subworkflows/cellbender"
 include {qc} from "$projectDir/subworkflows/qc"
 include {data_handover} from "$projectDir/subworkflows/data_handover"
@@ -89,11 +89,11 @@ workflow SCDECON {
             cellbender(prepare_inputs.out.ch_experimentid_paths10x_raw,
                 prepare_inputs.out.ch_experimentid_paths10x_filtered,prepare_inputs.out.channel__metadata)
             log.info ' ---- Out results - cellbender to remove background---'
-            
+
             cellbender.out.results_list
                 .map{experiment, path -> tuple(experiment, path+'/cellbender-FPR_0pt1-filtered_10x_mtx')}
                 .set{ch_experiment_filth5} // this channel is used for task 'split_donor_h5ad'
-            
+
             prepare_inputs.out.ch_experiment_bam_bai_barcodes.map { experiment, bam, bai, barcodes -> tuple(experiment,
                         bam,
                         bai)}.set{pre_ch_experiment_bam_bai_barcodes}
@@ -143,14 +143,20 @@ workflow SCDECON {
         else{
             log.info '--- input mode is not selected - please choose --- (existing_cellbender| cellbender | cellranger)'
         }
-        
+
         if (params.do_deconvolution){
+            Channel.fromPath(params.reference_genotype_vcf)
+            .map { file -> tuple(file, "${file}.tbi")}
+            .subscribe { println "TEST_MATCH_GT_VIREO: ${it}" }
+            .set { ch_ref_vcf }
+
             deconvolution(ch_experiment_bam_bai_barcodes, // activate this to run deconvolution pipeline
                 prepare_inputs.out.ch_experiment_npooled,
                 ch_experiment_filth5,
                 prepare_inputs.out.ch_experiment_donorsvcf_donorslist,channel__file_paths_10x)
                 MERGE_SAMPLES(deconvolution.out.out_h5ad,deconvolution.out.vireo_out_sample__exp_summary_tsv,'h5ad')
-        }else{        
+                match_genotypes(deconvolution.out.vireo_out_sample_donor_vcf, ch_ref_vcf)
+        }else{
             channel__metadata = prepare_inputs.out.channel__metadata
             MERGE_SAMPLES(channel__file_paths_10x,channel__metadata,'barcodes')
         }
@@ -164,11 +170,11 @@ workflow SCDECON {
             log.info '''---No cells filtered input'''
             dummy_filtered_channel(file__anndata_merged,params.skip_preprocessing.id_in)
             file__cells_filtered = dummy_filtered_channel.out.anndata_metadata
-            
+
         }else{
             file__cells_filtered = Channel.from(params.skip_preprocessing.file__cells_filtered)
-        }   
-        
+        }
+
     }
 
     qc(file__anndata_merged,file__cells_filtered)
