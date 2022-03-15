@@ -1,11 +1,10 @@
 process MATCH_GT_VIREO {
   tag "${pool_id}"
 
-  //publishDir  path: "${params.outdir}/gtmatch/",
-  //        pattern: "${pool_id}_{assignments.csv,gtcheck.txt}]",
-  //        saveAs: {filename -> "${outfil_prfx}_" + filename},
-  //        mode: "${params.copy_mode}",
-  //        overwrite: "true"
+  publishDir  path: "${params.outdir}/gtmatch/",
+          pattern: "*_assignments.csv",
+          mode: "${params.copy_mode}",
+          overwrite: "true"
 
   if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
       println "container: /software/hgi/containers/wtsihgi-nf_genotype_match-1.0.sif\n"
