@@ -28,7 +28,7 @@ process GATHER_DATA{
       if ("${params.input}" == 'cellranger'){
         cellbender_input='cellranger'
       }else if ("${params.input}" == 'existing_cellbender'){
-        cellbender_input="${params.cellbender_file}"
+        cellbender_input="${params.cellbender_location}/${params.cellbender_filenamePattern}/${params.cellbender_resolution_to_use}.tsv"
       }else if("${params.input}" == 'cellbender'){
         cellbender_input='cellbender'
       }
@@ -39,6 +39,6 @@ process GATHER_DATA{
           --results_dir=${outdir_prev} \
           --input_table=${input_data_table} \
           --cellbender=${cellbender_input} \
-          --resolution=${params.resolution}
+          --resolution=${params.cellbender_resolution_to_use}
       """
 }
