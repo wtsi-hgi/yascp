@@ -79,10 +79,9 @@ workflow CELLBENDER {
         )
 
         cellbender__preprocess_output(
-             cellbender__remove_background.out.cleanup_input,
-                cellbender__remove_background.out.cb_plot_input,
-                cellbender__remove_background.out.experimentid_outdir_cellbenderunfiltered_expectedcells_totaldropletsinclude,
-                cellbender__remove_background.out.out_paths
+            cellbender__remove_background.out.cleanup_input,
+            cellbender__remove_background.out.cb_plot_input,
+            cellbender__remove_background.out.experimentid_outdir_cellbenderunfiltered_expectedcells_totaldropletsinclude,
         )
 
         // Make some basic plots
@@ -104,7 +103,7 @@ workflow CELLBENDER {
         // }
     
         cellbender__gather_qc_input(
-             outdir,
+            outdir,
             cellbender__preprocess_output.out.results_list.collect()
         )
 

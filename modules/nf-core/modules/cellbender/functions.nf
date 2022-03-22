@@ -159,24 +159,17 @@ process cellbender__preprocess_output{
     tuple(
       val(experiment_id),
       val(outdir),
-      
       path(expected_cells),
       path(total_droplets_include)
     )
 
-    tuple(
-      val(experiment_id),
-      val(outdir)
-    )
+
 
   output:
     path("*filtered_10x_mtx/barcodes.tsv.gz", emit: tenx_barcodes)
     path("*filtered_10x_mtx/features.tsv.gz", emit: tenx_features)
     path("*filtered_10x_mtx/matrix.mtx.gz", emit: tenx_matrix)
-    // path(
-    //   "*filtered_10x_mtx-file_list.tsv",
-    //   emit: results_list
-    // )  
+
     path(
       "${runid}-${outfile}-filtered_10x_mtx-file_list.tsv",
        emit: results_list
@@ -197,13 +190,6 @@ process cellbender__preprocess_output{
       path("*_filtered.h5"),
       emit: cb_plot_input
     )
-    // tuple(
-    //   val(outdir),
-    //   path(file_10x_barcodes),
-    //   path(file_10x_features),
-    //   path(file_10x_matrix),
-    //   emit: cb_plot_input
-    // )
 
     tuple(
       val(experiment_id),
