@@ -3,13 +3,12 @@ process SUBSET_GENOTYPE {
     tag "${samplename}.${sample_subset_file}"
     label 'process_medium'
     publishDir "${params.outdir}/subset_genotype/", mode: "${params.copy_mode}", pattern: "${samplename}.${sample_subset_file}.subset.vcf.gz"
-    
-    
+
+
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "/software/hgi/containers/mercury_scrna_deconvolution_62bd56a-2021-12-15-4d1ec9312485.sif"
-        //// container "/software/hgi/containers/mercury_scrna_deconvolution_latest.img"
+        container "/software/hgi/containers/wtsihgi-nf_yascp_htstools-1.0.sif"
     } else {
-        container "mercury/scrna_deconvolution:62bd56a"
+        container "mercury/wtsihgi-nf_yascp_htstools-1.0"
     }
 
     input:

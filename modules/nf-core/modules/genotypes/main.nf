@@ -8,9 +8,9 @@ process MATCH_GT_VIREO {
 
   if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
       println "container: /software/hgi/containers/wtsihgi-nf_genotype_match-1.0.sif\n"
-      container "/software/hgi/containers/wtsihgi-nf_genotype_match-1.0.sif"
+      container "/software/hgi/containers/wtsihgi-nf_yascp_htstools-1.0.sif"
   } else {
-      container "mercury/wtsihgi-nf_genotype_match-1.0"
+      container "mercury/wtsihgi-nf_yascp_htstools-1.0"
   }
 
   //when: params.vireo.run_gtmatch_aposteriori
