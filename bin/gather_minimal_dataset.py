@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__date__ = '2021-11-04'
+__date__ = '2022-21-03'
 __version__ = '0.0.2'
 # DEBUG = True
 
@@ -24,6 +24,21 @@ from plot_cellranger_vs_cellbender import anndata_from_h5
 import statistics
 import h5py
 import scanpy
+from datetime import date
+
+today = date.today()
+date_now = today.strftime("%Y-%m-%d")
+date_of_transfer = today.strftime("%Y-%m-")
+month = today.strftime('%m')
+day='30'
+
+if (month=='03'):
+    day='31'
+elif(month=='01'):
+    day='30'
+elif(month=='02'):
+    day='29'
+date_of_transfer+=day
 
 ANNDATA_FILE_QC = "adata.h5ad"
 DATA_DIR_AZIMUTH = "azimuth"
@@ -387,6 +402,9 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
 
     Donors_in_pool = len(Donors)
     Number_of_Reads = int(metrics['Number of Reads'].values[0].replace(',','')) # NOT SURE HOW THIS IS CALCULATED.
+    Fraction_Reads_in_Cells = metrics['Fraction Reads in Cells'].values[0]
+    Median_reads_per_cell = int(metrics['Mean Reads per Cell'].values[0].replace(',',''))
+
     f = pd.DataFrame(ad_lane_filtered.X.sum(axis=1))
     Median_UMI_Counts_per_Cell_10x_filter= statistics.median(f[f>0][0])
     f = pd.DataFrame(ad_lane_filtered.X.sum(axis=1))
@@ -492,24 +510,46 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
         )
 
         if Donor_Stats['Donor id']!='':
-            # Only generate donor stats for the donors excluding unasigned and doublets.        
+            # Only generate donor stats for the donors excluding unasigned and doublets. 
+            Pass_Fail='PASS'
+            Failure_Reason =''
+
+            if (Median_UMIs_per_gene<=400):
+                Pass_Fail='FAIL'
+                Failure_Reason +='Median_UMIs_per_gene<=400; '
+            if (Donor_UMIS_mapped_to_mitochondrial_genes/UMIs>=0.5):
+                Pass_Fail='FAIL'
+                Failure_Reason +='Donor_UMIS_mapped_to_mitochondrial_genes/UMIs>=0.5; '
+            if (Donor_cells_passes_qc<=200):
+                Pass_Fail='FAIL'
+                Failure_Reason +='Donor_cells_passes_qc<=200; '
+            if (Donor_cells_for_donor<=400):
+                Pass_Fail='FAIL'
+                Failure_Reason +='Donor_cells_for_donor<=400; '
+        
             Donor_Stats_extra = {
-                'Donors in pool':Donors_in_pool,
-                'Donor_number':donor_number,
                 'Donor id':donor_id,
-                'Nr UMIs':UMIs,
-                'Median UMIs per gene':Median_UMIs_per_gene,
+                'Donors in pool':Donors_in_pool,
                 'Median UMIs per cell':Median_UMIs_per_cell,
                 'Nr UMIS mapped to mitochondrial genes':Donor_UMIS_mapped_to_mitochondrial_genes,
+                'Nr cells passes qc':Donor_cells_passes_qc,
+                'Total Nr cells for donor':Donor_cells_for_donor, 
+                'Date sample received':'comes from extra metadata', #Do this
+                'Date of sample sequencing':'comes from extra metadata', 
+                'Donor_number': donor_number,
+                'Nr UMIs':UMIs,
+                'Median UMIs per gene':Median_UMIs_per_gene,
                 'Nr UMIS mapped to ribo genes':Donor_UMIS_mapped_to_ribo_genes,
                 'Nr UMIS mapped to ribo rna':Donor_UMIS_mapped_to_ribo_rna,
-                'Nr cells passes qc':Donor_cells_passes_qc,
                 'Total Nr cells fails qc':Donor_cells_fails_qc,
-                'Total Nr cells for donor':Donor_cells_for_donor, 
                 'Genes detected with counts > 0':genes_detected_with_counts_greater_than_0,
                 'Genes with UMI count >= 3':genes_with_UMI_count_larger_than_3,
                 'Cell type numbers':Cell_numbers,
                 'Cell types detected':Cell_types_detected,
+                'Overall Pass Fail':Pass_Fail,
+                'Failure reason':Failure_Reason,
+                'Date of data transfer':date_of_transfer, # make this the last day of the month
+                'QC Report end date':date_now,
             }
 
             Donor_Stats.update(Donor_Stats_extra)
@@ -535,16 +575,23 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
         Stdev_cells_passes_qc=0
         Stdev_cells_fails_qc=0
         Stdev_Nr_cells_for_donor=0       
-
+    Percentage_of_unassigned_cells = Unassigned_donor/(Donors_in_pool+Doublets_donor+Unassigned_donor)*100
     data_tranche = {
         'Experiment id':expid,
         'Pool id':list(set(Donor_df['Pool ID']))[0],
+        'Machine id':'XXXX', #Change this - it will come from the extra metadata file if available
+        'Run id':'Comes from the fetch', #Generate - feed in from extra metadate if available
+        'Date of sample sequencing':'Comes from the LIMs or Sequencescape',#Change this
         'Total Droplets with donor assignment':Cells_before_QC_filters,
         'Droplets identified as doublet':Doublets_donor,
         'Droplets with donor unassigned':Unassigned_donor,
+        'UKB donors deconvoluted in pool':0, #change this - would be better if this was an automated input.  ie - if 2 vcfs fed in then 2 matches
+        'ELGH donors in the pool':0, #change this - would be better if this was an automated input - ie - if 2 vcfs fed in then 2 matches
         'Chromium channel number':list(set(Donor_df['Chromium channel number']))[0],
         'Donors in pool':Donors_in_pool,
         'Number of Reads':Number_of_Reads,
+        'Fraction Reads in Cells':Fraction_Reads_in_Cells,
+        'Mean Reads per Cell':Median_reads_per_cell,
         'Median UMI Counts per Cell after 10x filter':Median_UMI_Counts_per_Cell_10x_filter,
         'Median UMI Counts per Cell after Cellbender':Median_UMI_Counts_per_Cell,
         'Total UMIs before filter':Total_UMIs_before_10x_filter,
@@ -553,6 +600,7 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
         'UMIs mapped to genes':UMIs_mapped_to_genes,
         'UMIS mapped to ribo genes':UMIS_mapped_to_ribo_genes,
         'UMIS mapped to ribo rna':UMIS_mapped_to_ribo_rna,
+        'Percentage of unassigned cells':Percentage_of_unassigned_cells,
         'Droplets before filtering':Total_Drroplets_before_10x_filtering,
         'Empty droplets - removed by filtering':Droplets_removed_by_filtering,
         'Total Droplets with a single cell':Number_of_cells,
@@ -566,6 +614,7 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
         'Stdev cells fails qc':Stdev_cells_fails_qc,
         'Stdev Nr cells for donor':Stdev_Nr_cells_for_donor,
         'Total UMIs after cellbender':Total_UMIs_after_cellbender,
+        'QC Report end date':date_now
     }
     return fctr, data_tranche, data_donor,azt
 

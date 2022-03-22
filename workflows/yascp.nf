@@ -91,7 +91,7 @@ workflow SCDECON {
             log.info ' ---- Out results - cellbender to remove background---'
 
             cellbender.out.results_list
-                .map{experiment, path -> tuple(experiment, path+'/cellbender-FPR_0pt1-filtered_10x_mtx')}
+                .map{experiment, path -> tuple(experiment, path+'/cellbender-FPR_'+params.cellbender_resolution_to_use+'-filtered_10x_mtx')}
                 .set{ch_experiment_filth5} // this channel is used for task 'split_donor_h5ad'
 
             prepare_inputs.out.ch_experiment_bam_bai_barcodes.map { experiment, bam, bai, barcodes -> tuple(experiment,
@@ -99,41 +99,44 @@ workflow SCDECON {
                         bai)}.set{pre_ch_experiment_bam_bai_barcodes}
 
             cellbender.out.results_list
-                .map{experiment, path -> tuple(experiment, file(path+'/cellbender-FPR_0pt1-filtered_10x_mtx/barcodes.tsv.gz'))}.set{barcodes}
+                .map{experiment, path -> tuple(experiment, file(path+'/cellbender-FPR_'+params.cellbender_resolution_to_use+'-filtered_10x_mtx/barcodes.tsv.gz'))}.set{barcodes}
 
             channel__file_paths_10x= cellbender.out.results_list
                 .map{experiment, path -> tuple(experiment,
-                file(path+'/cellbender-FPR_0pt1-filtered_10x_mtx/barcodes.tsv.gz'),
-                file(path+'/cellbender-FPR_0pt1-filtered_10x_mtx/features.tsv.gz'),
-                file(path+'/cellbender-FPR_0pt1-filtered_10x_mtx/matrix.mtx.gz'))}
+                file(path+'/cellbender-FPR_'+params.cellbender_resolution_to_use+'-filtered_10x_mtx/barcodes.tsv.gz'),
+                file(path+'/cellbender-FPR_'+params.cellbender_resolution_to_use+'-filtered_10x_mtx/features.tsv.gz'),
+                file(path+'/cellbender-FPR_'+params.cellbender_resolution_to_use+'-filtered_10x_mtx/matrix.mtx.gz'))}
 
 
             pre_ch_experiment_bam_bai_barcodes.combine(barcodes, by: 0).set{ch_experiment_bam_bai_barcodes}
 
         }else if (params.input == 'existing_cellbender'){
             log.info ' ---- using existing cellbender output for deconvolution---'
-            Channel.fromPath(params.cellbender_file, followLinks: true, checkIfExists: true)
+            Channel.fromPath(file(params.cellbender_location+'/file_paths_10x-cellbender_params__epochs_250__learnrt_1Eneg7__zdim_100__zlayer_500__lowcount_10-FPR_'+params.cellbender_resolution_to_use+'.tsv'), followLinks: true, checkIfExists: true)
                 .splitCsv(header: true, sep: params.input_tables_column_delimiter)
-                .map{row->tuple(row.experiment_id, row.data_path_10x_format)}
+                .map{row->tuple(row.experiment_id, params.cellbender_location+'/../../../../'+row.data_path_10x_format)}
                 .set{ch_experiment_filth5} // this channel is used for task 'split_donor_h5ad'
-
+            // cellbender.out.results_list
+            //     .map{experiment, path -> tuple(experiment, path+'/cellbender-FPR_'+params.cellbender_resolution_to_use+'-filtered_10x_mtx')}
+            //     .set{ch_experiment_filth5} // this channel is used for task 'split_donor_h5ad'
             prepare_inputs.out.ch_experiment_bam_bai_barcodes.map { experiment, bam, bai, barcodes -> tuple(experiment,
                                 bam,
                                 bai)}.set{pre_ch_experiment_bam_bai_barcodes}
 
 
-            Channel.fromPath(params.cellbender_file, followLinks: true, checkIfExists: true)
-                .splitCsv(header: true, sep: params.input_tables_column_delimiter).map{row->tuple(row.experiment_id, file(row.data_path_10x_format+'/barcodes.tsv.gz'))}.set{barcodes}
+            Channel.fromPath(file(params.cellbender_location+'/file_paths_10x-cellbender_params__epochs_250__learnrt_1Eneg7__zdim_100__zlayer_500__lowcount_10-FPR_'+params.cellbender_resolution_to_use+'.tsv'), followLinks: true, checkIfExists: true)
+                .splitCsv(header: true, sep: params.input_tables_column_delimiter).map{row->tuple(row.experiment_id, file(params.cellbender_location+'/../../../../'+row.data_path_10x_format+'/barcodes.tsv.gz'))}.set{barcodes}
 
-            channel__file_paths_10x= Channel.fromPath(params.cellbender_file, followLinks: true, checkIfExists: true)
+            channel__file_paths_10x= Channel.fromPath(file(params.cellbender_location+'/file_paths_10x-cellbender_params__epochs_250__learnrt_1Eneg7__zdim_100__zlayer_500__lowcount_10-FPR_'+params.cellbender_resolution_to_use+'.tsv'), followLinks: true, checkIfExists: true)
                 .splitCsv(header: true, sep: params.input_tables_column_delimiter).map{row->tuple(row.experiment_id,
-                                                        file(row.data_path_10x_format+'/barcodes.tsv.gz'),
-                                                        file(row.data_path_10x_format+'/features.tsv.gz'),
-                                                        file(row.data_path_10x_format+'/matrix.mtx.gz'))}
+                                                        file(params.cellbender_location+'/../../../../'+row.data_path_10x_format+'/barcodes.tsv.gz'),
+                                                        file(params.cellbender_location+'/../../../../'+row.data_path_10x_format+'/features.tsv.gz'),
+                                                        file(params.cellbender_location+'/../../../../'+row.data_path_10x_format+'/matrix.mtx.gz'))}
 
             pre_ch_experiment_bam_bai_barcodes.combine(barcodes, by: 0).set{ch_experiment_bam_bai_barcodes}
 
-        }else if (params.input == 'cellranger'){
+        }
+        else if (params.input == 'cellranger'){
             log.info '--- using cellranger filtered data instead of cellbender (skipping cellbender)---'
             ch_experiment_bam_bai_barcodes=prepare_inputs.out.ch_experiment_bam_bai_barcodes
             ch_experiment_filth5=prepare_inputs.out.ch_experiment_filth5
@@ -177,14 +180,14 @@ workflow SCDECON {
 
     }
 
-    qc(file__anndata_merged,file__cells_filtered)
+    // qc(file__anndata_merged,file__cells_filtered)
 
-    // // Performing eQTL mapping.
-    // // This part will contain code from Hannes and the potentially additional LIMIX runs.
-    // // qc_finish_dummy= 'qc.out.LI'
-    qc_finish_dummy= qc.out.LI
-    // // Transfer plots to the website and gather the outputs.
-    data_handover("${workDir}/../${params.output_dir}",qc_finish_dummy)
+    // // // Performing eQTL mapping.
+    // // // This part will contain code from Hannes and the potentially additional LIMIX runs.
+    // // // qc_finish_dummy= 'qc.out.LI'
+    // qc_finish_dummy= qc.out.LI
+    // // // Transfer plots to the website and gather the outputs.
+    // data_handover("${workDir}/../${params.output_dir}",qc_finish_dummy)
 
 
 }

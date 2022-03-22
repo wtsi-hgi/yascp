@@ -84,8 +84,10 @@ Which points to multiple files as input, but the main is a pointer to input file
 
 ```console
 params{
-    input = 'cellbender' 
-    cellbender_file='' //if cellbender is run already then can skip this by selecting existing_cellbender and input 
+    input = 'cellbender' //[cellranger|existing_cellbender]
+    qc_cluster_input_files' //if cellbender is run already then can skip this by selecting existing_cellbender and input 
+    cellbender_resolution_to_use='0pt1' //this is the default resolution, if not specifies [0pt01,0pt05]
+    0pt1
     extra_metadata = ''
     skip_preprocessing{
         value=false //this is only activated to skip all the filtering - ie cellbender and restart with qc analysis once the parametes are changed
