@@ -96,7 +96,6 @@ workflow DECONV_INPUTS{
     emit:
         channel__file_paths_10x
         ch_experiment_bam_bai_barcodes
-        barcodes
         ch_experiment_filth5
 }
 
@@ -108,7 +107,6 @@ workflow SCDECON {
         input_channel = Channel.fromPath(params.input_data_table, followLinks: true, checkIfExists: true)
         // prepearing the inputs from a standard 10x dataset folders.
         prepare_inputs(input_channel)
-
         log.info 'The preprocessing has been already performed, skipping directly to h5ad input'
            // // Removing the background using cellbender which is then used in the deconvolution.
         if (params.input == 'cellbender'){
@@ -119,7 +117,6 @@ workflow SCDECON {
             DECONV_INPUTS(cellbender.out.cellbender_path,prepare_inputs)
             channel__file_paths_10x = DECONV_INPUTS.out.channel__file_paths_10x
             ch_experiment_bam_bai_barcodes= DECONV_INPUTS.out.ch_experiment_bam_bai_barcodes
-            barcodes= DECONV_INPUTS.out.barcodes
             ch_experiment_filth5= DECONV_INPUTS.out.ch_experiment_filth5
 
         }else if (params.input == 'existing_cellbender'){
@@ -127,7 +124,6 @@ workflow SCDECON {
             DECONV_INPUTS(params.cellbender_location,prepare_inputs)
             channel__file_paths_10x = DECONV_INPUTS.out.channel__file_paths_10x
             ch_experiment_bam_bai_barcodes= DECONV_INPUTS.out.ch_experiment_bam_bai_barcodes
-            barcodes= DECONV_INPUTS.out.barcodes
             ch_experiment_filth5= DECONV_INPUTS.out.ch_experiment_filth5
         }
         else if (params.input == 'cellranger'){
