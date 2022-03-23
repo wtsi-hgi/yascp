@@ -109,7 +109,7 @@ workflow CELLBENDER {
 
         results_list = cellbender__preprocess_output.out.out_paths
         // prepeare the output channel for utilising in the deconvolution instead of barcode input.
-        cellbender_path = cellbender__gather_qc_input.out.outdir
+        cellbender_path = cellbender__gather_qc_input.out.celbender_path
 
 
         emit:

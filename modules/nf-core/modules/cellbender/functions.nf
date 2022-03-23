@@ -542,7 +542,7 @@ process cellbender__gather_qc_input {
   output:
     val(outdir, emit: outdir)
     path("*.tsv", emit: qc_input_files)
-
+    val("${outdir}/${params.cellbender_filenamePattern}${params.cellbender_resolution_to_use}.tsv", emit: celbender_path)
   script:
     runid = random_hex(16)
     outdir = "${outdir_prev}/qc_cluster_input_files"
