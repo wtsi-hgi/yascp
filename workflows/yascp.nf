@@ -58,12 +58,6 @@ include { INPUT_CHECK } from '../subworkflows/local/input_check' addParams( opti
 def multiqc_options   = modules['multiqc']
 multiqc_options.args += params.multiqc_title ? Utils.joinModuleArgs(["--title \"$params.multiqc_title\""]) : ''
 
-//
-// MODULE: Installed directly from nf-core/modules
-//
-// include { FASTQC  } from '../modules/nf-core/modules/fastqc/main'  addParams( options: modules['fastqc'] )
-// include { MULTIQC } from '../modules/nf-core/modules/multiqc/main' addParams( options: multiqc_options   )
-
 /*
 ========================================================================================
     RUN MAIN WORKFLOW
@@ -118,7 +112,6 @@ workflow SCDECON {
             channel__file_paths_10x = DECONV_INPUTS.out.channel__file_paths_10x
             ch_experiment_bam_bai_barcodes= DECONV_INPUTS.out.ch_experiment_bam_bai_barcodes
             ch_experiment_filth5= DECONV_INPUTS.out.ch_experiment_filth5
-
         }else if (params.input == 'existing_cellbender'){
             log.info ' ---- using existing cellbender output for deconvolution---'
             DECONV_INPUTS(params.cellbender_location,prepare_inputs)
@@ -166,17 +159,12 @@ workflow SCDECON {
         }else{
             file__cells_filtered = Channel.from(params.skip_preprocessing.file__cells_filtered)
         }
-
     }
 
-    qc(file__anndata_merged,file__cells_filtered)
-
+    qc(file__anndata_merged,file__cells_filtered) //This runs the Clusterring and qc assessments of the datasets.
     // // Performing eQTL mapping.
-    // // This part will contain code from Hannes and the potentially additional LIMIX runs.
-    // // qc_finish_dummy= 'qc.out.LI'
-    qc_finish_dummy= qc.out.LI
-    // // Transfer plots to the website and gather the outputs.
-    data_handover("${workDir}/../${params.output_dir}",qc_finish_dummy)
+
+    data_handover("${workDir}/../${params.output_dir}",qc.out.LI) //This part gathers the plots for the reporting in a Summary folder. If run through gitlab CI it will triger the data transfer to web.
 
 
 }
