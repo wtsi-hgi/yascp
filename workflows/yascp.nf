@@ -73,6 +73,33 @@ multiqc_options.args += params.multiqc_title ? Utils.joinModuleArgs(["--title \"
 // Info required for completion email and summary
 def multiqc_report = []
 
+workflow DECONV_INPUTS{
+    take:
+        cellbender_path
+        prepare_inputs
+    main:
+        Channel.fromPath(file(cellbender_path+'/'+params.cellbender_filenamePattern+params.cellbender_resolution_to_use+'.tsv'), followLinks: true, checkIfExists: true)
+            .splitCsv(header: true, sep: params.input_tables_column_delimiter)
+            .map{row->tuple(row.experiment_id, file(cellbender_path+'/../../../../'+row.data_path_10x_format))}
+            .set{ch_experiment_filth5} // this channel is used for task 'split_donor_h5ad'
+        prepare_inputs.out.ch_experiment_bam_bai_barcodes.map { experiment, bam, bai, barcodes -> tuple(experiment,
+                            bam,
+                            bai)}.set{pre_ch_experiment_bam_bai_barcodes}
+        Channel.fromPath(file(cellbender_path+'/'+params.cellbender_filenamePattern+params.cellbender_resolution_to_use+'.tsv'), followLinks: true, checkIfExists: true)
+            .splitCsv(header: true, sep: params.input_tables_column_delimiter).map{row->tuple(row.experiment_id, file(cellbender_path+'/../../../../'+row.data_path_10x_format+'/barcodes.tsv.gz'))}.set{barcodes}
+        channel__file_paths_10x= Channel.fromPath(file(cellbender_path+'/'+params.cellbender_filenamePattern+params.cellbender_resolution_to_use+'.tsv'), followLinks: true, checkIfExists: true)
+            .splitCsv(header: true, sep: params.input_tables_column_delimiter).map{row->tuple(row.experiment_id,
+                                                    file(cellbender_path+'/../../../../'+row.data_path_10x_format+'/barcodes.tsv.gz'),
+                                                    file(cellbender_path+'/../../../../'+row.data_path_10x_format+'/features.tsv.gz'),
+                                                    file(cellbender_path+'/../../../../'+row.data_path_10x_format+'/matrix.mtx.gz'))}
+        pre_ch_experiment_bam_bai_barcodes.combine(barcodes, by: 0).set{ch_experiment_bam_bai_barcodes}
+    emit:
+        channel__file_paths_10x
+        ch_experiment_bam_bai_barcodes
+        barcodes
+        ch_experiment_filth5
+}
+
 
 
 workflow SCDECON {
@@ -89,56 +116,25 @@ workflow SCDECON {
             cellbender(prepare_inputs.out.ch_experimentid_paths10x_raw,
                 prepare_inputs.out.ch_experimentid_paths10x_filtered,prepare_inputs.out.channel__metadata)
             log.info ' ---- Out results - cellbender to remove background---'
-
-            cellbender.out.results_list
-                .map{experiment, path -> tuple(experiment, path+'/cellbender-FPR_'+params.cellbender_resolution_to_use+'-filtered_10x_mtx')}
-                .set{ch_experiment_filth5} // this channel is used for task 'split_donor_h5ad'
-
-            prepare_inputs.out.ch_experiment_bam_bai_barcodes.map { experiment, bam, bai, barcodes -> tuple(experiment,
-                        bam,
-                        bai)}.set{pre_ch_experiment_bam_bai_barcodes}
-
-            cellbender.out.results_list
-                .map{experiment, path -> tuple(experiment, file(path+'/cellbender-FPR_'+params.cellbender_resolution_to_use+'-filtered_10x_mtx/barcodes.tsv.gz'))}.set{barcodes}
-
-            channel__file_paths_10x= cellbender.out.results_list
-                .map{experiment, path -> tuple(experiment,
-                file(path+'/cellbender-FPR_'+params.cellbender_resolution_to_use+'-filtered_10x_mtx/barcodes.tsv.gz'),
-                file(path+'/cellbender-FPR_'+params.cellbender_resolution_to_use+'-filtered_10x_mtx/features.tsv.gz'),
-                file(path+'/cellbender-FPR_'+params.cellbender_resolution_to_use+'-filtered_10x_mtx/matrix.mtx.gz'))}
-
-
-            pre_ch_experiment_bam_bai_barcodes.combine(barcodes, by: 0).set{ch_experiment_bam_bai_barcodes}
+            DECONV_INPUTS(cellbender.out.cellbender_path,prepare_inputs)
+            channel__file_paths_10x = DECONV_INPUTS.out.channel__file_paths_10x
+            ch_experiment_bam_bai_barcodes= DECONV_INPUTS.out.ch_experiment_bam_bai_barcodes
+            barcodes= DECONV_INPUTS.out.barcodes
+            ch_experiment_filth5= DECONV_INPUTS.out.ch_experiment_filth5
 
         }else if (params.input == 'existing_cellbender'){
             log.info ' ---- using existing cellbender output for deconvolution---'
-            Channel.fromPath(file(params.cellbender_location+'/'+params.cellbender_filenamePattern+params.cellbender_resolution_to_use+'.tsv'), followLinks: true, checkIfExists: true)
-                .splitCsv(header: true, sep: params.input_tables_column_delimiter)
-                .map{row->tuple(row.experiment_id, params.cellbender_location+'/../../../../'+row.data_path_10x_format)}
-                .set{ch_experiment_filth5} // this channel is used for task 'split_donor_h5ad'
-            prepare_inputs.out.ch_experiment_bam_bai_barcodes.map { experiment, bam, bai, barcodes -> tuple(experiment,
-                                bam,
-                                bai)}.set{pre_ch_experiment_bam_bai_barcodes}
-
-
-            Channel.fromPath(file(params.cellbender_location+'/'+params.cellbender_filenamePattern+params.cellbender_resolution_to_use+'.tsv'), followLinks: true, checkIfExists: true)
-                .splitCsv(header: true, sep: params.input_tables_column_delimiter).map{row->tuple(row.experiment_id, file(params.cellbender_location+'/../../../../'+row.data_path_10x_format+'/barcodes.tsv.gz'))}.set{barcodes}
-
-            channel__file_paths_10x= Channel.fromPath(file(params.cellbender_location+'/'+params.cellbender_filenamePattern+params.cellbender_resolution_to_use+'.tsv'), followLinks: true, checkIfExists: true)
-                .splitCsv(header: true, sep: params.input_tables_column_delimiter).map{row->tuple(row.experiment_id,
-                                                        file(params.cellbender_location+'/../../../../'+row.data_path_10x_format+'/barcodes.tsv.gz'),
-                                                        file(params.cellbender_location+'/../../../../'+row.data_path_10x_format+'/features.tsv.gz'),
-                                                        file(params.cellbender_location+'/../../../../'+row.data_path_10x_format+'/matrix.mtx.gz'))}
-
-            pre_ch_experiment_bam_bai_barcodes.combine(barcodes, by: 0).set{ch_experiment_bam_bai_barcodes}
-
+            DECONV_INPUTS(params.cellbender_location,prepare_inputs)
+            channel__file_paths_10x = DECONV_INPUTS.out.channel__file_paths_10x
+            ch_experiment_bam_bai_barcodes= DECONV_INPUTS.out.ch_experiment_bam_bai_barcodes
+            barcodes= DECONV_INPUTS.out.barcodes
+            ch_experiment_filth5= DECONV_INPUTS.out.ch_experiment_filth5
         }
         else if (params.input == 'cellranger'){
             log.info '--- using cellranger filtered data instead of cellbender (skipping cellbender)---'
             ch_experiment_bam_bai_barcodes=prepare_inputs.out.ch_experiment_bam_bai_barcodes
             ch_experiment_filth5=prepare_inputs.out.ch_experiment_filth5
             channel__file_paths_10x=prepare_inputs.out.channel__file_paths_10x
-
         }
         else{
             log.info '--- input mode is not selected - please choose --- (existing_cellbender| cellbender | cellranger)'
@@ -149,7 +145,7 @@ workflow SCDECON {
             .map { file -> tuple(file, "${file}.tbi")}
             .subscribe { println "TEST_MATCH_GT_VIREO: ${it}" }
             .set { ch_ref_vcf }
-
+            // ch_experiment_filth5.view()
             deconvolution(ch_experiment_bam_bai_barcodes, // activate this to run deconvolution pipeline
                 prepare_inputs.out.ch_experiment_npooled,
                 ch_experiment_filth5,

@@ -86,8 +86,7 @@ Which points to multiple files as input, but the main is a pointer to input file
 params{
     input = 'cellbender' //[cellranger|existing_cellbender]
     qc_cluster_input_files' //if cellbender is run already then can skip this by selecting existing_cellbender and input 
-    cellbender_resolution_to_use='0pt1' //this is the default resolution, if not specifies [0pt01,0pt05]
-    0pt1
+    cellbender_resolution_to_use='0pt1' //this is the default resolution, if not specifies [0pt01,0pt05] - these resolutions come from cellbender definition file - https://github.com/wtsi-hgi/yascp/blob/870165fe883658c19d339c26b08c729f45911f0a/conf/cellbender.config#L109
     extra_metadata = ''
     skip_preprocessing{
         value=false //this is only activated to skip all the filtering - ie cellbender and restart with qc analysis once the parametes are changed
@@ -106,6 +105,7 @@ params{
 ```
 
 1. input = default 'cellbender' which indicates cellbender will be run. Other options - [cellranger|existing_cellbender]
+1. if running [existing_cellbender] - specify location to the results directory containing [cellbender_location='/full/path/to/results/nf-preprocessing/cellbender/qc_cluster_input_files']
 2. full_vcf_file = points to vcf file to be used.
 4. subset_genotypes = indicates to subset genotypes for an input to be used in Vireo.
 5. run_celltype_assignment = runs celltypist and Azimuth if PBMC data is used.

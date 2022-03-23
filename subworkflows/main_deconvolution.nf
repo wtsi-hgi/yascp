@@ -177,11 +177,11 @@ workflow  main_deconvolution {
 	    val_sample, val_donor_ids_tsv, val_filtered_matrix_h5, path_scrublet ->
 	    [  val_sample,
 	       file(val_donor_ids_tsv),
-	       file(val_filtered_matrix_h5.replaceAll("${params.output_dir}","${workflow.workDir}/../${params.outdir}")),
+	       file(val_filtered_matrix_h5),
                path_scrublet,
-	       "${params.outdir}"]}
+	       params.outdir]}
 
-	split_channel5.view()
+	    // split_channel5.view()
         SPLIT_DONOR_H5AD(split_channel5)
 
 
