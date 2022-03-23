@@ -9,8 +9,7 @@ process SPLIT_BAM_PER_DONOR
     }
 
     input:
-      path(vireo_donor_barcode_tsv)
-      path(cellranger_possorted_bam)
+      tuple val(pool_id), path(cellranger_possorted_bam), path(vireo_donor_barcode_tsv)
 
     script:
     """
