@@ -11,8 +11,8 @@ process SPLIT_CELL_BARCODES_PER_DONOR
       tuple val(pool_id), path(cellranger_possorted_bam), path(vireo_donor_barcode_tsv)
 
     output:
+      tuple val(pool_id), path(cellranger_possorted_bam), emit: poolid_bam
       path "${oufnprfx}_*.txt", emit: per_donor_barcode_files
-      tuple val(pool_id), path(cellranger_possorted_bam), emit: experiment_possorted_bam
 
     script:
     oufnprfx="${pool_id}_barcodes"
@@ -36,7 +36,7 @@ process SPLIT_CELL_BARCODES_PER_DONOR
 
 process SPLIT_BAM_BY_CELL_BARCODES
 {
-    label 'process_low'
+    //label 'process_medium'
 
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
       container "/software/hgi/containers/wtsihgi-nf_yascp_htstools-1.0.sif"
@@ -49,35 +49,45 @@ process SPLIT_BAM_BY_CELL_BARCODES
                overwrite: "true"
 
     input:
-      tuple val(pool_id), path(cellranger_possorted_bam)
-      path(vireo_donor_barcode_file)
+      tuple val(pool_id), path(cellranger_possorted_bam), path(vireo_donor_barcode_file)
 
     output:
-      path "${oufnprfx}_possorted_bam.bam", emit: possorted_bam_files
+      path("${oufnprfx}_possorted_bam.bam"), emit: possorted_bam_files
 
     script:
     oufnprfx = "${vireo_donor_barcode_file}".minus(".txt")
     """
-      samtools view --tag-file CB:${vireo_donor_barcode_file} --bam -o ${oufnprfx}_possorted_bam.bam ${cellranger_possorted_bam}
+      samtools view --threads ${task.cpus} --tag-file CB:${vireo_donor_barcode_file} --bam -o ${oufnprfx}_possorted_bam.bam ${cellranger_possorted_bam}
     """
 }
 
-workflow SPLIT_BAM_PER_DONOR
+workflow split_bam_by_donor
 {
   take:
     poolid_bam_vireo_donor_barcodes
 
   main:
     SPLIT_CELL_BARCODES_PER_DONOR(poolid_bam_vireo_donor_barcodes)
+
+    //SPLIT_CELL_BARCODES_PER_DONOR.out.per_donor_barcode_files
+    //.subscribe { println "SPLIT_CELL_BARCODES_PER_DONOR.out.per_donor_barcode_files: ${it}"}
+
     SPLIT_CELL_BARCODES_PER_DONOR.out.per_donor_barcode_files
       .flatten()
-      .set { ch_per_donor_barcode_files }
+      .set { ch_barcode_files }
+
+    SPLIT_CELL_BARCODES_PER_DONOR.out.poolid_bam
+    .combine ( ch_barcode_files )
+    .set { ch_poolid_bam_barcodefil }
+
+    //ch_poolid_bam_barcodefil
+    //  .subscribe {println "ch_poolid_bam_barcodefil: ${it}"}
 
     SPLIT_BAM_BY_CELL_BARCODES(
-      SPLIT_CELL_BARCODES_PER_DONOR.out.experiment_possorted_bam,
-      ch_per_donor_barcode_files
-      )
+      ch_poolid_bam_barcodefil
+    )
 
   emit:
     possorted_bam_files = SPLIT_BAM_BY_CELL_BARCODES.out.possorted_bam_files
+
 }

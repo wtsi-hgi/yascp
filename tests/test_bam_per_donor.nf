@@ -2,8 +2,8 @@
 
 nextflow.enable.dsl = 2
 
-include { SPLIT_BAM_PER_DONOR } from '../modules/local/cellranger_bam_per_donor.nf'
-
+//include { SPLIT_CELL_BARCODES_PER_DONOR } from '../modules/local/cellranger_bam_per_donor.nf'
+include { split_bam_by_donor } from '../modules/local/cellranger_bam_per_donor.nf'
 
 workflow TEST_SPLIT_BAM_PER_DONOR {
   Channel.fromPath(
@@ -21,5 +21,6 @@ workflow TEST_SPLIT_BAM_PER_DONOR {
     ch_sample_possorted_bam_vireo_donor_ids
       .subscribe { println "ch_sample_possorted_bam_vireo_donor_ids = ${it}" }
 
-  SPLIT_BAM_PER_DONOR(ch_sample_possorted_bam_vireo_donor_ids)
+  //SPLIT_CELL_BARCODES_PER_DONOR(ch_sample_possorted_bam_vireo_donor_ids)
+  split_bam_by_donor(ch_sample_possorted_bam_vireo_donor_ids)
 }

@@ -35,8 +35,10 @@ def modules = params.modules.clone()
 //
 // MODULE: Local to the pipeline
 //
-include { GET_SOFTWARE_VERSIONS } from '../modules/local/get_software_versions' addParams( options: [publish_files : ['tsv':'']] )
-include {deconvolution; match_genotypes} from "$projectDir/subworkflows/deconvolution"
+include { GET_SOFTWARE_VERSIONS } from "$projectDir/modules/local/get_software_versions" addParams( options: [publish_files : ['tsv':'']] )
+include { deconvolution } from "$projectDir/subworkflows/deconvolution"
+include { match_genotypes } from "$projectDir/subworkflows/match_genotypes"
+include { split_bam_by_donor } from "$projectDir/modules/local/cellranger_bam_per_donor"
 include {cellbender} from "$projectDir/subworkflows/cellbender"
 include {qc} from "$projectDir/subworkflows/qc"
 include {data_handover} from "$projectDir/subworkflows/data_handover"
