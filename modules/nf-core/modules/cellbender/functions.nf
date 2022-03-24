@@ -460,6 +460,28 @@ process cellbender__remove_background__qc_plots {
     """
 }
 
+process capture_cellbender_files{
+  publishDir  path: "${outdir}"
+  label 'process_tiny'
+    if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
+        container "/software/hgi/containers/wtsihgi_nf_scrna_qc_6bb6af5-2021-12-23-3270149cf265.sif"
+        //// container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/nf_qc_cluster_2.4.img"
+    } else {
+        container "wtsihgi/nf_scrna_qc:6bb6af5"
+  }
+  input:
+    path(cellbender_location)
+    val(outdir)
+  output:
+    path(cellbender_location)
+    path("cellbender/qc_cluster_input_files/file_paths_10x-*${params.cellbender_resolution_to_use}.tsv", emit: celbender_path)
+  script:
+  """
+    echo 'setting link to get cellbender results in this directory'
+  """    
+
+}
+
 process cellbender__remove_background__qc_plots_2 {
 
   label 'process_low'
@@ -542,7 +564,7 @@ process cellbender__gather_qc_input {
   output:
     val(outdir, emit: outdir)
     path("*.tsv", emit: qc_input_files)
-    val("${outdir}/${params.cellbender_filenamePattern}${params.cellbender_resolution_to_use}.tsv", emit: celbender_path)
+    path("file_paths_10x-*${params.cellbender_resolution_to_use}.tsv", emit: celbender_path)
   script:
     runid = random_hex(16)
     outdir = "${outdir_prev}/qc_cluster_input_files"

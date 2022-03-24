@@ -44,6 +44,7 @@ include { prepare_inputs } from "$projectDir/subworkflows/prepare_inputs"
 include {MERGE_SAMPLES} from "$projectDir/modules/nf-core/modules/merge_samples/main"
 include {MULTIPLET} from "../modules/nf-core/modules/multiplet/main"
 include {dummy_filtered_channel} from "../modules/nf-core/modules/merge_samples/functions"
+include {capture_cellbender_files} from "../modules/nf-core/modules/cellbender/functions"
 //
 // SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
 //
@@ -74,25 +75,24 @@ workflow DECONV_INPUTS{
     main:
         cellbender_path
             .splitCsv(header: true, sep: params.input_tables_column_delimiter)
-            .map{row->tuple(row.experiment_id, file(cellbender_path+'/../../../../'+row.data_path_10x_format))}
+            .map{row->tuple(row.experiment_id, file(row.data_path_10x_format))}
             .set{ch_experiment_filth5} // this channel is used for task 'split_donor_h5ad'
         prepare_inputs.out.ch_experiment_bam_bai_barcodes.map { experiment, bam, bai, barcodes -> tuple(experiment,
                             bam,
                             bai)}.set{pre_ch_experiment_bam_bai_barcodes}
         cellbender_path
-            .splitCsv(header: true, sep: params.input_tables_column_delimiter).map{row->tuple(row.experiment_id, file(cellbender_path+'/../../../../'+row.data_path_10x_format+'/barcodes.tsv.gz'))}.set{barcodes}
+            .splitCsv(header: true, sep: params.input_tables_column_delimiter).map{row->tuple(row.experiment_id, file(row.data_path_10x_format+'/barcodes.tsv.gz'))}.set{barcodes}
         channel__file_paths_10x= cellbender_path
             .splitCsv(header: true, sep: params.input_tables_column_delimiter).map{row->tuple(row.experiment_id,
-                                                    file(cellbender_path+'/../../../../'+row.data_path_10x_format+'/barcodes.tsv.gz'),
-                                                    file(cellbender_path+'/../../../../'+row.data_path_10x_format+'/features.tsv.gz'),
-                                                    file(cellbender_path+'/../../../../'+row.data_path_10x_format+'/matrix.mtx.gz'))}
+                                                    file(row.data_path_10x_format+'/barcodes.tsv.gz'),
+                                                    file(row.data_path_10x_format+'/features.tsv.gz'),
+                                                    file(row.data_path_10x_format+'/matrix.mtx.gz'))}
         pre_ch_experiment_bam_bai_barcodes.combine(barcodes, by: 0).set{ch_experiment_bam_bai_barcodes}
     emit:
         channel__file_paths_10x
         ch_experiment_bam_bai_barcodes
         ch_experiment_filth5
 }
-
 
 
 workflow SCDECON {
@@ -114,9 +114,9 @@ workflow SCDECON {
             ch_experiment_filth5= DECONV_INPUTS.out.ch_experiment_filth5
         }else if (params.input == 'existing_cellbender'){
             log.info ' ---- using existing cellbender output for deconvolution---'
-            cellbender_location = Channel.from(params.cellbender_location+params.cellbender_filenamePattern+params.cellbender_resolution_to_use+'.tsv')
-            cellbender_location.view()
-            DECONV_INPUTS(cellbender_location,prepare_inputs)
+            // cellbender_file = Channel.from(params.cellbender_location+params.cellbender_filenamePattern+params.cellbender_resolution_to_use+'.tsv')
+            capture_cellbender_files(params.cellbender_location,"${params.output_dir}/nf-preprocessing")
+            DECONV_INPUTS(capture_cellbender_files.out.celbender_path,prepare_inputs)
             channel__file_paths_10x = DECONV_INPUTS.out.channel__file_paths_10x
             ch_experiment_bam_bai_barcodes= DECONV_INPUTS.out.ch_experiment_bam_bai_barcodes
             ch_experiment_filth5= DECONV_INPUTS.out.ch_experiment_filth5
