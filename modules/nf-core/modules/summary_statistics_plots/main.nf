@@ -24,9 +24,7 @@ process SUMMARY_STATISTICS_PLOTS {
     script:
       if ("${params.input}" == 'cellranger'){
           cellbender_input='cellranger'
-        }else if ("${params.input}" == 'existing_cellbender'){
-          cellbender_input="${params.cellbender_file}"
-        }else if("${params.input}" == 'cellbender'){
+        }else {
           cellbender_input='cellbender'
         }
         outdir = "${outdir_prev}/handover"
