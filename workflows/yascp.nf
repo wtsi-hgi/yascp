@@ -35,8 +35,10 @@ def modules = params.modules.clone()
 //
 // MODULE: Local to the pipeline
 //
-include { GET_SOFTWARE_VERSIONS } from '../modules/local/get_software_versions' addParams( options: [publish_files : ['tsv':'']] )
-include {deconvolution; match_genotypes} from "$projectDir/subworkflows/deconvolution"
+include { GET_SOFTWARE_VERSIONS } from "$projectDir/modules/local/get_software_versions" addParams( options: [publish_files : ['tsv':'']] )
+include { deconvolution } from "$projectDir/subworkflows/deconvolution"
+include { match_genotypes } from "$projectDir/subworkflows/match_genotypes"
+include { split_bam_by_donor } from "$projectDir/modules/local/cellranger_bam_per_donor"
 include {cellbender} from "$projectDir/subworkflows/cellbender"
 include {qc} from "$projectDir/subworkflows/qc"
 include {data_handover} from "$projectDir/subworkflows/data_handover"
@@ -143,6 +145,8 @@ workflow SCDECON {
                 prepare_inputs.out.ch_experiment_donorsvcf_donorslist,channel__file_paths_10x)
                 MERGE_SAMPLES(deconvolution.out.out_h5ad,deconvolution.out.vireo_out_sample__exp_summary_tsv,'h5ad')
                 match_genotypes(deconvolution.out.vireo_out_sample_donor_vcf, ch_ref_vcf)
+
+            split_bam_by_donor(deconvolution.out.sample_possorted_bam_vireo_donor_ids)
         }else{
             channel__metadata = prepare_inputs.out.channel__metadata
             MERGE_SAMPLES(channel__file_paths_10x,channel__metadata,'barcodes')

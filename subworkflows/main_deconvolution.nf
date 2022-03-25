@@ -88,6 +88,7 @@ workflow  main_deconvolution {
             vireo_out_sample_summary_tsv = VIREO.out.sample_summary_tsv
             vireo_out_sample__exp_summary_tsv = VIREO.out.sample__exp_summary_tsv
             vireo_out_sample_donor_ids = VIREO.out.sample_donor_ids
+
         }
 
 
@@ -153,6 +154,10 @@ workflow  main_deconvolution {
         }
 
         if (params.vireo.run){
+                ch_experiment_bam_bai_barcodes
+                  .map { samplename, bam_file, bai_file, barcodes_tsv_gz -> tuple(samplename, file(bam_file)) }
+                  .combine(vireo_out_sample_donor_ids, by: 0 )
+                  .set { ch_experiment_bam_vireo_donor_ids }
 
                 // If sample is not deconvoluted we will use scrublet to detect the doublets and remove them.
                 not_deconvoluted.map{ experiment, donorsvcf, npooled,t -> tuple(experiment, 'None')}.set{not_deconvoluted2}
@@ -243,6 +248,7 @@ workflow  main_deconvolution {
             out_h5ad =Channel.fromPath(params.cellsnp.vcf_candidate_snps).collect()
             vireo_out_sample__exp_summary_tsv=Channel.fromPath(params.cellsnp.vcf_candidate_snps).collect()
             vireo_out_sample_donor_vcf = Channel.empty()
+            ch_experiment_bam_vireo_donor_ids = Channel.empty()
         }
 
 
@@ -258,4 +264,5 @@ workflow  main_deconvolution {
         out_h5ad
         vireo_out_sample__exp_summary_tsv
         vireo_out_sample_donor_vcf
+        sample_possorted_bam_vireo_donor_ids = ch_experiment_bam_vireo_donor_ids
 }

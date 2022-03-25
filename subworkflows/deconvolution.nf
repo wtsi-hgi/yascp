@@ -1,7 +1,8 @@
 
 // Load base.config by default for all pipelines - typically included in the nextflow config.
-include { main_deconvolution } from './main_deconvolution.nf'
+include { main_deconvolution } from './main_deconvolution'
 include { MATCH_GT_VIREO } from '../modules/nf-core/modules/genotypes/main'
+include { SPLIT_CELL_BARCODES_PER_DONOR;  SPLIT_BAM_BY_CELL_BARCODES} from '../modules/local/cellranger_bam_per_donor'
 
 workflow deconvolution {
     take:
@@ -23,18 +24,5 @@ workflow deconvolution {
         out_h5ad
         vireo_out_sample__exp_summary_tsv
         vireo_out_sample_donor_vcf
-
-}
-
-workflow match_genotypes {
-  take:
-    ch_pool_id_vireo_vcf
-    ch_ref_vcf
-
-  main:
-    MATCH_GT_VIREO(ch_pool_id_vireo_vcf, ch_ref_vcf)
-
-  emit:
-    donor_assignments_csv = MATCH_GT_VIREO.out.donor_match_table
-    gtcheck_results_txt = MATCH_GT_VIREO.out.gtcheck_out
+        sample_possorted_bam_vireo_donor_ids = main_deconvolution.out.sample_possorted_bam_vireo_donor_ids
 }
