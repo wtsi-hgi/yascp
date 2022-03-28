@@ -22,9 +22,7 @@ workflow  main_deconvolution {
         channel__file_paths_10x
 
     main:
-		log.info "#### running workflow main_deconvolution() ..."
-
-
+		log.info "#### running DECONVOLUTION workflow #####"
         if (params.run_with_genotype_input) {
             if (params.genotype_input.subset_genotypes){
                 log.info "---We are subsetting genotypes----"
@@ -52,19 +50,19 @@ workflow  main_deconvolution {
 
         // cellsnp() outputs -> vireo():
         if (params.vireo.run){
-
-            // cellsnp() from pipeline provided inputs:
-
-
-            // Vireo:
+            // Here we run Vireo software to perform the donor deconvolution. Note that we have coded the pipeline to be capable in using 
+            // the full genotypes as an input and also subset to the individuals provided as an input in the donor_vcf_ids column. The 
+            // VIREO:
             if (params.run_with_genotype_input) {
                 log.info "---running Vireo with genotype input----"
                 // for each experiment_id to deconvolute, subset donors vcf to its donors and subset genomic regions.
                 if (params.genotype_input.subset_genotypes){
+                    // Here we subset the genotypes. This happens if the input.nf contains subset_genotypes = true
                     log.info "---We are using subset genotypes running Vireo----"
                     CELLSNP.out.cellsnp_output_dir.combine(ch_experiment_npooled, by: 0)
                         .combine(SUBSET_GENOTYPE.out.samplename_subsetvcf, by: 0).set{full_vcf}
                 }else{
+                    // Here we do not subset the genotypes and match against the full cohort provided as an input. This happens if subset_genotypes = false
                     log.info "---We are using a full genotype input for Vireo----"
                     CELLSNP.out.cellsnp_output_dir.combine(ch_experiment_npooled, by: 0).set{full_vcf}
                     full_vcf.map { experiment, cellsnpvcf, npooled -> tuple(experiment,cellsnpvcf,npooled,file(params.genotype_input.full_vcf_file))}.set {full_vcf}
@@ -72,17 +70,16 @@ workflow  main_deconvolution {
             }
             // Vireo without genotype input:
             else {
+                // Vireo can also be run without the genotypes, and the performance is equally good then running with.
+                // here we run it without the genotypes and the donors are labeled as donor0, donor1 etc, dependant on the number of donors set in the input file n_pooled column
                 log.info "-----running Vireo without genotype input----"
                 CELLSNP.out.cellsnp_output_dir.combine(ch_experiment_npooled, by: 0).set{full_vcf}
                 full_vcf.map {experiment, cellsnp, npooled -> tuple(experiment, cellsnp, npooled,[])}.set{full_vcf}
-
             }
-            // TODO - filter out the full_vcf to only samples with more than 1 pooled id.
-            // full_vcf.view()
+
+            // When all the channels are prpeared accordingly we exacute the vireo with the prpeared channel.
             full_vcf.filter { experiment, cellsnp, npooled, t -> npooled != '1' }.set{full_vcf2}
             full_vcf.filter { experiment, cellsnp, npooled, t -> npooled == '1' }.set{not_deconvoluted}
-
-            // full_vcf2.view()
             VIREO(full_vcf2)
             vireo_out_sample_donor_vcf = VIREO.out.sample_donor_vcf
             vireo_out_sample_summary_tsv = VIREO.out.sample_summary_tsv
@@ -93,7 +90,10 @@ workflow  main_deconvolution {
 
 
         if (params.souporcell.run){
+            // YASCP pipeline is also capable in running SOUPORCELL instead of VIREO. If activated SOUPORCELL will be used. 
+            // yascp currently doesnt have an option to take souporcell assignments as downstream instead of vireo but this will be added shortly.
             // This runs the Souporcell Preprocessing
+
             if (params.souporcell.use_raw_barcodes) {
                 // read raw cellranger barcodes per pool for souporcell
                 log.info """Here use the raw barcodes"""
@@ -104,24 +104,23 @@ workflow  main_deconvolution {
             }
 
             // This runs the Souporcell
+            // Similarly to the VIREO Soupocell can be run with and without genotypes and folowing prpeares the inputs accordingly to each option.
+            // Soupocell cant digest a gz file gence we extract the data.
             if (params.run_with_genotype_input) {
 
                 if (params.genotype_input.subset_genotypes){
+                    // this will run the soupocell with the subset genotypes. This happens if the input.nf contains subset_genotypes = true
                     log.info "---We are using subset genotypes running Suporcell----"
-                    // here combine the ch_experiment_bam_bai_barcodes_npooled with the output of subset
                     GUZIP_VCF(SUBSET_GENOTYPE.out.samplename_subsetvcf)
                     // ch_experiment_bam_bai_barcodes_npooled.combine(SUBSET_GENOTYPE.out.samplename_subsetvcf, by: 0).set{full_vcf}
                     ch_experiment_bam_bai_barcodes_npooled.combine(GUZIP_VCF.out.souporcell_vcf, by: 0).set{full_vcf}
 
-
                 }else{
                     log.info "---We are using a full genotype input for Suporcell----"
                     // this however currently doesnt work and the individuals have to be provided.
-
                     // here just add the full vcf path to each of the ch_experiment_bam_bai_barcodes_npooled
                     GUZIP_VCF(tuple('full_vcf', file(params.genotype_input.full_vcf_file)))
                     GUZIP_VCF.out.souporcell_vcf.map { sample, vcf -> vcf }.set{vcf_file}
-                    // we would now flatten this and take the the file of the tuple to be used next.
                     ch_experiment_bam_bai_barcodes_npooled.map {
                         samplename, bam_file, bai_file, barcodes_tsv_gz, souporcell_n_clusters ->
                         tuple(samplename, bam_file, bai_file, barcodes_tsv_gz, souporcell_n_clusters)
@@ -132,6 +131,7 @@ workflow  main_deconvolution {
                 full_vcf.combine(donors_in_lane, by: 0).set{full_vcf}
             }
             else{
+                // Soupocell can also run without the genotypes. This will prpeare channels to run it withoutt.
                 log.info "-----running Suporcell without genotype input----"
                 // here make add an empty entry [] to the ch_experiment_bam_bai_barcodes_npooled
                 ch_experiment_bam_bai_barcodes_npooled.map {
@@ -139,21 +139,28 @@ workflow  main_deconvolution {
                     tuple(samplename, bam_file, bai_file, barcodes_tsv_gz, souporcell_n_clusters,[],[])
                     }.set{full_vcf}
             }
-            // full_vcf.filter { experiment, cellsnp, npooled, t -> npooled != '1' }.set{full_vcf2}
-            // full_vcf.filter { experiment, cellsnp, npooled, t -> npooled == '1' }.set{not_deconvoluted}
 
-
-            // Now that channel is created run suporcell
-            // full_vcf.filter { samplename, bam_file, bai_file, barcodes_tsv_gz, souporcell_n_clusters, t1, t2 -> souporcell_n_clusters != 1 }.set{full_vcf2}
-            // full_vcf.filter { samplename, bam_file, bai_file, barcodes_tsv_gz, souporcell_n_clusters, t1, t2 -> souporcell_n_clusters == 1 }.set{not_deconvoluted}
-            // // full_vcf.view()
-            // full_vcf2.view()
+            // When all the channels are prepeared then we can run the soupocell accordingly. 
             SOUPORCELL(full_vcf,
                 Channel.fromPath(params.souporcell.reference_fasta).collect())
-
+            // Regardless if the Soupocell is run with or without genotypes we still need to match the donor ids with the cluster ids since this does not happen automatically is Soupocell.
         }
 
+        // This is Hannes code for GT matching.
+        Channel.fromPath(params.reference_genotype_vcf)
+            .map { file -> tuple(file, "${file}.tbi")}
+            .subscribe { println "TEST_MATCH_GT_VIREO: ${it}" }
+            .set { ch_ref_vcf }
+
+
+
+
         if (params.vireo.run){
+
+                // The folowing downstream tasks prepeares the plots, splits the donors accoring to vireo ids and generates the summary files. 
+                // These folowing outputs should be cleaned up and have been left as they were in the deconvolution pipeline initially.
+                // We also need to account that others may want to run soupocell instead and this folowing is not capable in digesting the cluster ids by soupocell currently.
+
                 ch_experiment_bam_bai_barcodes
                   .map { samplename, bam_file, bai_file, barcodes_tsv_gz -> tuple(samplename, file(bam_file)) }
                   .combine(vireo_out_sample_donor_ids, by: 0 )
@@ -174,21 +181,15 @@ workflow  main_deconvolution {
                 // adding the scrublet paths to the channel.
                 split_channel4 = split_channel3.combine(scrublet_paths, by: 0)
 
-                // run a multiplet detection and when splitting the donor specific h5ad remove these from non deconvoluted samples
+                split_channel5 = split_channel4.map{
+                val_sample, val_donor_ids_tsv, val_filtered_matrix_h5, path_scrublet ->
+                [  val_sample,
+                file(val_donor_ids_tsv),
+                file(val_filtered_matrix_h5),
+                    path_scrublet,
+                params.outdir]}
 
-                //tuple val(sample), path(donor_ids_tsv), path(filtered_matrix_h5), path(scrublet)
-                //filtered_matrix_h5_2 = "${filtered_matrix_h5}".replaceAll("${params.output_dir}","${workflow.workDir}/../${params.outdir}")
-        split_channel5 = split_channel4.map{
-	    val_sample, val_donor_ids_tsv, val_filtered_matrix_h5, path_scrublet ->
-	    [  val_sample,
-	       file(val_donor_ids_tsv),
-	       file(val_filtered_matrix_h5),
-               path_scrublet,
-	       params.outdir]}
-
-	    // split_channel5.view()
-        SPLIT_DONOR_H5AD(split_channel5)
-
+                SPLIT_DONOR_H5AD(split_channel5)
 
                 // collect file paths to h5ad files in tsv tables:
                 SPLIT_DONOR_H5AD.out.donors_h5ad_tsv
@@ -240,7 +241,6 @@ workflow  main_deconvolution {
 
                 vireo_out_sample_summary_tsv.view()
                 vireo_out_sample__exp_summary_tsv.view()
-
                 PLOT_DONOR_CELLS(ch_vireo_donor_n_cells_tsv)
 
 
@@ -251,11 +251,10 @@ workflow  main_deconvolution {
             ch_experiment_bam_vireo_donor_ids = Channel.empty()
         }
 
-
         if (params.souporcell.run && params.vireo.run) {
+            // This is an orringinal comparison of Vireo and soupocell, this needs to be cleaned up.
             SOUPORCELL_VS_VIREO(
-                vireo_out_sample_donor_ids // tuple val(samplename), file("${samplename}/donor_ids.tsv")
-                // combine with tuple val(samplename), file("${samplename}/clusters.tsv"):
+                vireo_out_sample_donor_ids
                 .combine(SOUPORCELL.out.souporcell_output_files.map {a,b,c,d -> tuple(a,b)},
                     by: 0))
         }

@@ -95,7 +95,7 @@ params{
     }
     
     run_celltype_assignment=true
-    input_data_table = '../inputs.tsv'
+    input_data_table = 'full/path/to/inputs.tsv' 
     run_with_genotype_input=true
 	genotype_input {
         subset_genotypes = false
@@ -105,7 +105,17 @@ params{
 ```
 
 1. input = default 'cellbender' which indicates cellbender will be run. Other options - [cellranger|existing_cellbender]
-1. if running [existing_cellbender] - specify location to the results directory containing [cellbender_location='/full/path/to/results/nf-preprocessing/cellbender/qc_cluster_input_files']
+1. if running [existing_cellbender] - specify location to the results directory containing [cellbender_location='/full/path/to/results/nf-preprocessing/cellbender']
+This should contain: 
+```console
+    Sample1
+    Sample2
+    Sample3
+    qc_cluster_input_files
+        file_paths_10x-*FPR_0pt1
+        file_paths_10x-*FPR_0pt05
+        file_paths_10x-*FPR_0pt01
+```
 2. full_vcf_file = points to vcf file to be used.
 4. subset_genotypes = indicates to subset genotypes for an input to be used in Vireo.
 5. run_celltype_assignment = runs celltypist and Azimuth if PBMC data is used.
@@ -144,6 +154,7 @@ path/to/10x_folder should contain the folowing files:
         ./barcodes.tsv.gz
     ./metrics_summary.csv
 ```
+
 
 
 ## Documentation

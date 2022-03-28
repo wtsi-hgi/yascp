@@ -3,29 +3,18 @@ nextflow.enable.dsl=2
 include {prep_collectmetadata; merge_metadata} from "$projectDir/modules/nf-core/modules/merge_metadata/main"
 
 workflow from_barcodes {
+    // This could be cleaned up, but has been currently left as per individual pipelines used for this process.
+    // Some of these channels may be redundant and could be declared in the downstream processes before being used.
+
     take: channel_input_data_table
     main:
-    log.info "running workflow from_barcodes() ..."
+    log.info "... Prepearing inputs based on the 10x folder required for downstream analysis..."
+
 
     channel_input_data_table
         .splitCsv(header: true, sep: params.input_tables_column_delimiter)
 	.map{row->tuple(row.experiment_id, row.n_pooled)}
 	.set{ch_experiment_npooled}
-
-
-    // max2 = channel_input_data_table
-    //     .splitCsv(header: true, sep: params.input_tables_column_delimiter)
-	// .map{row->row.n_pooled}
-	// .max()
-    // max2.view()
-    // Channel.from('1').view()
-    // if (max2Channel.from('1')){
-    //     log.info 'dont do demultiplex'
-    // }else{
-    //     log.info 'do demultiplex'
-    // }
-
-
 
     channel_input_data_table
         .splitCsv(header: true, sep: params.input_tables_column_delimiter)
@@ -41,7 +30,6 @@ workflow from_barcodes {
         file("${row.data_path_10x_format}/filtered_feature_bc_matrix/matrix.mtx.gz")
     )}
 
-    // need to create a dummy file if metadata is not present.
     channel__metadata =  channel_input_data_table
         .splitCsv(header: true, sep: params.input_tables_column_delimiter)
 	    .map{row -> tuple(
@@ -83,12 +71,10 @@ workflow from_barcodes {
             if (params.genotype_input.subset_genotypes){
                 log.info("----We will subset genotypes----")
                 // in this case we have to be avare that the last col is a IDs but not number of donors pooled as per bellow
-
                 channel_input_data_table
                 .splitCsv(header: true, sep: params.input_tables_column_delimiter)
                 .map{row->tuple(row.experiment_id, params.genotype_input.full_vcf_file, row.donor_vcf_ids)}
                 .set{pre_ch_experiment_donorsvcf_donorslist}
-
             }else{
                 log.info('----We are using full VCF for each donor without subsetting----')
                 // in this case we have to be avare that the last number is a number of donors pooled instead of IDs as per above
@@ -104,12 +90,9 @@ workflow from_barcodes {
         pre_ch_experiment_donorsvcf_donorslist = Channel.from("foo").map { foo -> tuple("foo1","foo2","foo3") }
     }
 
-
-
     // if params.replace_in_path set to true:
     // used if path to input files are mounted differently on the file-system
     // (e.g. if /lustre is mounted in Openstack on a different absolute path in nextflow  worker nodes)
-
 
     pre_ch_experiment_filth5
         .set{ch_experiment_filth5}
@@ -120,8 +103,6 @@ workflow from_barcodes {
 
     pre_ch_experiment_donorsvcf_donorslist
         .set{ch_experiment_donorsvcf_donorslist}
-
-
 
     emit:
         ch_experiment_bam_bai_barcodes
