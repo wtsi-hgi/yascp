@@ -150,14 +150,14 @@ workflow  main_deconvolution {
                 Channel.fromPath(params.souporcell.reference_fasta).collect())
             // Regardless if the Soupocell is run with or without genotypes we still need to match the donor ids with the cluster ids since this does not happen automatically is Soupocell.
         }
-        
-        // This is Hannes code for GT matching.
-        Channel.fromPath(params.reference_genotype_vcf)
-            .map { file -> tuple(file, "${file}.tbi")}
-            .subscribe { println "TEST_MATCH_GT_VIREO: ${it}" }
-            .set { ch_ref_vcf }
 
         if (params.run_with_genotype_input & params.genotype_input.posterior_assignment) {
+
+            // Channel.fromPath(params.genotype_input.full_vcf_file)
+            //     .map { file -> tuple(file, "${file}.tbi")}
+            //     .subscribe { println "TEST_MATCH_GT_VIREO: ${it}" }
+            //     .set { ch_ref_vcf }
+
             // Here we will replace the donor 0, donor 1 with the genotype IDs
             MATCH_GT_VIREO(vireo_out_sample_donor_vcf)
             
