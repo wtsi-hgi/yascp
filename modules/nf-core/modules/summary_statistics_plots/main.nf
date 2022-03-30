@@ -4,8 +4,6 @@ process SUMMARY_STATISTICS_PLOTS {
     publishDir  path: "${outdir}",
             mode: "${params.copy_mode}",
             overwrite: "true"
-    
-    
 
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "/software/hgi/containers/mercury_scrna_deconvolution_62bd56a-2021-12-15-4d1ec9312485.sif"
@@ -32,7 +30,9 @@ process SUMMARY_STATISTICS_PLOTS {
           transfer_data.py    --results_dir ${outdir_prev} \
                               --cb_res ${params.resolution} \
                               --cellbender ${cellbender_input} \
-                              --input_table ${input_data_table}
+                              --input_table ${input_data_table} \
+                              --web_transfer ${params.webtransfer} \
+                              --project_name ${params.project_name}
           
       """
 }

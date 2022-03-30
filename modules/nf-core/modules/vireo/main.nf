@@ -18,29 +18,29 @@ process VIREO {
     input:
       tuple val(samplename), path(cell_data), val(n_pooled), path(donors_gt_vcf)
 
-
     output:
       tuple val(samplename), path("vireo_${samplename}/*"), emit: output_dir
       tuple val(samplename), path("vireo_${samplename}/donor_ids.tsv"), emit: sample_donor_ids
-      tuple val(samplename), path("vireo_${samplename}/GT_donors.vireo.vcf.gz"), emit: sample_donor_vcf
+      tuple val(samplename), path("vireo_${samplename}/GT_donors.vireo.vcf.gz"), path(vcf_file), emit: sample_donor_vcf
       path("vireo_${samplename}/${samplename}.sample_summary.txt"), emit: sample_summary_tsv
       path("vireo_${samplename}/${samplename}__exp.sample_summary.txt"), emit: sample__exp_summary_tsv
 
     script:
-
+      vcf_file = ""
       if (params.run_with_genotype_input){
         vcf = " -d ${donors_gt_vcf}"
+        vcf_file = donors_gt_vcf
       }else{
          vcf = ""
+         vcf_file = ""
       }
-
 
     """
 
       umask 2 # make files group_writable
 
-      vireo -c $cell_data -N $n_pooled -o vireo_${samplename} ${vcf} -t GT --randSeed 1 --nInit 200
-
+      
+      vireo -c $cell_data -N $n_pooled -o vireo_${samplename} ${vcf} -t GT --randSeed 1
       # add samplename to summary.tsv,
       # to then have Nextflow concat summary.tsv of all samples into a single file:
 
