@@ -11,6 +11,7 @@ include { SPLIT_DONOR_H5AD } from '../modules/nf-core/modules/split_donor_h5ad/m
 include { PLOT_DONOR_CELLS } from '../modules/nf-core/modules/plot_donor_cells/main'
 include {MULTIPLET} from "../modules/nf-core/modules/multiplet/main"
 include {SOUPORCELL_VS_VIREO} from "../modules/nf-core/modules/plot_souporcell_vs_vireo/main"
+include { MATCH_GT_VIREO } from '../modules/nf-core/modules/genotypes/main'
 
 workflow  main_deconvolution {
 
@@ -24,13 +25,18 @@ workflow  main_deconvolution {
     main:
 		log.info "#### running DECONVOLUTION workflow #####"
         if (params.run_with_genotype_input) {
-            if (params.genotype_input.subset_genotypes){
-                log.info "---We are subsetting genotypes----"
+            if (params.genotype_input.posterior_assignment){
+                log.info('Deconvolution will run without genotypes, but Genotypes will be used after deconvolution to assign correct labels')
+            }else{
+                if (params.genotype_input.subset_genotypes){
+                    log.info "---We are subsetting genotypes----"
 
-                SUBSET_GENOTYPE(ch_experiment_donorsvcf_donorslist.map { experiment, donorsvcf, donorslist -> tuple(experiment,
-                                file(donorsvcf),
-                                donorslist)})
+                    SUBSET_GENOTYPE(ch_experiment_donorsvcf_donorslist.map { experiment, donorsvcf, donorslist -> tuple(experiment,
+                                    file(donorsvcf),
+                                    donorslist)})
+                }
             }
+
 
         }
 
@@ -53,7 +59,7 @@ workflow  main_deconvolution {
             // Here we run Vireo software to perform the donor deconvolution. Note that we have coded the pipeline to be capable in using 
             // the full genotypes as an input and also subset to the individuals provided as an input in the donor_vcf_ids column. The 
             // VIREO:
-            if (params.run_with_genotype_input) {
+            if (params.run_with_genotype_input && params.genotype_input.posterior_assignment==false) {
                 log.info "---running Vireo with genotype input----"
                 // for each experiment_id to deconvolute, subset donors vcf to its donors and subset genomic regions.
                 if (params.genotype_input.subset_genotypes){
@@ -88,7 +94,7 @@ workflow  main_deconvolution {
 
         }
 
-
+        
         if (params.souporcell.run){
             // YASCP pipeline is also capable in running SOUPORCELL instead of VIREO. If activated SOUPORCELL will be used. 
             // yascp currently doesnt have an option to take souporcell assignments as downstream instead of vireo but this will be added shortly.
@@ -106,7 +112,7 @@ workflow  main_deconvolution {
             // This runs the Souporcell
             // Similarly to the VIREO Soupocell can be run with and without genotypes and folowing prpeares the inputs accordingly to each option.
             // Soupocell cant digest a gz file gence we extract the data.
-            if (params.run_with_genotype_input) {
+            if (params.run_with_genotype_input && params.genotype_input.posterior_assignment==false) {
 
                 if (params.genotype_input.subset_genotypes){
                     // this will run the soupocell with the subset genotypes. This happens if the input.nf contains subset_genotypes = true
@@ -145,15 +151,20 @@ workflow  main_deconvolution {
                 Channel.fromPath(params.souporcell.reference_fasta).collect())
             // Regardless if the Soupocell is run with or without genotypes we still need to match the donor ids with the cluster ids since this does not happen automatically is Soupocell.
         }
-
+        
         // This is Hannes code for GT matching.
         Channel.fromPath(params.reference_genotype_vcf)
             .map { file -> tuple(file, "${file}.tbi")}
             .subscribe { println "TEST_MATCH_GT_VIREO: ${it}" }
             .set { ch_ref_vcf }
 
-
-
+        if (params.run_with_genotype_input) {
+            if (params.genotype_input.posterior_assignment){
+                // Here we will replace the donor 0, donor 1 with the genotype IDs
+                MATCH_GT_VIREO(vireo_out_sample_donor_vcf, ch_ref_vcf)
+            }
+        }
+        
 
         if (params.vireo.run){
 

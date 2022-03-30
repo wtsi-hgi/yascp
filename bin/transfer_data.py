@@ -12,7 +12,7 @@ import pandas as pd
 
 
 
-def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res=None):
+def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res=None,web_transfer=False,project_name='all'):
     
     name_dir=f"Summary_plots/{name}"
     try:
@@ -184,7 +184,9 @@ def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res
         except:
             _ ="Cant copy"
         
-        
+    if web_transfer:
+        print('Here we triger the CI placed script, which happens only for the local Cardinal project')
+        os.system(f'bash {name_dir}/../../../scripts/rsync_to_web.sh {project_name}')
 
     # if secret params exist then transfer data to web. 
     # rsync -vr Summary_plots ubuntu@1xxxxx:/volume/scRNA_test_app/scrna_static_and_media_files/media
@@ -212,11 +214,27 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
+        '-pn', '--project_name',
+        action='store',
+        dest='project_name',default='all'
+        required=False,
+        help='Project name to use for web transfer.'
+    )
+
+    parser.add_argument(
         '-cb_res', '--cb_res',
         action='store',
         dest='cb_res',
         required=True,
         help='The cellbender resolution used in downstream analysis'
+    )
+
+    parser.add_argument(
+        '-wt', '--web_transfer',
+        action='store',
+        dest='web_transfer',
+        required=False,default=False,
+        help='If run internally we will transfer the results to a website if run through Gitlab CI'
     )
 
     parser.add_argument(
@@ -243,4 +261,6 @@ if __name__ == "__main__":
     input_table=options.input_table
     cb_res=options.cb_res
     cellbender = options.cellbender
-    main_data_colection(name=f"{name}",directory=results_dir,input_table=input_table,cb_res=cb_res)
+    web_transfer = options.web_transfer
+    project_name = options.project_name
+    main_data_colection(name=f"{name}",directory=results_dir,input_table=input_table,cb_res=cb_res,web_transfer=web_transfer,project_name=project_name)

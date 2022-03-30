@@ -26,12 +26,11 @@ def modules = params.modules.clone()
 include { GET_SOFTWARE_VERSIONS } from "$projectDir/modules/local/get_software_versions" addParams( options: [publish_files : ['tsv':'']] )
 include { main_deconvolution } from "$projectDir/subworkflows/main_deconvolution"
 include { match_genotypes } from "$projectDir/subworkflows/match_genotypes"
-include { split_bam_by_donor } from "$projectDir/modules/local/cellranger_bam_per_donor"
 include {cellbender} from "$projectDir/subworkflows/cellbender"
 include {qc} from "$projectDir/subworkflows/qc"
 include {data_handover} from "$projectDir/subworkflows/data_handover"
 include { prepare_inputs } from "$projectDir/subworkflows/prepare_inputs"
-include { DECONV_INPUTS } from "$projectDir/subworkflows/deconvolution_inputs"
+include { DECONV_INPUTS } from "$projectDir/subworkflows/prepare_inputs/deconvolution_inputs"
 include {MERGE_SAMPLES} from "$projectDir/modules/nf-core/modules/merge_samples/main"
 include {MULTIPLET} from "../modules/nf-core/modules/multiplet/main"
 include {dummy_filtered_channel} from "../modules/nf-core/modules/merge_samples/functions"
@@ -58,7 +57,7 @@ def multiqc_report = []
 workflow SCDECON {
 
     // ###################################
-    // ###################################
+    // ################################### Readme
     // Step1. CELLBENDER
     // There are 3 modes of running YASCP pipeline: 
     // (option 1) users can run it from 10x data and use cellbender -  params.input == 'cellbender' 
@@ -102,7 +101,7 @@ workflow SCDECON {
             log.info '--- input mode is not selected - please choose --- (existing_cellbender| cellbender | cellranger)'
         }
         // ###################################
-        // ###################################
+        // ################################### Readme
         // Step2. DECONVOLUTION
         // When thepreprocessing with cellbender or cellranger is finalised then we can do the deconvolution of samples. This can also be skipped if the samples are not multiplexed.
         // However if the number of individuals is specified as 1 the deconvolution withh be skipped anyways, but we will apply scrubblet to remove dublicates.
@@ -116,8 +115,7 @@ workflow SCDECON {
                 ch_experiment_filth5,
                 prepare_inputs.out.ch_experiment_donorsvcf_donorslist,channel__file_paths_10x)
             MERGE_SAMPLES(main_deconvolution.out.out_h5ad,main_deconvolution.out.vireo_out_sample__exp_summary_tsv,'h5ad')
-            match_genotypes(main_deconvolution.out.vireo_out_sample_donor_vcf, ch_ref_vcf)
-            split_bam_by_donor(main_deconvolution.out.sample_possorted_bam_vireo_donor_ids)
+            
         }else{
             channel__metadata = prepare_inputs.out.channel__metadata
             MERGE_SAMPLES(channel__file_paths_10x,channel__metadata,'barcodes')
@@ -126,6 +124,7 @@ workflow SCDECON {
         file__anndata_merged = MERGE_SAMPLES.out.file__anndata_merged
         file__cells_filtered = MERGE_SAMPLES.out.file__cells_filtered
     }else{
+        // This option skips all the deconvolution and and takes a preprocessed yascp h5ad file to run the downstream clustering and celltype annotation.
         log.info '''----Skipping Preprocessing since we already have prepeared h5ad input file----'''
         file__anndata_merged = Channel.from(params.skip_preprocessing.file__anndata_merged)
         if (params.skip_preprocessing.file__cells_filtered ==''){
@@ -137,26 +136,26 @@ workflow SCDECON {
         }
     }
     // ###################################
-    // ###################################
+    // ################################### Readme
     // Step3. QC METRICS, CELLTYPE ASSIGNMENT and CLUSTERIN
     // After background removal and demultiplexing we perform qc metrics and clustering of the processed cells. 
     // This step of the pipeline also performs celltype assignments and removes cells that fail adaptive filtering.
     // ###################################
     // ###################################
 
-    qc(file__anndata_merged,file__cells_filtered) //This runs the Clusterring and qc assessments of the datasets.
+    // qc(file__anndata_merged,file__cells_filtered) //This runs the Clusterring and qc assessments of the datasets.
 
     // The idea is to also run eQTL analysis, however this is currently not implemented as part of this pipeline.
     // // // Performing eQTL mapping.
 
     // ###################################
-    // ###################################
+    // ################################### Readme
     // Step4. SUMMARY STATISTICS, DONOR SPLITTING and WEB TRANSFER
     // Once all the processes are done we gather the data in a summary folder in results. This is mainly done for the purposes of reporting on the web and o split the donor based metrics. 
     // ###################################
     // ###################################
 
-    data_handover("${workDir}/../${params.output_dir}",qc.out.LI) //This part gathers the plots for the reporting in a Summary folder. If run through gitlab CI it will triger the data transfer to web.
+    // data_handover("${workDir}/../${params.output_dir}",qc.out.LI) //This part gathers the plots for the reporting in a Summary folder. If run through gitlab CI it will triger the data transfer to web.
 }
 
 /*

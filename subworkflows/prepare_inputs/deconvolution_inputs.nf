@@ -1,7 +1,6 @@
+nextflow.enable.dsl=2
 workflow DECONV_INPUTS{
-
     // This is a function that prpeares the inputs for deconvolution that is utilised twice.
-    
     take:
         cellbender_path
         prepare_inputs
