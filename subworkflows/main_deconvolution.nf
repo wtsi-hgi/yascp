@@ -91,7 +91,6 @@ workflow  main_deconvolution {
             vireo_out_sample_summary_tsv = VIREO.out.sample_summary_tsv
             vireo_out_sample__exp_summary_tsv = VIREO.out.sample__exp_summary_tsv
             vireo_out_sample_donor_ids = VIREO.out.sample_donor_ids
-
         }
 
         
@@ -158,11 +157,10 @@ workflow  main_deconvolution {
             .subscribe { println "TEST_MATCH_GT_VIREO: ${it}" }
             .set { ch_ref_vcf }
 
-        if (params.run_with_genotype_input) {
-            if (params.genotype_input.posterior_assignment){
-                // Here we will replace the donor 0, donor 1 with the genotype IDs
-                MATCH_GT_VIREO(vireo_out_sample_donor_vcf, ch_ref_vcf)
-            }
+        if (params.run_with_genotype_input & params.genotype_input.posterior_assignment) {
+            // Here we will replace the donor 0, donor 1 with the genotype IDs
+            MATCH_GT_VIREO(vireo_out_sample_donor_vcf)
+            
         }
         
 

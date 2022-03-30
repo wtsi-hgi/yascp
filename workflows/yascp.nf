@@ -67,6 +67,7 @@ workflow SCDECON {
     // ###################################
 
     if (!params.skip_preprocessing.value){
+        // The input table should contain the folowing columns - experiment_id	n_pooled	donor_vcf_ids	data_path_10x_format
         input_channel = Channel.fromPath(params.input_data_table, followLinks: true, checkIfExists: true)
         // prepearing the inputs from a standard 10x dataset folders.
         prepare_inputs(input_channel)
@@ -98,7 +99,7 @@ workflow SCDECON {
             channel__file_paths_10x=prepare_inputs.out.channel__file_paths_10x
         }
         else{
-            log.info '--- input mode is not selected - please choose --- (existing_cellbender| cellbender | cellranger)'
+            log.info '--- input mode is not selected - please choose --- (existing_cellbender | cellbender | cellranger)'
         }
         // ###################################
         // ################################### Readme

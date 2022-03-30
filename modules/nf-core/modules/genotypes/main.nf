@@ -16,8 +16,7 @@ process MATCH_GT_VIREO {
   //when: params.vireo.run_gtmatch_aposteriori
 
   input:
-    tuple val(pool_id), path(vireo_gt_vcf)
-    tuple path(ref_gt_vcf), path(ref_gt_vcf_tbi)
+    tuple val(pool_id), path(vireo_gt_vcf), path(ref_gt_vcf)
 
   output:
     path("${donor_assignment_csv}", emit: donor_match_table)
