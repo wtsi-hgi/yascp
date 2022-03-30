@@ -3,21 +3,21 @@ nextflow.enable.dsl=2
 include {prep_collectmetadata; merge_metadata} from "$projectDir/modules/nf-core/modules/merge_metadata/main"
 
 workflow from_barcodes {
-    // This could be cleaned up, but has been currently left as per individual pipelines used for this process.
-    // Some of these channels may be redundant and could be declared in the downstream processes before being used.
+    // Here we prepeare ann the required channels for the Cellbender and Deconvolution pipelines. 
+    // QC steps and Data Handover bite on the merged h5ad created by MERGE_SAMPLES process and results directory output folder respectively.
     take: 
         channel_input_data_table
     main:
         log.info "... Prepearing inputs based on the 10x folder required for downstream analysis..."
         channel_input_data_table
             .splitCsv(header: true, sep: params.input_tables_column_delimiter)
-        .map{row->tuple(row.experiment_id, row.n_pooled)}
-        .set{ch_experiment_npooled}
+            .map{row->tuple(row.experiment_id, row.n_pooled)}
+            .set{ch_experiment_npooled}
 
         channel_input_data_table
             .splitCsv(header: true, sep: params.input_tables_column_delimiter)
-        .map{row->tuple(row.experiment_id, "${row.data_path_10x_format}/possorted_genome_bam.bam" ,row.data_path_10x_format+'/filtered_feature_bc_matrix/barcodes.tsv.gz')}
-        .set{pre_ch_experiment_bam_barcodes}
+            .map{row->tuple(row.experiment_id, "${row.data_path_10x_format}/possorted_genome_bam.bam" ,row.data_path_10x_format+'/filtered_feature_bc_matrix/barcodes.tsv.gz')}
+            .set{pre_ch_experiment_bam_barcodes}
 
         channel__file_paths_10x =  channel_input_data_table
             .splitCsv(header: true, sep: params.input_tables_column_delimiter)
@@ -63,26 +63,26 @@ workflow from_barcodes {
 
         if (params.run_with_genotype_input) {
             log.info "You have selected params.vireo.run_with_genotype_input=true -> will run Vireo with genotype input. Input VCF and list of donors per experiment_id gathered from params.input_n_pooled_table)"
-
-                if (params.genotype_input.subset_genotypes){
-                    log.info("----We will subset genotypes----")
-                    // in this case we have to be avare that the last col is a IDs but not number of donors pooled as per bellow
-                    channel_input_data_table
+            if (params.genotype_input.subset_genotypes){
+                log.info("----We will subset genotypes to the donors listed in the donor_vcf_ids for use in the Deconvolution----")
+                // If we subset the genotypes, th ids in the donor_vcf_ids will be used to generate an individual vcf per pool.
+                channel_input_data_table
                     .splitCsv(header: true, sep: params.input_tables_column_delimiter)
                     .map{row->tuple(row.experiment_id, params.genotype_input.full_vcf_file, row.donor_vcf_ids)}
                     .set{pre_ch_experiment_donorsvcf_donorslist}
-                }else{
-                    log.info('----We are using full VCF for each donor without subsetting----')
-                    // in this case we have to be aware that the last number is a number of donors pooled instead of IDs as per above
-                    channel_input_data_table
-                        .splitCsv(header: true, sep: params.input_tables_column_delimiter)
-                        .map{row->tuple(row.experiment_id, params.genotype_input.full_vcf_file, row.n_pooled)}
-                        .set{pre_ch_experiment_donorsvcf_donorslist}
-                }
+            }else{
+                log.info('----We are using full VCF for each donor without subsetting----')
+                // When we do not subset the genotypes, a full vcf will be fed in Vireo and soupocell assignments, but the number of pooled individuals will be used to detect the correct number of individuals in pool.
+                // in this case we have to be aware that the last number is a number of donors pooled instead of IDs as per above
+                channel_input_data_table
+                    .splitCsv(header: true, sep: params.input_tables_column_delimiter)
+                    .map{row->tuple(row.experiment_id, params.genotype_input.full_vcf_file, row.n_pooled)}
+                    .set{pre_ch_experiment_donorsvcf_donorslist}
+            }
 
         } else {
-            // create dummy channel since we are not using VCFs, hence no genotype input
-            log.info "using dummy channel for pre_ch_experiment_donorsvcf_donorslist, because unused with inputs: experiment_id,donors_vcf,donors_list"
+            // Create dummy channel since we are not using VCFs, hence no genotype input
+            log.info "We are not using genotypes in this pipeline run"
             pre_ch_experiment_donorsvcf_donorslist = Channel.from("foo").map { foo -> tuple("foo1","foo2","foo3") }
         }
 

@@ -128,13 +128,14 @@ workflow SCDECON {
         log.info '''----Skipping Preprocessing since we already have prepeared h5ad input file----'''
         file__anndata_merged = Channel.from(params.skip_preprocessing.file__anndata_merged)
         if (params.skip_preprocessing.file__cells_filtered ==''){
-            log.info '''---No cells filtered input'''
+            log.info '''--- No cells filtered input ----'''
             dummy_filtered_channel(file__anndata_merged,params.skip_preprocessing.id_in)
             file__cells_filtered = dummy_filtered_channel.out.anndata_metadata
         }else{
             file__cells_filtered = Channel.from(params.skip_preprocessing.file__cells_filtered)
         }
     }
+
     // ###################################
     // ################################### Readme
     // Step3. QC METRICS, CELLTYPE ASSIGNMENT and CLUSTERIN
