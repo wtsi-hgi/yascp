@@ -145,7 +145,7 @@ workflow SCDECON {
     // ###################################
     // ###################################
 
-    // qc(file__anndata_merged,file__cells_filtered) //This runs the Clusterring and qc assessments of the datasets.
+    qc(file__anndata_merged,file__cells_filtered) //This runs the Clusterring and qc assessments of the datasets.
 
     // The idea is to also run eQTL analysis, however this is currently not implemented as part of this pipeline.
     // // // Performing eQTL mapping.
@@ -157,7 +157,7 @@ workflow SCDECON {
     // ###################################
     // ###################################
 
-    // data_handover("${workDir}/../${params.output_dir}",qc.out.LI) //This part gathers the plots for the reporting in a Summary folder. If run through gitlab CI it will triger the data transfer to web.
+    data_handover("${workDir}/../${params.output_dir}",qc.out.LI) //This part gathers the plots for the reporting in a Summary folder. If run through gitlab CI it will triger the data transfer to web.
 }
 
 /*
