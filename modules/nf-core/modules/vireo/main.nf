@@ -27,7 +27,7 @@ process VIREO {
 
     script:
       vcf_file = ""
-      if (params.run_with_genotype_input){
+      if (params.run_with_genotype_input & params.genotype_input.posterior_assignment==false){
         vcf = " -d ${donors_gt_vcf}"
         vcf_file = donors_gt_vcf
       }else{
