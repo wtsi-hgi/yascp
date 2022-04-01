@@ -7,7 +7,7 @@ process MATCH_GT_VIREO {
           overwrite: "true"
 
   if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-      println "container: /software/hgi/containers/wtsihgi-nf_genotype_match-1.0.sif\n"
+      // println "container: /software/hgi/containers/wtsihgi-nf_genotype_match-1.0.sif\n"
       container "/software/hgi/containers/wtsihgi-nf_yascp_htstools-1.0.sif"
   } else {
       container "mercury/wtsihgi-nf_yascp_htstools-1.0"
@@ -27,6 +27,7 @@ process MATCH_GT_VIREO {
     gt_check_output_txt = "${pool_id}_gtcheck.txt"
   """
     # fix header of vireo VCF
+    tabix -p vcf ${ref_gt_vcf}
     bcftools view -h ${vireo_gt_vcf} > ${pool_id}_header.txt
     sed -i '/^##fileformat=VCFv.*/a ##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">' ${pool_id}_header.txt
     bcftools reheader -h ${pool_id}_header.txt -o ${pool_id}_GT_donors.vireo.headfix.vcf.gz ${vireo_gt_vcf}
