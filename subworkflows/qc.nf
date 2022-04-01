@@ -15,6 +15,9 @@ include {LISI} from "../modules/nf-core/modules/lisi/main"
 include {UMAP; UMAP as UMAP_HARMONY; UMAP as UMAP_BBKNN;} from "../modules/nf-core/modules/umap/main"
 include {CLUSTERING; CLUSTERING as CLUSTERING_HARMONY; CLUSTERING as CLUSTERING_BBKNN;} from "../modules/nf-core/modules/clustering/main"
 
+
+params.output_dir = "nf-qc_cluster"
+    
 workflow qc {
     take:
         file__anndata_merged
