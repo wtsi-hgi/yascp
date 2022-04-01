@@ -32,7 +32,7 @@ process VIREO {
         vcf_file = donors_gt_vcf
       }else{
          vcf = ""
-         vcf_file = ""
+         vcf_file = donors_gt_vcf
       }
 
     """
@@ -43,7 +43,7 @@ process VIREO {
       vireo -c $cell_data -N $n_pooled -o vireo_${samplename} ${vcf} -t GT --randSeed 1
       # add samplename to summary.tsv,
       # to then have Nextflow concat summary.tsv of all samples into a single file:
-
+      gzip vireo_${samplename}/GT_donors.vireo.vcf || echo 'vireo_${samplename}/GT_donors.vireo.vcf already gzip'
       cat vireo_${samplename}/summary.tsv | \\
         tail -n +2 | \\
         sed s\"/^/${samplename}\\t/\"g > vireo_${samplename}/${samplename}.sample_summary.txt

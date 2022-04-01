@@ -59,7 +59,7 @@ workflow  main_deconvolution {
             // Here we run Vireo software to perform the donor deconvolution. Note that we have coded the pipeline to be capable in using 
             // the full genotypes as an input and also subset to the individuals provided as an input in the donor_vcf_ids column. The 
             // VIREO:
-            if (params.run_with_genotype_input && params.genotype_input.posterior_assignment==false) {
+            if (params.run_with_genotype_input) {
                 log.info "---running Vireo with genotype input----"
                 // for each experiment_id to deconvolute, subset donors vcf to its donors and subset genomic regions.
                 if (params.genotype_input.subset_genotypes){
@@ -111,7 +111,7 @@ workflow  main_deconvolution {
             // This runs the Souporcell
             // Similarly to the VIREO Soupocell can be run with and without genotypes and folowing prpeares the inputs accordingly to each option.
             // Soupocell cant digest a gz file gence we extract the data.
-            if (params.run_with_genotype_input && params.genotype_input.posterior_assignment==false) {
+            if (params.run_with_genotype_input) {
 
                 if (params.genotype_input.subset_genotypes){
                     // this will run the soupocell with the subset genotypes. This happens if the input.nf contains subset_genotypes = true
