@@ -14,6 +14,9 @@ process SPLIT_CELL_BARCODES_PER_DONOR
       tuple val(pool_id), path("${cellranger_possorted_bam}"), path("${outdir}"), emit: poolid_bam_dirpath
       path("${oufofn}", emit: bcfiles_fofn)
 
+    when:
+      params.cramfiles_per_donor.run_cellranger_bam_splitting
+
     script:
     oufnprfx="${pool_id}_barcodes"
     outdir="${pool_id}_bcfiles"
@@ -42,27 +45,9 @@ process SPLIT_CELL_BARCODES_PER_DONOR
     """
 }
 
-process ADD_PATH_TO_FOFN
-{
-  label 'process_tiny'
-
-  input:
-    tuple val(pool_id),
-
-  output:
-    path ("${updated_fofn}", emit:full_path_fofn)
-
-  script:
-  updated_fofn = "${bcfiles_fofn}".minus(".txt").plus("_fullpaths.txt")
-  """
-  dirpath=\$(dirname ${bcfiles_fofn})
-  awk --assign dp=\${dirpath} -F"," '{if(NR>1){printf"%s,%s/%s,%s/%s\\n",\$1,dp,\$2,dp,\$3}else{print \$0}}' ${bcfiles_fofn} > ${updated_fofn}
-  """
-}
-
 process SPLIT_BAM_BY_CELL_BARCODES
 {
-    //label 'process_medium'
+    label 'process_medium'
 
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
       container "/software/hgi/containers/wtsihgi-nf_yascp_htstools-1.0.sif"
@@ -70,15 +55,22 @@ process SPLIT_BAM_BY_CELL_BARCODES
       container "mercury/wtsihgi-nf_yascp_htstools-1.0"
     }
 
-    publishDir path: "${params.outdir}/bam/${pool_id}",
+    //beforeScript 'ln --physical ${reference_assembly_fasta_name} ./genome.fa; ln --physical ${reference_assembly_fasta_name}.fai ./genome.fa.fai;'
+
+    publishDir path: "${params.outdir}/cram/${pool_id}",
+               pattern:"{*.cram, *.sha256sum}",
                mode: "${params.copy_mode}",
                overwrite: "true"
 
     input:
       tuple val(pool_id), path(cellranger_possorted_bam), path(dirpath), val(vireo_donor_barcode_filnam)
+      path(reference_assembly_dir)
 
     output:
-      path("${oufnprfx}_possorted_bam.bam", emit: possorted_bam_files)
+      path("${oufnprfx}_possorted_bam.cram", emit: possorted_cram_files)
+
+    when:
+      params.cramfiles_per_donor.run_cellranger_bam_splitting
 
     script:
     oufnprfx = "${vireo_donor_barcode_filnam}".minus(".txt")
@@ -88,14 +80,57 @@ process SPLIT_BAM_BY_CELL_BARCODES
       echo "cellranger_possorted_bam = ${cellranger_possorted_bam}"
       echo "dirpath = ${dirpath}"
       echo "vireo_donor_barcode_filnam = ${vireo_donor_barcode_filnam}"
-      samtools view --threads ${task.cpus} --tag-file CB:${bcfilpath} --bam -o ${oufnprfx}_possorted_bam.bam ${cellranger_possorted_bam}
+      samtools view --threads ${task.cpus} --tag-file CB:${bcfilpath} \
+        --cram -T ${reference_assembly_dir}/genome.fa \
+        -o ${oufnprfx}_possorted_bam.cram ${cellranger_possorted_bam}
+
+      sha256sum -b ${oufnprfx}_possorted_bam.cram 1> ${oufnprfx}_possorted_bam.cram.sha256sum 2> sha256sum.err
     """
+}
+
+process PREP_REF_ASS
+{
+  label 'process_tiny'
+
+  input:
+    path(reference_assembly_dir)
+
+  output:
+    path("${outdir}", emit:ref_ass_dir)
+
+  when: params.cramfiles_per_donor.run_cellranger_bam_splitting
+
+  script:
+  outdir="reference_assembly"
+  reference_assembly_fasta = "${reference_assembly_dir}/genome.fa"
+  reference_assembly_index = "${reference_assembly_dir}/genome.fa.fai"
+  println "reference_assembly_fasta = ${reference_assembly_fasta}"
+  println "reference_assembly_index = ${reference_assembly_index}"
+  """
+    mkdir reference_assembly
+    cp ${reference_assembly_fasta} ./${outdir}/genome.fa
+    cp ${reference_assembly_index} ./${outdir}/genome.fa.fai
+  """
+}
+
+workflow stage_reference_assembly
+{
+  take:
+    reference_assembly_dir
+
+  main:
+    PREP_REF_ASS(
+      reference_assembly_dir
+    )
+    emit:
+      staged_ref_ass_dir = PREP_REF_ASS.out.ref_ass_dir
 }
 
 workflow split_bam_by_donor
 {
   take:
     poolid_bam_vireo_donor_barcodes
+    reference_assembly_fasta_dir
 
   main:
     SPLIT_CELL_BARCODES_PER_DONOR(poolid_bam_vireo_donor_barcodes)
@@ -118,10 +153,11 @@ workflow split_bam_by_donor
     .subscribe onNext: { println "ch_poolid_bam_dirpath_bcfile = ${it}" }, onComplete: { println "Done.\n" }
 
     SPLIT_BAM_BY_CELL_BARCODES(
-      ch_poolid_bam_dirpath_bcfile
+      ch_poolid_bam_dirpath_bcfile,
+      reference_assembly_fasta_dir
     )
 
   emit:
-    possorted_bam_files = SPLIT_BAM_BY_CELL_BARCODES.out.possorted_bam_files
+    possorted_cram_files = SPLIT_BAM_BY_CELL_BARCODES.out.possorted_cram_files
 
 }

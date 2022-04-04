@@ -19,7 +19,6 @@ workflow prepare_inputs {
 		channel__file_paths_10x=from_barcodes.out.channel__file_paths_10x
 		channel__metadata=from_barcodes.out.channel__metadata
 
-
     emit:
 		ch_experiment_bam_bai_barcodes
 		ch_experiment_npooled
