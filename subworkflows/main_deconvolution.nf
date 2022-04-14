@@ -31,8 +31,8 @@ workflow  main_deconvolution {
                 if (params.genotype_input.subset_genotypes){
                     log.info "---We are subsetting genotypes----"
 
-                    SUBSET_GENOTYPE(ch_experiment_donorsvcf_donorslist.map { experiment, donorsvcf, donorslist -> tuple(experiment,
-                                    file(donorsvcf),
+                    SUBSET_GENOTYPE(ch_experiment_donorsvcf_donorslist.map { experiment, donorsvcf,donortbi, donorslist -> tuple(experiment,
+                                    file(donorsvcf),file(donortbi),
                                     donorslist)})
                 }
             }
@@ -40,7 +40,7 @@ workflow  main_deconvolution {
 
         }
 
-        ch_experiment_donorsvcf_donorslist.map { experiment, donorsvcf, donorslist -> tuple(experiment, donorslist.replaceAll(/,/, " ").replaceAll(/"/, ""))}.set{donors_in_lane}
+        ch_experiment_donorsvcf_donorslist.map { experiment, donorsvcf, donorstbi,donorslist -> tuple(experiment, donorslist.replaceAll(/,/, " ").replaceAll(/"/, ""))}.set{donors_in_lane}
 
         CELLSNP(ch_experiment_bam_bai_barcodes,
             Channel.fromPath(params.cellsnp.vcf_candidate_snps).collect())
@@ -71,7 +71,7 @@ workflow  main_deconvolution {
                     // Here we do not subset the genotypes and match against the full cohort provided as an input. This happens if subset_genotypes = false
                     log.info "---We are using a full genotype input for Vireo----"
                     CELLSNP.out.cellsnp_output_dir.combine(ch_experiment_npooled, by: 0).set{full_vcf}
-                    full_vcf.map { experiment, cellsnpvcf, npooled -> tuple(experiment,cellsnpvcf,npooled,file(params.genotype_input.full_vcf_file))}.set {full_vcf}
+                    full_vcf.map { experiment, cellsnpvcf, npooled -> tuple(experiment,cellsnpvcf,npooled,file(params.genotype_input.full_vcf_file),file(params.genotype_input.full_vcf_file+'.csi'))}.set {full_vcf}
                 }
             }
             // Vireo without genotype input:
@@ -84,8 +84,8 @@ workflow  main_deconvolution {
             }
 
             // When all the channels are prpeared accordingly we exacute the vireo with the prpeared channel.
-            full_vcf.filter { experiment, cellsnp, npooled, t -> npooled != '1' }.set{full_vcf2}
-            full_vcf.filter { experiment, cellsnp, npooled, t -> npooled == '1' }.set{not_deconvoluted}
+            full_vcf.filter { experiment, cellsnp, npooled, t,ti -> npooled != '1' }.set{full_vcf2}
+            full_vcf.filter { experiment, cellsnp, npooled, t,ti -> npooled == '1' }.set{not_deconvoluted}
             VIREO(full_vcf2)
             vireo_out_sample_donor_vcf = VIREO.out.sample_donor_vcf
             vireo_out_sample_summary_tsv = VIREO.out.sample_summary_tsv
@@ -152,15 +152,7 @@ workflow  main_deconvolution {
         }
 
         if (params.run_with_genotype_input & params.genotype_input.posterior_assignment) {
-
-            // Channel.fromPath(params.genotype_input.full_vcf_file)
-            //     .map { file -> tuple(file, "${file}.tbi")}
-            //     .subscribe { println "TEST_MATCH_GT_VIREO: ${it}" }
-            //     .set { ch_ref_vcf }
-
-            // Here we will replace the donor 0, donor 1 with the genotype IDs
-            MATCH_GT_VIREO(vireo_out_sample_donor_vcf)
-            
+            MATCH_GT_VIREO(vireo_out_sample_donor_vcf)            
         }
         
 

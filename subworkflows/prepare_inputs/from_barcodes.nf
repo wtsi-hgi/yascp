@@ -68,7 +68,7 @@ workflow from_barcodes {
                 // If we subset the genotypes, th ids in the donor_vcf_ids will be used to generate an individual vcf per pool.
                 channel_input_data_table
                     .splitCsv(header: true, sep: params.input_tables_column_delimiter)
-                    .map{row->tuple(row.experiment_id, params.genotype_input.full_vcf_file, row.donor_vcf_ids)}
+                    .map{row->tuple(row.experiment_id, params.genotype_input.full_vcf_file,params.genotype_input.full_vcf_file+'.csi', row.donor_vcf_ids)}
                     .set{pre_ch_experiment_donorsvcf_donorslist}
             }else{
                 log.info('----We are using full VCF for each donor without subsetting----')
@@ -76,14 +76,14 @@ workflow from_barcodes {
                 // in this case we have to be aware that the last number is a number of donors pooled instead of IDs as per above
                 channel_input_data_table
                     .splitCsv(header: true, sep: params.input_tables_column_delimiter)
-                    .map{row->tuple(row.experiment_id, params.genotype_input.full_vcf_file, row.n_pooled)}
+                    .map{row->tuple(row.experiment_id, params.genotype_input.full_vcf_file,params.genotype_input.full_vcf_file+'.csi', row.n_pooled)}
                     .set{pre_ch_experiment_donorsvcf_donorslist}
             }
 
         } else {
             // Create dummy channel since we are not using VCFs, hence no genotype input
             log.info "We are not using genotypes in this pipeline run"
-            pre_ch_experiment_donorsvcf_donorslist = Channel.from("foo").map { foo -> tuple("foo1","foo2","foo3") }
+            pre_ch_experiment_donorsvcf_donorslist = Channel.from("foo").map { foo -> tuple("foo1","foo2","foo3",'foo4') }
         }
 
         pre_ch_experiment_filth5
@@ -95,6 +95,7 @@ workflow from_barcodes {
 
         pre_ch_experiment_donorsvcf_donorslist
             .set{ch_experiment_donorsvcf_donorslist}
+        // ch_experiment_donorsvcf_donorslist.view()
 
     emit:
         ch_experiment_bam_bai_barcodes
