@@ -16,12 +16,12 @@ process VIREO {
       params.vireo.run
 
     input:
-      tuple val(samplename), path(cell_data), val(n_pooled), path(donors_gt_vcf)
+      tuple val(samplename), path(cell_data), val(n_pooled), path(donors_gt_vcf), path(donor_gt_csi)
 
     output:
       tuple val(samplename), path("vireo_${samplename}/*"), emit: output_dir
       tuple val(samplename), path("vireo_${samplename}/donor_ids.tsv"), emit: sample_donor_ids
-      tuple val(samplename), path("vireo_${samplename}/GT_donors.vireo.vcf.gz"), path(vcf_file), emit: sample_donor_vcf
+      tuple val(samplename), path("vireo_${samplename}/GT_donors.vireo.vcf.gz"), path(vcf_file),path(donor_gt_csi), emit: sample_donor_vcf
       path("vireo_${samplename}/${samplename}.sample_summary.txt"), emit: sample_summary_tsv
       path("vireo_${samplename}/${samplename}__exp.sample_summary.txt"), emit: sample__exp_summary_tsv
 

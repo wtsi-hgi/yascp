@@ -28,7 +28,7 @@ process SUMMARY_STATISTICS_PLOTS {
         outdir = "${outdir_prev}/handover"
       """
           transfer_data.py    --results_dir ${outdir_prev} \
-                              --cb_res ${params.resolution} \
+                              --cb_res ${params.cellbender_resolution_to_use} \
                               --cellbender ${cellbender_input} \
                               --input_table ${input_data_table} \
                               --web_transfer ${params.webtransfer} \

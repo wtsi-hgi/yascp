@@ -25,7 +25,7 @@ import statistics
 import h5py
 import scanpy
 from datetime import date
-
+write_h5=False
 today = date.today()
 date_now = today.strftime("%Y-%m-%d")
 date_of_transfer = today.strftime("%Y-%m-")
@@ -226,7 +226,8 @@ def write_subsample(adat, oufnam, sample_size_perc = DEFAULT_SAMPLE_SIZE_PERC):
 
     sys.stderr.write("# writing subsample file {} ...\n".format(oufnam))
     ad.obs.index.name = 'barcode'
-    ad.write(oufnam + '.h5ad')
+    if write_h5:
+        ad.write(oufnam + '.h5ad')
     ad.obs.to_csv(oufnam + '.tsv', sep = "\t", na_rep = "N/A")
     return
 
@@ -234,7 +235,8 @@ def gather_donor(donor_id, ad, ad_lane_raw, azimuth_annot, qc_obs, columns_outpu
     
     oufnam = "{}.{}".format(expid, donor_id)
     sys.stderr.write("processing {} {} ...\n".format(expid, donor_id))
-    oufh.write("{}\t{}\t{}.h5ad\t{}.tsv\n".format(expid, donor_id, oufnam, oufnam))
+    if write_h5:
+        oufh.write("{}\t{}\t{}.h5ad\t{}.tsv\n".format(expid, donor_id, oufnam, oufnam))
 
     # loading deconvoluted dataset
     
@@ -280,7 +282,8 @@ def gather_donor(donor_id, ad, ad_lane_raw, azimuth_annot, qc_obs, columns_outpu
     ad.obs.index.name = 'barcode'
     dt.to_csv(os.path.join(outdir, oufnam + '.tsv'), sep = "\t", na_rep = "N/A")
     sys.stderr.write("writing file {} ...\n".format(oufnam))
-    ad.write(os.path.join(outdir, oufnam + '.h5ad'))
+    if write_h5:
+        ad.write(os.path.join(outdir, oufnam + '.h5ad'))
 
     return {
         'Experiment ID':experiment_id,
@@ -631,6 +634,9 @@ def set_argument_parser():
     parser.add_argument("--input_table", required = True,
                     help="The input folder used",
                     dest='input_table')
+    parser.add_argument("--extra_metadata", required = False,
+                    help="The input folder used",
+                    dest='extra_metadata')
     parser.add_argument("--cellbender", required = True,
                 help="Cellbender paths if not cellranger filtering used",
                 dest='cellbender')
@@ -667,6 +673,65 @@ if __name__ == '__main__':
     count = 1
     All_probs_and_celltypes = pd.DataFrame()
 
+
+    args.extra_metadata = '/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/fetch/ELGH_fech/results/yascp_inputs/Extra_Metadata.tsv'   
+    Sample_metadata = pd.DataFrame()
+    try:
+        if args.extra_metadata:
+            Extra_Metadata = pd.read_csv('/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/fetch/ELGH_fech/results/yascp_inputs/Extra_Metadata.tsv',sep='\t')
+            # Extra_Metadata = pd.read_csv(args.extra_metadata,sep='\t')
+            Extra_Metadata=Extra_Metadata.set_index('sanger_sample_id')
+            Mappings_between_sanger_sampe_and_NS = Extra_Metadata['public_name']
+            Library_IDs = pd.read_csv('/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/fetch/ELGH_fech/results/yascp_inputs/Library_IDs.csv',sep='\t')
+            Sample_Manifest = pd.read_csv('/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/fetch/ELGH_fech/results/yascp_inputs/Sample_Manifest.csv',sep='\t')
+            Sample_Manifest=Sample_Manifest.set_index('Barcode (scan)')
+            Library_IDs = Library_IDs.set_index('S2-046 ID')
+            
+            for Lid in Mappings_between_sanger_sampe_and_NS.iteritems():
+                print(Lid)
+                Samples = Library_IDs[Library_IDs['library ID:'].str.contains(Lid[1])]
+                Samples['Sanger_id']=Lid[0]
+                Samples['NS_ID']=Lid[1]
+
+                intersect = set(Sample_Manifest.index).intersection(set(Samples.index))
+                missing = set(Samples.index)- set(Sample_Manifest.index)
+
+                # now combine the missing and existing values.
+                All_Vals = pd.DataFrame()
+                if len(intersect)>0:
+                    Recieved_sample_info = Sample_Manifest.loc[intersect]
+                    Recieved_sample_info = Recieved_sample_info[['Volume (ul)','Issue (optional)','Date received']]
+                    All_Vals = pd.concat([All_Vals,Recieved_sample_info],axis=0)
+                    
+                if len(missing)>0:
+                    # samples not recorded in sampe reception.
+                    missing = intersect
+                    Recieved_sample_info_missing = pd.DataFrame(columns={'Volume (ul)','Issue (optional)','Date received'},index=[list(missing)])
+                    All_Vals = pd.concat([All_Vals,Recieved_sample_info_missing],axis=0)
+                # 
+                S1 = Samples.join(Recieved_sample_info)
+                # Sample_metadata = Sample_metadata.merge(Samples)
+                Sample_metadata=pd.concat([Sample_metadata,S1])
+                print('Done')
+                # set(Samples.index)
+            # Read in sample manifest
+            # Read in Library IDs
+            print('Done')
+            Sample_metadata2= Sample_metadata[['NS_ID','Volume (ul)','Issue (optional)','Date received','Time blood samples taken','Date and time of last meal:','Sanger_id']]
+            Sample_metadata2.Sanger_id in df_raw.index
+            Sample_metadata2 = Sample_metadata2.reset_index()
+            S2 = Sample_metadata2.set_index('Sanger_id')
+            S3 = S2.loc[set(df_raw.index)]
+            df_raw.index
+            S3.to_csv('Sample_data3.tsv',sep='\t')
+
+            
+    except:
+        print('not working')
+
+    
+
+
     for expid in df_raw.index:
         nf, data_tranche, data_donor, azt = gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = oufh, lane_id=count)
         # add the stuff to the adata.
@@ -679,6 +744,10 @@ if __name__ == '__main__':
     
     Donor_Report = pd.DataFrame(data_donor_all)
     Tranche_Report = pd.DataFrame(data_tranche_all)
+
+
+
+
     Donor_Report['Donor id_Experiment ID']=Donor_Report['Donor id']+'_'+Donor_Report['Experiment ID']
     Donor_Report=Donor_Report.set_index('Donor id_Experiment ID')
     Donor_Report.to_csv(f'{args.outdir}_summary/Donor_Report.tsv',sep='\t')
