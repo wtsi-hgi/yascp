@@ -29,8 +29,9 @@ process MATCH_GT_VIREO {
     # fix header of vireo VCF
     #tabix -p vcf ${ref_gt_vcf}
     bcftools view -h ${vireo_gt_vcf} > ${pool_id}_header.txt
+    bcftools view -Ov ${vireo_gt_vcf} > viewed.vcf
     sed -i '/^##fileformat=VCFv.*/a ##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">' ${pool_id}_header.txt
-    bcftools reheader -h ${pool_id}_header.txt -o ${pool_id}_GT_donors.vireo.headfix.vcf.gz ${vireo_gt_vcf}
+    bcftools reheader -h ${pool_id}_header.txt -o ${pool_id}_GT_donors.vireo.headfix.vcf.gz viewed.vcf
 
     # sort and index vireo VCF file (bcftools sort bails out with an error)
     bcftools view ${pool_id}_GT_donors.vireo.headfix.vcf.gz | \
