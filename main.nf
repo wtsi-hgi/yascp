@@ -26,12 +26,15 @@ nextflow.enable.dsl = 2
 
 //include { TEST_MATCH_GT_VIREO } from './tests/test_genotypes'
 include { TEST_SPLIT_BAM_PER_DONOR } from './tests/test_bam_per_donor'
+//include { TEST_ENCRYPT_DIR} from './tests/test_encryption'
 
 workflow NF_CORE_TEST {
   //println "**** running NF_CORE_TEST::TEST_MATCH_GT_VIREO"
   //TEST_MATCH_GT_VIREO()
   println "**** running NF_CORE_TEST::TEST_SPLIT_BAM_PER_DONOR"
   TEST_SPLIT_BAM_PER_DONOR()
+  //println "**** running NF_CORE_TEST::TEST_ENCRYPT_DIR"
+  //TEST_ENCRYPT_DIR()
 }
 
 /*

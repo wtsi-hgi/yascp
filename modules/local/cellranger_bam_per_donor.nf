@@ -1,10 +1,12 @@
+include { ENCRYPT_DIR } from './encrypt'
+
 process SPLIT_CELL_BARCODES_PER_DONOR
 {
     label 'process_tiny'
 
-    publishDir path: "${params.outdir}/bam/${pool_id}",
+    publishDir path: "${params.outdir}/cram/${pool_id}",
                mode: "${params.copy_mode}",
-               pattern: "${oufnprfx}_*.txt",
+               pattern: "${outdir}/${oufnprfx}_*.txt",
                overwrite: "true"
 
     input:
@@ -58,9 +60,9 @@ process SPLIT_BAM_BY_CELL_BARCODES
     //beforeScript 'ln --physical ${reference_assembly_fasta_name} ./genome.fa; ln --physical ${reference_assembly_fasta_name}.fai ./genome.fa.fai;'
 
     publishDir path: "${params.outdir}/cram/${pool_id}",
-               pattern:"{*.cram, *.sha256sum}",
                mode: "${params.copy_mode}",
                overwrite: "true"
+               //pattern:"{*.cram, *.sha256sum}",
 
     input:
       tuple val(pool_id), path(cellranger_possorted_bam), path(dirpath), val(vireo_donor_barcode_filnam)
@@ -84,7 +86,7 @@ process SPLIT_BAM_BY_CELL_BARCODES
         --cram -T ${reference_assembly_dir}/genome.fa \
         -o ${oufnprfx}_possorted_bam.cram ${cellranger_possorted_bam}
 
-      sha256sum -b ${oufnprfx}_possorted_bam.cram 1> ${oufnprfx}_possorted_bam.cram.sha256sum 2> sha256sum.err
+      #sha256sum -b ${oufnprfx}_possorted_bam.cram 1> ${oufnprfx}_possorted_bam.cram.sha256sum
     """
 }
 
@@ -157,7 +159,12 @@ workflow split_bam_by_donor
       reference_assembly_fasta_dir
     )
 
+    ENCRYPT_DIR(
+      SPLIT_BAM_BY_CELL_BARCODES.out.possorted_cram_files
+    )
+
   emit:
     possorted_cram_files = SPLIT_BAM_BY_CELL_BARCODES.out.possorted_cram_files
-
+    encrypt_files = ENCRYPT_DIR.out.encrypted
+    checksum_files = ENCRYPT_DIR.out.checksums
 }
