@@ -183,7 +183,7 @@ workflow DECONVOLUTION {
         log.info 'The preprocessing has been already performed, skipping directly to h5ad input'
 
         if (params.preprocess){
-            cellbender_deconvolution(prepare_inputs) 
+            cellbender_deconvolution(params.input,prepare_inputs) 
         }else{
             //prepare data for direct deconvolution
         }
