@@ -94,7 +94,7 @@ if __name__ == '__main__':
             "mean = {:.1f}, sd = {:.1f}, z0 = {:.1f}, z1 = {:.1f}, zz1 = {:.1f}\n"
             .format(k, donorid, score0, score1, score_n, n, m, sd, z0, z1, zz1)
             )
-        oufh.write("{:s},{:s},{:.1f},{:.1f},{:.1f},{:d},{:.1f},{:.1f}{:.1f},{:.1f}\n"
+        oufh.write("{:s},{:s},{:.1f},{:.1f},{:.1f},{:d},{:.1f},{:.1f},{:.1f},{:.1f}\n"
             .format(k, donorid, score0, score1, score_n, n, m, sd, z0, z1)
             )
     oufh.close()
