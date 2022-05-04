@@ -9,7 +9,7 @@ workflow data_handover{
         
     main:
         log.info 'running data handover'
-        GATHER_DATA(outdir,qc_input,params.input_data_table)
+        GATHER_DATA(outdir,qc_input.collect(),params.input_data_table)
         SUMMARY_STATISTICS_PLOTS(outdir,GATHER_DATA.out.outfiles_dataset,params.input_data_table)
         if (params.split_bam){
             split_bam_by_donor(main_deconvolution.out.sample_possorted_bam_vireo_donor_ids)
