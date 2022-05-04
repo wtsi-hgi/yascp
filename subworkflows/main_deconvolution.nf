@@ -12,7 +12,7 @@ include { PLOT_DONOR_CELLS } from '../modules/nf-core/modules/plot_donor_cells/m
 include {MULTIPLET} from "../modules/nf-core/modules/multiplet/main"
 include {SOUPORCELL_VS_VIREO} from "../modules/nf-core/modules/plot_souporcell_vs_vireo/main"
 include { MATCH_GT_VIREO } from '../modules/nf-core/modules/genotypes/main'
-
+include {REPLACE_GT_DONOR_ID } from '../modules/nf-core/modules/genotypes/main'
 workflow  main_deconvolution {
 
     take:
@@ -155,7 +155,15 @@ workflow  main_deconvolution {
             MATCH_GT_VIREO(vireo_out_sample_donor_vcf)            
         }
         
-
+        //here have to fix the vireo outputs based on the GT matching.
+        if (params.replace_genotype_ids){
+            REPLACE_GT_DONOR_ID(VIREO.out.all_required_data , MATCH_GT_VIREO.out.donor_match_table.collect())
+            REPLACE_GT_DONOR_ID.out.sample_donor_vcf.set{vireo_out_sample_donor_vcf}
+            REPLACE_GT_DONOR_ID.out.sample_summary_tsv.set{vireo_out_sample_summary_tsv}
+            REPLACE_GT_DONOR_ID.out.sample__exp_summary_tsv.set{vireo_out_sample__exp_summary_tsv}
+            REPLACE_GT_DONOR_ID.out.sample_donor_ids.set{vireo_out_sample_donor_ids}
+        }
+        
         if (params.vireo.run){
 
                 // The folowing downstream tasks prepeares the plots, splits the donors accoring to vireo ids and generates the summary files. 
