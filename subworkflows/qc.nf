@@ -16,19 +16,8 @@ include {UMAP; UMAP as UMAP_HARMONY; UMAP as UMAP_BBKNN;} from "../modules/nf-co
 include {CLUSTERING; CLUSTERING as CLUSTERING_HARMONY; CLUSTERING as CLUSTERING_BBKNN;} from "../modules/nf-core/modules/clustering/main"
 
 
-// Set default parameters.
-params.output_dir           = "nf-qc_cluster"
-params.help                 = false
-params.run_multiplet        = false
-params.mode                 = "conventional"
-params.layer                = "none"
-params.file_sample_qc       = "no_file__file_sample_qc"
-params.file_cellmetadata    = "no_file__file_cellmetadata"
-params.file_anndata         = "no_file__file_anndata"
-params.genes_exclude_hvg    = "no_file__genes_exclude_hvg"
-params.genes_score          = "no_file__genes_score"
-params.anndata_compression_opts = 9
-
+params.output_dir = "nf-qc_cluster"
+    
 workflow qc {
     take:
         file__anndata_merged
@@ -89,7 +78,6 @@ workflow qc {
             log.info "n_pcs = Channel.from(params.reduced_dims.n_dims.value)"
             n_pcs = Channel.from(params.reduced_dims.n_dims.value)
         }
-
 
         SUBSET_PCS(
             NORMALISE_AND_PCA.out.outdir,

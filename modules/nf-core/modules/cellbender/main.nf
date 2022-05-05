@@ -79,10 +79,9 @@ workflow CELLBENDER {
         )
 
         cellbender__preprocess_output(
-             cellbender__remove_background.out.cleanup_input,
-                cellbender__remove_background.out.cb_plot_input,
-                cellbender__remove_background.out.experimentid_outdir_cellbenderunfiltered_expectedcells_totaldropletsinclude,
-                cellbender__remove_background.out.out_paths
+            cellbender__remove_background.out.cleanup_input,
+            cellbender__remove_background.out.cb_plot_input,
+            cellbender__remove_background.out.experimentid_outdir_cellbenderunfiltered_expectedcells_totaldropletsinclude,
         )
 
         // Make some basic plots
@@ -104,17 +103,19 @@ workflow CELLBENDER {
         // }
     
         cellbender__gather_qc_input(
-             outdir,
+            outdir,
             cellbender__preprocess_output.out.results_list.collect()
         )
 
         results_list = cellbender__preprocess_output.out.out_paths
         // prepeare the output channel for utilising in the deconvolution instead of barcode input.
-        
-
-
+        cellbender_path = cellbender__gather_qc_input.out.celbender_path
+        cellbender__gather_qc_input.out.celbender_path.view()
+        log.info('xxx')
         emit:
             results_list
+            cellbender_path
+
             
 }
 

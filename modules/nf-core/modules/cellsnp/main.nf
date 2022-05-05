@@ -40,7 +40,7 @@ process CELLSNP {
         -b bar_codes.txt \\
         -O cellsnp_${samplename} \\
         -R ${region_vcf} \\
-        -p ${params.cellsnp.p} \\
+        -p ${task.cpus} \\
         --minMAF ${params.cellsnp.min_maf} \\
         --minCOUNT ${params.cellsnp.min_count} --gzip
     """
