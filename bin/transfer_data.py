@@ -12,7 +12,7 @@ import pandas as pd
 
 
 
-def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res=None):
+def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res=None,web_transfer=False,project_name='all'):
     
     name_dir=f"Summary_plots/{name}"
     try:
@@ -57,27 +57,27 @@ def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res
                 try:
                     copyfile(f'{dir1}/plots/cellbender_results-cellbender_FPR_{cb_res}_filtered-ambient_signature-scatter_genenames.png', f'{name_dir}/Cellbender/{folder}_ambient_signature-scatter_genenames.png')
                 except:
-                    print('missing')
+                    print('missing1')
                 try:
                     copyfile(f'{dir1}/plots/cellbender_results-cellbender_FPR_{cb_res}_filtered-abs_count_difference-boxplot.png', f'{name_dir}/Cellbender/{folder}_ount_difference-boxplot.png')
                 except:
-                    print('missing')
+                    print('missing2')
                 try:
                     copyfile(f'{dir1}/plots/cellbender.pdf', f'{name_dir}/Cellbender/cellbender_{folder}.pdf')
                 except:
-                    print('missing')
+                    print('missing3')
                 try:
                     copyfile(f'{dir}/compare_cellranger/fpr_{resolution2}/boxplots_cellranger_vs_cellbender.png', f'{name_dir}/Cellbender/{folder}_boxplots_cellranger_vs_cellbender.png')
                 except:
-                    print('missing')                
+                    print('missing4')                
                 try:
                     copyfile(f'{dir}/compare_cellranger/fpr_{resolution2}/barcode_vs_total_counts.png', f'{name_dir}/Cellbender/{folder}_barcode_vs_total_counts.png')
                 except:
-                    print('missing')                
+                    print('missing5')                
                 try:
                     copyfile(f'{dir}/compare_cellranger/fpr_{resolution2}/boxplot_topgenes_cellranger_vs_cellbender.png', f'{name_dir}/Cellbender/{folder}_boxplot_topgenes_cellranger_vs_cellbender.png')
                 except:
-                    print('missing')
+                    print('missing6')
     # Fetch Gather
     df_raw = pd.read_table(input_table, index_col = 'experiment_id')
     # 'Note that the names for the future projects may be different - have to be handled on the Nextflow modules'
@@ -184,7 +184,9 @@ def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res
         except:
             _ ="Cant copy"
         
-        
+    if web_transfer !='false':
+        print('Here we triger the CI placed script, which happens only for the local Cardinal project')
+        os.system(f'exit && bash ../../../scripts/rsync_to_web.sh {project_name}')
 
     # if secret params exist then transfer data to web. 
     # rsync -vr Summary_plots ubuntu@1xxxxx:/volume/scRNA_test_app/scrna_static_and_media_files/media
@@ -212,11 +214,27 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
+        '-pn', '--project_name',
+        action='store',
+        dest='project_name',default='all',
+        required=False,
+        help='Project name to use for web transfer.'
+    )
+
+    parser.add_argument(
         '-cb_res', '--cb_res',
         action='store',
         dest='cb_res',
         required=True,
         help='The cellbender resolution used in downstream analysis'
+    )
+
+    parser.add_argument(
+        '-wt', '--web_transfer',
+        action='store',
+        dest='web_transfer',
+        required=False,default=False,
+        help='If run internally we will transfer the results to a website if run through Gitlab CI'
     )
 
     parser.add_argument(
@@ -243,4 +261,6 @@ if __name__ == "__main__":
     input_table=options.input_table
     cb_res=options.cb_res
     cellbender = options.cellbender
-    main_data_colection(name=f"{name}",directory=results_dir,input_table=input_table,cb_res=cb_res)
+    web_transfer = options.web_transfer
+    project_name = options.project_name
+    main_data_colection(name=f"{name}",directory=results_dir,input_table=input_table,cb_res=cb_res,web_transfer=web_transfer,project_name=project_name)

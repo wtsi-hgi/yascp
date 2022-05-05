@@ -159,24 +159,17 @@ process cellbender__preprocess_output{
     tuple(
       val(experiment_id),
       val(outdir),
-      
       path(expected_cells),
       path(total_droplets_include)
     )
 
-    tuple(
-      val(experiment_id),
-      val(outdir)
-    )
+
 
   output:
     path("*filtered_10x_mtx/barcodes.tsv.gz", emit: tenx_barcodes)
     path("*filtered_10x_mtx/features.tsv.gz", emit: tenx_features)
     path("*filtered_10x_mtx/matrix.mtx.gz", emit: tenx_matrix)
-    // path(
-    //   "*filtered_10x_mtx-file_list.tsv",
-    //   emit: results_list
-    // )  
+
     path(
       "${runid}-${outfile}-filtered_10x_mtx-file_list.tsv",
        emit: results_list
@@ -197,13 +190,6 @@ process cellbender__preprocess_output{
       path("*_filtered.h5"),
       emit: cb_plot_input
     )
-    // tuple(
-    //   val(outdir),
-    //   path(file_10x_barcodes),
-    //   path(file_10x_features),
-    //   path(file_10x_matrix),
-    //   emit: cb_plot_input
-    // )
 
     tuple(
       val(experiment_id),
@@ -474,6 +460,22 @@ process cellbender__remove_background__qc_plots {
     """
 }
 
+process capture_cellbender_files{
+  publishDir  path: "${outdir}"
+  label 'process_tiny'
+  input:
+    path(cellbender_location)
+    val(outdir)
+  output:
+    path(cellbender_location)
+    path("cellbender/qc_cluster_input_files/file_paths_10x-*${params.cellbender_resolution_to_use}.tsv", emit: celbender_path)
+  script:
+  """
+    echo 'setting link to get cellbender results in this directory'
+  """    
+
+}
+
 process cellbender__remove_background__qc_plots_2 {
 
   label 'process_low'
@@ -556,7 +558,7 @@ process cellbender__gather_qc_input {
   output:
     val(outdir, emit: outdir)
     path("*.tsv", emit: qc_input_files)
-
+    path("file_paths_10x-*${params.cellbender_resolution_to_use}.tsv", emit: celbender_path)
   script:
     runid = random_hex(16)
     outdir = "${outdir_prev}/qc_cluster_input_files"
