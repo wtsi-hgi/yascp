@@ -17,7 +17,7 @@ process SUMMARY_STATISTICS_PLOTS {
         path(input_data_table)
 
     output: 
-        path('Summary_plots')
+        path('Summary_plots'), emit: summary_plots
     
     script:
       if ("${params.input}" == 'cellranger'){
@@ -34,5 +34,23 @@ process SUMMARY_STATISTICS_PLOTS {
                               --web_transfer ${params.webtransfer} \
                               --project_name ${params.project_name}
           
+      """
+}
+
+
+process TRANSFER {
+        
+    label 'process_low'
+
+    input: 
+        path(summary_plots)
+
+
+    when:
+        params.webtransfer
+    script:
+
+      """
+        ../../../scripts/rsync_to_web.sh ${params.project_name}          
       """
 }

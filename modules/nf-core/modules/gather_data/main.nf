@@ -19,6 +19,7 @@ process GATHER_DATA{
     output:
       path("${subdir}", emit:outfiles_dataset)
       path("${subdir}_summary", emit:outfiles_dataset2)
+      
       val(outdir, emit: outdir_dataset)
 
     script:

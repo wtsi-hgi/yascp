@@ -152,7 +152,8 @@ workflow  main_deconvolution {
         }
 
         if (params.run_with_genotype_input & params.genotype_input.posterior_assignment) {
-            MATCH_GT_VIREO(vireo_out_sample_donor_vcf)            
+            MATCH_GT_VIREO(vireo_out_sample_donor_vcf)        
+            // match_genotypes(main_deconvolution.out.vireo_out_sample_donor_vcf, ch_ref_vcf)    
         }
         
         //here have to fix the vireo outputs based on the GT matching.
