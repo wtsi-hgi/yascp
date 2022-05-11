@@ -23,13 +23,13 @@ slipt1 = vcf[:1].values[0,0].split('\t')
 # detect the outlier z values and make this as unassigned.
 
 from scipy.stats import iqr
-iqr = iqr(GT_Assignments['z_score'])
-q3 = np.percentile(GT_Assignments['z_score'], 75) 
-q1 = np.percentile(GT_Assignments['z_score'], 25) 
+iqr = iqr(GT_Assignments['z0'])
+q3 = np.percentile(GT_Assignments['z0'], 75) 
+q1 = np.percentile(GT_Assignments['z0'], 25) 
 outlier_thresh = q3+1.5*iqr
 outlier_thresh_neg = q1-1.5*iqr
 
-Unassigned = list(GT_Assignments[GT_Assignments['z_score']<outlier_thresh_neg].index)
+Unassigned = list(GT_Assignments[GT_Assignments['z0']<outlier_thresh_neg].index)
 
 
 for ix in GT_Assignments.index:
