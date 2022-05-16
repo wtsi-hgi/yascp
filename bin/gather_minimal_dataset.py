@@ -478,8 +478,8 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
             Donor_cells_fails_qc = len(all_QC_lane[Mengled_barcodes_donor].obs[all_QC_lane.obs['cell_passes_qc']==False])
             
             data_donor_for_stats['cells before QC filters'].append(Donor_cells_for_donor)
-            data_donor_for_stats['cells failing QC'].append(Donor_cells_passes_qc)
-            data_donor_for_stats['cells passing QC'].append(Donor_cells_fails_qc)
+            data_donor_for_stats['cells failing QC'].append(Donor_cells_fails_qc)
+            data_donor_for_stats['cells passing QC'].append(Donor_cells_passes_qc)
 
             Donor_cell_assignments = Azimuth_Cell_Assignments_data.loc[Mengled_barcodes_donor] #for this have to figure out when the cell type is unasigned.
             Cell_types_detected = len(set(Donor_cell_assignments['predicted.celltype.l2']))
@@ -515,7 +515,7 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
         if Donor_Stats['Donor id']!='':
             # Only generate donor stats for the donors excluding unasigned and doublets. 
             Pass_Fail='PASS'
-            Failure_Reason =''
+            Failure_Reason =' '
 
             if (Median_UMIs_per_gene<=400):
                 Pass_Fail='FAIL'

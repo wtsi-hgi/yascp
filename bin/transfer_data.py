@@ -4,7 +4,7 @@ __date__ = '2021-07-28'
 __version__ = '0.0.1'
 
 import os
-from shutil import copyfile,copytree
+from shutil import copyfile,copytree,copy
 from os import listdir
 import glob
 import argparse
@@ -133,16 +133,24 @@ def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res
     folder1 = f'{directory}/plots'
     if os.path.isdir(folder1):
         try:
-            os.mkdir(f'{name_dir}/QC metrics')
+            os.mkdir(f'{name_dir}/Cell-type assignment')
         except:
             print('dire exists')
-        copyfile(f'{folder1}/adata-cell_desity.png', f'{name_dir}/QC metrics/adata-cell_desity.png')
-        copyfile(f'{folder1}/adata-cell_filtered_per_experiment-n_cells_before_after.png', f'{name_dir}/QC metrics/adata-cell_filtered_per_experiment-n_cells_before_after.png')
-        copyfile(f'{folder1}/scatterplot-sex_sample_swap_check.png', f'{name_dir}/QC metrics/scatterplot-sex_sample_swap_check.png')
-        copyfile(f'{folder1}/adata-outlier_cells.png', f'{name_dir}/QC metrics/adata-outlier_cells.png')
-        fil1 = glob.glob(f'{folder1}/plot_ecdf-x_log10*total_counts*')[0]
-        copyfile(fil1, f'{name_dir}/QC metrics/plot_ecdf-x_log10.var=total_counts.color=experiment_id-adata.png')
-        
+
+        # copyfile(f'{folder1}/adata-cell_desity.png', f'{name_dir}/QC metrics/adata-cell_desity.png')
+        # for donor in Folders2:
+        #     copyfile(f'{folder1}/{model_type}/{donor}/{donor}_predicted_labels.pdf', f'{name_dir}/Cell-type assignment/celltypist/{model_type}_{donor}_predicted_labels.pdf')
+                
+        # copyfile(f'{folder1}/adata-cell_desity.png', f'{name_dir}/QC metrics/adata-cell_desity.png')
+        # copyfile(f'{folder1}/adata-cell_filtered_per_experiment-n_cells_before_after.png', f'{name_dir}/QC metrics/adata-cell_filtered_per_experiment-n_cells_before_after.png')
+        # copyfile(f'{folder1}/scatterplot-sex_sample_swap_check.png', f'{name_dir}/QC metrics/scatterplot-sex_sample_swap_check.png')
+        # copyfile(f'{folder1}/adata-outlier_cells.png', f'{name_dir}/QC metrics/adata-outlier_cells.png')
+        # fil1 = glob.glob(f'{folder1}/plot_ecdf-x_log10*total_counts*')[0]
+        # copyfile(fil1, f'{name_dir}/QC metrics/plot_ecdf-x_log10.var=total_counts.color=experiment_id-adata.png')
+        files = glob.glob(f'{folder1}/*[!.gz]')
+        for file1 in files:
+            print(file1)
+            copy(file1, f'{name_dir}/Cell-type assignment')
 
     folder1 = f'{directory}/clustering'
     if os.path.isdir(folder1):
