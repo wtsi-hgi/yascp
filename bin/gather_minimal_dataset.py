@@ -182,13 +182,13 @@ def fetch_qc_obs_from_anndata(adqc, expid, df_cellbender = None):
         ad.obs['cellbender_latent_probability']=dc['cellbender_latent_probability']
     return df,ad
 
-def fetch_cellbender_annotation(df_cellbender, expid):
+def fetch_cellbender_annotation(df_cellbender, expid,Resolution):
     dirpath = df_cellbender.loc[expid, 'data_path_10x_format']
     try:
-        h5_path = f"{args.results_dir}/{os.path.dirname(dirpath)}/cellbender_FPR_0pt05_filtered.h5"
+        h5_path = f"{args.results_dir}/{os.path.dirname(dirpath)}/cellbender_FPR_{Resolution}_filtered.h5"
         f = h5py.File(h5_path, 'r')
     except:
-        h5_path = f"{os.path.dirname(dirpath)}/cellbender_FPR_0pt05_filtered.h5"
+        h5_path = f"{os.path.dirname(dirpath)}/cellbender_FPR_{Resolution}_filtered.h5"
         f = h5py.File(h5_path, 'r')
     # ad = scanpy.read_10x_h5(h5_path, genome='background_removed')
     # interesting data is in /matrix/barcodes and matrix/latent_cell_probability
@@ -292,7 +292,7 @@ def gather_donor(donor_id, ad, ad_lane_raw, azimuth_annot, qc_obs, columns_outpu
         'Donor id':donor_id
     }
 
-def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane_id=1):
+def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane_id=1,Resolution='0pt5'):
     
     ######################
     #Cellranger datasets
@@ -317,7 +317,7 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
         except:
             ad_lane_filtered = scanpy.read_10x_mtx(f"{args.results_dir}/{df_cellbender.loc[expid, 'data_path_10x_format']}")
         
-        dfcb = fetch_cellbender_annotation(df_cellbender, expid)
+        dfcb = fetch_cellbender_annotation(df_cellbender, expid,Resolution)
         columns_output = {**columns_output, **COLUMNS_CELLBENDER}
     else:
         ad_lane_filtered = scanpy.read_10x_mtx(f"{df_raw.loc[expid, 'data_path_10x_format']}/filtered_feature_bc_matrix")
@@ -665,7 +665,7 @@ if __name__ == '__main__':
     else:
         # this is existing_cellbender, hence using this input
         df_cellbender = pandas.read_table(f'{args.cellbender}', index_col = 'experiment_id')
-
+    Resolution = args.resolution
     adqc = anndata.read_h5ad(f'{args.results_dir}/adata.h5ad')
     fctr = 0
     data_tranche_all=[]
@@ -733,7 +733,7 @@ if __name__ == '__main__':
 
 
     for expid in df_raw.index:
-        nf, data_tranche, data_donor, azt = gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = oufh, lane_id=count)
+        nf, data_tranche, data_donor, azt = gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = oufh, lane_id=count,Resolution=Resolution)
         # add the stuff to the adata.
         azt=azt.set_index('mangled_cell_id')
         All_probs_and_celltypes=pd.concat([All_probs_and_celltypes,azt])
