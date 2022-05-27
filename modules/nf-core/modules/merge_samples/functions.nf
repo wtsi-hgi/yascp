@@ -77,6 +77,21 @@ process merge_samples_from_h5ad {
         // String filename = './parameters.yml'
         // yaml.dump(file_params , new FileWriter(filename))
         // Customize command for optional files.
+        if (params.extra_metadata!=''){
+            extra_metadata = "--extra_metadata ${params.extra_metadata}"
+        }else{
+            extra_metadata = ""
+        }
+
+        if (params.extra_sample_metadata!=''){
+            // If same columns defined in the h5ad, these will be overwritten
+            // If same columns in extra donor metadata as in extra sample metadata, sample metadata will be overwritten
+            extra_sample_metadata = "add_extra_sample_metadata.py --vireo ${file_metadata} --extra_sample_metadata ${params.extra_sample_metadata} --metadata_key ${metadata_key}"
+        }else{
+            extra_sample_metadata = "ln -s ${file_metadata} Vireo_metadata.csv"
+        }
+
+
         cmd__params = ""
         if (file_params != "no_file__file_sample_qc") {
             cmd__params = "--params_yaml ${file_params}"
@@ -96,16 +111,17 @@ process merge_samples_from_h5ad {
         nf_helper__prep_h5addata_file.py \
             --h5ad_list ${files__h5ad} \
             --output_file nf_prepped__file_paths_h5ad.tsv
+        ${extra_sample_metadata}
         scanpy_merge_from_h5ad.py \
             --h5addata_file nf_prepped__file_paths_h5ad.tsv \
-            --sample_metadata_file ${file_metadata} \
+            --sample_metadata_file Vireo_metadata.csv \
             --sample_metadata_columns_delete "sample_status,study,study_id" \
             --metadata_key ${metadata_key} \
             --number_cpu ${task.cpus} \
             --output_file ${runid}-adata \
             --anndata_compression_opts ${anndata_compression_opts} \
             ${cmd__params} \
-            ${cmd__cellmetadata}
+            ${cmd__cellmetadata} ${extra_metadata}
         mkdir plots
         mv *pdf plots/ 2>/dev/null || true
         mv *png plots/ 2>/dev/null || true

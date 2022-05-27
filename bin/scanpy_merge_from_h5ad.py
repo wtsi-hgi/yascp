@@ -63,7 +63,8 @@ def scanpy_merge(
     output_file,
     params_dict=dict(),
     cellmetadata_filepaths=None,
-    anndata_compression_opts=4
+    anndata_compression_opts=4,
+    extra_metadata=None
 ):
     """Merge h5ad data.
 
@@ -169,6 +170,8 @@ def scanpy_merge(
     adatasets__experiment_ids = []
     n_adatasets = 1
     for idx, row in h5ad_data.iterrows():
+        print(row)
+        idx1 = row['experiment_id'].split('__')[0]
         # Load the data
         adata = sc.read_h5ad(
             filename=row['data_path_h5ad_format'] + '/h5ad.h5ad' #,
@@ -622,6 +625,15 @@ def scanpy_merge(
         metadata_smpl = metadata[
             metadata[metadata_key] == row['experiment_id']
         ]
+        try:
+            extra_sample_metadata = extra_metadata[extra_metadata[metadata_key]==idx1]
+        except:
+            extra_sample_metadata = pd.DataFrame()
+        if (len(extra_sample_metadata)>0):
+            for col in extra_sample_metadata.columns:
+                # print(col)
+                adata.obs[col] = np.repeat(extra_sample_metadata[col].values, adata.n_obs)
+
         for col in metadata_smpl.columns:
             adata.obs[col] = np.repeat(metadata_smpl[col].values, adata.n_obs)
 
@@ -999,6 +1011,15 @@ def main():
             (default: %(default)s)'
     )
 
+
+    parser.add_argument(
+        '-em', '--extra_metadata',
+        action='store',
+        dest='extra_metadata',
+        default='',
+        help='Provide extra sample metadata file to be merged with the input'
+    )
+
     parser.add_argument(
         '-pyml', '--params_yaml',
         action='store',
@@ -1076,6 +1097,12 @@ def main():
     metadata.columns = metadata.columns.str.strip(
         ).str.replace(' ', '_').str.lower()
 
+    # 
+    try:
+        extra_metadata = pd.read_csv(options.extra_metadata, sep='\t')
+    except:
+        extra_metadata = pd.DataFrame()
+
     # Delete the metadata columns that we do not want.
     if options.mcd != '':
         for i in options.mcd.split(','):
@@ -1105,7 +1132,8 @@ def main():
         output_file=options.of,
         params_dict=params_dict,
         cellmetadata_filepaths=cellmetadata_filepaths,
-        anndata_compression_opts=options.anndata_compression_opts
+        anndata_compression_opts=options.anndata_compression_opts,
+        extra_metadata= extra_metadata
     )
     print(out_file)
 

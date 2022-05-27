@@ -469,6 +469,7 @@ reference <- LoadReference(REFERENCE_DIR)
 cat("Loading file", inputfile.h5seurat, "\n")
 query <- LoadH5Seurat(inputfile.h5seurat)
 cat("query file loaded.\n")
+saveRDS(query, file = "query.rds")
 # Calculate nCount_RNA and nFeature_RNA if the query does not
 # contain them already
 if (!all(c("nCount_RNA", "nFeature_RNA") %in% c(colnames(x = query[[]])))) {
@@ -615,6 +616,7 @@ query <- AddMetaData(
 
 # save mapped data set
 # save(query, file = "azimuth.bin")
+saveRDS(query, file = "azimuth.rds")
 # load("azimuth.bin" )
 
 

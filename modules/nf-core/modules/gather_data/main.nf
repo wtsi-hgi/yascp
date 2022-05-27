@@ -15,7 +15,7 @@ process GATHER_DATA{
     input:
       path(outdir_prev)
       val(dummy_val)
-      path(input_data_table)
+      path(input_data_table)      
     output:
       path("${subdir}", emit:outfiles_dataset)
       path("${subdir}_summary", emit:outfiles_dataset2)
@@ -37,6 +37,8 @@ process GATHER_DATA{
           --results_dir=${outdir_prev} \
           --input_table=${input_data_table} \
           --cellbender=${cellbender_input} \
-          --resolution=${params.cellbender_resolution_to_use}
+          --resolution=${params.cellbender_resolution_to_use} \
+          --write_h5=${params.write_h5} \
+          
       """
 }

@@ -23,17 +23,53 @@ process REPLACE_GT_DONOR_ID{
     tuple val(samplename), path("GT_replace_GT_donors.vireo.vcf.gz"), path(vcf_file),path(donor_gt_csi), emit: sample_donor_vcf
     path("GT_replace_${samplename}.sample_summary.txt"), emit: sample_summary_tsv
     path("GT_replace_${samplename}__exp.sample_summary.txt"), emit: sample__exp_summary_tsv
+    path("GT_replace_${samplename}_assignments.tsv"), emit: assignments
     
   script:
+    if(params.genotype_phenotype_mapping_file==''){
+      in=""
+    }else if (params.use_phenotype_ids_for_gt_match){
+      in="--genotype_phenotype_mapping ${params.genotype_phenotype_mapping_file}"
+      // in=""
+    }else{
+      in=""
+    }
+
     """
-     
       echo ${samplename} > test.out
       gunzip -k -d --force GT_donors.vireo.vcf.gz
-      replace_donors.py -id ${samplename}
+      replace_donors.py -id ${samplename} ${in} --input_file ${params.input_data_table}
       bgzip GT_replace_GT_donors.vireo.vcf
     """
 }
 
+process REPLACE_GT_ASSIGNMENTS_WITH_PHENOTYPE{
+  label 'process_low'
+  publishDir  path: "${params.outdir}/gtmatch/",
+          pattern: "*_assignments.csv",
+          mode: "${params.copy_mode}",
+          overwrite: "true"
+
+  if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
+      container "/software/hgi/containers/mercury_scrna_deconvolution_62bd56a-2021-12-15-4d1ec9312485.sif"
+      //// container "/software/hgi/containers/mercury_scrna_deconvolution_latest.img"
+  } else {
+      container "mercury/scrna_deconvolution:62bd56a"
+  }
+
+  input:
+    path(gt_match_results)
+
+  output:
+    path(gt_match_results, emit: donor_match_table)
+
+  script:
+    """
+      perform_replacement.py --genotype_phenotype_mapping ${params.genotype_phenotype_mapping_file} --assignemts ${gt_match_results}
+      
+    """
+
+}
 
 process MATCH_GT_VIREO {
   tag "${pool_id}"

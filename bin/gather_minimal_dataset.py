@@ -172,7 +172,7 @@ def fetch_qc_obs_from_anndata(adqc, expid, df_cellbender = None):
 
     if df_cellbender is not None:
         # cellbender removes the barcodes - 
-        dfcb = fetch_cellbender_annotation(df_cellbender, expid)
+        dfcb = fetch_cellbender_annotation(df_cellbender, expid,Resolution)
         dc = pandas.concat([df, dfcb], axis = 1, join = 'inner')
         if dc.shape[0] != df.shape[0]:
             sys.exit("ERROR: barcodes missing in cellbender file.")
@@ -294,6 +294,40 @@ def gather_donor(donor_id, ad, ad_lane_raw, azimuth_annot, qc_obs, columns_outpu
 
 def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane_id=1,Resolution='0pt5'):
     
+    # Get the merged in metadata
+    try:
+        date_of_sequencing = adqc.obs['last_updated'][0]
+    except:
+        date_of_sequencing = 'Sequencing date not vailable'
+
+    try:
+        try:
+            Machine_id = adqc.obs['instrument_name'][0]
+        except:
+            Machine_id = adqc.obs['instrument'][0]
+    except:
+        Machine_id = 'Machine_id not vailable'
+
+    try:
+        Run_ID = adqc.obs['id_study_tmp'][0]
+    except:
+        Run_ID = 'Run_ID not vailable'
+
+    try:
+        t = adqc.obs['cohort'].astype(str)+' '+adqc.obs['batch'].astype(str)
+        cohort_list = list(set(t.values))
+        Count_of_UKB=0
+        Count_of_ELGH=0
+        for elem in cohort_list:
+            # print(elem)
+            if 'ELGH' in elem:
+                Count_of_ELGH+=1
+            elif 'UKBB' in elem:
+                Count_of_UKB+=1
+    except:
+        Count_of_UKB = 0    
+        Count_of_ELGH = 0    
+
     ######################
     #Cellranger datasets
     ######################
@@ -429,7 +463,6 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
     try:
         Azimuth_Cell_Assignments_data=Azimuth_Cell_Assignments_data.set_index('mangled_cell_id')
         all_QC_lane.obs['predicted celltype']=Azimuth_Cell_Assignments_data['predicted.celltype.l2']
-    
     except:
         print('skipped az')
     UMIS_mapped_to_mitochondrial_genes = sum(all_QC_lane.obs['total_counts_gene_group__mito_transcript'])
@@ -530,6 +563,17 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
                 Pass_Fail='FAIL'
                 Failure_Reason +='Donor_cells_for_donor<=400; '
         
+            try:
+                Date_sample_received = ''
+            except:
+                Date_sample_received = 'No sample info available'   
+
+            try:
+                Date_of_sample_sequencing = ''
+            except:
+                Date_of_sample_sequencing = 'No sample info available'   
+
+        
             Donor_Stats_extra = {
                 'Donor id':donor_id,
                 'Donors in pool':Donors_in_pool,
@@ -537,8 +581,8 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
                 'Nr UMIS mapped to mitochondrial genes':Donor_UMIS_mapped_to_mitochondrial_genes,
                 'Nr cells passes qc':Donor_cells_passes_qc,
                 'Total Nr cells for donor':Donor_cells_for_donor, 
-                'Date sample received':'comes from extra metadata', #Do this
-                'Date of sample sequencing':'comes from extra metadata', 
+                'Date sample received':Date_sample_received, #Do this
+                'Date of sample sequencing':Date_of_sample_sequencing, 
                 'Donor_number': donor_number,
                 'Nr UMIs':UMIs,
                 'Median UMIs per gene':Median_UMIs_per_gene,
@@ -578,18 +622,19 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
         Stdev_cells_passes_qc=0
         Stdev_cells_fails_qc=0
         Stdev_Nr_cells_for_donor=0       
-    Percentage_of_unassigned_cells = Unassigned_donor/(Donors_in_pool+Doublets_donor+Unassigned_donor)*100
+    Percentage_of_unassigned_cells = Unassigned_donor/(Donors_in_pool+Doublets_donor+Unassigned_donor)*100  
+
     data_tranche = {
         'Experiment id':expid,
         'Pool id':list(set(Donor_df['Pool ID']))[0],
-        'Machine id':'XXXX', #Change this - it will come from the extra metadata file if available
-        'Run id':'Comes from the fetch', #Generate - feed in from extra metadate if available
-        'Date of sample sequencing':'Comes from the LIMs or Sequencescape',#Change this
+        'Machine id':Machine_id, #Change this - it will come from the extra metadata file if available
+        'Run id':Run_ID, #Generate - feed in from extra metadate if available
+        'Date of sample sequencing':date_of_sequencing,#Change this
         'Total Droplets with donor assignment':Cells_before_QC_filters,
         'Droplets identified as doublet':Doublets_donor,
         'Droplets with donor unassigned':Unassigned_donor,
-        'UKB donors deconvoluted in pool':0, #change this - would be better if this was an automated input.  ie - if 2 vcfs fed in then 2 matches
-        'ELGH donors in the pool':0, #change this - would be better if this was an automated input - ie - if 2 vcfs fed in then 2 matches
+        'UKB donors deconvoluted in pool':Count_of_UKB, #change this - would be better if this was an automated input.  ie - if 2 vcfs fed in then 2 matches
+        'ELGH donors in the pool':Count_of_ELGH, #change this - would be better if this was an automated input - ie - if 2 vcfs fed in then 2 matches
         'Chromium channel number':list(set(Donor_df['Chromium channel number']))[0],
         'Donors in pool':Donors_in_pool,
         'Number of Reads':Number_of_Reads,
@@ -634,6 +679,9 @@ def set_argument_parser():
     parser.add_argument("--input_table", required = True,
                     help="The input folder used",
                     dest='input_table')
+    parser.add_argument("--write_h5", required = True,
+                help="Should we write the h5ad files for each donor?",
+                dest='write_h5')
     parser.add_argument("--extra_metadata", required = False,
                     help="The input folder used",
                     dest='extra_metadata')
@@ -651,7 +699,11 @@ if __name__ == '__main__':
     if args.outdir != os.curdir and not os.access(args.outdir, os.F_OK):
         os.mkdir(args.outdir)
         os.mkdir(f"{args.outdir}_summary")
-
+    if (args.write_h5=='false'):
+        write_h5=False
+    else:
+       write_h5=True 
+       
     oufh = open(os.path.join(args.outdir, "files.tsv"), 'w')
     oufh.write("experiment_id\tdonor_id\tfilename_h5ad\tfilename_annotation_tsv\n")
     df_raw = pandas.read_table(args.input_table, index_col = 'experiment_id')
@@ -672,65 +724,6 @@ if __name__ == '__main__':
     data_donor_all=[]
     count = 1
     All_probs_and_celltypes = pd.DataFrame()
-
-
-    args.extra_metadata = '/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/fetch/ELGH_fech/results/yascp_inputs/Extra_Metadata.tsv'   
-    Sample_metadata = pd.DataFrame()
-    try:
-        if args.extra_metadata:
-            Extra_Metadata = pd.read_csv('/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/fetch/ELGH_fech/results/yascp_inputs/Extra_Metadata.tsv',sep='\t')
-            # Extra_Metadata = pd.read_csv(args.extra_metadata,sep='\t')
-            Extra_Metadata=Extra_Metadata.set_index('sanger_sample_id')
-            Mappings_between_sanger_sampe_and_NS = Extra_Metadata['public_name']
-            Library_IDs = pd.read_csv('/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/fetch/ELGH_fech/results/yascp_inputs/Library_IDs.csv',sep='\t')
-            Sample_Manifest = pd.read_csv('/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/fetch/ELGH_fech/results/yascp_inputs/Sample_Manifest.csv',sep='\t')
-            Sample_Manifest=Sample_Manifest.set_index('Barcode (scan)')
-            Library_IDs = Library_IDs.set_index('S2-046 ID')
-            
-            for Lid in Mappings_between_sanger_sampe_and_NS.iteritems():
-                print(Lid)
-                Samples = Library_IDs[Library_IDs['library ID:'].str.contains(Lid[1])]
-                Samples['Sanger_id']=Lid[0]
-                Samples['NS_ID']=Lid[1]
-
-                intersect = set(Sample_Manifest.index).intersection(set(Samples.index))
-                missing = set(Samples.index)- set(Sample_Manifest.index)
-
-                # now combine the missing and existing values.
-                All_Vals = pd.DataFrame()
-                if len(intersect)>0:
-                    Recieved_sample_info = Sample_Manifest.loc[intersect]
-                    Recieved_sample_info = Recieved_sample_info[['Volume (ul)','Issue (optional)','Date received']]
-                    All_Vals = pd.concat([All_Vals,Recieved_sample_info],axis=0)
-                    
-                if len(missing)>0:
-                    # samples not recorded in sampe reception.
-                    missing = intersect
-                    Recieved_sample_info_missing = pd.DataFrame(columns={'Volume (ul)','Issue (optional)','Date received'},index=[list(missing)])
-                    All_Vals = pd.concat([All_Vals,Recieved_sample_info_missing],axis=0)
-                # 
-                S1 = Samples.join(Recieved_sample_info)
-                # Sample_metadata = Sample_metadata.merge(Samples)
-                Sample_metadata=pd.concat([Sample_metadata,S1])
-                print('Done')
-                # set(Samples.index)
-            # Read in sample manifest
-            # Read in Library IDs
-            print('Done')
-            Sample_metadata2= Sample_metadata[['NS_ID','Volume (ul)','Issue (optional)','Date received','Time blood samples taken','Date and time of last meal:','Sanger_id']]
-            Sample_metadata2.Sanger_id in df_raw.index
-            Sample_metadata2 = Sample_metadata2.reset_index()
-            S2 = Sample_metadata2.set_index('Sanger_id')
-            S3 = S2.loc[set(df_raw.index)]
-            df_raw.index
-            S3.to_csv('Sample_data3.tsv',sep='\t')
-
-            
-    except:
-        print('not working')
-
-    
-
 
     for expid in df_raw.index:
         nf, data_tranche, data_donor, azt = gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = oufh, lane_id=count,Resolution=Resolution)

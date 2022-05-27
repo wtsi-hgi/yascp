@@ -10,7 +10,9 @@ process SUMMARY_STATISTICS_PLOTS {
     } else {
         container "mercury/scrna_deconvolution:62bd56a"
     }
-
+    when:
+      params.webtransfer
+      
     input: 
         path(outdir_prev)
         val(gather_dummy_input)

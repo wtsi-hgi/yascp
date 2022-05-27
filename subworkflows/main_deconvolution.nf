@@ -11,7 +11,7 @@ include { SPLIT_DONOR_H5AD } from '../modules/nf-core/modules/split_donor_h5ad/m
 include { PLOT_DONOR_CELLS } from '../modules/nf-core/modules/plot_donor_cells/main'
 include {MULTIPLET} from "../modules/nf-core/modules/multiplet/main"
 include {SOUPORCELL_VS_VIREO} from "../modules/nf-core/modules/plot_souporcell_vs_vireo/main"
-include { MATCH_GT_VIREO } from '../modules/nf-core/modules/genotypes/main'
+include { MATCH_GT_VIREO; REPLACE_GT_ASSIGNMENTS_WITH_PHENOTYPE } from '../modules/nf-core/modules/genotypes/main'
 include {REPLACE_GT_DONOR_ID } from '../modules/nf-core/modules/genotypes/main'
 workflow  main_deconvolution {
 
@@ -152,17 +152,33 @@ workflow  main_deconvolution {
         }
 
         if (params.run_with_genotype_input & params.genotype_input.posterior_assignment) {
-            MATCH_GT_VIREO(vireo_out_sample_donor_vcf)        
+            MATCH_GT_VIREO(vireo_out_sample_donor_vcf)
+            out_gt = MATCH_GT_VIREO.out.donor_match_table
+
+            // if (params.use_phenotype_ids_for_gt_match){
+            //     if(params.genotype_phenotype_mapping_file!=''){
+            //         REPLACE_GT_ASSIGNMENTS_WITH_PHENOTYPE(MATCH_GT_VIREO.out.donor_match_table)
+            //         out_gt = REPLACE_GT_ASSIGNMENTS_WITH_PHENOTYPE.out.donor_match_table
+            //     }
+            // }
             // match_genotypes(main_deconvolution.out.vireo_out_sample_donor_vcf, ch_ref_vcf)    
         }
         
         //here have to fix the vireo outputs based on the GT matching.
         if (params.replace_genotype_ids){
-            REPLACE_GT_DONOR_ID(VIREO.out.all_required_data , MATCH_GT_VIREO.out.donor_match_table.collect())
+            REPLACE_GT_DONOR_ID(VIREO.out.all_required_data , out_gt.collect())
             REPLACE_GT_DONOR_ID.out.sample_donor_vcf.set{vireo_out_sample_donor_vcf}
             REPLACE_GT_DONOR_ID.out.sample_summary_tsv.set{vireo_out_sample_summary_tsv}
             REPLACE_GT_DONOR_ID.out.sample__exp_summary_tsv.set{vireo_out_sample__exp_summary_tsv}
             REPLACE_GT_DONOR_ID.out.sample_donor_ids.set{vireo_out_sample_donor_ids}
+
+            REPLACE_GT_DONOR_ID = REPLACE_GT_DONOR_ID.out.assignments
+                .collectFile(name: "assignments_all_pools.tsv",
+                        newLine: false, sort: true,
+                        keepHeader: true,
+                        // skip:1,
+                        storeDir:params.outdir+'/deconvolution/vireo_gt_fix')
+
         }
         
         if (params.vireo.run){

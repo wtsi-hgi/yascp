@@ -24,15 +24,13 @@ workflow qc {
         file__cells_filtered
     main:
         log.info "--- Running QC metrics --- "
-
-        if(params.extra_metadata!=''){
-            log.info '''--- Adding extra metadata to h5ad---'''
-            ADD_EXTRA_METADATA_TO_H5AD(file__anndata_merged,params.extra_metadata)
-            file__anndata_merged = ADD_EXTRA_METADATA_TO_H5AD.out.file__anndata
-        }else{
-            log.info '''--- No extra metadata to add to h5ad ---'''
-        }
-
+        // if(params.extra_metadata!=''){
+        //     log.info '''--- Adding extra metadata to h5ad---'''
+        //     ADD_EXTRA_METADATA_TO_H5AD(file__anndata_merged,params.extra_metadata)
+        //     file__anndata_merged = ADD_EXTRA_METADATA_TO_H5AD.out.file__anndata
+        // }else{
+        //     log.info '''--- No extra metadata to add to h5ad ---'''
+        // }
 
         //FILTERING OUTLIER CELLS
         if (params.sample_qc.cell_filters.filter_outliers.run_process) {
