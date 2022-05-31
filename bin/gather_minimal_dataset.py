@@ -152,7 +152,7 @@ def load_scrublet_assignments(expid, datadir_scrublet):
     scb = pandas.read_table(filpath).set_index('cell_barcode', drop = True)
     return scb
 
-def fetch_qc_obs_from_anndata(adqc, expid, df_cellbender = None):
+def fetch_qc_obs_from_anndata(adqc, expid, df_cellbender = None,Resolution='0pt5'):
 
     s = adqc.obs['convoluted_samplename'] == expid
     if s.shape[0] < 1:
@@ -302,28 +302,36 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
 
     try:
         try:
-            Machine_id = adqc.obs['instrument_name'][0]
-        except:
             Machine_id = adqc.obs['instrument'][0]
+        except:
+            Machine_id = adqc.obs['instrument_name'][0]
     except:
         Machine_id = 'Machine_id not vailable'
 
     try:
-        Run_ID = adqc.obs['id_study_tmp'][0]
+        Run_ID = str(adqc.obs['id_study_tmp'][0])
     except:
         Run_ID = 'Run_ID not vailable'
-
+    outdir = f'{args.outdir}/{expid}'
+    try:
+        os.mkdir(outdir)
+    except:
+        print('dir exists')
     try:
         t = adqc.obs['cohort'].astype(str)+' '+adqc.obs['batch'].astype(str)
         cohort_list = list(set(t.values))
         Count_of_UKB=0
         Count_of_ELGH=0
+        Count_of_undertermined=0
         for elem in cohort_list:
             # print(elem)
             if 'ELGH' in elem:
                 Count_of_ELGH+=1
             elif 'UKBB' in elem:
                 Count_of_UKB+=1
+            else:
+                Count_of_undertermined+=1
+
     except:
         Count_of_UKB = 0    
         Count_of_ELGH = 0    
@@ -335,6 +343,10 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
     #Unfiltered
     compression_opts = 'gzip'
     adata_cellranger_raw = scanpy.read_10x_mtx(f"{df_raw.loc[expid, 'data_path_10x_format']}/raw_feature_bc_matrix")
+
+    # test = scanpy.read_10x_h5('/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/qc/ELGH_9th_May_2022/work/dc/731610294d97b3def203635185b1ff/minimal_dataset/CRD_CMB12813646/Cellranger_filtered_feature_bc_matrix_CRD_CMB12813646.h5')
+    # here try to link the cellranger raw and cellrenger filtered outputs.
+    
     zero_count_cells_cellranger_raw = adata_cellranger_raw.obs_names[np.where(adata_cellranger_raw.X.sum(axis=1) == 0)[0]]
     ad_lane_raw = adata_cellranger_raw[adata_cellranger_raw.obs_names.difference(zero_count_cells_cellranger_raw, sort=False)]
     scanpy.pp.calculate_qc_metrics(adata_cellranger_raw, inplace=True)
@@ -347,16 +359,35 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
     if df_cellbender is not None:
         try:
             # depends whether the absolute or relative path was recorded.
-            ad_lane_filtered = scanpy.read_10x_mtx(f"{df_cellbender.loc[expid, 'data_path_10x_format']}")
+            cell_bender_path = f"{df_cellbender.loc[expid, 'data_path_10x_format']}"
+            
         except:
-            ad_lane_filtered = scanpy.read_10x_mtx(f"{args.results_dir}/{df_cellbender.loc[expid, 'data_path_10x_format']}")
-        
+            cell_bender_path = f"{args.results_dir}/{df_cellbender.loc[expid, 'data_path_10x_format']}"
+        cellbender_h5 = f"{cell_bender_path}/../cellbender_FPR_{Resolution}_filtered.h5"
+        ad_lane_filtered = scanpy.read_10x_mtx(cell_bender_path)
+        os.link(cellbender_h5, f"./{outdir}/Cellbender_filtered_{Resolution}__{expid}.h5")
         dfcb = fetch_cellbender_annotation(df_cellbender, expid,Resolution)
         columns_output = {**columns_output, **COLUMNS_CELLBENDER}
     else:
         ad_lane_filtered = scanpy.read_10x_mtx(f"{df_raw.loc[expid, 'data_path_10x_format']}/filtered_feature_bc_matrix")
         df_cellbender=None
-    
+
+    # os.
+    if write_h5:
+        try:
+            # os.system(f"ls -s {df_raw.loc[expid, 'data_path_10x_format']}/raw_feature_bc_matrix.h5 ./{outdir}/{expid}_2Cellranger_raw_feature_bc_matrix.h5")
+            os.link(f"{df_raw.loc[expid, 'data_path_10x_format']}/raw_feature_bc_matrix.h5", f"./{outdir}/Cellranger_raw_feature_bc_matrix__{expid}.h5")
+            Deconvoluted_Donor_Data = anndata.read_h5ad(path1)
+        except:
+            print('cant link cellranger file')
+
+        try:
+            # os.system(f"ls -s {df_raw.loc[expid, 'data_path_10x_format']}/filtered_feature_bc_matrix.h5 {outdir}/{expid}_Cellranger_filtered_feature_bc_matrix.h5")
+            os.link(f"{df_raw.loc[expid, 'data_path_10x_format']}/filtered_feature_bc_matrix.h5",f"{outdir}/Cellranger_filtered_feature_bc_matrix__{expid}.h5")
+        except:
+            print('cant link cellranger file')
+
+
     zero_count_cells_cellranger_filtered = ad_lane_filtered.obs_names[np.where(ad_lane_filtered.X.sum(axis=1) == 0)[0]]
     ad_lane_filtered = ad_lane_filtered[ad_lane_filtered.obs_names.difference(zero_count_cells_cellranger_filtered, sort=False)]
     adata_cellranger_filtered=ad_lane_filtered
@@ -408,7 +439,7 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
     datadir_deconv=f'{args.results_dir}/deconvolution/split_donor_h5ad'
     donor_table = os.path.join(datadir_deconv, expid, "{}.donors.h5ad.tsv".format(expid))
     df_donors = pandas.read_table(donor_table, header=None, names=("experiment_id", "donor_id", "file_path_h5ad"))
-    obsqc,all_QC_lane = fetch_qc_obs_from_anndata(adqc, expid, df_cellbender = df_cellbender)
+    obsqc,all_QC_lane = fetch_qc_obs_from_anndata(adqc, expid, df_cellbender = df_cellbender,Resolution=Resolution)
 
     if scb is not None:
         obsqc = pandas.concat([obsqc,scb], axis = 1, join = 'outer')
@@ -463,6 +494,7 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
     try:
         Azimuth_Cell_Assignments_data=Azimuth_Cell_Assignments_data.set_index('mangled_cell_id')
         all_QC_lane.obs['predicted celltype']=Azimuth_Cell_Assignments_data['predicted.celltype.l2']
+    
     except:
         print('skipped az')
     UMIS_mapped_to_mitochondrial_genes = sum(all_QC_lane.obs['total_counts_gene_group__mito_transcript'])
@@ -478,6 +510,8 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
                             'cells passing QC':[],
     }
     all_probs = pd.DataFrame()
+
+
     for i in df_donors.index:
         # feeds in the individual assignments here.
         row = df_donors.loc[i]
@@ -540,7 +574,7 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
             azimuth_annot = azt,
             qc_obs = obsqc,
             columns_output = columns_output,
-            outdir = args.outdir,
+            outdir = outdir,
             oufh = oufh,
             lane_id=lane_id
         )
@@ -714,6 +748,9 @@ if __name__ == '__main__':
         # here we have run the cellbender as par of pipeline. 
         file_path = glob.glob(f'{args.results_dir}/nf-preprocessing/cellbender/qc_cluster_input_files/*{args.resolution}*')[0]
         df_cellbender = pandas.read_table(file_path, index_col = 'experiment_id')
+
+
+
     else:
         # this is existing_cellbender, hence using this input
         df_cellbender = pandas.read_table(f'{args.cellbender}', index_col = 'experiment_id')

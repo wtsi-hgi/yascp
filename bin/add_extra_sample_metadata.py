@@ -56,8 +56,11 @@ def main():
     extra_sample_metadata = pd.read_csv(options.extra_sample_metadata, sep='\t')
     extra_sample_metadata = extra_sample_metadata.set_index(options.mk)
     for col1 in extra_sample_metadata.columns:
-        # print(col1)
-        vireo[col1] = extra_sample_metadata[col1]
+        print(col1)
+        try:
+            _ = vireo[col1]
+        except:
+            vireo[col1] = extra_sample_metadata[col1]
     vireo.dropna(axis = 1, how = 'all', inplace = True)
     vireo.to_csv('Vireo_metadata.csv',sep='\t')
     print('Done')

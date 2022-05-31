@@ -50,5 +50,8 @@ workflow PLOT_STATS {
             params.umap.colors_quantitative.value,
             params.umap.colors_categorical.value
         )
+        LI = plot_pcs.out.out_png
+        emit:
+            LI
 }
 

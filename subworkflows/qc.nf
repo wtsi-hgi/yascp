@@ -87,7 +87,7 @@ workflow qc {
         )
 
         PLOT_STATS(file__anndata_merged,file__cells_filtered,SUBSET_PCS.out.outdir,SUBSET_PCS.out.anndata,n_pcs)
-
+        LI4 = PLOT_STATS.out.LI
 
         if (params.cluster.known_markers.run_process) {
             channel__cluster__known_markers = Channel
@@ -159,8 +159,8 @@ workflow qc {
             LI1 = CLUSTERING_HARMONY.out.dummy_output
                 
         }else{
-            lisi_input2 = Channel.of()
-            LI1 = Channel.of()
+            lisi_input2 = Channel.of([1, 'dummy'])
+            LI1 = Channel.of([1, 'dummy'])
         }
 
         if (params.bbknn.run_process) {
@@ -223,8 +223,8 @@ workflow qc {
             LI2 = CLUSTERING_BBKNN.out.dummy_output
                 
         }else{
-            lisi_input3 = Channel.of()
-            LI2 = Channel.of()
+            lisi_input3 = Channel.of([1, 'dummy'])
+            LI2 = Channel.of([1, 'dummy'])
         }
 
         if (params.lisi.run_process) {
@@ -241,10 +241,11 @@ workflow qc {
             
             LI3 = LISI.out.outdir
         }else{
-            LI3 = Channel.of()
+            LI3 = Channel.of([1, 'dummy'])
         }
         LI=LI1.mix(LI2)
         LI=LI.mix(LI3)
+        LI=LI.mix(LI4)
     emit:
         LI
         

@@ -136,16 +136,6 @@ def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res
             os.mkdir(f'{name_dir}/Cell-type assignment')
         except:
             print('dire exists')
-
-        # copyfile(f'{folder1}/adata-cell_desity.png', f'{name_dir}/QC metrics/adata-cell_desity.png')
-        # for donor in Folders2:
-        #     copyfile(f'{folder1}/{model_type}/{donor}/{donor}_predicted_labels.pdf', f'{name_dir}/Cell-type assignment/celltypist/{model_type}_{donor}_predicted_labels.pdf')
-                
-        # copyfile(f'{folder1}/adata-cell_desity.png', f'{name_dir}/QC metrics/adata-cell_desity.png')
-        # copyfile(f'{folder1}/adata-cell_filtered_per_experiment-n_cells_before_after.png', f'{name_dir}/QC metrics/adata-cell_filtered_per_experiment-n_cells_before_after.png')
-        # copyfile(f'{folder1}/scatterplot-sex_sample_swap_check.png', f'{name_dir}/QC metrics/scatterplot-sex_sample_swap_check.png')
-        # copyfile(f'{folder1}/adata-outlier_cells.png', f'{name_dir}/QC metrics/adata-outlier_cells.png')
-        # fil1 = glob.glob(f'{folder1}/plot_ecdf-x_log10*total_counts*')[0]
         # copyfile(fil1, f'{name_dir}/QC metrics/plot_ecdf-x_log10.var=total_counts.color=experiment_id-adata.png')
         files = glob.glob(f'{folder1}/*[!.gz]')
         for file1 in files:
@@ -156,26 +146,57 @@ def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res
     if os.path.isdir(folder1):
         try:
             os.mkdir(f'{name_dir}/Clustering')
+            os.mkdir(f'{name_dir}/Clustering/Harmony')
         except:
             print('dire exists')
+            try:
+                os.mkdir(f'{name_dir}/Clustering/Harmony')
+            except:
+                print('dire exists')
         Harmony_UMAPS = glob.glob(f'{folder1}/*/*harmony*/*/plots/umap*')
         for umap1 in Harmony_UMAPS:
             
             name = umap1.split('/')[-1]
             resolution = umap1.split('/')[-3].split("resolution=")[1]
             
-            copyfile(umap1, f'{name_dir}/Clustering/res={resolution}_Harmony_{name}')
-    
+            copyfile(umap1, f'{name_dir}/Clustering/Harmony/{resolution}res_Harmony_{name}')
+
+
+    folder1 = f'{directory}/clustering'
+    if os.path.isdir(folder1):
+        try:
+            os.mkdir(f'{name_dir}/Clustering')
+            os.mkdir(f'{name_dir}/Clustering/BBKNN')
+        except:
+            print('dire exists')
+            try:
+                os.mkdir(f'{name_dir}/Clustering/BBKNN')
+            except:
+                print('dire exists')
+        Harmony_UMAPS = glob.glob(f'{folder1}/*/*bbknn*/*/plots/umap*')
+        for umap1 in Harmony_UMAPS:
+            
+            name = umap1.split('/')[-1]
+            resolution = umap1.split('/')[-3].split("resolution=")[1]
+            
+            copyfile(umap1, f'{name_dir}/Clustering/BBKNN/{resolution}res_BBKNN_{name}')
+
+
     folder1 = f'{directory}/UMAPs'
     if os.path.isdir(folder1):
         try:
             os.mkdir(f'{name_dir}/Clustering')
+            os.mkdir(f'{name_dir}/Clustering/Coloured')
         except:
+            try:
+                os.mkdir(f'{name_dir}/Clustering/Coloured')
+            except:
+                print('dire exists')
             print('dire exists')
         Coloured_UMAPS = glob.glob(f'{folder1}/*')
         for umap1 in Coloured_UMAPS:
             name = umap1.split('/')[-1]
-            copyfile(umap1, f'{name_dir}/Clustering/{name}')                    
+            copyfile(umap1, f'{name_dir}/Clustering/Coloured/{name}')                    
     
     
     folder1 = f'{directory}/handover/minimal_dataset_summary'

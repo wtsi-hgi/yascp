@@ -94,7 +94,7 @@ def scanpy_merge(
             method='gzip',
             compresslevel=anndata_compression_opts
         )
-
+    
     # check the h5ad_data
     # check for required columns
     h5ad_data_required_cols = set(['experiment_id', 'data_path_h5ad_format'])
@@ -169,6 +169,7 @@ def scanpy_merge(
     adatasets = []
     adatasets__experiment_ids = []
     n_adatasets = 1
+    
     for idx, row in h5ad_data.iterrows():
         print(row)
         idx1 = row['experiment_id'].split('__')[0]
@@ -179,7 +180,8 @@ def scanpy_merge(
             # ivar_names='gene_ids',
             # make_unique=False
         )
-
+        adata_orig_cols = list(adata.obs.columns)
+        adata_orig_cols.append("donor")
         adata = check_adata(adata, row['experiment_id'])
 
         # Record the total number of cells for this experiment_id
@@ -632,10 +634,18 @@ def scanpy_merge(
         if (len(extra_sample_metadata)>0):
             for col in extra_sample_metadata.columns:
                 # print(col)
-                adata.obs[col] = np.repeat(extra_sample_metadata[col].values, adata.n_obs)
+                if col in list(adata_orig_cols):
+                    print(f' {col} already exist')
+                else:
+                    print(col)
+                    adata.obs[col] = np.repeat(extra_sample_metadata[col].values, adata.n_obs)
 
         for col in metadata_smpl.columns:
-            adata.obs[col] = np.repeat(metadata_smpl[col].values, adata.n_obs)
+            if col in list(adata_orig_cols):
+                print(f' {col} already exist')
+            else:
+                print(col)
+                adata.obs[col] = np.repeat(metadata_smpl[col].values, adata.n_obs)
 
         # Ensure we have experiment_in the final dataframe.
         if 'experiment_id' not in adata.obs.columns:

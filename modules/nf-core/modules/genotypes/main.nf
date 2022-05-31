@@ -71,6 +71,32 @@ process REPLACE_GT_ASSIGNMENTS_WITH_PHENOTYPE{
 
 }
 
+process ENHANCE_VIREO_METADATA_WITH_DONOR{
+    if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
+        container "/software/hgi/containers/mercury_scrna_deconvolution_62bd56a-2021-12-15-4d1ec9312485.sif"
+        //// container "/software/hgi/containers/mercury_scrna_deconvolution_latest.img"
+    } else {
+        container "mercury/scrna_deconvolution:62bd56a"
+    }
+  label 'process_small'
+
+
+  input:
+    path(extra_sample_metadata)
+    path(donor_n_cells)
+    path(out_gt)
+
+  output:
+    path('replaced_vireo_exp__donor_n_cells_out.tsv'), emit: replaced_vireo_exp__donor_n_cells_out
+
+  script:
+    """
+      enhance_vireo_with_metadata.py --Extra_Metadata_Donors ${extra_sample_metadata} --vireo_data ${donor_n_cells}
+    """
+}
+
+
+
 process MATCH_GT_VIREO {
   tag "${pool_id}"
 
