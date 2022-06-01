@@ -159,6 +159,21 @@ def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res
             print(file1)
             copy(file1, f'{name_dir}/Cell-type assignment')
 
+
+    folder1 = f'{directory}/plots'
+    if os.path.isdir(folder1):
+        try:
+            os.mkdir(f'{name_dir}/QC metrics')
+        except:
+            print('dire exists')
+        copyfile(f'{folder1}/adata-cell_desity.png', f'{name_dir}/QC metrics/adata-cell_desity.png')
+        copyfile(f'{folder1}/adata-cell_filtered_per_experiment-n_cells_before_after.png', f'{name_dir}/QC metrics/adata-cell_filtered_per_experiment-n_cells_before_after.png')
+        copyfile(f'{folder1}/scatterplot-sex_sample_swap_check.png', f'{name_dir}/QC metrics/scatterplot-sex_sample_swap_check.png')
+        copyfile(f'{folder1}/adata-outlier_cells.png', f'{name_dir}/QC metrics/adata-outlier_cells.png')
+        fil1 = glob.glob(f'{folder1}/plot_ecdf-x_log10*total_counts*')[0]
+        copyfile(fil1, f'{name_dir}/QC metrics/plot_ecdf-x_log10.var=total_counts.color=experiment_id-adata.png')
+
+
     folder1 = f'{directory}/clustering'
     if os.path.isdir(folder1):
         try:
@@ -216,7 +231,7 @@ def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res
             copyfile(umap1, f'{name_dir}/Clustering/Coloured/{name}')                    
     
     
-    folder1 = f'{directory}/handover/minimal_dataset_summary'
+    folder1 = f'{directory}/handover/Donor_Quantification_summary'
     if os.path.isdir(folder1):
         try:
             copytree(folder1, f'{name_dir}/Summary')

@@ -164,13 +164,14 @@ workflow  main_deconvolution {
                 REPLACE_GT_DONOR_ID.out.sample__exp_summary_tsv.set{vireo_out_sample__exp_summary_tsv}
                 REPLACE_GT_DONOR_ID.out.sample_donor_ids.set{vireo_out_sample_donor_ids}
 
-                REPLACE_GT_DONOR_ID = REPLACE_GT_DONOR_ID.out.assignments
+
+            } 
+            REPLACE_GT_DONOR_ID.out.assignments
                     .collectFile(name: "assignments_all_pools.tsv",
                             newLine: false, sort: true,
                             keepHeader: true,
                             // skip:1,
                             storeDir:params.outdir+'/deconvolution/vireo_gt_fix')
-            } 
             // otherwise we enhance the vireo metadata report with sample ids. 
         }
         
