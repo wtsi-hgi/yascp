@@ -24,7 +24,7 @@ process GATHER_DATA{
 
     script:
       outdir = "${outdir_prev}/handover"
-      subdir = "minimal_dataset"
+      subdir = "Donor_Quantification"
       if ("${params.input}" == 'cellranger'){
         cellbender_input='cellranger'
       }else{

@@ -365,7 +365,8 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
             cell_bender_path = f"{args.results_dir}/{df_cellbender.loc[expid, 'data_path_10x_format']}"
         cellbender_h5 = f"{cell_bender_path}/../cellbender_FPR_{Resolution}_filtered.h5"
         ad_lane_filtered = scanpy.read_10x_mtx(cell_bender_path)
-        os.link(cellbender_h5, f"./{outdir}/Cellbender_filtered_{Resolution}__{expid}.h5")
+        if write_h5:
+            os.link(cellbender_h5, f"./{outdir}/Cellbender_filtered_{Resolution}__{expid}.h5")
         dfcb = fetch_cellbender_annotation(df_cellbender, expid,Resolution)
         columns_output = {**columns_output, **COLUMNS_CELLBENDER}
     else:
