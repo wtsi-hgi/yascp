@@ -1,0 +1,1051 @@
+commit c8e969cc478c2fa2b45aae3268ca7df9f16454da
+Author: Matiss Ozols <mo11@sanger.ac.uk>
+Date:   Mon Jun 13 10:13:03 2022 +0100
+
+    some minor additions
+
+commit 19b86c43eb90c679b3a7daf7decd5a4de9fdd8a7
+Author: maxozo <mo11@sanger.ac.uk>
+Date:   Wed Jun 1 14:41:26 2022 +0100
+
+    small fix
+
+commit a25dfd53ce2135e0e1b628540d2932fdf8a8b373
+Author: maxozo <mo11@sanger.ac.uk>
+Date:   Wed Jun 1 10:01:04 2022 +0100
+
+    small fiz for azimuth gather
+
+commit 1c8f2922a7ccfa64f60d656f7c9fd84160bc7ee9
+Author: maxozo <mo11@sanger.ac.uk>
+Date:   Wed Jun 1 09:33:45 2022 +0100
+
+    small tweeks
+
+commit 42a64a2932e979e66b18037a62bc40d707707ac3
+Author: maxozo <mo11@sanger.ac.uk>
+Date:   Tue May 31 12:07:42 2022 +0100
+
+    further devel of the summary data organisation
+
+commit b678625a40a72e9f02116e29eaa77169347d777f
+Author: maxozo <mo11@sanger.ac.uk>
+Date:   Fri May 27 11:11:28 2022 +0100
+
+    extra metadata processing added
+
+commit beaa47b7167ae77365d88fde89dad9f3084130d6
+Author: maxozo <mo11@sanger.ac.uk>
+Date:   Tue May 17 10:41:53 2022 +0100
+
+    fixed a small typo for cellbender resolution input
+
+commit 8d568869422b23b833383c5ec732d5e0bbe9ca9a
+Author: maxozo <mo11@sanger.ac.uk>
+Date:   Mon May 16 15:44:49 2022 +0100
+
+    fixed azimuth gathering miss in colection and qc cell failed/passed swap
+
+commit c20a2927b69650f5a132f1eb1ed06ff0e176a80f
+Author: maxozo <mo11@sanger.ac.uk>
+Date:   Wed May 11 14:37:20 2022 +0100
+
+    changed z0
+    
+    
+    Former-commit-id: 2905270daed46f2ea298cff9265a9f14e6ef4d47
+
+commit 3a8e82b3888be62dbf40018318e48c2b0a2eda7d
+Author: maxozo <mo11@sanger.ac.uk>
+Date:   Tue May 10 15:52:10 2022 +0100
+
+    fixed some conflicts
+    
+    
+    Former-commit-id: e73abd69d5bad85c3fa93bbd05744e33fbbf875a
+
+commit bc544aca10eba0bf4244066b0607398a18e668f9
+Merge: 2b0e71a fa15483
+Author: Matiss <dr.matiss.ozols@gmail.com>
+Date:   Thu May 5 10:31:53 2022 +0100
+
+    Merge pull request #11 from wtsi-hgi/cellranger_bam
+    
+    per-donor CRAM files from Cellranger BAM plus encryption of data handover
+    
+    Former-commit-id: 74464f89e664ca05458737e6e38714d11d1f552b
+
+commit fa154833db8500772202579623f4454b7b5481f7
+Merge: c0d1a14 2b0e71a
+Author: Matiss <dr.matiss.ozols@gmail.com>
+Date:   Thu May 5 10:30:35 2022 +0100
+
+    Merge branch 'main' into cellranger_bam
+    
+    Former-commit-id: 6366fc3f87192ee47ad5368261ecd1b4d8b8eda0
+
+commit c0d1a144b10dd9322d2fea251f826c2d17bd64c3
+Author: Hannes Ponstingl <hp3@sanger.ac.uk>
+Date:   Wed May 4 13:54:41 2022 +0100
+
+    Fixed missing comma in CSV output leading to merged columns of floats.
+
+commit 2b0e71ad04d3e64ff59379014eafbe9971f31d9a
+Author: maxozo <mo11@sanger.ac.uk>
+Date:   Wed May 4 13:04:27 2022 +0100
+
+    typo fix, genotype id replace, conf fix
+    
+    
+    Former-commit-id: 99efb66b7c80e2775f657accf41ac3519c660d36
+
+commit d8486684dbc5a1d0bd8f968f907c3a2617b4fc1a
+Author: Hannes Ponstingl <hp3@sanger.ac.uk>
+Date:   Fri Apr 29 16:44:59 2022 +0100
+
+    Publishing h5ad files encrypted.
+
+commit 0a456d757078698c28d4d6f0f87f263310795699
+Author: maxozo <mo11@sanger.ac.uk>
+Date:   Wed Apr 27 10:10:48 2022 +0100
+
+    added back the nInit 200 since ELGH again missclassified the runs
+    
+    
+    Former-commit-id: 96f1650a0aeefe4e78ef40664b4e4d508777c060
+
+commit 3ba5a48cd4416751b57e5249873b31d6e972c3c6
+Author: maxozo <mo11@sanger.ac.uk>
+Date:   Wed Apr 27 10:08:55 2022 +0100
+
+    added back the nInit 200 since ELGH again missclassified the runs
+    
+    
+    Former-commit-id: fcf63df2a66e7280ef6b3d229f7c2a09c60ce26d
+
+commit 74e60ff838ba30e8a23a5d1db042f62629f258a3
+Author: Hannes Ponstingl <hp3@sanger.ac.uk>
+Date:   Wed Apr 27 09:55:47 2022 +0100
+
+    Debugged publishing of encrypted anODd checksummed CRAM files.
+
+commit 46edef2bbe18d7653f30322ec02d0b93f5bfd01f
+Author: Hannes Ponstingl <hp3@sanger.ac.uk>
+Date:   Thu Apr 21 15:55:24 2022 +0100
+
+    Added Dockerfile for running EGAcryptor.
+
+commit a7e0e7bdddf44bbfb3e6ebc8cecedfb4ae033b2c
+Author: Hannes Ponstingl <hp3@sanger.ac.uk>
+Date:   Thu Apr 21 15:49:31 2022 +0100
+
+    Added discrepancy scores from bcftools gtcheck and summary stats to the output of the genotype matching.
+
+commit ee1e1d539595a41f502a3d91b88bd34540a12662
+Author: maxozo <mo11@sanger.ac.uk>
+Date:   Tue Apr 19 18:39:11 2022 +0100
+
+    all tested
+    
+    
+    Former-commit-id: eba1125fb1377f4a4282e6c8a6d9a7385e4b6a6e
+
+commit 99a9090268784f741e8927559ae096186c9e3d05
+Author: maxozo <mo11@sanger.ac.uk>
+Date:   Tue Apr 19 18:38:00 2022 +0100
+
+    all tested
+    
+    
+    Former-commit-id: 74b45ddc22ebb2eef489674ad251533cb2439ccf
+
+commit e9e2b92d4430ab157f2533926bcf37613bca1dfd
+Author: maxozo <mo11@sanger.ac.uk>
+Date:   Thu Apr 14 13:46:53 2022 +0100
+
+    GT check works with big genotypes, if bcf file thats indexed and only GT tags are left
+    
+    
+    Former-commit-id: 24f4546c0be664c4f1eab8e5f8c18ea32e5f4129
+
+commit 7bc8e059367483bcea7c4c93e50ad0531e650888
+Author: Hannes Ponstingl <hp3@sanger.ac.uk>
+Date:   Mon Apr 4 10:03:25 2022 +0100
+
+    Per donor 'possorted' bam files from Cellranger generated as cram files. Staging of reference assembly FASTA files for cram conversion.s
+
+commit 8bdb496eebb2acde8425ac539cd7d5de6b059c05
+Author: maxozo <mo11@sanger.ac.uk>
+Date:   Fri Apr 1 12:29:27 2022 +0100
+
+    small fix
+    
+    
+    Former-commit-id: f26677e6030b261015db53a5e00c8ef4219e4d66
+
+commit 55ac5b51132f51957422d83e21986d50e1ded7d4
+Author: maxozo <mo11@sanger.ac.uk>
+Date:   Fri Apr 1 08:36:53 2022 +0100
+
+    fixed some issues with gt match being part of pipeline config, have tested pipeline and all works now
+    
+    
+    Former-commit-id: 023c23da107db7e490f16fe3e89ba9332a7480b0
+
+commit 9c7cc642ab0bdb86415d26bc11dae81cb35224a2
+Author: maxozo <mo11@sanger.ac.uk>
+Date:   Thu Mar 31 09:17:22 2022 +0100
+
+    small Vireo fix when running GT assignment posteriory
+    
+    
+    Former-commit-id: 5a8eb37b37bfd17dd73d1f28ba992801ec0b4d6a
+
+commit 8f004b6f7d8e2c61692d33680f96b59791d0c4b2
+Author: maxozo <mo11@sanger.ac.uk>
+Date:   Wed Mar 30 15:26:54 2022 +0100
+
+    fixed one small issue, removed the local params def in qc and moved it to conf files
+    
+    
+    Former-commit-id: a40887b89f92b430f276d94afae80ffe534531b9
+
+commit e19f359fcb142d636341099e932e31d60ff4dae4
+Author: maxozo <mo11@sanger.ac.uk>
+Date:   Wed Mar 30 15:04:44 2022 +0100
+
+    small fix
+    
+    
+    Former-commit-id: 86d60dd820abbc9e33229caaa12520aa71a776c2
+
+commit e249f47901cbd21dd2a565d8228470cbabff20d9
+Author: maxozo <mo11@sanger.ac.uk>
+Date:   Wed Mar 30 15:00:02 2022 +0100
+
+    too big, cellsnp, makes pipeline fetch slow, better place the cellsnp file in s3
+    
+    
+    Former-commit-id: 5e48260d5526f2e3f6d1ebdd54794a7374eacb9d
+
+commit 06349b374e3417b083310b91417ebab766a4a979
+Author: maxozo <mo11@sanger.ac.uk>
+Date:   Wed Mar 30 14:51:28 2022 +0100
+
+    added CELLSNP ref downloaded from  https://sourceforge.net/projects/cellsnp/files/SNPlist/ as per cellSNP instructions in https://github.com/single-cell-genetics/cellSNP to repo, so its compatable when the local file disapears.
+    
+    
+    Former-commit-id: 8a101934b8bec1f3d35298e4701960f25787dc09
+
+commit bb27e7244e76505d519e4d0502308ee68e91355d
+Author: maxozo <mo11@sanger.ac.uk>
+Date:   Wed Mar 30 14:23:58 2022 +0100
+
+    cleaned up a bit and moved the GT check match
+
+commit a0dad1ccf20feaab24bdfc8681378769a3a8958d
+Merge: 5a4eed0 fe2f0b8
+Author: maxozo <mo11@sanger.ac.uk>
+Date:   Wed Mar 30 14:18:50 2022 +0100
+
+    Merge remote-tracking branch 'origin/dev_mo11'
+    merging
+    
+    g especially if it merges an updated upstream into a topic branch.
+    :wq
+
+commit 5a4eed09927b453cbba6627cc943bd6fcce32ce6
+Merge: 7b0ebdd 7a63f69
+Author: Matiss <dr.matiss.ozols@gmail.com>
+Date:   Wed Mar 30 14:13:26 2022 +0100
+
+    Merge pull request #10 from wtsi-hgi/cellranger_bam
+    
+    Fixed problem of spawning multiple identical processes for splitting bam file per donor
+
+commit fe2f0b8f295f10727946e45b9a389209b9181284
+Author: maxozo <mo11@sanger.ac.uk>
+Date:   Wed Mar 30 14:11:19 2022 +0100
+
+    fixed some conf issues
+
+commit 207b2d0419face4b9147010a8e8376788543e700
+Author: maxozo <mo11@sanger.ac.uk>
+Date:   Wed Mar 30 09:55:04 2022 +0100
+
+    have cleaned up code a bit more
+
+commit 8e542098c47c6828478d1842d277a0612aec0f7d
+Author: maxozo <mo11@sanger.ac.uk>
+Date:   Wed Mar 30 09:11:14 2022 +0100
+
+    have added all the principles of posterior assignment of donors
+
+commit 7a63f69eab4050df96d944b167b952feaa7e77c1
+Author: Hannes Ponstingl <hp3@sanger.ac.uk>
+Date:   Tue Mar 29 15:19:04 2022 +0100
+
+    Fixed problem of spawning multiple identical processes for splitting of bam files per donor.
+
+commit b23e1e6905d0583fe07325853aab3a23081b3fd1
+Author: maxozo <mo11@sanger.ac.uk>
+Date:   Mon Mar 28 16:35:09 2022 +0100
+
+    started adding the extra metadata if available for UKBB
+
+commit 7b0ebdd19e2fbcd060f6192f799b25505535de84
+Merge: a612b83 015d722
+Author: Matiss <dr.matiss.ozols@gmail.com>
+Date:   Fri Mar 25 11:28:00 2022 +0000
+
+    Merge pull request #9 from wtsi-hgi/cellranger_bam
+    
+    Splitting of Cellranger 'possorted' BAM files by donor.
+
+commit 015d722ec3abd4e4bf3f9ad4562eb78c703a1d0e
+Author: Hannes Ponstingl <hp3@sanger.ac.uk>
+Date:   Thu Mar 24 16:12:40 2022 +0000
+
+    Minor fixes for the subworkflow for the splitting of bam files by donor to run as part of the main workflow.
+
+commit 3b03cb0d3e63e23b3af0b3b2fa40ca74a2d45f24
+Author: Hannes Ponstingl <hp3@sanger.ac.uk>
+Date:   Thu Mar 24 12:55:11 2022 +0000
+
+    Parallelize splitting of cellranger 'possorted' bam files by donor. Individual workflow passed tests.
+
+commit a612b8331359a444de7f2ae93f84e0d7b5e0c8f6
+Author: maxozo <mo11@sanger.ac.uk>
+Date:   Thu Mar 24 10:50:42 2022 +0000
+
+    standardised the cellbender and existing_cellbender input format
+
+commit 98c4a63927b2890f4460f19d3b9f8d1d7af8fc98
+Author: maxozo <mo11@sanger.ac.uk>
+Date:   Thu Mar 24 10:41:17 2022 +0000
+
+    standardised the cellbender and existing_cellbender input format
+
+commit f4b5b1bd040f01834ba6b16f73d612446daeafdf
+Author: Hannes Ponstingl <hp3@sanger.ac.uk>
+Date:   Wed Mar 23 18:10:14 2022 +0000
+
+    Splitting of bam files per donor now for all donors in parallel.
+
+commit 8941bafe9024aaba17e57aab787c487c019ea584
+Author: Hannes Ponstingl <hp3@sanger.ac.uk>
+Date:   Wed Mar 23 16:51:49 2022 +0000
+
+    Added process for the splitting of bam files by donor id to the main workflow.
+
+commit 3d10be7453ee41de2bbc3dbcf4346c3c38f9a5d0
+Author: maxozo <mo11@sanger.ac.uk>
+Date:   Wed Mar 23 11:41:05 2022 +0000
+
+    resolved issue with runing in existing cellbender mode
+
+commit 637f856700e8cec7c13dc6d1cf86951b5a0f39d9
+Author: maxozo <mo11@sanger.ac.uk>
+Date:   Wed Mar 23 10:37:27 2022 +0000
+
+    cleaned up more the redundant code
+
+commit 6d33ec8ea378450ca7b9b9aaf5e1760d4ea29119
+Author: maxozo <mo11@sanger.ac.uk>
+Date:   Wed Mar 23 10:30:45 2022 +0000
+
+    cleaned up more the redundant code
+
+commit 2e94c85e19c45fe1009a29a0654ca19b701e2e33
+Author: maxozo <mo11@sanger.ac.uk>
+Date:   Wed Mar 23 10:25:12 2022 +0000
+
+    cleaned up more the redundant code
+
+commit 37274e8bf36a8ed914bfb43e0bd732f50b4b26b3
+Author: maxozo <mo11@sanger.ac.uk>
+Date:   Wed Mar 23 10:18:24 2022 +0000
+
+    cleaned up more the redundant code
+
+commit 189a4d357d2f7abab7b14414380b705ed43fd3d9
+Author: Hannes Ponstingl <hp3@sanger.ac.uk>
+Date:   Tue Mar 22 16:14:01 2022 +0000
+
+    Process and test workflow for splitting of Cellranger 'possorted' bam files by donor. Itial revision.
+
+commit 6a25f207660acd2126c6f47921f931c3de8d482a
+Author: maxozo <mo11@sanger.ac.uk>
+Date:   Tue Mar 22 13:17:43 2022 +0000
+
+    removed redunant input
+
+commit 503396710c24e6932ceb783dca53f17d71e6d841
+Author: maxozo <mo11@sanger.ac.uk>
+Date:   Tue Mar 22 12:23:06 2022 +0000
+
+    added most of the new report parameters, altered readme, updated the existing_cellbender run
+
+commit 6161b5d6f157f98cccc122803dd2531f909d9380
+Author: maxozo <mo11@sanger.ac.uk>
+Date:   Tue Mar 22 12:09:36 2022 +0000
+
+    added most of the new report parameters, altered readme, updated the existing_cellbender run
+
+commit 870165fe883658c19d339c26b08c729f45911f0a
+Author: maxozo <mo11@sanger.ac.uk>
+Date:   Fri Mar 18 16:31:09 2022 +0000
+
+    100mb for tinny is too small - drops the processs before initiating it and stalls the pipeline - fixed by changing to 1000 MB
+
+commit bcc37d750ddd202cbca4d7cfb5b417da5a85b9d7
+Author: maxozo <mo11@sanger.ac.uk>
+Date:   Fri Mar 18 12:18:21 2022 +0000
+
+    removed author affiliations, since the developers are already listed in README.md
+
+commit 30f46baf3045289759bdfca1312ea0b3d712fd41
+Author: maxozo <mo11@sanger.ac.uk>
+Date:   Fri Mar 18 12:16:46 2022 +0000
+
+    removed author affiliations, since the developers are already listed in README.md
+
+commit 6bd6e768ed79a9cf32c581eebd23ef5e4b101630
+Author: maxozo <mo11@sanger.ac.uk>
+Date:   Fri Mar 18 12:08:53 2022 +0000
+
+    removed author affiliations, since the developers are already listed in README.md
+
+commit 699e45cd204aade9855c29c25aee680f54c921fb
+Author: maxozo <mo11@sanger.ac.uk>
+Date:   Tue Mar 15 17:07:51 2022 +0000
+
+    Fixed staging of genotyupe matching results.
+
+commit 3bf47d8b19f863a9ae3e64fd66c0908b44e09021
+Author: Hannes Ponstingl <hp3@sanger.ac.uk>
+Date:   Mon Mar 14 17:18:30 2022 +0000
+
+    Fixed overcommitment of resources by processes merely setting links. Added label 'process_tiny' for similar processes
+
+commit f97bed865be0da10b53bc9a61528d8e5aadb18dc
+Merge: a32f387 7d870bc
+Author: Hannes Ponstingl <hp3@sanger.ac.uk>
+Date:   Mon Mar 14 14:11:14 2022 +0000
+
+    Merge branch 'gt_match' into main
+
+commit a32f38778a94b9d002555c5bcd71cfe6ee8e6ef1
+Author: ad7 <ad7@sanger.ac.uk>
+Date:   Fri Mar 11 12:25:44 2022 +0000
+
+    small readme fix
+
+commit c873542331b4fbc030672d9a6bd5ac07c98b376f
+Author: ad7 <ad7@sanger.ac.uk>
+Date:   Fri Mar 11 12:23:54 2022 +0000
+
+    small readme fix
+
+commit edc87ae4b84120a93367318f68f37added8d3449
+Author: ad7 <ad7@sanger.ac.uk>
+Date:   Fri Mar 11 12:21:13 2022 +0000
+
+    small readme fix
+
+commit 7d870bc34833b9c8edf8275e19aa4c628c3590d1
+Author: Hannes Ponstingl <hp3@sanger.ac.uk>
+Date:   Thu Mar 10 17:08:29 2022 +0000
+
+    Tested workflow for a posteriori genotype matching.
+
+commit afbdfa428907037b4b6786df307b025e25759db7
+Author: Hannes Ponstingl <hp3@sanger.ac.uk>
+Date:   Thu Mar 10 16:48:49 2022 +0000
+
+    Debugged testing routines for 'a posteriori' matching of vireo inferred
+    genotypes with a reference panel.
+
+commit 333535263a93a6fbd7aa8ec9107da31ab3e18f19
+Author: ad7 <ad7@sanger.ac.uk>
+Date:   Mon Mar 7 17:48:08 2022 +0000
+
+    Integrated a posteriori genotype matching into main workflow.
+
+commit 09229d5b5a40926bc532b475fadf136c792e4cc9
+Author: Hannes Ponstingl <hp3@sanger.ac.uk>
+Date:   Fri Mar 4 16:44:41 2022 +0000
+
+    Added Dockerfile for latest bcftools version.
+
+commit 15400f966fa391a5a576c28898a184fcfc6a6ab4
+Author: Hannes Ponstingl <hp3@sanger.ac.uk>
+Date:   Thu Mar 3 16:57:09 2022 +0000
+
+    Added tests for genotype matching.
+
+commit 362925842e3cfbe21a076243706f95bc1e8cd5ff
+Author: Hannes Ponstingl <hp3@sanger.ac.uk>
+Date:   Thu Mar 3 14:38:20 2022 +0000
+
+    Process definition for the matching of genotypes inferred by
+    cellsnp/vireo with a reference panel of donors.
+
+commit 861af00ccf832c60ae951854f3b6c3de7f093330
+Merge: 1103f37 9aa2e46
+Author: Guillaume Noell <50482094+gn5@users.noreply.github.com>
+Date:   Wed Feb 23 14:38:26 2022 +0100
+
+    Merge pull request #2 from letaylor/patch-1
+    
+    Delete 045-prepare_nf_qc_cluster_input-legacy.py
+
+commit 1103f377834631dcd6b8e0c609dcb50bcf21c079
+Merge: fe79f2f 230ec12
+Author: Guillaume Noell <50482094+gn5@users.noreply.github.com>
+Date:   Wed Feb 23 14:38:15 2022 +0100
+
+    Merge pull request #3 from letaylor/patch-2
+    
+    Update 035-analyse_cellbender_results.py
+
+commit fe79f2f3c57d53921c01a326e66c4d123c1e6fdf
+Author: maxozo <mo11@sanger.ac.uk>
+Date:   Tue Feb 22 11:05:10 2022 +0000
+
+    small fix in data gathering
+
+commit 841638f0a48ad98a18ac6b8254c336034a2e3d36
+Author: maxozo <mo11@sanger.ac.uk>
+Date:   Mon Feb 21 11:33:50 2022 +0000
+
+    added extra plots to be gathered by gathering script, fixed the missing container
+
+commit e923e6d8ccb3b3ee0fd8af1927729b9b016b56d3
+Merge: 79c819c 5b3760d
+Author: Guillaume Noell <50482094+gn5@users.noreply.github.com>
+Date:   Wed Feb 9 18:18:28 2022 +0100
+
+    Merge pull request #8 from wtsi-hgi/test_containall
+    
+    Test containall
+
+commit 5b3760d6e5150aa6aeb42d052a23571fa4605870
+Author: Guillaume G Noell <gn5@sanger.ac.uk>
+Date:   Wed Feb 9 11:44:27 2022 +0000
+
+    fix cache split_donors
+
+commit 7068c46a618c7910fba0026f9575aa3c80d8dc02
+Author: Guillaume G Noell <gn5@sanger.ac.uk>
+Date:   Tue Feb 8 16:44:28 2022 +0000
+
+    container
+
+commit 9f774135ded48b9d6e29bbd5c6d107aaf528a5b6
+Author: Guillaume G Noell <gn5@sanger.ac.uk>
+Date:   Tue Feb 8 16:26:38 2022 +0000
+
+    auto-git
+
+commit 2e16628d538441e2059a1b0dc49efff03184e10a
+Author: Guillaume G Noell <gn5@sanger.ac.uk>
+Date:   Tue Feb 8 12:04:59 2022 +0000
+
+    auto-git
+
+commit de6a4afd7aae019b9a7230836c8af967ecb81800
+Author: Guillaume G Noell <gn5@sanger.ac.uk>
+Date:   Tue Feb 8 11:43:46 2022 +0000
+
+    avoid duplicated -R
+
+commit 06528e8559219beb8453be9ab12eca14745dfa82
+Author: Guillaume G Noell <gn5@sanger.ac.uk>
+Date:   Tue Feb 8 11:12:15 2022 +0000
+
+    test --containall
+
+commit 79c819c5ee737b60234bbfc5f47bb5809e8615bb
+Author: maxozo <mo11@sanger.ac.uk>
+Date:   Mon Feb 7 09:41:47 2022 +0000
+
+    Long tasks >12h on cellbender_remove_background were still failing on the python script, after background removal, to avaod this Have split the long backround removal from postprocessing, and tested, both catche and mkl load error seems to be fixed now.
+
+commit e464adc6eaa3e09f84b2834f0d2fd187024ee557
+Author: maxozo <mo11@sanger.ac.uk>
+Date:   Fri Feb 4 13:15:26 2022 +0000
+
+    container fix for plotting
+
+commit 15d35ccb6966c5b28309b60e283a1415b4bf71a6
+Author: maxozo <mo11@sanger.ac.uk>
+Date:   Thu Feb 3 14:25:32 2022 +0000
+
+    1) memory issues with keras cluster assess sorted. 2) Made sure that running with gpu still works. 3) Added -1000 cells from cellranger as an input if run in an expected mode
+
+commit b2fd1c416cacde8c0c5030df107911738698c845
+Merge: cbc82e8 13492c2
+Author: Matiss <dr.matiss.ozols@gmail.com>
+Date:   Thu Feb 3 12:02:20 2022 +0000
+
+    Merge pull request #7 from wtsi-hgi/mkl_cellbender_fix
+    
+    Mkl cellbender fix
+
+commit 13492c2e5b597528634358c533aebf51ebde16c9
+Author: Guillaume G Noell <gn5@sanger.ac.uk>
+Date:   Wed Feb 2 14:48:47 2022 +0000
+
+    label
+
+commit 7a07408c1a7484c8bb02979ded87e8b109f95990
+Author: Guillaume G Noell <gn5@sanger.ac.uk>
+Date:   Wed Feb 2 14:11:34 2022 +0000
+
+    auto-git
+
+commit d9ad4025efd4c4ea4d398f36eb251a4d938410a9
+Author: Guillaume G Noell <gn5@sanger.ac.uk>
+Date:   Wed Feb 2 10:25:43 2022 +0000
+
+    fix mkl anaconda error
+
+commit cbc82e8015506db4f86a1c0d5829cd7ef0b4511a
+Author: maxozo <mo11@sanger.ac.uk>
+Date:   Tue Feb 1 11:11:44 2022 +0000
+
+    added cellbender, cellranger estimation method switch
+
+commit fec0ba2724d028e2e7c5eb96a7d3c22228e2bbbf
+Author: maxozo <mo11@sanger.ac.uk>
+Date:   Tue Feb 1 10:41:12 2022 +0000
+
+    latest changes
+
+commit d6e2090eba720931cf6f3c8d877d1bd1358adfd2
+Author: maxozo <mo11@sanger.ac.uk>
+Date:   Fri Jan 28 12:32:04 2022 +0000
+
+    fixed the catche issues with the donor splitting, and altered some of the memory and que parameters.
+
+commit 2022707aaa868b8525b39b1e269330dcab2e34a7
+Author: maxozo <mo11@sanger.ac.uk>
+Date:   Wed Jan 26 10:04:21 2022 +0000
+
+    added the missing h5ad recording
+
+commit 375f95fc9a023ff2869056e312ae11e493a013e2
+Author: maxozo <mo11@sanger.ac.uk>
+Date:   Wed Jan 26 09:55:30 2022 +0000
+
+    Integrated Vireo and Cellbender changes, and tested on the problematic run
+
+commit f240e590c2272834debb52c325f5da2d609e2c7d
+Merge: 77833cc ab75eb6
+Author: Guillaume Noell <50482094+gn5@users.noreply.github.com>
+Date:   Fri Jan 21 15:32:57 2022 +0100
+
+    Merge pull request #6 from wtsi-hgi/dockerhub
+    
+    dockers
+
+commit ab75eb6a9bb6366c0236e19d76ad3aa2a06455b9
+Author: Guillaume G Noell <gn5@sanger.ac.uk>
+Date:   Fri Jan 21 14:31:48 2022 +0000
+
+    dockers
+
+commit 77833cc98c36d944f7829d0d5b93ecc99f141dae
+Author: maxozo <mo11@sanger.ac.uk>
+Date:   Fri Jan 21 12:25:56 2022 +0000
+
+    minor changes
+
+commit 847d88698eb8b4f4c5db168a8c649fbd8fc48360
+Merge: 4f07d19 95fa623
+Author: maxozo <mo11@sanger.ac.uk>
+Date:   Fri Jan 21 12:03:29 2022 +0000
+
+    merged guillaumes dockerhub branch
+
+commit 4f07d196e8689b87b7b74db10eec55c5ad1216f9
+Author: maxozo <mo11@sanger.ac.uk>
+Date:   Tue Jan 11 12:28:26 2022 +0000
+
+    making sure that all the things are commited for Hannes
+
+commit 95fa6239227f4cfdd7fb9f90fb0721f8176e1b23
+Author: Guillaume G Noell <gn5@sanger.ac.uk>
+Date:   Mon Jan 10 12:15:41 2022 +0000
+
+    inputs
+
+commit 4ac8d75cbac9cb44503bfec6c2b1a8ff7fc581b1
+Author: maxozo <mo11@sanger.ac.uk>
+Date:   Wed Jan 5 09:39:46 2022 +0000
+
+    forgot to remove 0 for donor report
+
+commit 44fd65e9c89ef0a4428a0788fa7d353ec050c196
+Merge: 60f4c01 f1b57f8
+Author: Guillaume Noell <50482094+gn5@users.noreply.github.com>
+Date:   Tue Jan 4 11:11:01 2022 +0100
+
+    Merge branch 'main' into dockerhub
+
+commit 60f4c011aa3a45cfe15e72c9ba70984e5a33f381
+Author: Guillaume G Noell <gn5@sanger.ac.uk>
+Date:   Tue Jan 4 09:58:21 2022 +0000
+
+    no errors
+
+commit cd28eab27605b8c99721e32921e26edb45c2dc98
+Author: Guillaume G Noell <gn5@sanger.ac.uk>
+Date:   Fri Dec 17 14:12:38 2021 +0000
+
+    auto-git
+
+commit e34487162c922be27f6bb4495b177ab246ee402b
+Author: Guillaume G Noell <gn5@sanger.ac.uk>
+Date:   Fri Dec 17 13:31:11 2021 +0000
+
+    Sanger test dataset and LSF script
+
+commit 5378c25a370efd50d664a6d5bbb564d0b7625889
+Author: Guillaume G Noell <gn5@sanger.ac.uk>
+Date:   Fri Dec 17 13:25:41 2021 +0000
+
+    dockerhub tag = Dockerfile commit
+
+commit f1b57f8f2b54f84e294d42ed8f43620c46ce91c9
+Author: maxozo <mo11@sanger.ac.uk>
+Date:   Wed Dec 15 20:59:21 2021 +0000
+
+    fixed one more thing with handover dataset
+
+commit 02657b2f8158131c605935a886df62f252bb3214
+Merge: cf4a0eb 55142c7
+Author: Guillaume Noell <50482094+gn5@users.noreply.github.com>
+Date:   Wed Dec 15 13:54:47 2021 +0000
+
+    Merge pull request #4 from wtsi-hgi/main
+    
+    latest
+
+commit 55142c768f3566ac2f4de48e4ce7389b800320a3
+Author: maxozo <mo11@sanger.ac.uk>
+Date:   Wed Dec 15 12:13:46 2021 +0000
+
+    fixed the Gather data
+
+commit d28f2dca868ebe6e02149629aedeaa48b3212a75
+Author: maxozo <mo11@sanger.ac.uk>
+Date:   Wed Dec 15 11:12:03 2021 +0000
+
+    integrated the handover dataset and web transfer modules, still have to rsynk to web the folder, but this will be added as a gitlab module
+
+commit cf4a0eba9369e280928146ff8a743e158731d776
+Author: maxozo <mo11@sanger.ac.uk>
+Date:   Tue Dec 14 09:14:05 2021 +0000
+
+    almost done altering the web transfer and data gather script
+
+commit e9f44df2622cdf4f25dbe259203a200723d12b5b
+Author: maxozo <mo11@sanger.ac.uk>
+Date:   Mon Dec 13 10:39:14 2021 +0000
+
+    celltypist should be run with maxForks =1 since the model download can interfere with each other and cause pipeline to fail
+
+commit 1232ed58cbec9295574ea598af095928659abf07
+Author: maxozo <mo11@sanger.ac.uk>
+Date:   Mon Dec 13 10:11:46 2021 +0000
+
+    fixed celltype assignment for a batch
+
+commit 09242121fd9e79e2a5384247c5f591bf8e2d19ce
+Author: maxozo <mo11@sanger.ac.uk>
+Date:   Fri Dec 10 17:30:00 2021 +0000
+
+    fixed the cellbender path
+
+commit 91f9fb00a992694892161647d72aef38939f666c
+Author: maxozo <mo11@sanger.ac.uk>
+Date:   Fri Dec 10 16:56:01 2021 +0000
+
+    Renamed the pipeline
+
+commit 7ed7ab4a168858cd203747db6bf69fb95da87833
+Author: maxozo <mo11@sanger.ac.uk>
+Date:   Fri Dec 10 15:55:34 2021 +0000
+
+    cleaned up main
+
+commit 5c581d9a64d43e70188dd0880e54fdd305a6f325
+Author: maxozo <mo11@sanger.ac.uk>
+Date:   Fri Dec 10 15:53:42 2021 +0000
+
+    cleaned up main
+
+commit a2f684c4da981739dc621f4affb036ab3e832dcc
+Author: maxozo <mo11@sanger.ac.uk>
+Date:   Fri Dec 10 15:31:43 2021 +0000
+
+    rebase this as a main
+
+commit d1592f2c40684aaed6941b459259b2f477721b74
+Author: maxozo <mo11@sanger.ac.uk>
+Date:   Fri Dec 10 08:52:02 2021 +0000
+
+    all worked with this setup for ELGH
+
+commit 34ea5a6db3bc05cd8df4c9a1bfde92c746eee3f5
+Author: maxozo <mo11@sanger.ac.uk>
+Date:   Wed Dec 8 11:56:23 2021 +0000
+
+    missed one conflict - resolved now
+
+commit 205cde618120de23b4ed1bf6c67a18f0cede025b
+Author: maxozo <mo11@sanger.ac.uk>
+Date:   Wed Dec 8 11:52:52 2021 +0000
+
+    missed one conflict - resolved now
+
+commit 37c7b067c0cf89ae3dc3a05a48ff92e0b39a12ab
+Author: maxozo <mo11@sanger.ac.uk>
+Date:   Wed Dec 8 11:38:15 2021 +0000
+
+    fix
+
+commit d7f1e77daa886afa9a9e698a0e8731f8aae8b197
+Author: maxozo <mo11@sanger.ac.uk>
+Date:   Wed Dec 8 11:23:08 2021 +0000
+
+    fix
+
+commit 74424aa32aff2f90534c335b61484e47c738a470
+Author: maxozo <mo11@sanger.ac.uk>
+Date:   Wed Dec 8 11:01:26 2021 +0000
+
+    fix
+
+commit fff89110df9e5fbc9385aca286ee4cb16cbd3bf3
+Author: maxozo <mo11@sanger.ac.uk>
+Date:   Wed Dec 8 11:00:46 2021 +0000
+
+    fix
+
+commit 9aa466938abf6108d3a384b4c09e541bda088d11
+Author: maxozo <mo11@sanger.ac.uk>
+Date:   Wed Dec 8 10:11:38 2021 +0000
+
+    added the qc clustering to nfCore template
+
+commit 734e65ff00c676151f3feed9abb4aed479bee6f6
+Author: maxozo <mo11@sanger.ac.uk>
+Date:   Wed Dec 8 10:09:46 2021 +0000
+
+    added the qc clustering to nfCore template
+
+commit 7cada0f92520512b4d233f3baed9d67259228fa5
+Merge: 31db637 e481965
+Author: Emre Kale <mercury@sanger.ac.uk>
+Date:   Wed Dec 8 10:04:50 2021 +0000
+
+    merged
+
+commit e4819655f6c708e06e834b5e47beda9dd17c1324
+Author: maxozo <mattozols@yahoo.co.uk>
+Date:   Tue Dec 7 15:37:31 2021 +0000
+
+    fixed existing cellbender input
+
+commit ffa37ac23723d8b0b41e73592d04f62f8b3d0658
+Author: maxozo <mattozols@yahoo.co.uk>
+Date:   Tue Dec 7 12:03:50 2021 +0000
+
+    sometimes gpu-normal queue is not enough for the cellbender, have altered the error strategy
+
+commit fe1027ae1a57fae6fc7b23b1cfc5ca7a61265ed7
+Author: maxozo <mattozols@yahoo.co.uk>
+Date:   Sun Dec 5 16:16:25 2021 +0000
+
+    fixed few issues when run with cellbender
+
+commit 817afe9c0aff5462a047f3224bb046a082e1eff9
+Author: maxozo <mattozols@yahoo.co.uk>
+Date:   Sat Dec 4 14:41:56 2021 +0000
+
+    fixed the output of the metadata provided to merger
+
+commit 3b5d890b05b035a8c29fa285742efe103831290b
+Author: maxozo <mattozols@yahoo.co.uk>
+Date:   Sat Dec 4 12:23:55 2021 +0000
+
+    takes a mix of pooled and single run 10x datasets now, removed h5ad requirement to be used
+
+commit 11ad1c55a0fd4217aa1c2639a282aa8699af714e
+Author: maxozo <mattozols@yahoo.co.uk>
+Date:   Thu Dec 2 08:45:45 2021 +0000
+
+    eddited repo a bit
+
+commit 766f9ace2193829dce2c58a19cb9bdc208fa72a8
+Author: maxozo <mattozols@yahoo.co.uk>
+Date:   Thu Dec 2 08:44:03 2021 +0000
+
+    eddited repo a bit
+
+commit 3b0492dbf125a94408daaea4c5f4b5094d30aef9
+Author: maxozo <mattozols@yahoo.co.uk>
+Date:   Thu Dec 2 08:42:40 2021 +0000
+
+    added extra credits
+
+commit 50ad6b779050ba2854dc0f24de11f4680d358c4d
+Author: Emre Kale <mercury@sanger.ac.uk>
+Date:   Wed Nov 24 11:43:38 2021 +0000
+
+    all done
+
+commit 909b089eb9791455fcf1d2a719d13f2e61330888
+Author: Emre Kale <mercury@sanger.ac.uk>
+Date:   Fri Nov 19 14:01:40 2021 +0000
+
+    pipelines qc integrated
+
+commit 458ad8ed5756333cfd9021c5c937ea8aefe89cf1
+Author: Emre Kale <mercury@sanger.ac.uk>
+Date:   Fri Nov 19 12:01:28 2021 +0000
+
+    monicas and hannas run
+
+commit 2eb32565b1897074ac905d7dff90c79669577683
+Author: Emre Kale <mercury@sanger.ac.uk>
+Date:   Thu Nov 18 15:13:05 2021 +0000
+
+    celltype assignments and the extra metadata
+
+commit 13f4aae467501d83cc45c5e9577b38e41425b030
+Author: Emre Kale <mercury@sanger.ac.uk>
+Date:   Wed Nov 17 17:02:30 2021 +0000
+
+    fixed issues with celltype assignment
+
+commit 5a86e6cf2028ac9634e59edc5546f43fd5a9927d
+Author: Emre Kale <mercury@sanger.ac.uk>
+Date:   Mon Nov 15 17:31:57 2021 +0000
+
+    fixed few small bits, BBKNN works
+
+commit c76c784a549dbe1c3bf4ae4084515c5f5cda1ee4
+Author: Emre Kale <mercury@sanger.ac.uk>
+Date:   Mon Nov 15 10:31:52 2021 +0000
+
+    the qc pipeline has been implemented
+
+commit b49532daf4854ab31e8ab967480e4f12f22dafda
+Author: Emre Kale <mercury@sanger.ac.uk>
+Date:   Fri Nov 12 18:21:39 2021 +0000
+
+    celltypes have been added to the adata
+
+commit 6c74d5a9ac57c87235f8737b0b681e4a3465bb42
+Author: Emre Kale <mercury@sanger.ac.uk>
+Date:   Thu Nov 11 19:34:10 2021 +0000
+
+    qc nearly all added includin celltypes
+
+commit 22f8166e46555730ecbc29bf5271b66e23c11971
+Author: Emre Kale <mercury@sanger.ac.uk>
+Date:   Wed Nov 10 15:08:48 2021 +0000
+
+    finished with auto filter step
+
+commit 31db637ee07744b7f96eda99a801edcb2d510a81
+Author: Emre Kale <mercury@sanger.ac.uk>
+Date:   Thu Nov 4 10:03:28 2021 +0000
+
+    final integrations - works now by feeding the cellbender directly in deconvolution (some final eddits to the results folder production is needed)
+
+commit 037fd8df51d3062bfb4809a9256ae647013714de
+Author: Emre Kale <mercury@sanger.ac.uk>
+Date:   Thu Nov 4 09:34:25 2021 +0000
+
+    all works ok
+
+commit 267e52198baa817d3fae0d697001f698146c6be3
+Author: Emre Kale <mercury@sanger.ac.uk>
+Date:   Wed Nov 3 16:12:09 2021 +0000
+
+    logic transfer from cellbender to deconvolution implemented, still have to change the transfer issues
+
+commit 230ec1251146eac72bc286468b7c302258a443bc
+Author: Leland Taylor <letaylor@users.noreply.github.com>
+Date:   Tue Nov 2 15:37:48 2021 +0000
+
+    Update 035-analyse_cellbender_results.py
+    
+    Remove dev function
+
+commit 9aa2e4691ac98f911dff5327726536ea705abf7f
+Author: Leland Taylor <letaylor@users.noreply.github.com>
+Date:   Tue Nov 2 15:36:34 2021 +0000
+
+    Delete 045-prepare_nf_qc_cluster_input-legacy.py
+    
+    Delete legacy code
+
+commit 484323f7829b53ae521b6e20418c54fc26323ab9
+Author: Emre Kale <mercury@sanger.ac.uk>
+Date:   Tue Nov 2 11:13:38 2021 +0000
+
+     tested cb
+
+commit f3cf4d68a8f29c955a308d7b4673d84785cb14c1
+Author: Emre Kale <mercury@sanger.ac.uk>
+Date:   Tue Nov 2 09:17:08 2021 +0000
+
+    finished with cellbender integration, nowfeed it directly in the deconvolution
+
+commit 42aae2183b93dd8f667fc5d69dbcdd053abd649d
+Author: Emre Kale <mercury@sanger.ac.uk>
+Date:   Mon Nov 1 15:38:39 2021 +0000
+
+    deconvolution finished, cellbender nearly done.
+
+commit 78e5d1036b9e3c10eaeec23ebb1ac1b1a1a982ed
+Author: Emre Kale <mercury@sanger.ac.uk>
+Date:   Mon Nov 1 15:34:57 2021 +0000
+
+    deconvolution finished, cellbender nearly done.
+
+commit 72faf6a7c1c06377a553b307d5965ca32af97424
+Author: Emre Kale <mercury@sanger.ac.uk>
+Date:   Mon Nov 1 15:26:34 2021 +0000
+
+    first commit
+
+commit 67d3281b42bdc344c0c8f383693b0f2b9dfbda5e
+Author: Emre Kale <mercury@sanger.ac.uk>
+Date:   Wed Oct 27 14:06:31 2021 +0100
+
+    the deconvolution has been implemented
+
+commit fa06af394d0bf540b261c25aaf1c4cf036b95b9d
+Author: Emre Kale <mercury@sanger.ac.uk>
+Date:   Fri Oct 22 15:43:23 2021 +0100
+
+    finished the Franke, now dublicate to make it a standalone run
+
+commit a20c0842a8c788bbe180d8231115e8fa1e09388c
+Author: Emre Kale <mercury@sanger.ac.uk>
+Date:   Thu Oct 21 19:17:34 2021 +0100
+
+    first commit
+
+commit 4ac64eea5656ec6841bf22b107d3a60c839e18d2
+Author: Emre Kale <mercury@sanger.ac.uk>
+Date:   Wed Oct 20 11:35:57 2021 +0100
+
+    initial template build from nf-core/tools, version 2.1
