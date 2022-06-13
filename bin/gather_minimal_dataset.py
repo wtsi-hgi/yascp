@@ -276,7 +276,7 @@ def gather_donor(donor_id, ad, ad_lane_raw, azimuth_annot, qc_obs, columns_outpu
         donor_id = list(set(df.donor_id))[0]
     else:
         dt = ad.obs
-        experiment_id='';pool_id='';chromium_channel_number='';donor_id=''
+        experiment_id=' ';pool_id=' ';chromium_channel_number=' ';donor_id=' '
 
     dt.index.name = 'barcode'
     ad.obs.index.name = 'barcode'
@@ -599,12 +599,12 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
                 Failure_Reason +='Donor_cells_for_donor<=400; '
         
             try:
-                Date_sample_received = ''
+                Date_sample_received = ' '
             except:
                 Date_sample_received = 'No sample info available'   
 
             try:
-                Date_of_sample_sequencing = ''
+                Date_of_sample_sequencing = ' '
             except:
                 Date_of_sample_sequencing = 'No sample info available'   
 
