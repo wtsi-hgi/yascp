@@ -1,4 +1,4 @@
-// split Cellranger possorte bam by donor
+// match deconvoluted donors by genotype to a reference panel
 
 include { MATCH_GT_VIREO } from '../modules/nf-core/modules/genotypes/main'
 
