@@ -614,7 +614,8 @@ query <- AddMetaData(
 )
 
 # save mapped data set
-# save(query, file = "azimuth.bin")
+#save(query, file = "azimuth.bin")
+saveRDS(query, file = "azimuth.rds")
 # load("azimuth.bin" )
 
 
