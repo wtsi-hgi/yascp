@@ -60,6 +60,12 @@ def write_score_matrix(oufh, gtchkd):
         oufh.write("\n")
     return mtx, donor_ids, genotype_ids
 
+def write_score_array(oufh, gtchld):
+    oufh.write("gtcheck_score,donor_id\n")
+    for d in donor_ids:
+        for (gtid, score) in gtchkd[d]:
+            oufh.write("{:.1f},{:s}\n".format(score,d))
+    return
 
 def find_matches(gtchkd):
     rsltd = {}
@@ -119,7 +125,8 @@ if __name__ == '__main__':
         print(gtchkd)
 
     oufh_mtx = open(fnmtx, 'w')
-    write_score_matrix(oufh_mtx, gtchkd)
+    #write_score_matrix(oufh_mtx, gtchkd)
+    write_score_array(oufh_mtx, gtchkd)
     oufh_mtx.close()
 
     oufh = open(fnout, 'w')
