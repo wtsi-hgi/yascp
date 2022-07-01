@@ -47,3 +47,6 @@ WORKDIR /opt
 FROM r-base:4.2.0
 
 WORKDIR /
+RUN apt-get update \
+    && apt-get install -y \
+    procps
