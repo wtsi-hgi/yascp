@@ -20,6 +20,13 @@ RUN apt-get update \
     rm -rf /var/lib/{apt,dpkg,cache,log}
 
 WORKDIR /opt
+FROM r-base:4.2.0
+
+RUN apt-get update \
+    && apt-get install -y \
+    procps
+
+WORKDIR /opt
 RUN wget https://github.com/samtools/htslib/releases/download/1.15.1/htslib-1.15.1.tar.bz2 \
   && tar jxvf htslib-1.15.1.tar.bz2 \
   && cd htslib-1.15.1 \
@@ -43,10 +50,4 @@ RUN wget https://github.com/samtools/samtools/releases/download/1.15.1/samtools-
   && make \
   && make install
 
-WORKDIR /opt
-FROM r-base:4.2.0
-
 WORKDIR /
-RUN apt-get update \
-    && apt-get install -y \
-    procps
