@@ -80,7 +80,7 @@ workflow  main_deconvolution {
                 // here we run it without the genotypes and the donors are labeled as donor0, donor1 etc, dependant on the number of donors set in the input file n_pooled column
                 log.info "-----running Vireo without genotype input----"
                 CELLSNP.out.cellsnp_output_dir.combine(ch_experiment_npooled, by: 0).set{full_vcf}
-                full_vcf.map {experiment, cellsnp, npooled -> tuple(experiment, cellsnp, npooled,[])}.set{full_vcf}
+                full_vcf.map {experiment, cellsnp, npooled -> tuple(experiment, cellsnp, npooled,[],[])}.set{full_vcf}
             }
 
             // When all the channels are prpeared accordingly we exacute the vireo with the prpeared channel.
