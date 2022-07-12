@@ -19,8 +19,6 @@ os.environ['MPLCONFIGDIR']='/tmp'
 import glob
 import pandas as pd
 import numpy as np
-import tables
-from plot_cellranger_vs_cellbender import anndata_from_h5
 import statistics
 import h5py
 import scanpy
@@ -102,6 +100,102 @@ def load_raw_file_table(fnam):
     x = df['data_path_raw_h5'].transform(lambda a: os.path.basename(a))
     df.insert(1, 'file_name_raw_h5', x)
     return df
+
+
+def anndata_from_h5(
+    file: str,
+    analyzed_barcodes_only: bool = True
+ ) -> 'anndata.AnnData':
+    """Load an output h5 file into an AnnData object for downstream work.
+
+    Args:
+        file: The h5 file
+        analyzed_barcodes_only: False to load all barcodes, so that the size of
+            the AnnData object will match the size of the input raw count
+            matrix. True to load a limited set of barcodes: only those
+            analyzed by the algorithm. This allows relevant latent
+            variables to be loaded properly into adata.obs and adata.obsm,
+            rather than adata.uns.
+
+    Returns:
+        adata: The anndata object, populated with inferred latent variables
+            and metadata.
+    """
+    d = dict_from_h5(file)
+    X = scipy.sparse.csc_matrix(
+        (d.pop('data'), d.pop('indices'), d.pop('indptr')),
+        shape=d.pop('shape')
+    ).transpose().tocsr()
+
+    if analyzed_barcodes_only:
+        if 'barcodes_analyzed_inds' in d.keys():
+            X = X[d['barcodes_analyzed_inds'], :]
+            d['barcodes'] = d['barcodes'][d['barcodes_analyzed_inds']]
+        elif 'barcode_indices_for_latents' in d.keys():
+            X = X[d['barcode_indices_for_latents'], :]
+            d['barcodes'] = d['barcodes'][d['barcode_indices_for_latents']]
+        else:
+            print(
+                'Warning: analyzed_barcodes_only=True, but the key ',
+                '"barcodes_analyzed_inds" or "barcode_indices_for_latents" ',
+                'is missing from the h5 file. ',
+                'Will output all barcodes, and proceed as if ',
+                'analyzed_barcodes_only=False'
+            )
+
+    print(d.keys())
+
+    # Construct the count matrix.
+    if 'gene_names' in d.keys():
+        gene_symbols = d.pop('gene_names').astype(str)
+    else:
+        gene_symbols = d.pop('name').astype(str)
+    adata = anndata.AnnData(
+        X=X,
+        obs={'barcode': d.pop('barcodes').astype(str)},
+        var={
+            'gene_ids': d.pop('id').astype(str),
+            'gene_symbols': gene_symbols
+        }
+    )
+    adata.obs.set_index('barcode', inplace=True)
+    adata.var.set_index('gene_ids', inplace=True)
+
+    # Add other information to the adata object in the appropriate slot.
+    for key, value in d.items():
+        try:
+            value = np.asarray(value)
+            if len(value.shape) == 0:
+                adata.uns[key] = value
+            elif value.shape[0] == X.shape[0]:
+                if (len(value.shape) < 2) or (value.shape[1] < 2):
+                    adata.obs[key] = value
+                else:
+                    adata.obsm[key] = value
+            elif value.shape[0] == X.shape[1]:
+                if value.dtype.name.startswith('bytes'):
+                    adata.var[key] = value.astype(str)
+                else:
+                    adata.var[key] = value
+            else:
+                adata.uns[key] = value
+        except Exception:
+            print(
+                'Unable to load data into AnnData: ', key, value, type(value)
+            )
+
+    if analyzed_barcodes_only:
+        cols = adata.obs.columns[
+            adata.obs.columns.str.startswith('barcodes_analyzed')
+            | adata.obs.columns.str.startswith('barcode_indices')
+        ]
+        for col in cols:
+            try:
+                del adata.obs[col]
+            except Exception:
+                pass
+
+    return adata
 
 def gather_azimuth_annotation(expid, datadir_azimuth, index_label = None):
     # e.g. A4C06803ACD34DFB-adata_franke_Pilot_3_lane_3_predicted_celltype.tsv.gz
@@ -309,32 +403,28 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
         Machine_id = 'Machine_id not vailable'
 
     try:
-        Run_ID = str(adqc.obs['id_study_tmp'][0])
+        Run_ID = str(adqc.obs['id_run'][0]) 
     except:
         Run_ID = 'Run_ID not vailable'
+    try:
+        chromium_channel = str(adqc.obs['chromium_channel'][0]) 
+    except:
+        chromium_channel = 'Run_ID not vailable'
     outdir = f'{args.outdir}/{expid}'
     try:
         os.mkdir(outdir)
     except:
         print('dir exists')
     try:
-        t = adqc.obs['cohort'].astype(str)+' '+adqc.obs['batch'].astype(str)
-        cohort_list = list(set(t.values))
-        Count_of_UKB=0
-        Count_of_ELGH=0
-        Count_of_undertermined=0
-        for elem in cohort_list:
-            # print(elem)
-            if 'ELGH' in elem:
-                Count_of_ELGH+=1
-            elif 'UKBB' in elem:
-                Count_of_UKB+=1
-            else:
-                Count_of_undertermined+=1
+        
+        Count_of_UKB = int(adqc.obs['nr_ukbb_samples'].astype(str)[0])
+        Count_of_ELGH = int(adqc.obs['nr_elgh_samples'].astype(str)[0])
+        Count_of_Spikeins = int(adqc.obs['nr_spikeins'].astype(str)[0])
 
     except:
         Count_of_UKB = 0    
         Count_of_ELGH = 0    
+        Count_of_Spikeins = 0
 
     ######################
     #Cellranger datasets
@@ -366,7 +456,10 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
         cellbender_h5 = f"{cell_bender_path}/../cellbender_FPR_{Resolution}_filtered.h5"
         ad_lane_filtered = scanpy.read_10x_mtx(cell_bender_path)
         if write_h5:
-            os.link(cellbender_h5, f"./{outdir}/Cellbender_filtered_{Resolution}__{expid}.h5")
+            try:
+                os.link(cellbender_h5, f"./{outdir}/Cellbender_filtered_{Resolution}__{expid}.h5")
+            except:
+                print('File already linked')
         dfcb = fetch_cellbender_annotation(df_cellbender, expid,Resolution)
         columns_output = {**columns_output, **COLUMNS_CELLBENDER}
     else:
@@ -515,8 +608,10 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
 
     for i in df_donors.index:
         # feeds in the individual assignments here.
+        Donor_Stats=[]
         row = df_donors.loc[i]
         path1 = row['file_path_h5ad']
+        # print(path1)
         #################
         #Deconvolution data
         #################
@@ -568,77 +663,77 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
                 Cell_numbers+=f"{type}:{nr_cells_of_this_type} ; "
 
 
-        Donor_Stats = gather_donor(
-            row["donor_id"],
-            Deconvoluted_Donor_Data,
-            ad_lane_raw,
-            azimuth_annot = azt,
-            qc_obs = obsqc,
-            columns_output = columns_output,
-            outdir = outdir,
-            oufh = oufh,
-            lane_id=lane_id
-        )
+            Donor_Stats = gather_donor(
+                row["donor_id"],
+                Deconvoluted_Donor_Data,
+                ad_lane_raw,
+                azimuth_annot = azt,
+                qc_obs = obsqc,
+                columns_output = columns_output,
+                outdir = outdir,
+                oufh = oufh,
+                lane_id=lane_id
+            )
 
-        if Donor_Stats['Donor id']!='':
-            # Only generate donor stats for the donors excluding unasigned and doublets. 
-            Pass_Fail='PASS'
-            Failure_Reason =' '
+            if Donor_Stats['Donor id']!='':
+                # Only generate donor stats for the donors excluding unasigned and doublets. 
+                Pass_Fail='PASS'
+                Failure_Reason =' '
 
-            if (Median_UMIs_per_gene<=400):
-                Pass_Fail='FAIL'
-                Failure_Reason +='Median_UMIs_per_gene<=400; '
-            if (Donor_UMIS_mapped_to_mitochondrial_genes/UMIs>=0.5):
-                Pass_Fail='FAIL'
-                Failure_Reason +='Donor_UMIS_mapped_to_mitochondrial_genes/UMIs>=0.5; '
-            if (Donor_cells_passes_qc<=200):
-                Pass_Fail='FAIL'
-                Failure_Reason +='Donor_cells_passes_qc<=200; '
-            if (Donor_cells_for_donor<=400):
-                Pass_Fail='FAIL'
-                Failure_Reason +='Donor_cells_for_donor<=400; '
-        
-            try:
-                Date_sample_received = ' '
-            except:
-                Date_sample_received = 'No sample info available'   
+                if (Median_UMIs_per_gene<=400):
+                    Pass_Fail='FAIL'
+                    Failure_Reason +='Median_UMIs_per_gene<=400; '
+                if (Donor_UMIS_mapped_to_mitochondrial_genes/UMIs>=0.5):
+                    Pass_Fail='FAIL'
+                    Failure_Reason +='Donor_UMIS_mapped_to_mitochondrial_genes/UMIs>=0.5; '
+                if (Donor_cells_passes_qc<=200):
+                    Pass_Fail='FAIL'
+                    Failure_Reason +='Donor_cells_passes_qc<=200; '
+                if (Donor_cells_for_donor<=400):
+                    Pass_Fail='FAIL'
+                    Failure_Reason +='Donor_cells_for_donor<=400; '
+            
+                try:
+                    Date_sample_received = ' '
+                except:
+                    Date_sample_received = 'No sample info available'   
 
-            try:
-                Date_of_sample_sequencing = ' '
-            except:
-                Date_of_sample_sequencing = 'No sample info available'   
+                try:
+                    Date_of_sample_sequencing = ' '
+                except:
+                    Date_of_sample_sequencing = 'No sample info available'   
 
-        
-            Donor_Stats_extra = {
-                'Donor id':donor_id,
-                'Donors in pool':Donors_in_pool,
-                'Median UMIs per cell':Median_UMIs_per_cell,
-                'Nr UMIS mapped to mitochondrial genes':Donor_UMIS_mapped_to_mitochondrial_genes,
-                'Nr cells passes qc':Donor_cells_passes_qc,
-                'Total Nr cells for donor':Donor_cells_for_donor, 
-                'Date sample received':Date_sample_received, #Do this
-                'Date of sample sequencing':Date_of_sample_sequencing, 
-                'Donor_number': donor_number,
-                'Nr UMIs':UMIs,
-                'Median UMIs per gene':Median_UMIs_per_gene,
-                'Nr UMIS mapped to ribo genes':Donor_UMIS_mapped_to_ribo_genes,
-                'Nr UMIS mapped to ribo rna':Donor_UMIS_mapped_to_ribo_rna,
-                'Total Nr cells fails qc':Donor_cells_fails_qc,
-                'Genes detected with counts > 0':genes_detected_with_counts_greater_than_0,
-                'Genes with UMI count >= 3':genes_with_UMI_count_larger_than_3,
-                'Cell type numbers':Cell_numbers,
-                'Cell types detected':Cell_types_detected,
-                'Overall Pass Fail':Pass_Fail,
-                'Failure reason':Failure_Reason,
-                'Date of data transfer':date_of_transfer, # make this the last day of the month
-                'QC Report end date':date_now,
-            }
+            
+                Donor_Stats_extra = {
+                    'Donor id':donor_id,
+                    'Donors in pool':Donors_in_pool,
+                    'Median UMIs per cell':Median_UMIs_per_cell,
+                    'Nr UMIS mapped to mitochondrial genes':Donor_UMIS_mapped_to_mitochondrial_genes,
+                    'Nr cells passes qc':Donor_cells_passes_qc,
+                    'Total Nr cells for donor':Donor_cells_for_donor, 
+                    'Date sample received':Date_sample_received, #Do this
+                    'Date of sample sequencing':Date_of_sample_sequencing, 
+                    'Donor_number': donor_number,
+                    'Nr UMIs':UMIs,
+                    'Median UMIs per gene':Median_UMIs_per_gene,
+                    'Nr UMIS mapped to ribo genes':Donor_UMIS_mapped_to_ribo_genes,
+                    'Nr UMIS mapped to ribo rna':Donor_UMIS_mapped_to_ribo_rna,
+                    'Total Nr cells fails qc':Donor_cells_fails_qc,
+                    'Genes detected with counts > 0':genes_detected_with_counts_greater_than_0,
+                    'Genes with UMI count >= 3':genes_with_UMI_count_larger_than_3,
+                    'Cell type numbers':Cell_numbers,
+                    'Cell types detected':Cell_types_detected,
+                    'Overall Pass Fail':Pass_Fail,
+                    'Failure reason':Failure_Reason,
+                    'Date of data transfer':date_of_transfer, # make this the last day of the month
+                    'QC Report end date':date_now,
+                }
 
-            Donor_Stats.update(Donor_Stats_extra)
-            data_donor.append(Donor_Stats)
+                Donor_Stats.update(Donor_Stats_extra)
+                data_donor.append(Donor_Stats)
 
         fctr += 1
-    
+    # print('done')
     all_probs = all_probs[~all_probs.index.duplicated(keep='first')]
     azt['prob_doublet']=all_probs['prob_doublet']
     Donor_df = pd.DataFrame(data_donor)
@@ -668,9 +763,10 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
         'Total Droplets with donor assignment':Cells_before_QC_filters,
         'Droplets identified as doublet':Doublets_donor,
         'Droplets with donor unassigned':Unassigned_donor,
-        'UKB donors deconvoluted in pool':Count_of_UKB, #change this - would be better if this was an automated input.  ie - if 2 vcfs fed in then 2 matches
-        'ELGH donors in the pool':Count_of_ELGH, #change this - would be better if this was an automated input - ie - if 2 vcfs fed in then 2 matches
-        'Chromium channel number':list(set(Donor_df['Chromium channel number']))[0],
+        'UKB donors deconvoluted in pool':Count_of_UKB, 
+        'ELGH donors in the pool':Count_of_ELGH, 
+        'Spikeins in the pool':Count_of_Spikeins, 
+        'Chromium channel number':chromium_channel,
         'Donors in pool':Donors_in_pool,
         'Number of Reads':Number_of_Reads,
         'Fraction Reads in Cells':Fraction_Reads_in_Cells,
@@ -738,7 +834,7 @@ if __name__ == '__main__':
         write_h5=False
     else:
        write_h5=True 
-       
+    write_h5=False
     oufh = open(os.path.join(args.outdir, "files.tsv"), 'w')
     oufh.write("experiment_id\tdonor_id\tfilename_h5ad\tfilename_annotation_tsv\n")
     df_raw = pandas.read_table(args.input_table, index_col = 'experiment_id')

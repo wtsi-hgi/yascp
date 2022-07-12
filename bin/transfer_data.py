@@ -136,15 +136,15 @@ def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res
             os.mkdir(f'{name_dir}/Cell-type assignment')
         except:
             print('dire exists')
-        try:
-            os.mkdir(f'{name_dir}/Cell-type assignment/azimuth')
-        except:
-            print('dire exists')
+        # try:
+        #     os.mkdir(f'{name_dir}/Cell-type assignment/azimuth')
+        # except:
+        #     print('dire exists')
         # copyfile(fil1, f'{name_dir}/QC metrics/plot_ecdf-x_log10.var=total_counts.color=experiment_id-adata.png')
         files = glob.glob(f'{folder1}/*[!.gz]')
         for file1 in files:
             print(file1)
-            copy(file1, f'{name_dir}/Cell-type assignment/azimuth')
+            copy(file1, f'{name_dir}/Cell-type assignment')
 
 
     folder1 = f'{directory}/plots'
