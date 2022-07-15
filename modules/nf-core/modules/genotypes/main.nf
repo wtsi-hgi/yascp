@@ -74,61 +74,6 @@ process REPLACE_GT_DONOR_ID{
     """
 }
 
-
-process MATCH_GT_VIREO {
-  tag "${pool_id}"
-
-  publishDir  path: "${params.outdir}/gtmatch/",
-          pattern: "*_assignments.csv",
-          mode: "${params.copy_mode}",
-          overwrite: "true"
-
-  if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-      // println "container: /software/hgi/containers/wtsihgi-nf_genotype_match-1.0.sif\n"
-      container "/software/hgi/containers/wtsihgi-nf_yascp_htstools-1.1.sif"
-  } else {
-      container "mercury/wtsihgi-nf_yascp_htstools-1.1"
-  }
-  label 'process_long'
-  //when: params.vireo.run_gtmatch_aposteriori
-
-  input:
-    tuple val(pool_id), path(vireo_gt_vcf)
-    tuple path(ref_gt_vcf), path(ref_gt_csi)
-
-  output:
-    path("${donor_assignment_csv}", emit: donor_match_table)
-    path("${donor_scores_csv}", emit: donor_score_table)
-    path("${gt_check_output_txt}", emit: gtcheck_out)
-
-  script:
-    gt_check_output_txt = "${pool_id}_gtcheck.txt"
-    score_output_prfx = "${pool_id}"
-    donor_assignment_csv = "${score_output_prfx}_gtcheck_donor_assignments.csv"
-    donor_scores_csv = "${score_output_prfx}_gtcheck_score_table.csv"
-  """
-    # fix header of vireo VCF
-    #tabix -p vcf ${ref_gt_vcf}
-    bcftools view -h ${vireo_gt_vcf} > ${pool_id}_header.txt
-    # bcftools view -Ov ${vireo_gt_vcf} > viewed.vcf
-    sed -i '/^##fileformat=VCFv.*/a ##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">' ${pool_id}_header.txt
-    bcftools reheader -h ${pool_id}_header.txt -o ${pool_id}_GT_donors.vireo.headfix.vcf.gz ${vireo_gt_vcf}
-
-    # sort and index vireo VCF file (bcftools sort bails out with an error)
-    bcftools view ${pool_id}_GT_donors.vireo.headfix.vcf.gz | \
-      awk '\$1 ~ /^#/ {print \$0;next} {printf"chr%s",\$0 | "sort -k1,1V -k2,2n"}' |
-      bcftools view -Oz -o ${pool_id}_chr_GT_donors.vireo.srt.vcf.gz -
-    tabix -p vcf ${pool_id}_chr_GT_donors.vireo.srt.vcf.gz
-
-    bcftools gtcheck -g ${ref_gt_vcf} ${pool_id}_chr_GT_donors.vireo.srt.vcf.gz > ${gt_check_output_txt}
-
-    # generate assignment and score tables
-    gtcheck_assign.py ${score_output_prfx} ${gt_check_output_txt}
-
-    # generate plots of score density distribution
-  """
-}
-
 process GT_MATCH_POOL_AGAINST_PANEL
 {
   tag "${pool_id}_vs_${panel_id}"
@@ -193,6 +138,11 @@ process ASSIGN_DONOR_OVERALL
   // decide final donor assignment across different panels from per-panel donor assignments
   tag "${pool_panel_id}"
 
+  publishDir  path: "${params.outdir}/gtmatch/",
+          pattern: "*_assignments.csv",
+          mode: "${params.copy_mode}",
+          overwrite: "true"
+
   if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
       // println "container: /software/hgi/containers/wtsihgi-nf_genotype_match-1.0.sif\n"
       container "/software/hgi/containers/wtsihgi-nf_genotype_match-1.0.sif"
@@ -204,7 +154,7 @@ process ASSIGN_DONOR_OVERALL
     tuple val(pool_id), path(gtcheck_assign_files)
 
   output:
-    path("${donor_assignment_file}", emit: donor_assignments)
+    tuple val(pool_id), path("${donor_assignment_file}"), emit: donor_assignments
 
   label 'process_tiny'
 
@@ -213,4 +163,38 @@ process ASSIGN_DONOR_OVERALL
   """
     gtcheck_assign_summary.py ${donor_assignment_file} ${gtcheck_assign_files}
   """
+}
+
+workflow MATCH_GT_VIREO {
+  take:
+    ch_pool_id_vireo_vcf
+    ch_ref_vcf
+
+  main:
+    ch_ref_vcf.subscribe { println "match_genotypes: ch_ref_vcf = ${it}" }
+
+    VIREO_GT_FIX_HEADER(ch_pool_id_vireo_vcf)
+    VIREO_GT_FIX_HEADER.out.gt_pool
+      .combine(ch_ref_vcf)
+      .set { ch_gt_pool_ref_vcf }
+    ch_gt_pool_ref_vcf.subscribe { println "match_genotypes: ch_gt_pool_ref_vcf = ${it}\n" }
+
+    GT_MATCH_POOL_AGAINST_PANEL(ch_gt_pool_ref_vcf)
+
+    // group by panel id
+    GT_MATCH_POOL_AGAINST_PANEL.out.gtcheck_results
+      .groupTuple()
+      .set { gt_check_by_panel }
+    gt_check_by_panel.subscribe { println "match_genotypes: gt_check_by_panel = ${it}\n"
+
+    ASSIGN_DONOR_FROM_PANEL(gt_check_by_panel)
+    ASSIGN_DONOR_FROM_PANEL.out.gtcheck_assignments
+      .groupTuple()
+      .set{ ch_donor_assign_panel }
+    ch_donor_assign_panel.subscribe {println "ASSIGN_DONOR_OVERALL: ch_donor_assign_panel = ${it}\n"}
+
+    ASSIGN_DONOR_OVERALL(ch_donor_assign_panel)
+
+  emit:
+    pool_id_donor_assignments_csv = ASSIGN_DONOR_OVERALL.out.donor_assignments
 }

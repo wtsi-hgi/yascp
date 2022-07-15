@@ -11,7 +11,7 @@ include { SPLIT_DONOR_H5AD } from '../modules/nf-core/modules/split_donor_h5ad/m
 include { PLOT_DONOR_CELLS } from '../modules/nf-core/modules/plot_donor_cells/main'
 include {MULTIPLET} from "../modules/nf-core/modules/multiplet/main"
 include {SOUPORCELL_VS_VIREO} from "../modules/nf-core/modules/plot_souporcell_vs_vireo/main"
-include { MATCH_GT_VIREO } from '../modules/nf-core/modules/genotypes/main'
+include { match_genotypes } from './match_genotypes'
 include {REPLACE_GT_DONOR_ID } from '../modules/nf-core/modules/genotypes/main'
 workflow  main_deconvolution {
 
@@ -56,8 +56,8 @@ workflow  main_deconvolution {
 
         // cellsnp() outputs -> vireo():
         if (params.vireo.run){
-            // Here we run Vireo software to perform the donor deconvolution. Note that we have coded the pipeline to be capable in using 
-            // the full genotypes as an input and also subset to the individuals provided as an input in the donor_vcf_ids column. The 
+            // Here we run Vireo software to perform the donor deconvolution. Note that we have coded the pipeline to be capable in using
+            // the full genotypes as an input and also subset to the individuals provided as an input in the donor_vcf_ids column. The
             // VIREO:
             if (params.run_with_genotype_input) {
                 log.info "---running Vireo with genotype input----"
@@ -93,9 +93,9 @@ workflow  main_deconvolution {
             vireo_out_sample_donor_ids = VIREO.out.sample_donor_ids
         }
 
-        
+
         if (params.souporcell.run){
-            // YASCP pipeline is also capable in running SOUPORCELL instead of VIREO. If activated SOUPORCELL will be used. 
+            // YASCP pipeline is also capable in running SOUPORCELL instead of VIREO. If activated SOUPORCELL will be used.
             // yascp currently doesnt have an option to take souporcell assignments as downstream instead of vireo but this will be added shortly.
             // This runs the Souporcell Preprocessing
 
@@ -145,28 +145,28 @@ workflow  main_deconvolution {
                     }.set{full_vcf}
             }
 
-            // When all the channels are prepeared then we can run the soupocell accordingly. 
+            // When all the channels are prepeared then we can run the soupocell accordingly.
             SOUPORCELL(full_vcf,
                 Channel.fromPath(params.souporcell.reference_fasta).collect())
             // Regardless if the Soupocell is run with or without genotypes we still need to match the donor ids with the cluster ids since this does not happen automatically is Soupocell.
         }
 
         if (params.run_with_genotype_input & params.genotype_input.posterior_assignment) {
-            MATCH_GT_VIREO(vireo_out_sample_donor_vcf)            
+            match_genotypes(vireo_out_sample_donor_vcf)
         }
-        
+
         //here have to fix the vireo outputs based on the GT matching.
         if (params.replace_genotype_ids){
-            REPLACE_GT_DONOR_ID(VIREO.out.all_required_data , MATCH_GT_VIREO.out.donor_match_table.collect())
+            REPLACE_GT_DONOR_ID(VIREO.out.all_required_data , match_genotypes.out.csv_donor_assignments.collect())
             REPLACE_GT_DONOR_ID.out.sample_donor_vcf.set{vireo_out_sample_donor_vcf}
             REPLACE_GT_DONOR_ID.out.sample_summary_tsv.set{vireo_out_sample_summary_tsv}
             REPLACE_GT_DONOR_ID.out.sample__exp_summary_tsv.set{vireo_out_sample__exp_summary_tsv}
             REPLACE_GT_DONOR_ID.out.sample_donor_ids.set{vireo_out_sample_donor_ids}
         }
-        
+
         if (params.vireo.run){
 
-                // The folowing downstream tasks prepeares the plots, splits the donors accoring to vireo ids and generates the summary files. 
+                // The folowing downstream tasks prepeares the plots, splits the donors according to vireo ids and generates the summary files.
                 // These folowing outputs should be cleaned up and have been left as they were in the deconvolution pipeline initially.
                 // We also need to account that others may want to run soupocell instead and this folowing is not capable in digesting the cluster ids by soupocell currently.
 
