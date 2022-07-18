@@ -100,6 +100,142 @@ process ENHANCE_VIREO_METADATA_WITH_DONOR{
 process MATCH_GT_VIREO {
   tag "${pool_id}"
 
+  if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
+      // println "container: /software/hgi/containers/wtsihgi-nf_genotype_match-1.0.sif\n"
+      container "/software/hgi/containers/wtsihgi-nf_yascp_htstools-1.1.sif"
+  } else {
+      container "mercury/wtsihgi-nf_yascp_htstools-1.1"
+  }
+  //when: params.vireo.run_gtmatch_aposteriori
+
+  label 'process_tiny'
+
+  input:
+    tuple val(pool_id), path(vireo_gt_vcf)
+
+  output:
+    tuple val(pool_id), path("${vireo_fixed_vcf}"), path("${vireo_fixed_vcf}.tbi"), emit: gt_pool
+
+  script:
+  sorted_vcf = "${pool_id}_vireo_srt.vcf.gz"
+  vireo_fixed_vcf = "${pool_id}_headfix_vireo.vcf.gz"
+  """
+    # fix header of vireo VCF
+    bcftools view -h ${vireo_gt_vcf} > header.txt
+    sed -i '/^##fileformat=VCFv.*/a ##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">' header.txt
+
+    # sort VCF file (bcftools sort bails out with an error)
+    bcftools view ${vireo_gt_vcf} | \
+    awk '\$1 ~ /^#/ {print \$0;next} {print \$0 | "sort -k1,1V -k2,2n"}' | \
+    bcftools view -Oz -o ${sorted_vcf} -
+
+    bcftools reheader -h header.txt ${sorted_vcf} | \
+    bcftools view -Oz -o ${vireo_fixed_vcf} -
+
+    tabix -p vcf ${vireo_fixed_vcf}
+  """
+}
+
+process REPLACE_GT_DONOR_ID{
+
+
+    publishDir  path: "${params.outdir}/deconvolution/vireo_gt_fix/${samplename}/",
+          pattern: "GT_replace_*",
+          mode: "${params.copy_mode}",
+          overwrite: "true"
+    if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
+        container "/software/hgi/containers/mercury_scrna_deconvolution_62bd56a-2021-12-15-4d1ec9312485.sif"
+        //// container "/software/hgi/containers/mercury_scrna_deconvolution_latest.img"
+    } else {
+        container "mercury/scrna_deconvolution:62bd56a"
+    }
+
+  label 'process_medium'
+
+  input:
+    tuple val(samplename), path(gt_donors), path(vireo_sample_summary),path(vireo___exp_sample_summary),path(vireo__donor_ids),path(vcf_file),path(donor_gt_csi)
+    path(gt_match_results)
+  output:
+    path("test.out", emit: replacements)
+    tuple val(samplename), path("GT_replace_donor_ids.tsv"), emit: sample_donor_ids
+    tuple val(samplename), path("GT_replace_GT_donors.vireo.vcf.gz"), path(vcf_file),path(donor_gt_csi), emit: sample_donor_vcf
+    path("GT_replace_${samplename}.sample_summary.txt"), emit: sample_summary_tsv
+    path("GT_replace_${samplename}__exp.sample_summary.txt"), emit: sample__exp_summary_tsv
+
+  script:
+    """
+
+      echo ${samplename} > test.out
+      gunzip -k -d --force GT_donors.vireo.vcf.gz
+      replace_donors.py -id ${samplename}
+      bgzip GT_replace_GT_donors.vireo.vcf
+    """
+}
+
+process GT_MATCH_POOL_AGAINST_PANEL
+{
+  tag "${pool_id}_vs_${panel_id}"
+
+  if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
+      // println "container: /software/hgi/containers/wtsihgi-nf_genotype_match-1.0.sif\n"
+      container "/software/hgi/containers/wtsihgi-nf_yascp_htstools-1.1.sif"
+  } else {
+      container "mercury/wtsihgi-nf_yascp_htstools-1.1"
+  }
+
+  label 'process_long'
+  //when: params.vireo.run_gtmatch_aposteriori
+
+  input:
+    tuple val(pool_id), path(vireo_gt_vcf), path(vireo_gt_tbi), val(panel_id), path(ref_gt_vcf), path(ref_gt_csi)
+
+  output:
+    tuple val(pool_panel_id), path("${gt_check_output_txt}"), emit:gtcheck_results
+
+  script:
+  pool_panel_id = "pool_${pool_id}_panel_${panel_id}"
+  panel_filnam = "${ref_gt_vcf}" - (~/\.[bv]cf(\.gz)?$/)
+  gt_check_output_txt = "${pool_id}_gtcheck_${panel_filnam}.txt"
+  """
+    bcftools gtcheck --no-HWE-prob -g ${ref_gt_vcf} ${vireo_gt_vcf} > ${gt_check_output_txt}
+  """
+}
+
+process ASSIGN_DONOR_FROM_PANEL
+{
+  // sum gtcheck discrepancy scores from multiple ouputput files of the same panel
+  tag "${pool_panel_id}"
+
+  if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
+      // println "container: /software/hgi/containers/wtsihgi-nf_genotype_match-1.0.sif\n"
+      container "/software/hgi/containers/wtsihgi-nf_genotype_match-1.0.sif"
+  } else {
+      container "mercury/wtsihgi-nf_genotype_match-1.0"
+  }
+
+  input:
+    tuple val(pool_panel_id), path(gtcheck_output_files)
+
+  output:
+    tuple val(pool_id), path("${assignment_table_out}"), emit: gtcheck_assignments
+    path("${score_table_out}", emit: gtcheck_scores)
+
+  label 'process_low'
+
+  script:
+  (_, pool_id) = ("${pool_panel_id}" =~ /^pool_(\S+)_panel_/)[0]
+  score_table_out = "${pool_panel_id}_gtcheck_score_table.csv"
+  assignment_table_out = "${pool_panel_id}_gtcheck_donor_assignments.csv"
+  """
+    gtcheck_assign.py ${pool_panel_id} ${gtcheck_output_files}
+  """
+}
+
+process ASSIGN_DONOR_OVERALL
+{
+  // decide final donor assignment across different panels from per-panel donor assignments
+  tag "${pool_panel_id}"
+
   publishDir  path: "${params.outdir}/gtmatch/",
           pattern: "*_assignments.csv",
           mode: "${params.copy_mode}",
@@ -109,7 +245,7 @@ process MATCH_GT_VIREO {
       // println "container: /software/hgi/containers/wtsihgi-nf_genotype_match-1.0.sif\n"
       container "/software/hgi/containers/wtsihgi-nf_yascp_htstools-1.0.sif"
   } else {
-      container "mercury/wtsihgi-nf_yascp_htstools-1.0"
+      container "mercury/wtsihgi-nf_genotype_match-1.0"
   }
   label 'process_long'
   //when: params.vireo.run_gtmatch_aposteriori
@@ -118,12 +254,12 @@ process MATCH_GT_VIREO {
     tuple val(pool_id), path(vireo_gt_vcf), path(ref_gt_vcf), path(ref_gt_csi)
 
   output:
-    path("${donor_assignment_csv}", emit: donor_match_table)
-    path("${gt_check_output_txt}", emit: gtcheck_out)
+    tuple val(pool_id), path("${donor_assignment_file}"), emit: donor_assignments
+
+  label 'process_tiny'
 
   script:
-    donor_assignment_csv = "${pool_id}_assignments.csv"
-    gt_check_output_txt = "${pool_id}_gtcheck.txt"
+  donor_assignment_file = "${pool_id}_gt_donor_assignments.csv"
   """
     # fix header of vireo VCF
     #tabix -p vcf ${ref_gt_vcf}
@@ -146,4 +282,38 @@ process MATCH_GT_VIREO {
     gtcheck_assign.py ${gt_check_output_txt} ${donor_assignment_csv}
 
   """
+}
+
+workflow MATCH_GT_VIREO {
+  take:
+    ch_pool_id_vireo_vcf
+    ch_ref_vcf
+
+  main:
+    ch_ref_vcf.subscribe { println "match_genotypes: ch_ref_vcf = ${it}" }
+
+    VIREO_GT_FIX_HEADER(ch_pool_id_vireo_vcf)
+    VIREO_GT_FIX_HEADER.out.gt_pool
+      .combine(ch_ref_vcf)
+      .set { ch_gt_pool_ref_vcf }
+    ch_gt_pool_ref_vcf.subscribe { println "match_genotypes: ch_gt_pool_ref_vcf = ${it}\n" }
+
+    GT_MATCH_POOL_AGAINST_PANEL(ch_gt_pool_ref_vcf)
+
+    // group by panel id
+    GT_MATCH_POOL_AGAINST_PANEL.out.gtcheck_results
+      .groupTuple()
+      .set { gt_check_by_panel }
+    gt_check_by_panel.subscribe { println "match_genotypes: gt_check_by_panel = ${it}\n"
+
+    ASSIGN_DONOR_FROM_PANEL(gt_check_by_panel)
+    ASSIGN_DONOR_FROM_PANEL.out.gtcheck_assignments
+      .groupTuple()
+      .set{ ch_donor_assign_panel }
+    ch_donor_assign_panel.subscribe {println "ASSIGN_DONOR_OVERALL: ch_donor_assign_panel = ${it}\n"}
+
+    ASSIGN_DONOR_OVERALL(ch_donor_assign_panel)
+
+  emit:
+    pool_id_donor_assignments_csv = ASSIGN_DONOR_OVERALL.out.donor_assignments
 }

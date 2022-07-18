@@ -1305,7 +1305,8 @@ ggsave("mapping_score_vln.pdf")
 # VlnPlot(object = query, features = "GNLY", group.by = predicted.id) + NoLegend()
 
 # save mapped data set
-# save(query, file = "azimuth.bin")
+#save(query, file = "azimuth.bin")
+saveRDS(query, file = "azimuth.rds")
 # load("azimuth.bin" )
 
 

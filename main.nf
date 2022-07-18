@@ -25,17 +25,32 @@ nextflow.enable.dsl = 2
 ========================================================================================
 */
 
+//include { TEST_GT_ASSIGN } from './tests/test_gt_assign'
+include { TEST_GTCHECK } from './tests/test_gtcheck'
 //include { TEST_MATCH_GT_VIREO } from './tests/test_genotypes'
+<<<<<<< HEAD
 include { TEST_SPLIT_BAM_PER_DONOR } from './tests/test_bam_per_donor'
 //include { TEST_ENCRYPT_DIR} from './tests/test_encryption'
+=======
+//include { TEST_SPLIT_BAM_PER_DONOR } from './tests/test_bam_per_donor'
+>>>>>>> origin/gtcheck_score
 
 workflow NF_CORE_TEST {
+  //println "**** running NF_CORE_TEST::TEST_GT_ASSIGN"
+  //TEST_GT_ASSIGN()
+  println "**** running NF_CORE_TEST::TEST_GTCHECK"
+  TEST_GTCHECK()
   //println "**** running NF_CORE_TEST::TEST_MATCH_GT_VIREO"
   //TEST_MATCH_GT_VIREO()
+<<<<<<< HEAD
   println "**** running NF_CORE_TEST::TEST_SPLIT_BAM_PER_DONOR"
   TEST_SPLIT_BAM_PER_DONOR()
   //println "**** running NF_CORE_TEST::TEST_ENCRYPT_DIR"
   //TEST_ENCRYPT_DIR()
+=======
+  //println "**** running NF_CORE_TEST::TEST_SPLIT_BAM_PER_DONOR"
+  //TEST_SPLIT_BAM_PER_DONOR()
+>>>>>>> origin/gtcheck_score
 }
 
 /*
