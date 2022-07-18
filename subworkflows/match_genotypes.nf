@@ -16,7 +16,7 @@ workflow match_genotypes {
     .map { row -> tuple(row.label, file(row.vcf_file_path), file("${row.vcf_file_path}.csi")) }
     .set { ch_ref_vcf }
 
-    match_gt_vireo(ch_pool_id_vireo_vcf, ch_ref_vcf)
+    MATCH_GT_VIREO(ch_pool_id_vireo_vcf, ch_ref_vcf)
 
   emit:
     pool_id_donor_assignments_csv = MATCH_GT_VIREO.out.pool_id_donor_assignments_csv
