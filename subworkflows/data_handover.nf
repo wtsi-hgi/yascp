@@ -7,7 +7,7 @@ workflow data_handover{
     take:
         outdir
         qc_input
-        out_full_match
+        
 
     main:
         log.info 'running data handover'
