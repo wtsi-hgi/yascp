@@ -8,7 +8,7 @@ workflow match_genotypes {
 
   main:
     Channel.fromPath(
-      params.tsv_donor_panel_vcfs,
+      params.genotype_input.tsv_donor_panel_vcfs,
       followLinks: true,
       checkIfExists: true
     )
@@ -16,8 +16,9 @@ workflow match_genotypes {
     .map { row -> tuple(row.label, file(row.vcf_file_path), file("${row.vcf_file_path}.csi")) }
     .set { ch_ref_vcf }
 
-    match_gt_vireo(ch_pool_id_vireo_vcf, ch_ref_vcf)
+    MATCH_GT_VIREO(ch_pool_id_vireo_vcf, ch_ref_vcf)
 
   emit:
     pool_id_donor_assignments_csv = MATCH_GT_VIREO.out.pool_id_donor_assignments_csv
+    donor_match_table = MATCH_GT_VIREO.out.donor_match_table
 }

@@ -156,7 +156,7 @@ workflow SCDECON {
     // ###################################
     // ###################################
 
-    data_handover("${workDir}/../${params.output_dir}",qc.out.LI) //This part gathers the plots for the reporting in a Summary folder. If run through gitlab CI it will triger the data transfer to web.
+    data_handover("${workDir}/../${params.output_dir}",qc.out.LI,main_deconvolution.out.out_full_match) //This part gathers the plots for the reporting in a Summary folder. If run through gitlab CI it will triger the data transfer to web.
 }
 
 /*

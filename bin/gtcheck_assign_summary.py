@@ -6,6 +6,7 @@ import sys
 import csv
 import re
 import statistics
+import pandas as pd
 
 VERBOSE = True
 SMVAL = float(1e-9)
@@ -35,7 +36,8 @@ class AssignmentTables:
             donor_id = row['donor_query']
             if donor_id not in self.donors:
                 self.donors.append(donor_id)
-            tabd[row['donor_query']] = (row['donor_gt'], row['score0'], row['score1'], row['z0'], row['z1'])
+                # donor_query,donor_gt,score0,score1,score_n,n,mean,sd,z0,z1
+            tabd[row['donor_query']] = (row['donor_gt'], row['score0'], row['score1'], row['z0'], row['z1'], row['score_n'],row['n'],row['mean'],row['sd'])
         infh.close()
         self.panels[panel] = tabd
         return ctr
@@ -134,7 +136,7 @@ class AssignmentTables:
         return assignment
 
     def make_panel_assignment(self, panel, donor):
-        donor_assigned, score0, score1, z0, z1 = self.panels[panel][donor]
+        donor_assigned, score0, score1, z0, z1 ,score_n, n, mean, sd= self.panels[panel][donor]
         is_confident_assignment = float(z0) > ZSCORE_THRESH and float(z0)-float(z1) > ZSCORE_DIST_THRESH
         if is_confident_assignment:
             assignment = donor_assigned
@@ -144,6 +146,7 @@ class AssignmentTables:
 
     def assign_donors(self, oufh):
         oufh.write("donor_query,donor_gt,panel\n")
+        df ={}
         if self.cell_line_panel is None:
             self.identify_cell_line_panel()
         for donor in self.donors:
@@ -178,9 +181,28 @@ class AssignmentTables:
             if final_panel is None:
                 final_panel = 'NONE'
             oustr = "{:s},{:s},{:s}".format(donor, final_assignment, final_panel)
+            
+            if(final_panel=='NONE'):
+                print('panel is none')
+                df[donor]={'donor_query':donor,'donor_gt':'NONE','score0':0,'score1':0,'score_n':0,'n':0,'mean':0,'sd':0,'z0':0,'z1':0,'final_panel':final_panel}
+            else:
+                # df[donor]={'final_assignment':final_assignment,'final_panel':final_panel}
+                # 0 row['donor_gt'], 1 row['score0'], 2 row['score1'], 3 row['z0'], 4 row['z1'], 5 row['score_n'], 6 row['n'],7 row['mean'],8 row['sd']
+                df[donor]={'donor_query':donor,'donor_gt':self.panels[final_panel][donor][0],
+                'score0':self.panels[final_panel][donor][1],
+                'score1':self.panels[final_panel][donor][2],
+                'score_n':self.panels[final_panel][donor][5],
+                'n':self.panels[final_panel][donor][6],
+                'mean':self.panels[final_panel][donor][7],
+                'sd':self.panels[final_panel][donor][8],
+                'z0':self.panels[final_panel][donor][3],
+                'z1':self.panels[final_panel][donor][4],
+                'final_panel':final_panel}
+            
+
             oufh.write(oustr + '\n')
             print(oustr)
-        return
+        return pd.DataFrame(df).T
 
 if __name__ == '__main__':
     nargs = len(sys.argv)
@@ -199,7 +221,8 @@ if __name__ == '__main__':
         sys.stderr.write("# {:d} assignment files read.\n".format(fctr))
     print(asstab.cell_lines)
     oufh = open(oufn, 'w')
-    asstab.assign_donors(oufh)
+    donor_panels_and_stats = asstab.assign_donors(oufh)
+    donor_panels_and_stats.to_csv(f'stats_{oufn}',sep=',',index=False)
     oufh.close()
 
     sys.exit()
