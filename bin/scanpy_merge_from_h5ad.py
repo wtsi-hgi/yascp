@@ -182,6 +182,7 @@ def scanpy_merge(
         )
         adata_orig_cols = list(adata.obs.columns)
         adata_orig_cols.append("donor")
+        adata_orig_cols.append("experiment_id")
         adata = check_adata(adata, row['experiment_id'])
 
         # Record the total number of cells for this experiment_id
