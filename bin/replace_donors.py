@@ -25,7 +25,8 @@ else:
     gp_ma = pd.DataFrame()
 input_id =args.donor_id
 # input_id = 'ELGH_VAL11650907'
-GT_Assignments = pd.read_csv(f'{input_id}_assignments.csv',sep=',')
+# stats_CRD_CMB12979963_gt_donor_assignments.csv
+GT_Assignments = pd.read_csv(f'stats_{input_id}_gt_donor_assignments.csv',sep=',')
 GT_Assignments=GT_Assignments.set_index('donor_query')
 import os
 tranche = os.getcwd().split('/')[-4]
@@ -48,9 +49,12 @@ slipt1 = vcf[:1].values[0,0].split('\t')
 # outlier_thresh_neg = q1-1.5*iqr
 
 # Unassigned = list(GT_Assignments[GT_Assignments['z0']<outlier_thresh_neg].index)
-Unassigned2 = list(GT_Assignments[GT_Assignments['z0']<50].index)
-Unassigned1 = list(GT_Assignments[GT_Assignments['z0']-GT_Assignments['z1']<=2].index)
-Unassigned= list(set(Unassigned2+Unassigned1))
+# Unassigned2 = list(GT_Assignments[GT_Assignments['z0']<50].index)
+# Unassigned1 = list(GT_Assignments[GT_Assignments['z0']-GT_Assignments['z1']<=2].index)
+# Unassigned= list(set(Unassigned2+Unassigned1))
+
+
+Unassigned= []
 All_expected_ids = input_table_file.loc[input_id,'donor_vcf_ids'].replace('\'','').split(',')
 Good_ids=[]
 Emergency_ids=[]
@@ -83,14 +87,14 @@ for ix in GT_Assignments.index:
     
     if (len(gp_ma)>0):
         try:
-            replacement = gp_ma.loc[replacement][0]
-            replacement = replacement.values[0]
+            replacement = str(gp_ma.loc[replacement][0])
+            # replacement = replacement.values[0]
             if replacement in All_expected_ids:
                 GT_Assignments.loc[ix,'Match Expected']='True'
         except:
             try:
-                replacement = gp_ma.loc[replacement.split('_')[0]]
-                replacement = replacement.values[0]
+                replacement = str(gp_ma.loc[replacement.split('_')[0]].values[0])
+                # replacement = replacement.values[0]
                 if replacement in All_expected_ids:
                     GT_Assignments.loc[ix,'Match Expected']='True'
             except:

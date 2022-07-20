@@ -156,7 +156,7 @@ process ASSIGN_DONOR_OVERALL
 
   if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
       // println "container: /software/hgi/containers/wtsihgi-nf_genotype_match-1.0.sif\n"
-      container "/software/hgi/containers/wtsihgi-nf_genotype_match-1.0.sif"
+      container "/software/hgi/containers/mercury_scrna_deconvolution_62bd56a-2021-12-15-4d1ec9312485.sif"
   } else {
       container "mercury/wtsihgi-nf_genotype_match-1.0"
   }
