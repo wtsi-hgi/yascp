@@ -631,21 +631,27 @@ def scanpy_merge(
             extra_sample_metadata = extra_metadata[extra_metadata[metadata_key]==idx1]
         except:
             extra_sample_metadata = pd.DataFrame()
+
+
+        for col in metadata_smpl.columns:
+            # print(f' {col} already exist')
+            if col in list(adata_orig_cols):
+                print(f' {col} already exist')
+            else:
+                print(col)
+                adata.obs[col] = np.repeat(metadata_smpl[col].values, adata.n_obs)
+
+        # We prioritise the sample metrics over donor metrics. Donor metrics is very dependant on the successful match.
         if (len(extra_sample_metadata)>0):
             for col in extra_sample_metadata.columns:
                 # print(col)
                 if col in list(adata_orig_cols):
                     print(f' {col} already exist')
                 else:
-                    print(col)
+                    # print(col)
                     adata.obs[col] = np.repeat(extra_sample_metadata[col].values, adata.n_obs)
 
-        for col in metadata_smpl.columns:
-            if col in list(adata_orig_cols):
-                print(f' {col} already exist')
-            else:
-                print(col)
-                adata.obs[col] = np.repeat(metadata_smpl[col].values, adata.n_obs)
+
 
         # Ensure we have experiment_in the final dataframe.
         if 'experiment_id' not in adata.obs.columns:
