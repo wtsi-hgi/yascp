@@ -77,6 +77,10 @@ for ix in GT_Assignments.index:
     
     #Here should add a a filter to estimate whether it is a good match.
     replacement = GT_Assignments.loc[ix,'donor_gt']
+    if 'THP1' in replacement:
+        replacement = 'celline_THP1'
+    if 'U937' in replacement:
+        replacement = 'celline_U937'
     expected = 'NA'
     poor_replacement =''
     if ix in Unassigned:

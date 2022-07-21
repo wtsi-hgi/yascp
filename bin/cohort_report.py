@@ -36,9 +36,20 @@ for i,row1 in GT_MATCH_CONFIDENT.iterrows():
     # for i,row12 in Matched_Donor_report.iterrows():
     #     print(i)
     #     print(row12)
-    # for i,row12 in Extra_Metadata_Donor1.iterrows():
-    #     print(i)
-    #     print(row12)
-# Missing_Vacutainers =
+    for i,row12 in Extra_Metadata_Donors.iterrows():
+        print(i)
+        print(row12)
+
+# 
+UKBB_Samples = Extra_Metadata_Donors[Extra_Metadata_Donors.cohort == 'Cardinal UKB']
+Missing_UKBB = set(UKBB_Samples.donor)-set(Total_Report['Vacutainer ID'])
+Extra_Metadata_Donors2 = Extra_Metadata_Donors.set_index('donor') 
+Missing = Extra_Metadata_Donors2.loc[Missing_UKBB]['experiment_id']
+Missing.to_csv('/lustre/scratch123/hgi/projects/cardinal_analysis/qc/UKBB_ELGH_5th_July_2022/Summary_plots/UKBB_ELGH_5th_July_2022/Summary/Missing_UKB_Donors.tsv')
 Total_Report.to_csv('/lustre/scratch123/hgi/projects/cardinal_analysis/qc/UKBB_ELGH_5th_July_2022/Summary_plots/UKBB_ELGH_5th_July_2022/Summary/UKBB_Repoty.tsv',sep='\t',index=False)
+
+
+GT_MATCH_CONFIDENT = GT_MATCH[GT_MATCH['Match Expected'] == True]
+
+
 print('Done')
