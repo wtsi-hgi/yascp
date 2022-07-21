@@ -167,6 +167,7 @@ process ASSIGN_DONOR_OVERALL
   output:
     tuple val(pool_id), path("${donor_assignment_file}"), emit: donor_assignments
     path(stats_assignment_table_out), emit: donor_match_table
+    path("*.csv")
     
   label 'process_tiny'
 
@@ -241,13 +242,13 @@ workflow MATCH_GT_VIREO {
     ch_ref_vcf
 
   main:
-    ch_ref_vcf.subscribe { println "match_genotypes: ch_ref_vcf = ${it}" }
+    // ch_ref_vcf.subscribe { println "match_genotypes: ch_ref_vcf = ${it}" }
 
     VIREO_GT_FIX_HEADER(ch_pool_id_vireo_vcf)
     VIREO_GT_FIX_HEADER.out.gt_pool
       .combine(ch_ref_vcf)
       .set { ch_gt_pool_ref_vcf }
-    ch_gt_pool_ref_vcf.subscribe { println "match_genotypes: ch_gt_pool_ref_vcf = ${it}\n" }
+    // ch_gt_pool_ref_vcf.subscribe { println "match_genotypes: ch_gt_pool_ref_vcf = ${it}\n" }
 
     GT_MATCH_POOL_AGAINST_PANEL(ch_gt_pool_ref_vcf)
 
@@ -261,7 +262,7 @@ workflow MATCH_GT_VIREO {
     ASSIGN_DONOR_FROM_PANEL.out.gtcheck_assignments
       .groupTuple()
       .set{ ch_donor_assign_panel }
-    ch_donor_assign_panel.subscribe {println "ASSIGN_DONOR_OVERALL: ch_donor_assign_panel = ${it}\n"}
+    // ch_donor_assign_panel.subscribe {println "ASSIGN_DONOR_OVERALL: ch_donor_assign_panel = ${it}\n"}
 
     ASSIGN_DONOR_OVERALL(ch_donor_assign_panel)
 

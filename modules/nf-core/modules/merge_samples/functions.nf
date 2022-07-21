@@ -35,7 +35,7 @@ process merge_samples_from_h5ad {
     //cache true        // cache results from run
     tag "${samplename}"
     
-    label 'process_medium' 
+    label 'process_medium_single_CPU' 
     label 'process_high_memory'
 
     publishDir  path: "${outdir}/merged_h5ad",
@@ -83,7 +83,7 @@ process merge_samples_from_h5ad {
             extra_metadata = ""
         }
 
-        if (params.extra_sample_metadata!=''){
+        if (params.extra_sample_metadata!='' && params.add_donor_metadata){
             // If same columns defined in the h5ad, these will be overwritten
             // If same columns in extra donor metadata as in extra sample metadata, sample metadata will be overwritten
             extra_sample_metadata = "add_extra_sample_metadata.py --vireo ${file_metadata} --extra_sample_metadata ${params.extra_sample_metadata} --metadata_key ${metadata_key}"
