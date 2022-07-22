@@ -389,7 +389,7 @@ def gather_donor(donor_id, ad, ad_lane_raw, azimuth_annot, qc_obs, columns_outpu
 def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane_id=1,Resolution='0pt5'):
     
     # Get the merged in metadata
-
+    outdir = f'{args.outdir}/{expid}'
     try:
         os.mkdir(outdir)
     except:
@@ -547,7 +547,7 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
     except:
         chromium_channel = 'Run_ID not vailable'
         
-    outdir = f'{args.outdir}/{expid}'
+    
 
     Raw_counts_data_per_lane = ad_lane_raw
     Per_lane_QC_File_data = obsqc
