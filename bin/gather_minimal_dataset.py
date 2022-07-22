@@ -389,42 +389,12 @@ def gather_donor(donor_id, ad, ad_lane_raw, azimuth_annot, qc_obs, columns_outpu
 def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane_id=1,Resolution='0pt5'):
     
     # Get the merged in metadata
-    try:
-        date_of_sequencing = adqc.obs['last_updated'][0]
-    except:
-        date_of_sequencing = 'Sequencing date not vailable'
 
-    try:
-        try:
-            Machine_id = adqc.obs['instrument'][0]
-        except:
-            Machine_id = adqc.obs['instrument_name'][0]
-    except:
-        Machine_id = 'Machine_id not vailable'
-
-    try:
-        Run_ID = str(adqc.obs['id_run'][0]) 
-    except:
-        Run_ID = 'Run_ID not vailable'
-    try:
-        chromium_channel = str(adqc.obs['chromium_channel'][0]) 
-    except:
-        chromium_channel = 'Run_ID not vailable'
-    outdir = f'{args.outdir}/{expid}'
     try:
         os.mkdir(outdir)
     except:
         print('dir exists')
-    try:
-        
-        Count_of_UKB = int(adqc.obs['nr_ukbb_samples'].astype(str)[0])
-        Count_of_ELGH = int(adqc.obs['nr_elgh_samples'].astype(str)[0])
-        Count_of_Spikeins = int(adqc.obs['nr_spikeins'].astype(str)[0])
 
-    except:
-        Count_of_UKB = 0    
-        Count_of_ELGH = 0    
-        Count_of_Spikeins = 0
 
     ######################
     #Cellranger datasets
@@ -543,6 +513,41 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
     #####################
     #Performing Calculations and gathering data
     #####################
+
+    try:
+        
+        Count_of_UKB = int(all_QC_lane.obs['nr_ukbb_samples'].astype(str)[0])
+        Count_of_ELGH = int(all_QC_lane.obs['nr_elgh_samples'].astype(str)[0])
+        Count_of_Spikeins = int(all_QC_lane.obs['nr_spikeins'].astype(str)[0])
+
+    except:
+        Count_of_UKB = 0    
+        Count_of_ELGH = 0    
+        Count_of_Spikeins = 0
+
+    try:
+        date_of_sequencing = all_QC_lane.obs['last_updated'][0]
+    except:
+        date_of_sequencing = 'Sequencing date not vailable'
+
+    try:
+        try:
+            Machine_id = all_QC_lane.obs['instrument'][0]
+        except:
+            Machine_id = all_QC_lane.obs['instrument_name'][0]
+    except:
+        Machine_id = 'Machine_id not vailable'
+
+    try:
+        Run_ID = str(all_QC_lane.obs['id_run'][0]) 
+    except:
+        Run_ID = 'Run_ID not vailable'
+    try:
+        chromium_channel = str(all_QC_lane.obs['chromium_channel'][0]) 
+    except:
+        chromium_channel = 'Run_ID not vailable'
+        
+    outdir = f'{args.outdir}/{expid}'
 
     Raw_counts_data_per_lane = ad_lane_raw
     Per_lane_QC_File_data = obsqc
