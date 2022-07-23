@@ -96,6 +96,24 @@ def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res
         metadata_table=pd.concat([metadata_table,metadata])
     metadata_table.to_csv(f'{name_dir}/Fetch Pipeline/Submission_Data_Pilot_UKB.file_metadata.tsv')
 
+
+    try:
+        os.mkdir(f'{name_dir}/Fetch Pipeline/Input')
+        copyfile(input_table, f'{name_dir}/Fetch Pipeline/Input/input_table.tsv')
+    except:
+        print('exists')
+
+    try:
+        os.mkdir(f'{name_dir}/GT Match___1000')
+    except:
+        print('exists')
+
+    #NOW COPY THE GT OUTPUTS 
+    folder1 = f'{directory}/deconvolution/vireo_gt_fix'
+    if os.path.isdir(folder1):
+        copyfile(f'{folder1}/assignments_all_pools.tsv', f'{name_dir}/GT Match___1000/assignments_all_pools.tsv')
+        
+
     #if (pipeline=='Deconvolution'):
     folder1 = f'{directory}/deconvolution/split_donor_h5ad'
     if os.path.isdir(folder1):
