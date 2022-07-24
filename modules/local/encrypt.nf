@@ -17,12 +17,12 @@ process ENCRYPT_DIR
     path(input_dir)
 
   output:
-    path("${outdir}/*.gpg", emit:encrypted)
-    path("${outdir}/*.md5", emit:checksums)
+    path("${outdir}/*/*.gpg", emit:encrypted)
+    path("${outdir}/*/*.md5", emit:checksums)
 
   script:
   outdir="encryptor_output"
   """
-    java -jar /opt/EGA-Cryptor-2.0.0/ega-cryptor-2.0.0.jar -i ${input_dir} -o ${outdir}
+    bash encript.sh ${input_dir} ${outdir}
   """
 }
