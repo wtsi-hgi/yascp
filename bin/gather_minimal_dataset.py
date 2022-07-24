@@ -427,7 +427,7 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
         ad_lane_filtered = scanpy.read_10x_mtx(cell_bender_path)
         if write_h5:
             try:
-                os.link(cellbender_h5, f"./{outdir}/Cellbender_filtered_{Resolution}__{expid}.h5")
+                os.symlink(cellbender_h5, f"./{outdir}/Cellbender_filtered_{Resolution}__{expid}.h5")
             except:
                 print('File already linked')
         dfcb = fetch_cellbender_annotation(df_cellbender, expid,Resolution)
@@ -440,14 +440,14 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
     if write_h5:
         try:
             # os.system(f"ls -s {df_raw.loc[expid, 'data_path_10x_format']}/raw_feature_bc_matrix.h5 ./{outdir}/{expid}_2Cellranger_raw_feature_bc_matrix.h5")
-            os.link(f"{df_raw.loc[expid, 'data_path_10x_format']}/raw_feature_bc_matrix.h5", f"./{outdir}/Cellranger_raw_feature_bc_matrix__{expid}.h5")
+            os.symlink(f"{df_raw.loc[expid, 'data_path_10x_format']}/raw_feature_bc_matrix.h5", f"./{outdir}/Cellranger_raw_feature_bc_matrix__{expid}.h5")
             Deconvoluted_Donor_Data = anndata.read_h5ad(path1)
         except:
             print('cant link cellranger file')
 
         try:
             # os.system(f"ls -s {df_raw.loc[expid, 'data_path_10x_format']}/filtered_feature_bc_matrix.h5 {outdir}/{expid}_Cellranger_filtered_feature_bc_matrix.h5")
-            os.link(f"{df_raw.loc[expid, 'data_path_10x_format']}/filtered_feature_bc_matrix.h5",f"{outdir}/Cellranger_filtered_feature_bc_matrix__{expid}.h5")
+            os.symlink(f"{df_raw.loc[expid, 'data_path_10x_format']}/filtered_feature_bc_matrix.h5",f"{outdir}/Cellranger_filtered_feature_bc_matrix__{expid}.h5")
         except:
             print('cant link cellranger file')
 
