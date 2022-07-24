@@ -17,8 +17,8 @@ process ENCRYPT_DIR
     path(input_dir)
 
   output:
-    path("${outdir}/*/*.gpg", emit:encrypted)
-    path("${outdir}/*/*.md5", emit:checksums)
+    path("${outdir}/*", emit:encrypted)
+    // path("${outdir}/*/*.md5", emit:checksums)
 
   script:
   outdir="encryptor_output"

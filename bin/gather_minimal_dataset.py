@@ -839,7 +839,7 @@ if __name__ == '__main__':
         write_h5=False
     else:
        write_h5=True 
-    write_h5=False
+    # write_h5=False
     oufh = open(os.path.join(args.outdir, "files.tsv"), 'w')
     oufh.write("experiment_id\tdonor_id\tfilename_h5ad\tfilename_annotation_tsv\n")
     df_raw = pandas.read_table(args.input_table, index_col = 'experiment_id')
