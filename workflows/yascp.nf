@@ -64,7 +64,7 @@ workflow SCDECON {
     // (option 3) users can run it from cellranger - skipping the cellbender. params.input == 'cellranger'
     // ###################################
     // ###################################
-
+    ch_poolid_csv_donor_assignments = Channel.empty()
     if (!params.skip_preprocessing.value){
         // The input table should contain the folowing columns - experiment_id	n_pooled	donor_vcf_ids	data_path_10x_format
         input_channel = Channel.fromPath(params.input_data_table, followLinks: true, checkIfExists: true)
@@ -114,6 +114,7 @@ workflow SCDECON {
                 prepare_inputs.out.ch_experiment_npooled,
                 ch_experiment_filth5,
                 prepare_inputs.out.ch_experiment_donorsvcf_donorslist,channel__file_paths_10x)
+            ch_poolid_csv_donor_assignments = main_deconvolution.out.ch_poolid_csv_donor_assignments
             MERGE_SAMPLES(main_deconvolution.out.out_h5ad,main_deconvolution.out.vireo_out_sample__exp_summary_tsv,'h5ad')
 
         }else{
@@ -156,7 +157,10 @@ workflow SCDECON {
     // ###################################
     // ###################################
 
-    data_handover("${workDir}/../${params.output_dir}",qc.out.LI) //This part gathers the plots for the reporting in a Summary folder. If run through gitlab CI it will triger the data transfer to web.
+    data_handover("${workDir}/../${params.output_dir}",
+      qc.out.LI,
+      ch_poolid_csv_donor_assignments
+      ) //This part gathers the plots for the reporting in a Summary folder. If run through gitlab CI it will triger the data transfer to web.
 }
 
 /*
