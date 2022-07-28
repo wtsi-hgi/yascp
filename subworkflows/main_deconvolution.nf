@@ -181,7 +181,7 @@ workflow  main_deconvolution {
 
         //here have to fix the vireo outputs based on the GT matching.
         if (params.replace_genotype_ids){
-            REPLACE_GT_DONOR_ID(VIREO.out.all_required_data , match_genotypes.out.csv_donor_assignments.collect())
+            REPLACE_GT_DONOR_ID(VIREO.out.all_required_data , ch_poolid_donor_assignment.collect())
             REPLACE_GT_DONOR_ID.out.sample_donor_vcf.set{vireo_out_sample_donor_vcf}
             REPLACE_GT_DONOR_ID.out.sample_summary_tsv.set{vireo_out_sample_summary_tsv}
             REPLACE_GT_DONOR_ID.out.sample__exp_summary_tsv.set{vireo_out_sample__exp_summary_tsv}

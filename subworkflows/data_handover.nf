@@ -15,7 +15,7 @@ workflow data_handover{
         GATHER_DATA(outdir,qc_input.collect(),params.input_data_table)
         SPLIT_DATA_BY_STUDY(outdir, GATHER_DATA.out.outfiles_dataset, ch_poolid_csv_donor_assignments)
         if (params.encrypt){
-            ENCRYPT_DIR(GATHER_DATA.out.outfiles_dataset)
+            ENCRYPT_DIR(SPLIT_DATA_BY_STUDY.out.outdir_ukbb)
         }
 
         if (params.split_bam){
