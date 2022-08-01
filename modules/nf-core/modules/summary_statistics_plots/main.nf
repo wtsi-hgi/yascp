@@ -51,7 +51,7 @@ process TRANSFER {
         params.webtransfer
     script:
 
-      """
+      """ 
         ../../../scripts/rsync_to_web.sh ${params.project_name}          
       """
 }
