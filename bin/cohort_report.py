@@ -31,7 +31,7 @@ Extra_Metadata_Donors = pd.read_csv(f"{path}/handover/Summary_plots/{project_nam
 # GT_MATCH.loc[GT_MATCH['donor_gt'].str.contains('celline'),'Match Expected']=True
 GT_MATCH_CONFIDENT = GT_MATCH[GT_MATCH['Match Expected'] == True]
 
-def Generate_Report(GT_MATCH_CONFIDENT):
+def Generate_Report(GT_MATCH_CONFIDENT,pan):
 
     Total_Report = pd.DataFrame()               
     for i,row1 in GT_MATCH_CONFIDENT.iterrows():
@@ -78,7 +78,7 @@ def Generate_Report(GT_MATCH_CONFIDENT):
         Matched_Donor_report.insert(8, 'site', SITE)
         Matched_Donor_report.insert(8, 'amount recieved', Amount)
         Matched_Donor_report['Date sample received'] =  RECIEVED
-        Matched_Donor_report['Donor id']=row1['donor_gt original']
+        Matched_Donor_report['Donor id']=row1['donor_gt original'].split('_')[0]
         Total_Report = pd.concat([Total_Report,Matched_Donor_report])
 
     return Total_Report
@@ -92,7 +92,7 @@ for confident_panel in set(GT_MATCH['final_panel']):
         GR_PANEL = GT_MATCH[GT_MATCH['final_panel'] == confident_panel]
         GT_CELLINE = GT_MATCH[GT_MATCH['final_panel'] == 'GT_cell_lines']
         GT_PANEL_CELLINE = pd.concat([GR_PANEL,GT_CELLINE])
-        Total_Report = Generate_Report(GT_PANEL_CELLINE)
+        Total_Report = Generate_Report(GT_PANEL_CELLINE,pan)
         Expected_Samples = Extra_Metadata_Donors[Extra_Metadata_Donors.cohort == confident_panel]
         Missing_Samples = set(Expected_Samples.donor)-set(Total_Report['Vacutainer ID'])
         try:
