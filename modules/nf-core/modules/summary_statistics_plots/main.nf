@@ -34,7 +34,7 @@ process SUMMARY_STATISTICS_PLOTS {
                               --web_transfer ${params.webtransfer} \
                               --project_name ${params.project_name}
           ln -s ${params.extra_sample_metadata} Summary_plots/*/Summary
-          cohort_report.py
+          cohort_report.py -d ${outdir_prev}
       """
 }
 

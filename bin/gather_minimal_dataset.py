@@ -365,8 +365,14 @@ def gather_donor(donor_id, ad, ad_lane_raw, azimuth_annot, qc_obs, columns_outpu
             # Stats
         print('Performing the stats analysis')
         experiment_id = list(set(df.experiment_id))[0]
-        pool_id = list(set(df.chromium_run_id))[0] #???
-        chromium_channel_number = list(set(df.chromium_run_id))[0]
+        try:
+            pool_id = list(set(df.chromium_run_id))[0] #???
+        except:
+            pool_id=' '
+        try:
+            chromium_channel_number = list(set(df.chromium_channel))[0]
+        except:
+            chromium_channel_number=' '
         donor_id = list(set(df.donor_id))[0]
     else:
         dt = ad.obs
@@ -452,6 +458,7 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
         if write_h5:
             try:
                 os.symlink(cellbender_h5, f"./{outdir}/Cellbender_filtered_{Resolution}__{expid}.h5")
+                # Here link also mtx files
             except:
                 print('File already linked')
         dfcb = fetch_cellbender_annotation(df_cellbender, expid,Resolution)
@@ -712,7 +719,7 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
                 oufh = oufh,
                 lane_id=lane_id
             )
-
+            Donor_Stats['Experiment ID']=args.experiment_name
             if Donor_Stats['Donor id']!='':
                 # Only generate donor stats for the donors excluding unasigned and doublets. 
                 Pass_Fail='PASS'
@@ -759,12 +766,13 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
                     'Total Nr cells fails qc':Donor_cells_fails_qc,
                     'Genes detected with counts > 0':genes_detected_with_counts_greater_than_0,
                     'Genes with UMI count >= 3':genes_with_UMI_count_larger_than_3,
-                    'Cell type numbers':Cell_numbers,
-                    'Cell types detected':Cell_types_detected,
                     'Overall Pass Fail':Pass_Fail,
                     'Failure reason':Failure_Reason,
                     'Date of data transfer':date_of_transfer, # make this the last day of the month
                     'QC Report end date':date_now,
+                    'Cell types detected':Cell_types_detected,
+                    'Cell type numbers':Cell_numbers,
+                    
                 }
 
                 Donor_Stats.update(Donor_Stats_extra)
@@ -793,7 +801,7 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
     Percentage_of_unassigned_cells = Unassigned_donor/(Donors_in_pool+Doublets_donor+Unassigned_donor)*100  
 
     data_tranche = {
-        'Experiment id':expid,
+        'Experiment id':args.experiment_name,
         'Pool id':list(set(Donor_df['Pool ID']))[0],
         'Machine id':Machine_id, #Change this - it will come from the extra metadata file if available
         'Run id':Run_ID, #Generate - feed in from extra metadate if available
@@ -801,6 +809,7 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
         'Total Droplets with donor assignment':Cells_before_QC_filters,
         'Droplets identified as doublet':Doublets_donor,
         'Droplets with donor unassigned':Unassigned_donor,
+        'Donors in pool':Donors_in_pool,
         'Total donors deconvoluted in pool':Total_donors_deconvoluted_in_pool,
         'UKB donors expected in pool':Count_of_UKB, 
         'UKB donors deconvoluted in pool':UKB_Donors_Deconvoluted_in_pool, 
@@ -809,7 +818,6 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
         'Spikeins expected in the pool':Count_of_Spikeins, 
         'Spikeins deconvoluted in the pool':Spikeins_Deconvoluted_in_pool, 
         'Chromium channel number':chromium_channel,
-        'Donors in pool':Donors_in_pool,
         'Number of Reads':Number_of_Reads,
         'Fraction Reads in Cells':Fraction_Reads_in_Cells,
         'Mean Reads per Cell':Mean_reads_per_cell,
@@ -822,6 +830,7 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
         'UMIS mapped to ribo genes':UMIS_mapped_to_ribo_genes,
         'UMIS mapped to ribo rna':UMIS_mapped_to_ribo_rna,
         'Percentage of unassigned cells':Percentage_of_unassigned_cells,
+        'Number of unassigned cells':Unassigned_donor,
         'Droplets before filtering':Total_Drroplets_before_10x_filtering,
         'Empty droplets - removed by filtering':Droplets_removed_by_filtering,
         'Total Droplets with a single cell':Number_of_cells,
@@ -906,7 +915,6 @@ if __name__ == '__main__':
     All_probs_and_celltypes = pd.DataFrame()
 
 
-    args.extra_metadata = '/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/fetch/ELGH_fech/results/yascp_inputs/Extra_Metadata.tsv'   
     Sample_metadata = pd.DataFrame()
     # try:
     #     if args.extra_metadata:
@@ -977,7 +985,7 @@ if __name__ == '__main__':
     Donor_Report = pd.DataFrame(data_donor_all)
     Tranche_Report = pd.DataFrame(data_tranche_all)
 
-    Donor_Report['Pool_ID.Donor_Id']=Donor_Report['Experiment ID']+'_'+Donor_Report['Donor id']
+    Donor_Report['Pool_ID.Donor_Id']=Donor_Report['Pool ID']+'_'+Donor_Report['Donor id']
     Donor_Report=Donor_Report.set_index('Pool_ID.Donor_Id')
     Donor_Report.to_csv(f'{args.outdir}_summary/Donor_Report.tsv',sep='\t')
     Tranche_Report.to_csv(f'{args.outdir}_summary/Tranche_Report.tsv',sep='\t',index=False)

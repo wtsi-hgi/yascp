@@ -1,13 +1,31 @@
 #!/usr/bin/env python3
-
+import argparse
 import pandas as pd
 import os
+
+parser = argparse.ArgumentParser(
+    description="""
+        Combines all the Raw cellranger metadata to be passed in the h5ad
+        """
+)
+
+parser.add_argument(
+    '-d',
+    action='store',
+    dest='path',
+    required=False,
+    default='./results',
+    help='Path')
+
+options = parser.parse_args()
+path = options.path
+
 # Split Donor Report by cohort
-project_name = os.listdir("./Summary_plots")[0]
-GT_MATCH = pd.read_csv("./results/deconvolution/vireo_gt_fix/assignments_all_pools.tsv",sep='\t')
-Donor_Report = pd.read_csv("./results/handover/Donor_Quantification_summary/Donor_Report.tsv",sep='\t')
-Tranch_Report = pd.read_csv("./results/handover/Donor_Quantification_summary/Tranche_Report.tsv",sep='\t')
-Extra_Metadata_Donors = pd.read_csv(f"./Summary_plots/{project_name}/Summary/Extra_Metadata_Donors.tsv",sep='\t')
+project_name = os.listdir(f"{path}/handover/Summary_plots")[0]
+GT_MATCH = pd.read_csv(f"{path}/deconvolution/vireo_gt_fix/assignments_all_pools.tsv",sep='\t')
+Donor_Report = pd.read_csv(f"{path}/handover/Donor_Quantification_summary/Donor_Report.tsv",sep='\t')
+Tranch_Report = pd.read_csv(f"{path}/handover/Donor_Quantification_summary/Tranche_Report.tsv",sep='\t')
+Extra_Metadata_Donors = pd.read_csv(f"{path}/handover/Summary_plots/{project_name}/Summary/Extra_Metadata_Donors.tsv",sep='\t')
 # qc/Cardinal_45327_Jul_18_2022/work/62/aacd091ea7711fae264e884e122230/Summary_plots/Cardinal_45327_Jul_18_2022/Summary
 # t2 = GT_MATCH.loc[GT_MATCH['donor_gt'].str.contains('celline')]
 # GT_MATCH.loc[GT_MATCH['donor_gt'].str.contains('celline'),'Match Expected']=True
@@ -22,7 +40,7 @@ def Generate_Report(GT_MATCH_CONFIDENT):
         print(f"{row1['pool']}_{row1['donor_query']}")
         
         Matched_Donor_report = ''
-        Matched_Donor_report = Donor_Report[Donor_Report['Donor id_Experiment ID']==f"{row1['donor_query']}_{row1['pool']}"]
+        Matched_Donor_report = Donor_Report[Donor_Report['Pool_ID.Donor_Id']==f"{row1['pool']}_{row1['donor_query']}"]
         
         Tranch_stats = Tranch_Report[Tranch_Report['Pool id'] ==row1['pool']]
         for i,row12 in Matched_Donor_report.iterrows():
@@ -78,12 +96,12 @@ for confident_panel in set(GT_MATCH['final_panel']):
         Expected_Samples = Extra_Metadata_Donors[Extra_Metadata_Donors.cohort == confident_panel]
         Missing_Samples = set(Expected_Samples.donor)-set(Total_Report['Vacutainer ID'])
         try:
-            os.mkdir(f'Summary_plots/{project_name}/Summary/{pan}_REPORT')
+            os.mkdir(f'{path}/handover/Summary_plots/{project_name}/Summary/{pan}_REPORT')
         except:
             print('Dir exists')
         if (len(Missing_Samples)>0):
             Missing = Extra_Metadata_Donors.loc[Missing_Samples]['experiment_id']
-            Missing.to_csv(f'Summary_plots/{project_name}/Summary/{pan}_REPORT/{project_name}_Missing_UKB_Donors.tsv')
-        Total_Report.to_csv(f'Summary_plots/{project_name}/Summary/{pan}_REPORT/{project_name}_UKBB_Report.tsv',sep='\t',index=False)
+            Missing.to_csv(f'{path}/handover/Summary_plots/{project_name}/Summary/{pan}_REPORT/{project_name}_Missing_UKB_Donors.tsv')
+        Total_Report.to_csv(f'{path}/handover/Summary_plots/{project_name}/Summary/{pan}_REPORT/{project_name}_UKBB_Report.tsv',sep='\t',index=False)
 
 print('Done')
