@@ -793,9 +793,6 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
         'Machine id':Machine_id, #Change this - it will come from the extra metadata file if available
         'Run id':Run_ID, #Generate - feed in from extra metadate if available
         'Date of sample sequencing':date_of_sequencing,#Change this
-        'Total Droplets with donor assignment':Cells_before_QC_filters,
-        'Droplets identified as doublet':Doublets_donor,
-        'Droplets with donor unassigned':Unassigned_donor,
         'Donors in pool':Donors_in_pool,
         'Total donors deconvoluted in pool':Total_donors_deconvoluted_in_pool,
         'UKB donors expected in pool':Count_of_UKB, 
@@ -808,6 +805,7 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
         'Number of Reads':Number_of_Reads,
         'Fraction Reads in Cells':Fraction_Reads_in_Cells,
         'Mean Reads per Cell':Mean_reads_per_cell,
+
         'Median UMI Counts per Droplet before filter':Median_UMI_Counts_per_before_filter,
         'Median UMI Counts per Droplet after Cellranger filter':Median_UMI_Counts_per_cellranger,
         'Median UMI Counts per Droplet after Cellbender filter':Median_UMI_Counts_per_Cell_after_cellbender,
@@ -821,13 +819,18 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
         'UMIS mapped to ribo genes':UMIS_mapped_to_ribo_genes,
         'UMIS mapped to ribo rna':UMIS_mapped_to_ribo_rna,
         'Percentage of unassigned cells':Percentage_of_unassigned_cells,
-        'Number of unassigned cells':Unassigned_donor,
+
         'Droplets before filtering':Total_Drroplets_before_10x_filtering,
         'Empty droplets - removed by filtering':Droplets_removed_by_filtering,
-        'Total Droplets with a single cell':Number_of_cells,
+        'Droplets identified as doublet':Doublets_donor,
+        'Total Droplets with a single cell':Cells_before_QC_filters+Unassigned_donor,
+        'Droplets with donor unassigned':Unassigned_donor+Doublets_donor,
+        'Number of unassigned cells':Unassigned_donor,
         'Cells before QC filters':Cells_before_QC_filters,
         'Total Cells failing QC':Cells_failing_QC,
         'Total Cells passing QC':Cells_passing_QC,
+        'Total Droplets with donor assignment':Cells_before_QC_filters,
+
         'Median cells passes qc':Median_cells_passes_qc,
         'Median cells fails qc':Median_cells_fails_qc,
         'Median Nr cells for donor':Median_Nr_cells_for_donor,
@@ -974,8 +977,8 @@ if __name__ == '__main__':
 
     Donor_Report['Pool_ID.Donor_Id']=Donor_Report['Pool ID']+'_'+Donor_Report['Donor id']
     Donor_Report=Donor_Report.set_index('Pool_ID.Donor_Id')
-    Donor_Report.to_csv(f'{args.outdir}_summary/Donor_Report.tsv',sep='\t')
-    Tranche_Report.to_csv(f'{args.outdir}_summary/Tranche_Report.tsv',sep='\t',index=False)
+    Donor_Report.to_csv(f'{args.outdir}_summary/{args.experiment_name}_Donor_Report.tsv',sep='\t')
+    Tranche_Report.to_csv(f'{args.outdir}_summary/{args.experiment_name}_Tranche_Report.tsv',sep='\t',index=False)
     oufh.close()
     sys.stderr.write("# wrote {:d} files to directory {:s}\n".format(fctr, args.outdir))
     exit(0)

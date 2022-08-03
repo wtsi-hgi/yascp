@@ -101,7 +101,7 @@ for confident_panel in set(GT_MATCH['final_panel']):
             print('Dir exists')
         if (len(Missing_Samples)>0):
             Missing = Extra_Metadata_Donors.loc[Missing_Samples]['experiment_id']
-            Missing.to_csv(f'{path}/handover/Summary_plots/{project_name}/Summary/{pan}_REPORT/{project_name}_Missing_UKB_Donors.tsv')
+            Missing.to_csv(f'{path}/handover/Summary_plots/{project_name}/Summary/{pan}_REPORT/{project_name}_Missing_UKB_Donors.tsv',sep='\t')
         Total_Report.to_csv(f'{path}/handover/Summary_plots/{project_name}/Summary/{pan}_REPORT/{project_name}_UKBB_Report.tsv',sep='\t',index=False)
 
 print('Done')
