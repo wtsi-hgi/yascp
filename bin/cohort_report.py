@@ -66,11 +66,11 @@ def Generate_Report(GT_MATCH_CONFIDENT,pan):
             Amount = Extra_Metadata_Donor1['Amount'].values[0]
             RECIEVED = Extra_Metadata_Donor1['RECIEVED'].values[0]
         except:
-            live_cell_count = 'N/A'
-            viability ='N/A'
-            SITE = 'N/A'
-            Amount = 'N/A'
-            RECIEVED = 'N/A'
+            live_cell_count = 'NA'
+            viability ='NA'
+            SITE = 'NA'
+            Amount = 'NA'
+            RECIEVED = 'NA'
 
         Matched_Donor_report.insert(8, 'lab_live_cell_count',live_cell_count)
         Matched_Donor_report.insert(8, 'viability', viability)

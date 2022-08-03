@@ -411,31 +411,6 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
     compression_opts = 'gzip'
     adata_cellranger_raw = scanpy.read_10x_mtx(f"{df_raw.loc[expid, 'data_path_10x_format']}/raw_feature_bc_matrix")
     adata_cellranger_filtered = scanpy.read_10x_mtx(f"{df_raw.loc[expid, 'data_path_10x_format']}/filtered_feature_bc_matrix")
-    # molecule_info = scanpy.read_10x(f"{df_raw.loc[expid, 'data_path_10x_format']}/molecule_info.h5")
-    # import h5py
-    # filename = f"{df_raw.loc[expid, 'data_path_10x_format']}/molecule_info.h5"
-    # with h5py.File(filename, "r") as f:
-    #     # Print all root level object names (aka keys) 
-    #     # these can be group or dataset names 
-    #     print("Keys: %s" % f.keys())
-    #     # get first object name/key; may or may NOT be a group
-    #     a_group_key = list(f.keys())[0]
-
-    #     # get the object type for a_group_key: usually group or dataset
-    #     print(type(f[a_group_key])) 
-
-    #     # If a_group_key is a group name, 
-    #     # this gets the object names in the group and returns as a list
-    #     data = list(f[a_group_key])
-    #     print('done')
-    #     # If a_group_key is a dataset name, 
-    #     # this gets the dataset values and returns as a list
-    #     data = list(f[a_group_key])
-    #     # preferred methods to get dataset values:
-    #     ds_obj = f[a_group_key]      # returns as a h5py dataset object
-    #     ds_arr = f[a_group_key][()]  # returns as a numpy array
-    # test = scanpy.read_10x_h5('/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/qc/ELGH_9th_May_2022/work/dc/731610294d97b3def203635185b1ff/minimal_dataset/CRD_CMB12813646/Cellranger_filtered_feature_bc_matrix_CRD_CMB12813646.h5')
-    # here try to link the cellranger raw and cellrenger filtered outputs.
     
     zero_count_cells_cellranger_raw = adata_cellranger_raw.obs_names[np.where(adata_cellranger_raw.X.sum(axis=1) == 0)[0]]
     ad_lane_raw = adata_cellranger_raw[adata_cellranger_raw.obs_names.difference(zero_count_cells_cellranger_raw, sort=False)]
@@ -483,15 +458,19 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
             print('cant link cellranger file')
 
 
-    zero_count_cells_cellranger_filtered = ad_lane_filtered.obs_names[np.where(ad_lane_filtered.X.sum(axis=1) == 0)[0]]
-    ad_lane_filtered = ad_lane_filtered[ad_lane_filtered.obs_names.difference(zero_count_cells_cellranger_filtered, sort=False)]
-    adata_cellranger_filtered=ad_lane_filtered
-    scanpy.pp.calculate_qc_metrics(adata_cellranger_filtered, inplace=True)
-    df_total_counts = pd.DataFrame(data= adata_cellranger_filtered.obs.sort_values(by=['total_counts'], ascending=False).total_counts)
-    df_total_counts['barcodes'] = df_total_counts.index
-    df_total_counts['barcode_row_number'] = df_total_counts.reset_index().index + 1 
-    df_total_counts_cellranger_filtered = df_total_counts
-    df_total_counts_cellranger_filtered['dataset'] = 'Cellranger Filtered'
+    zero_count_cells = ad_lane_filtered.obs_names[np.where(ad_lane_filtered.X.sum(axis=1) == 0)[0]]
+    ad_lane_filtered = ad_lane_filtered[ad_lane_filtered.obs_names.difference(zero_count_cells, sort=False)]
+
+
+    zero_count_cells = adata_cellranger_filtered.obs_names[np.where(adata_cellranger_filtered.X.sum(axis=1) == 0)[0]]
+    adata_cellranger_filtered = adata_cellranger_filtered[adata_cellranger_filtered.obs_names.difference(zero_count_cells, sort=False)]
+    # adata_cellranger_filtered=ad_lane_filtered
+    # scanpy.pp.calculate_qc_metrics(adata_cellranger_filtered, inplace=True)
+    # df_total_counts = pd.DataFrame(data= adata_cellranger_filtered.obs.sort_values(by=['total_counts'], ascending=False).total_counts)
+    # df_total_counts['barcodes'] = df_total_counts.index
+    # df_total_counts['barcode_row_number'] = df_total_counts.reset_index().index + 1 
+    # df_total_counts_cellranger_filtered = df_total_counts
+    # df_total_counts_cellranger_filtered['dataset'] = 'Cellranger Filtered'
 
     #############
     #Cellranger Metrics Datasheet
@@ -602,23 +581,31 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
     Number_of_Reads = int(metrics['Number of Reads'].values[0].replace(',','')) # NOT SURE HOW THIS IS CALCULATED.
     Fraction_Reads_in_Cells = metrics['Fraction Reads in Cells'].values[0]
     Mean_reads_per_cell = int(metrics['Mean Reads per Cell'].values[0].replace(',',''))
-# adata_cellranger_raw.X
+    # adata_cellranger_raw.X
     f = pd.DataFrame(adata_cellranger_filtered.X.sum(axis=1))
     Median_UMI_Counts_per_cellranger= statistics.median(f[f>0][0])
     Mean_Reads = statistics.mean(f[f>0][0])
 
+    f = pd.DataFrame(ad_lane_raw.X.sum(axis=1))
+    Median_UMI_Counts_per_before_filter= statistics.median(f[f>0][0])
+
+    f = pd.DataFrame(all_QC_lane.X.sum(axis=1))
+    Median_UMI_Counts_per_Cell_after_all_filter= statistics.median(f[f>0][0])
 
     f = pd.DataFrame(ad_lane_filtered.X.sum(axis=1))
-    Median_UMI_Counts_per_Cell_10x_filter= statistics.median(f[f>0][0])
-    f = pd.DataFrame(ad_lane_filtered.X.sum(axis=1))
-    Median_UMI_Counts_per_Cell= statistics.median(f[f>0][0])
+    Median_UMI_Counts_per_Cell_after_cellbender= statistics.median(f[f>0][0])
+
     f = pd.DataFrame(ad_lane_filtered.X.sum(axis=0)).T
     Median_UMI_Counts_per_Gene = statistics.median(f[f[0]>0][0])
     Valid_Droplet_percentage = metrics['Valid Barcodes'].values[0]
     df1 = ad_lane_filtered.to_df()
     Number_of_cells = len(set(df1.index))
     Total_UMIs_before_10x_filter = np.sum(ad_lane_raw.X) #this may be after the normalisation
-    Total_UMIs_after_cellbender_filter = np.sum(ad_lane_filtered.X)
+
+    # ad_lane_filtered = 
+    Total_UMIs_after_cellbender_filter = np.sum(ad_lane_filtered.X) #This is more 27840
+    Total_UMIs_after_cellbender = sum(all_QC_lane.obs['total_counts']) #This is less 22817
+
     Droplets_removed_by_filtering = len(set(ad_lane_raw.obs.index)-set(ad_lane_filtered.obs.index))
     Total_Drroplets_before_10x_filtering = len(set(pd.DataFrame(ad_lane_raw.obs).index))
     Doublets_donor = 0
@@ -636,7 +623,7 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
     UMIS_mapped_to_ribo_genes = sum(all_QC_lane.obs['total_counts_gene_group__ribo_protein'])
     UMIS_mapped_to_ribo_rna = sum(all_QC_lane.obs['total_counts_gene_group__ribo_rna'])
     UMIs_mapped_to_genes = sum(all_QC_lane.obs['total_counts'])
-    Total_UMIs_after_cellbender = sum(all_QC_lane.obs['total_counts'])
+    
     Donor_Cohort_Assignments = pd.read_csv(f'{args.results_dir}/gtmatch/{expid}/{expid}_gt_donor_assignments.csv')
     Total_donors_deconvoluted_in_pool = len(Donor_Cohort_Assignments[Donor_Cohort_Assignments['panel']!='NONE'].index)
     ELGH_Donors_Deconvoluted_in_pool = len(Donor_Cohort_Assignments[Donor_Cohort_Assignments['panel']=='GT_ELGH'].index)
@@ -821,10 +808,14 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
         'Number of Reads':Number_of_Reads,
         'Fraction Reads in Cells':Fraction_Reads_in_Cells,
         'Mean Reads per Cell':Mean_reads_per_cell,
-        'Median UMI Counts per Cell after 10x filter':Median_UMI_Counts_per_Cell_10x_filter,
-        'Median UMI Counts per Cell after Cellbender':Median_UMI_Counts_per_Cell,
+        'Median UMI Counts per Droplet before filter':Median_UMI_Counts_per_before_filter,
+        'Median UMI Counts per Droplet after Cellranger filter':Median_UMI_Counts_per_cellranger,
+        'Median UMI Counts per Droplet after Cellbender filter':Median_UMI_Counts_per_Cell_after_cellbender,
+        'Median UMI Counts per Cell after Cellbender filter; doublet removal; unassigned removal':Median_UMI_Counts_per_Cell_after_all_filter,
         'Total UMIs before filter':Total_UMIs_before_10x_filter,
         'Total UMIs after Cellbender filter':Total_UMIs_after_cellbender_filter,
+        'Total UMIs after cellbender filter; doublet removal; unassigned removal':Total_UMIs_after_cellbender,
+        
         'UMIS mapped to mitochondrial genes':UMIS_mapped_to_mitochondrial_genes,
         'UMIs mapped to genes':UMIs_mapped_to_genes,
         'UMIS mapped to ribo genes':UMIS_mapped_to_ribo_genes,
@@ -843,7 +834,6 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
         'Stdev cells passes qc':Stdev_cells_passes_qc,
         'Stdev cells fails qc':Stdev_cells_fails_qc,
         'Stdev Nr cells for donor':Stdev_Nr_cells_for_donor,
-        'Total UMIs after cellbender':Total_UMIs_after_cellbender,
         'QC Report end date':date_now
     }
     return fctr, data_tranche, data_donor,azt
@@ -900,9 +890,6 @@ if __name__ == '__main__':
         # here we have run the cellbender as par of pipeline. 
         file_path = glob.glob(f'{args.results_dir}/nf-preprocessing/cellbender/qc_cluster_input_files/*{args.resolution}*')[0]
         df_cellbender = pandas.read_table(file_path, index_col = 'experiment_id')
-
-
-
     else:
         # this is existing_cellbender, hence using this input
         df_cellbender = pandas.read_table(f'{args.cellbender}', index_col = 'experiment_id')
