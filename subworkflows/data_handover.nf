@@ -13,16 +13,18 @@ workflow data_handover{
     main:
         log.info 'running data handover'
         GATHER_DATA(outdir,qc_input.collect(),params.input_data_table)
-        SPLIT_DATA_BY_STUDY(outdir, GATHER_DATA.out.outfiles_dataset, ch_poolid_csv_donor_assignments)
         if (params.encrypt){
-            ENCRYPT_DIR(SPLIT_DATA_BY_STUDY.out.outdir_ukbb)
+            ENCRYPT_DIR(GATHER_DATA.out.outfiles_dataset)
         }
 
+        SPLIT_DATA_BY_STUDY(outdir, ENCRYPT_DIR.out.encrypted_dir, ch_poolid_csv_donor_assignments.collect())
+        
         if (params.split_bam){
             split_bam_by_donor(main_deconvolution.out.sample_possorted_bam_vireo_donor_ids)
         }
 
         SUMMARY_STATISTICS_PLOTS(outdir,GATHER_DATA.out.outfiles_dataset,params.input_data_table)
+
         // We also generate a report.
         // If we run it in sanger we transfer the data to the local website.
         TRANSFER(SUMMARY_STATISTICS_PLOTS.out.summary_plots)

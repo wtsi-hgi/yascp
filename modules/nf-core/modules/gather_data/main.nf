@@ -16,6 +16,7 @@ process GATHER_DATA{
       path(outdir_prev)
       val(dummy_val)
       path(input_data_table)
+
     output:
       path("${subdir}", emit:outfiles_dataset)
       path("${subdir}_summary", emit:outfiles_dataset2)
@@ -61,15 +62,16 @@ process SPLIT_DATA_BY_STUDY
   input:
     path(outdir_prev)
     path(input_dir)
-    tuple val(pool_id), path(donor_assignments_csv)
+    val(dummy_val)
 
   output:
     path("${outdir_ukbb}", emit: outdir_ukbb)
 
   script:
+    donor_assignments_tsv = "${outdir_prev}/deconvolution/vireo_gt_fix/assignments_all_pools.tsv"
     outdir = "${outdir_prev}/handover_study"
     outdir_ukbb = "${outdir}/GT_UKBB"
     """
-      split_dataset_by_study.py ${donor_assignments_csv} ${input_dir} ${pool_id}
+      split_dataset_by_study.py ${donor_assignments_tsv} ${input_dir} ${outdir}
     """
 }
