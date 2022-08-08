@@ -23,8 +23,8 @@ path = options.path
 # Split Donor Report by cohort
 project_name = os.listdir(f"{path}/handover/Summary_plots")[0]
 GT_MATCH = pd.read_csv(f"{path}/deconvolution/vireo_gt_fix/assignments_all_pools.tsv",sep='\t')
-Donor_Report = pd.read_csv(f"{path}/handover/Donor_Quantification_summary/Donor_Report.tsv",sep='\t')
-Tranch_Report = pd.read_csv(f"{path}/handover/Donor_Quantification_summary/Tranche_Report.tsv",sep='\t')
+Donor_Report = pd.read_csv(f"{path}/handover/Donor_Quantification_summary/{project_name}_Donor_Report.tsv",sep='\t')
+Tranch_Report = pd.read_csv(f"{path}/handover/Donor_Quantification_summary/{project_name}_Tranche_Report.tsv",sep='\t')
 Extra_Metadata_Donors = pd.read_csv(f"{path}/handover/Summary_plots/{project_name}/Summary/Extra_Metadata_Donors.tsv",sep='\t')
 # qc/Cardinal_45327_Jul_18_2022/work/62/aacd091ea7711fae264e884e122230/Summary_plots/Cardinal_45327_Jul_18_2022/Summary
 # t2 = GT_MATCH.loc[GT_MATCH['donor_gt'].str.contains('celline')]
