@@ -2,8 +2,16 @@
 process VIREO {
     tag "${samplename}"
     label 'process_high'
-    publishDir "${params.outdir}/deconvolution/vireo/${samplename}/", mode: "${params.vireo.copy_mode}", overwrite: true,
-	  saveAs: {filename -> filename.replaceFirst("vireo_${samplename}/","") }
+    publishDir "${params.outdir}/deconvolution/vireo/${samplename}/",  mode: "${params.vireo.copy_mode}", overwrite: true,
+	  saveAs: {filename -> if (filename.endsWith("${vcf_file}")) {
+                        null
+                    }  else if (filename.endsWith("${donor_gt_csi}")) {
+                        null
+                    }else{
+                      filename.replaceFirst("vireo_${samplename}/","") 
+                    }}
+
+
 
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "/software/hgi/containers/mercury_scrna_deconvolution_62bd56a-2021-12-15-4d1ec9312485.sif"
@@ -24,6 +32,7 @@ process VIREO {
       tuple val(samplename), path("vireo_${samplename}/GT_donors.vireo.vcf.gz"), path(vcf_file),path(donor_gt_csi), emit: sample_donor_vcf
       path("vireo_${samplename}/${samplename}.sample_summary.txt"), emit: sample_summary_tsv
       path("vireo_${samplename}/${samplename}__exp.sample_summary.txt"), emit: sample__exp_summary_tsv
+      tuple  val(samplename), path("vireo_${samplename}/GT_donors.vireo.vcf.gz"), path("vireo_${samplename}/${samplename}.sample_summary.txt"),path("vireo_${samplename}/${samplename}__exp.sample_summary.txt"),path("vireo_${samplename}/donor_ids.tsv"),path(vcf_file),path(donor_gt_csi), emit: all_required_data
 
     script:
       vcf_file = ""

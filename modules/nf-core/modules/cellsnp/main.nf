@@ -2,7 +2,7 @@
 process CELLSNP {
     tag "${samplename}"
     
-    label 'process_high'
+    label 'many_cores_small_mem'
     
     publishDir "${params.outdir}/cellsnp/", mode: "${params.copy_mode}", pattern: "cellsnp_${samplename}", overwrite: true
 

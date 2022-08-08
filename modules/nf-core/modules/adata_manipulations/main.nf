@@ -12,15 +12,16 @@ process ADD_EXTRA_METADATA_TO_H5AD{
 
 
     input:
-        path(file__anndata) // anndata h5ad file seurat_azimuth_pbmc_1.0
+        path(file_metadata) // anndata h5ad file seurat_azimuth_pbmc_1.0
         path(metadata)
-    
+        path(cellranger_metadata)
+        path(sample_metadata)
     output:
-        path("andata_with_metadata.h5ad"), emit: file__anndata
+        path("metadata_combined.csv"), emit: file__anndata
 
     script:
     """
-        add_extra_metadata.py --andata ${file__anndata} --metadata ${metadata} --anndata_compression_level ${params.split_h5ad_per_donor.anndata_compression_level}
+        cp ${file_metadata} metadata_combined.csv
     """
 
 }

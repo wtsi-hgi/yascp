@@ -81,7 +81,7 @@ process plot_pcs {
 
     output:
         val(outdir, emit: outdir)
-        path("plots/*.png")
+        path("plots/*.png"), emit: out_png
         path("plots/*.pdf") optional true
 
     script:

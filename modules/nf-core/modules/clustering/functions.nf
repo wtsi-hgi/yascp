@@ -698,7 +698,10 @@ process cellex_cluster_markers {
         path(
             "${runid}-${outfile}-esmu*.tsv.gz"
         )
+    when:
+        params.cellex_cluster_markers
 
+        
     script:
     // The script generates two files, adata-normalized_pca-bbknn-umap-clustered.esmu.csv.gz
     // and adata-normalized_pca-bbknn-umap-clustered.essd.csv.gz.

@@ -72,6 +72,9 @@ workflow CLUSTERING {
         //     cluster_validate_resolution__train_size_cells
         // )
         if (params.utilise_gpu){
+            if (params.cluster_validate_resolution_keras){
+
+            
             cluster_validate_resolution_keras( 
                 cluster.out.outdir,
                 cluster.out.anndata,
@@ -87,7 +90,7 @@ workflow CLUSTERING {
             plot_resolution_validate(
                 cluster_validate_resolution_keras.out.plot_input.groupTuple()
             )
-
+            }
             
         }
 

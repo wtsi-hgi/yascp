@@ -10,14 +10,14 @@ process SUMMARY_STATISTICS_PLOTS {
     } else {
         container "mercury/scrna_deconvolution:62bd56a"
     }
-
+      
     input: 
         path(outdir_prev)
         val(gather_dummy_input)
         path(input_data_table)
 
     output: 
-        path('Summary_plots')
+        path('Summary_plots'), emit: summary_plots
     
     script:
       if ("${params.input}" == 'cellranger'){
@@ -33,6 +33,25 @@ process SUMMARY_STATISTICS_PLOTS {
                               --input_table ${input_data_table} \
                               --web_transfer ${params.webtransfer} \
                               --project_name ${params.project_name}
-          
+          ln -s ${params.extra_sample_metadata} Summary_plots/*/Summary
+          cohort_report.py -d ${outdir_prev}
+      """
+}
+
+
+process TRANSFER {
+        
+    label 'process_low'
+
+    input: 
+        path(summary_plots)
+
+
+    when:
+        params.webtransfer
+    script:
+
+      """ 
+        ../../../scripts/rsync_to_web.sh ${params.project_name}          
       """
 }

@@ -2,7 +2,7 @@ nextflow.enable.dsl=2
 
 // main deconvolution modules, common to all input modes:
 
-include { CELLSNP } from "$projectDir/modules/nf-core/modules/cellsnp/main"
+include { CELLSNP } from "../modules/nf-core/modules/cellsnp/main"
 include { SUBSET_GENOTYPE } from '../modules/nf-core/modules/subset_genotype/main'
 include { VIREO } from '../modules/nf-core/modules/vireo/main'
 include { GUZIP_VCF } from '../modules/nf-core/modules/guzip_vcf/main'
@@ -11,8 +11,9 @@ include { SPLIT_DONOR_H5AD } from '../modules/nf-core/modules/split_donor_h5ad/m
 include { PLOT_DONOR_CELLS } from '../modules/nf-core/modules/plot_donor_cells/main'
 include {MULTIPLET} from "../modules/nf-core/modules/multiplet/main"
 include {SOUPORCELL_VS_VIREO} from "../modules/nf-core/modules/plot_souporcell_vs_vireo/main"
-include { MATCH_GT_VIREO } from '../modules/nf-core/modules/genotypes/main'
-
+include { MATCH_GT_VIREO; REPLACE_GT_ASSIGNMENTS_WITH_PHENOTYPE; ENHANCE_VIREO_METADATA_WITH_DONOR } from '../modules/nf-core/modules/genotypes/main'
+include { match_genotypes } from './match_genotypes'
+include {REPLACE_GT_DONOR_ID } from '../modules/nf-core/modules/genotypes/main'
 workflow  main_deconvolution {
 
     take:
@@ -56,8 +57,8 @@ workflow  main_deconvolution {
 
         // cellsnp() outputs -> vireo():
         if (params.vireo.run){
-            // Here we run Vireo software to perform the donor deconvolution. Note that we have coded the pipeline to be capable in using 
-            // the full genotypes as an input and also subset to the individuals provided as an input in the donor_vcf_ids column. The 
+            // Here we run Vireo software to perform the donor deconvolution. Note that we have coded the pipeline to be capable in using
+            // the full genotypes as an input and also subset to the individuals provided as an input in the donor_vcf_ids column. The
             // VIREO:
             if (params.run_with_genotype_input) {
                 log.info "---running Vireo with genotype input----"
@@ -80,7 +81,7 @@ workflow  main_deconvolution {
                 // here we run it without the genotypes and the donors are labeled as donor0, donor1 etc, dependant on the number of donors set in the input file n_pooled column
                 log.info "-----running Vireo without genotype input----"
                 CELLSNP.out.cellsnp_output_dir.combine(ch_experiment_npooled, by: 0).set{full_vcf}
-                full_vcf.map {experiment, cellsnp, npooled -> tuple(experiment, cellsnp, npooled,[])}.set{full_vcf}
+                full_vcf.map {experiment, cellsnp, npooled -> tuple(experiment, cellsnp, npooled,[],[])}.set{full_vcf}
             }
 
             // When all the channels are prpeared accordingly we exacute the vireo with the prpeared channel.
@@ -93,9 +94,9 @@ workflow  main_deconvolution {
             vireo_out_sample_donor_ids = VIREO.out.sample_donor_ids
         }
 
-        
+
         if (params.souporcell.run){
-            // YASCP pipeline is also capable in running SOUPORCELL instead of VIREO. If activated SOUPORCELL will be used. 
+            // YASCP pipeline is also capable in running SOUPORCELL instead of VIREO. If activated SOUPORCELL will be used.
             // yascp currently doesnt have an option to take souporcell assignments as downstream instead of vireo but this will be added shortly.
             // This runs the Souporcell Preprocessing
 
@@ -145,20 +146,52 @@ workflow  main_deconvolution {
                     }.set{full_vcf}
             }
 
-            // When all the channels are prepeared then we can run the soupocell accordingly. 
+            // When all the channels are prepeared then we can run the soupocell accordingly.
             SOUPORCELL(full_vcf,
                 Channel.fromPath(params.souporcell.reference_fasta).collect())
             // Regardless if the Soupocell is run with or without genotypes we still need to match the donor ids with the cluster ids since this does not happen automatically is Soupocell.
         }
 
         if (params.run_with_genotype_input & params.genotype_input.posterior_assignment) {
-            MATCH_GT_VIREO(vireo_out_sample_donor_vcf)            
-        }
-        
+            match_genotypes(vireo_out_sample_donor_vcf)
+            // MATCH_GT_VIREO(vireo_out_sample_donor_vcf)
+            
+            out_gt = match_genotypes.out.donor_match_table
 
+            // //here we fix the genotype ids to the ones matched by the GT match similarly to what vireo would do.
+            REPLACE_GT_DONOR_ID(VIREO.out.all_required_data , out_gt.collect())
+            if (params.replace_genotype_ids){
+                
+                REPLACE_GT_DONOR_ID.out.sample_donor_vcf.set{vireo_out_sample_donor_vcf}
+                REPLACE_GT_DONOR_ID.out.sample_summary_tsv.set{vireo_out_sample_summary_tsv}
+                REPLACE_GT_DONOR_ID.out.sample__exp_summary_tsv.set{vireo_out_sample__exp_summary_tsv}
+                REPLACE_GT_DONOR_ID.out.sample_donor_ids.set{vireo_out_sample_donor_ids}
+
+
+            } 
+            REPLACE_GT_DONOR_ID.out.assignments
+                    .collectFile(name: "assignments_all_pools.tsv",
+                            newLine: false, sort: true,
+                            keepHeader: true,
+                            // skip:1,
+                            storeDir:params.outdir+'/deconvolution/vireo_gt_fix')
+            // otherwise we enhance the vireo metadata report with sample ids. 
+            
+        }
+
+        //here have to fix the vireo outputs based on the GT matching.
+        if (params.replace_genotype_ids){
+            REPLACE_GT_DONOR_ID(VIREO.out.all_required_data , match_genotypes.out.csv_donor_assignments.collect())
+            REPLACE_GT_DONOR_ID.out.sample_donor_vcf.set{vireo_out_sample_donor_vcf}
+            REPLACE_GT_DONOR_ID.out.sample_summary_tsv.set{vireo_out_sample_summary_tsv}
+            REPLACE_GT_DONOR_ID.out.sample__exp_summary_tsv.set{vireo_out_sample__exp_summary_tsv}
+            REPLACE_GT_DONOR_ID.out.sample_donor_ids.set{vireo_out_sample_donor_ids}
+        }
+
+        
         if (params.vireo.run){
 
-                // The folowing downstream tasks prepeares the plots, splits the donors accoring to vireo ids and generates the summary files. 
+                // The folowing downstream tasks prepeares the plots, splits the donors according to vireo ids and generates the summary files.
                 // These folowing outputs should be cleaned up and have been left as they were in the deconvolution pipeline initially.
                 // We also need to account that others may want to run soupocell instead and this folowing is not capable in digesting the cluster ids by soupocell currently.
 
@@ -233,12 +266,28 @@ workflow  main_deconvolution {
                         storeDir:params.outdir+'/deconvolution/filepaths')
                 .set{ch_vireo_donor_n_cells_tsv} // donor column: donor0, .., donorx, doublet, unassigned
 
+                out_split = SPLIT_DONOR_H5AD.out.donor_n_cells
+                // here before splitting we may want to add extra metadata if it is based on the genotype ids.
+
+
+
                 // paste experiment_id and donor ID columns with __ separator
-                vireo_out_sample__exp_summary_tsv = SPLIT_DONOR_H5AD.out.donor_n_cells
+                vireo_out_sample__exp_summary_tsv = out_split
                 .collectFile(name: "vireo_exp__donor_n_cells.tsv",
                         newLine: false, sort: true,
                         seed: "experiment_id\tn_cells\n",
                         storeDir:params.outdir+'/deconvolution/filepaths')
+
+
+                if (params.run_with_genotype_input & params.genotype_input.posterior_assignment) {
+                    if (!params.replace_genotype_ids & params.extra_sample_metadata!='' & params.add_donor_metadata){
+                        // Here we have sample level metadata but we have chosen to keep the donor ids. 
+                        // in this scenario we enhance the donor level vireo metadata file to add the donor metadata to the h5ads and eventually to the donor and teanche report
+                        ENHANCE_VIREO_METADATA_WITH_DONOR(params.extra_sample_metadata,vireo_out_sample__exp_summary_tsv,REPLACE_GT_DONOR_ID.out.assignments.collect())
+                        vireo_out_sample__exp_summary_tsv = ENHANCE_VIREO_METADATA_WITH_DONOR.out.replaced_vireo_exp__donor_n_cells_out
+                    }
+                }
+
 
                 vireo_out_sample_summary_tsv.view()
                 vireo_out_sample__exp_summary_tsv.view()

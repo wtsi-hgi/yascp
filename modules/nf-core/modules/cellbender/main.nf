@@ -113,7 +113,7 @@ workflow CELLBENDER {
         cellbender__gather_qc_input.out.celbender_path.view()
         log.info('xxx')
         emit:
-            results_list
+            // results_list //results list is not needed to be emited - if done it will wait for all the cellbender stuff to finish.
             cellbender_path
 
             
