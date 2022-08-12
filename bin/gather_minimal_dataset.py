@@ -637,6 +637,18 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
     }
     all_probs = pd.DataFrame()
 
+    Tranche_Pass_Fail='PASS'
+    Trance_Failure_Reason=''
+
+    print("** Fraction_Reads_in_Cells : "+Fraction_Reads_in_Cells.strip('%'))
+
+    if (float(Fraction_Reads_in_Cells.strip('%'))<=0.7):
+        Tranche_Pass_Fail='FAIL'
+        Tranche_Failure_Reason +='Fraction of reads in cells for pool<=0.5; '
+    if (Mean_reads_per_cell<=25000):
+        Tranche_Pass_Fail='FAIL'
+        Trance_Failure_Reason +='Mean reads per cell for all cells in pool <=25000; '
+        
 
     for i in df_donors.index:
         # feeds in the individual assignments here.
@@ -837,7 +849,9 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
         'Stdev cells passes qc':Stdev_cells_passes_qc,
         'Stdev cells fails qc':Stdev_cells_fails_qc,
         'Stdev Nr cells for donor':Stdev_Nr_cells_for_donor,
-        'QC Report end date':date_now
+        'QC Report end date':date_now,
+        'Tranche Pass/Fail':Tranche_Pass_Fail,
+        'Tranche Failure Reason':Trance_Failure_Reason
     }
     return fctr, data_tranche, data_donor,azt
 
