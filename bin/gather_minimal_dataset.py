@@ -13,6 +13,7 @@ import random
 import h5py
 import pandas
 import anndata
+
 import os
 os.environ['NUMBA_CACHE_DIR']='/tmp'
 os.environ['MPLCONFIGDIR']='/tmp'
@@ -402,7 +403,7 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
     except:
         print('dir exists')
 
-
+    
     ######################
     #Cellranger datasets
     ######################
@@ -447,7 +448,7 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
         try:
             # os.system(f"ls -s {df_raw.loc[expid, 'data_path_10x_format']}/raw_feature_bc_matrix.h5 ./{outdir}/{expid}_2Cellranger_raw_feature_bc_matrix.h5")
             os.symlink(f"{df_raw.loc[expid, 'data_path_10x_format']}/raw_feature_bc_matrix.h5", f"./{outdir}/Cellranger_raw_feature_bc_matrix__{expid}.h5")
-            Deconvoluted_Donor_Data = anndata.read_h5ad(path1)
+            # Deconvoluted_Donor_Data = anndata.read_h5ad(path1)
         except:
             print('cant link cellranger file')
 
@@ -638,16 +639,16 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
     all_probs = pd.DataFrame()
 
     Tranche_Pass_Fail='PASS'
-    Trance_Failure_Reason=''
+    Tranche_Failure_Reason=''
 
     print("** Fraction_Reads_in_Cells : "+Fraction_Reads_in_Cells.strip('%'))
-
-    if (float(Fraction_Reads_in_Cells.strip('%'))<=0.7):
+    Tranche_Failure_Reason =' '
+    if (float(Fraction_Reads_in_Cells.strip('%'))<=70):
         Tranche_Pass_Fail='FAIL'
-        Tranche_Failure_Reason +='Fraction of reads in cells for pool<=0.5; '
+        Tranche_Failure_Reason +='Fraction of reads in cells for pool<=70%; '
     if (Mean_reads_per_cell<=25000):
         Tranche_Pass_Fail='FAIL'
-        Trance_Failure_Reason +='Mean reads per cell for all cells in pool <=25000; '
+        Tranche_Failure_Reason +='Mean reads per cell for all cells in pool <=25000; '
         
 
     for i in df_donors.index:
@@ -851,7 +852,7 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
         'Stdev Nr cells for donor':Stdev_Nr_cells_for_donor,
         'QC Report end date':date_now,
         'Tranche Pass/Fail':Tranche_Pass_Fail,
-        'Tranche Failure Reason':Trance_Failure_Reason
+        'Tranche Failure Reason':Tranche_Failure_Reason
     }
     return fctr, data_tranche, data_donor,azt
 

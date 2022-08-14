@@ -20,13 +20,17 @@ parser.add_argument(
 options = parser.parse_args()
 path = options.path
 prefix=f'{path}/handover/' #this is used for the updating reports posthoc, -> for this disable the next line
-prefix='.'
+# prefix='.'
 # Split Donor Report by cohort
 project_name = os.listdir(f"{prefix}/Summary_plots")[0]
 GT_MATCH = pd.read_csv(f"{path}/deconvolution/vireo_gt_fix/assignments_all_pools.tsv",sep='\t')
 Donor_Report = pd.read_csv(f"{path}/handover/Donor_Quantification_summary/{project_name}_Donor_Report.tsv",sep='\t')
 Tranch_Report = pd.read_csv(f"{path}/handover/Donor_Quantification_summary/{project_name}_Tranche_Report.tsv",sep='\t')
 Extra_Metadata_Donors = pd.read_csv(f"{prefix}/Summary_plots/{project_name}/Summary/Extra_Metadata_Donors.tsv",sep='\t')
+
+# here if we enable we can replace the expected number of samples if a mistake was made.
+# nr ukbb samples is already in there.
+
 # qc/Cardinal_45327_Jul_18_2022/work/62/aacd091ea7711fae264e884e122230/Summary_plots/Cardinal_45327_Jul_18_2022/Summary
 # t2 = GT_MATCH.loc[GT_MATCH['donor_gt'].str.contains('celline')]
 # GT_MATCH.loc[GT_MATCH['donor_gt'].str.contains('celline'),'Match Expected']=True
@@ -93,16 +97,27 @@ for confident_panel in set(GT_MATCH['final_panel']):
         GR_PANEL = GT_MATCH[GT_MATCH['final_panel'] == confident_panel]
         GT_CELLINE = GT_MATCH[GT_MATCH['final_panel'] == 'GT_cell_lines']
         GT_PANEL_CELLINE = pd.concat([GR_PANEL,GT_CELLINE])
+        if (pan=='UKBB'):
+            # For UKB samples we only return the expected samples
+            GT_PANEL_CELLINE = GT_PANEL_CELLINE[GT_PANEL_CELLINE['Match Expected']]
+
         Total_Report = Generate_Report(GT_PANEL_CELLINE,pan)
-        Expected_Samples = Extra_Metadata_Donors[Extra_Metadata_Donors.cohort == confident_panel]
+        if confident_panel == 'GT_ELGH':
+            confident_panel_name = 'Cardinal ELGH'
+        elif confident_panel == 'GT_UKBB':
+            confident_panel_name = 'Cardinal UKB'
+        Expected_Samples = Extra_Metadata_Donors[Extra_Metadata_Donors.cohort == confident_panel_name]
         Missing_Samples = set(Expected_Samples.donor)-set(Total_Report['Vacutainer ID'])
         try:
             os.mkdir(f'{prefix}/Summary_plots/{project_name}/Summary/{pan}_REPORT')
         except:
             print('Dir exists')
         if (len(Missing_Samples)>0):
-            Missing = Extra_Metadata_Donors.loc[Missing_Samples]['experiment_id']
-            Missing.to_csv(f'{prefix}/Summary_plots/{project_name}/Summary/{pan}_REPORT/{project_name}_Missing_UKB_Donors.tsv',sep='\t')
+            Extra_Metadata_Donors3 = Extra_Metadata_Donors.copy()
+            Extra_Metadata_Donors3 = Extra_Metadata_Donors3.set_index('donor')
+            Missing = Extra_Metadata_Donors3.loc[Missing_Samples]['experiment_id']
+            Missing = Missing.drop_duplicates()
+            Missing.to_csv(f'{prefix}/Summary_plots/{project_name}/Summary/{pan}_REPORT/{project_name}_Missing_{pan}_Donors.tsv',sep='\t')
         Total_Report.to_csv(f'{prefix}/Summary_plots/{project_name}/Summary/{pan}_REPORT/{project_name}_UKBB_Report.tsv',sep='\t',index=False)
 
 print('Done')
