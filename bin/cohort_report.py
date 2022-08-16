@@ -133,5 +133,6 @@ for confident_panel in set(GT_MATCH['final_panel']):
 
       
 Donor_Report2.to_csv(f"{path}/handover/Donor_Quantification_summary/{project_name}_Donor_Report.tsv",sep='\t',index=True)
+Donor_Report2.to_csv(f"{prefix}/Summary_plots/{project_name}/Summary/{project_name}_Donor_Report.tsv",sep='\t',index=True)
 
 print('Done')
