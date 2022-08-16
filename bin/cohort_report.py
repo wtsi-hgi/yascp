@@ -28,6 +28,8 @@ Donor_Report = pd.read_csv(f"{path}/handover/Donor_Quantification_summary/{proje
 Tranch_Report = pd.read_csv(f"{path}/handover/Donor_Quantification_summary/{project_name}_Tranche_Report.tsv",sep='\t')
 Extra_Metadata_Donors = pd.read_csv(f"{prefix}/Summary_plots/{project_name}/Summary/Extra_Metadata_Donors.tsv",sep='\t')
 
+Donor_Report2 = Donor_Report.set_index('Pool_ID.Donor_Id')
+Donor_Report2.insert(0,'Vacutainer ID','NONE')
 # here if we enable we can replace the expected number of samples if a mistake was made.
 # nr ukbb samples is already in there.
 
@@ -80,6 +82,7 @@ def Generate_Report(GT_MATCH_CONFIDENT,pan):
         Matched_Donor_report.insert(8, 'lab_live_cell_count',live_cell_count)
         Matched_Donor_report.insert(8, 'viability', viability)
         Matched_Donor_report.insert(8, 'cohort', cohort)
+        Matched_Donor_report.insert(8, 'Match Expected', row1['Match Expected'])
         Matched_Donor_report.insert(8, 'site', SITE)
         Matched_Donor_report.insert(8, 'amount recieved', Amount)
         Matched_Donor_report['Date sample received'] =  RECIEVED
@@ -96,12 +99,20 @@ for confident_panel in set(GT_MATCH['final_panel']):
         print(pan)
         GR_PANEL = GT_MATCH[GT_MATCH['final_panel'] == confident_panel]
         GT_CELLINE = GT_MATCH[GT_MATCH['final_panel'] == 'GT_cell_lines']
+        for i,row1 in GT_CELLINE.iterrows():
+            celline = row1['donor_gt original'].split('_')[1]
+            if celline in row1['Good_ids expected']:
+                GT_CELLINE.loc[i,'Match Expected']=True
+
         GT_PANEL_CELLINE = pd.concat([GR_PANEL,GT_CELLINE])
-        if (pan=='UKBB'):
-            # For UKB samples we only return the expected samples
-            GT_PANEL_CELLINE = GT_PANEL_CELLINE[GT_PANEL_CELLINE['Match Expected']]
 
         Total_Report = Generate_Report(GT_PANEL_CELLINE,pan)
+        Total_Report2 = Total_Report.set_index('Pool_ID.Donor_Id')
+        Donor_Report2.loc[Total_Report2.index,'Vacutainer ID']=Total_Report2.loc[Total_Report2.index,'Vacutainer ID']
+        if (pan=='UKBB'):
+            # For UKB samples we only return the expected samples
+            Total_Report = Total_Report[Total_Report['Match Expected']]
+
         if confident_panel == 'GT_ELGH':
             confident_panel_name = 'Cardinal ELGH'
         elif confident_panel == 'GT_UKBB':
@@ -119,5 +130,8 @@ for confident_panel in set(GT_MATCH['final_panel']):
             Missing = Missing.drop_duplicates()
             Missing.to_csv(f'{prefix}/Summary_plots/{project_name}/Summary/{pan}_REPORT/{project_name}_Missing_{pan}_Donors.tsv',sep='\t')
         Total_Report.to_csv(f'{prefix}/Summary_plots/{project_name}/Summary/{pan}_REPORT/{project_name}_{pan}_Report.tsv',sep='\t',index=False)
+
+      
+Donor_Report2.to_csv(f"{path}/handover/Donor_Quantification_summary/{project_name}_Donor_Report.tsv",sep='\t',index=True)
 
 print('Done')
