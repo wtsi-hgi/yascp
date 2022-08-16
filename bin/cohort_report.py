@@ -118,6 +118,6 @@ for confident_panel in set(GT_MATCH['final_panel']):
             Missing = Extra_Metadata_Donors3.loc[Missing_Samples]['experiment_id']
             Missing = Missing.drop_duplicates()
             Missing.to_csv(f'{prefix}/Summary_plots/{project_name}/Summary/{pan}_REPORT/{project_name}_Missing_{pan}_Donors.tsv',sep='\t')
-        Total_Report.to_csv(f'{prefix}/Summary_plots/{project_name}/Summary/{pan}_REPORT/{project_name}_UKBB_Report.tsv',sep='\t',index=False)
+        Total_Report.to_csv(f'{prefix}/Summary_plots/{project_name}/Summary/{pan}_REPORT/{project_name}_{pan}_Report.tsv',sep='\t',index=False)
 
 print('Done')
