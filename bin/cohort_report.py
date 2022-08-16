@@ -20,7 +20,7 @@ parser.add_argument(
 options = parser.parse_args()
 path = options.path
 prefix=f'{path}/handover/' #this is used for the updating reports posthoc, -> for this disable the next line
-prefix='.'
+# prefix='.'
 # Split Donor Report by cohort
 project_name = os.listdir(f"{prefix}/Summary_plots")[0]
 GT_MATCH = pd.read_csv(f"{path}/deconvolution/vireo_gt_fix/assignments_all_pools.tsv",sep='\t')
