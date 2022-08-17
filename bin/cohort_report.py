@@ -19,17 +19,29 @@ parser.add_argument(
 
 options = parser.parse_args()
 path = options.path
-prefix=f'{path}/handover/' #this is used for the updating reports posthoc, -> for this disable the next line
-# prefix='.'
+
+try:
+    prefix=f'{path}/handover/' #this is used for the updating reports posthoc, -> for this disable the next line
+    project_name = os.listdir(f"{prefix}/Summary_plots")[0]
+    GT_MATCH = pd.read_csv(f"{path}/deconvolution/vireo_gt_fix/assignments_all_pools.tsv",sep='\t')
+    Donor_Report = pd.read_csv(f"{path}/handover/Donor_Quantification_summary/{project_name}_Donor_Report.tsv",sep='\t')
+    Tranch_Report = pd.read_csv(f"{path}/handover/Donor_Quantification_summary/{project_name}_Tranche_Report.tsv",sep='\t')
+    Extra_Metadata_Donors = pd.read_csv(f"{prefix}/Summary_plots/{project_name}/Summary/Extra_Metadata_Donors.tsv",sep='\t')
+except:
+    prefix='.'
+    project_name = os.listdir(f"{prefix}/Summary_plots")[0]
+    GT_MATCH = pd.read_csv(f"{path}/deconvolution/vireo_gt_fix/assignments_all_pools.tsv",sep='\t')
+    Donor_Report = pd.read_csv(f"{path}/handover/Donor_Quantification_summary/{project_name}_Donor_Report.tsv",sep='\t')
+    Tranch_Report = pd.read_csv(f"{path}/handover/Donor_Quantification_summary/{project_name}_Tranche_Report.tsv",sep='\t')
+    Extra_Metadata_Donors = pd.read_csv(f"{prefix}/Summary_plots/{project_name}/Summary/Extra_Metadata_Donors.tsv",sep='\t')
 # Split Donor Report by cohort
-project_name = os.listdir(f"{prefix}/Summary_plots")[0]
-GT_MATCH = pd.read_csv(f"{path}/deconvolution/vireo_gt_fix/assignments_all_pools.tsv",sep='\t')
-Donor_Report = pd.read_csv(f"{path}/handover/Donor_Quantification_summary/{project_name}_Donor_Report.tsv",sep='\t')
-Tranch_Report = pd.read_csv(f"{path}/handover/Donor_Quantification_summary/{project_name}_Tranche_Report.tsv",sep='\t')
-Extra_Metadata_Donors = pd.read_csv(f"{prefix}/Summary_plots/{project_name}/Summary/Extra_Metadata_Donors.tsv",sep='\t')
+
 
 Donor_Report2 = Donor_Report.set_index('Pool_ID.Donor_Id')
-Donor_Report2.insert(0,'Vacutainer ID','NONE')
+try:
+    Donor_Report2.insert(0,'Vacutainer ID','NONE')
+except:
+    print('Vacutainer ID exists')
 # here if we enable we can replace the expected number of samples if a mistake was made.
 # nr ukbb samples is already in there.
 
@@ -60,8 +72,10 @@ def Generate_Report(GT_MATCH_CONFIDENT,pan):
             gt_match = row1['donor_gt']
         
         Extra_Metadata_Donor1 = Extra_Metadata_Donors[Extra_Metadata_Donors['experiment_id'].str.contains(f"{row1['pool']}__{gt_match}")]
-        
-        Matched_Donor_report.insert(2, "Vacutainer ID", gt_match)
+        try:
+            Matched_Donor_report.insert(2, "Vacutainer ID", gt_match)
+        except:
+            print('exists')
         Matched_Donor_report['Experiment ID'] = project_name
         Matched_Donor_report['Chromium channel number'] = Tranch_stats['Chromium channel number'].values[0]
         Matched_Donor_report['Date of sample sequencing'] = Tranch_stats['Date of sample sequencing'].values[0]
@@ -109,6 +123,30 @@ for confident_panel in set(GT_MATCH['final_panel']):
         Total_Report = Generate_Report(GT_PANEL_CELLINE,pan)
         Total_Report2 = Total_Report.set_index('Pool_ID.Donor_Id')
         Donor_Report2.loc[Total_Report2.index,'Vacutainer ID']=Total_Report2.loc[Total_Report2.index,'Vacutainer ID']
+        Donor_Report2.loc[Total_Report2.index,'Chromium channel number']=Total_Report2.loc[Total_Report2.index,'Chromium channel number']
+
+        try: 
+            Donor_Report2.insert(12, "site",'NONE') 
+            Donor_Report2.insert(12, "lab_live_cell_count",'NONE') 
+            Donor_Report2.insert(12, "viability",'NONE') 
+        except: 
+            print('exists')
+
+        Donor_Report2.loc[Total_Report2.index,'site']=Total_Report2.loc[Total_Report2.index,'site']
+        Donor_Report2.loc[Total_Report2.index,'lab_live_cell_count']=Total_Report2.loc[Total_Report2.index,'lab_live_cell_count']
+        Donor_Report2.loc[Total_Report2.index,'viability']=Total_Report2.loc[Total_Report2.index,'viability']
+        Donor_Report2 = Donor_Report2.reset_index().set_index('Pool ID')
+
+        GT_MATCH2 = GT_MATCH.set_index('pool')
+        GT_MATCH2=GT_MATCH2[['Emergency_ids expected','Good_ids expected']]
+        GT_MATCH2 = GT_MATCH2.drop_duplicates().fillna("")
+        GT_MATCH2['All IDs expected'] = GT_MATCH2['Emergency_ids expected']+','+GT_MATCH2['Good_ids expected']
+        Donor_Report2['All IDs expected']=' '
+        for idx1 in GT_MATCH2.index:
+            # print(idx1)
+            Donor_Report2.loc[idx1,'All IDs expected']=GT_MATCH2.loc[idx1,'All IDs expected']
+        Donor_Report2 = Donor_Report2.reset_index().set_index('Pool_ID.Donor_Id')
+
         if (pan=='UKBB'):
             # For UKB samples we only return the expected samples
             Total_Report = Total_Report[Total_Report['Match Expected']]
@@ -130,8 +168,7 @@ for confident_panel in set(GT_MATCH['final_panel']):
             Missing = Missing.drop_duplicates()
             Missing.to_csv(f'{prefix}/Summary_plots/{project_name}/Summary/{pan}_REPORT/{project_name}_Missing_{pan}_Donors.tsv',sep='\t')
         Total_Report.to_csv(f'{prefix}/Summary_plots/{project_name}/Summary/{pan}_REPORT/{project_name}_{pan}_Report.tsv',sep='\t',index=False)
-
-      
+     
 Donor_Report2.to_csv(f"{path}/handover/Donor_Quantification_summary/{project_name}_Donor_Report.tsv",sep='\t',index=True)
 Donor_Report2.to_csv(f"{prefix}/Summary_plots/{project_name}/Summary/{project_name}_Donor_Report.tsv",sep='\t',index=True)
 
