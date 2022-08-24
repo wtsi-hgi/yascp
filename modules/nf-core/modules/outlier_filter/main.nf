@@ -13,16 +13,16 @@ process OUTLIER_FILTER {
     //tag { output_dir }
     //cache false        // cache results from run
     tag "${samplename}"
-    
+
     label 'process_medium'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "/software/hgi/containers/wtsihgi_nf_scrna_qc_6bb6af5-2021-12-23-3270149cf265.sif"
         //// container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/nf_qc_cluster_2.4.img"
-        
+
     } else {
         container "wtsihgi/nf_scrna_qc:6bb6af5"
     }
-    
+
     publishDir  path: "${outdir}",
                 saveAs: {filename -> filename.replaceAll("${runid}-", "")},
                 mode: "${params.copy_mode}",

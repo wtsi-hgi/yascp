@@ -70,8 +70,8 @@ process SPLIT_DATA_BY_STUDY
   script:
     donor_assignments_tsv = "${outdir_prev}/deconvolution/vireo_gt_fix/assignments_all_pools.tsv"
     outdir = "${outdir_prev}/handover_study"
-    outdir_ukbb = "${outdir}/GT_UKBB"
+    outdir_ukbb = "handover_study/GT_UKBB"
     """
-      split_dataset_by_study.py ${donor_assignments_tsv} ${input_dir} ${outdir}
+      split_dataset_by_study.py ${donor_assignments_tsv} ${input_dir} ./handover_study
     """
 }

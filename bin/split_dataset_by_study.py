@@ -209,6 +209,8 @@ if __name__ == '__main__':
     dirnam_input = sys.argv[2]
     dirnam_output = sys.argv[3]
 
+    os.makedirs(dirnam_output, exist_ok = False)
+
     #study_dict = load_donor_assignments(fnam_donor_assignments)
     manifest = []
     study_dict, tranche_name = load_donor_assignments_from_assignments_all_pools_tsv(fnam_donor_assignments)
