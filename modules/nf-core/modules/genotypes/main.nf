@@ -110,6 +110,7 @@ process GT_MATCH_POOL_IBD
       plink --vcf ${vireo_gt_vcf} --genome gz unbounded --const-fid dummy --out ${pool_id}
     """
 }
+
 process GT_MATCH_POOL_AGAINST_PANEL
 {
   tag "${pool_id}_vs_${panel_id}"
@@ -273,12 +274,17 @@ workflow MATCH_GT_VIREO {
   main:
     // ch_ref_vcf.subscribe { println "match_genotypes: ch_ref_vcf = ${it}" }
 
+    // compare genotypes within a pool (identity by descent)
+    GT_MATCH_POOL_IBD(ch_pool_id_vireo_vcf)
+
+    // VIREO header causes problems downstream
     VIREO_GT_FIX_HEADER(ch_pool_id_vireo_vcf)
     VIREO_GT_FIX_HEADER.out.gt_pool
       .combine(ch_ref_vcf)
       .set { ch_gt_pool_ref_vcf }
     // ch_gt_pool_ref_vcf.subscribe { println "match_genotypes: ch_gt_pool_ref_vcf = ${it}\n" }
 
+    // now match genotypes against a panels
     GT_MATCH_POOL_AGAINST_PANEL(ch_gt_pool_ref_vcf)
 
     // group by panel id
