@@ -64,7 +64,7 @@ process REPLACE_GT_DONOR_ID{
     path("GT_replace_${samplename}.sample_summary.txt"), emit: sample_summary_tsv
     path("GT_replace_${samplename}__exp.sample_summary.txt"), emit: sample__exp_summary_tsv
     path("GT_replace_${samplename}_assignments.tsv"), emit: assignments
-    
+
   script:
     if(params.genotype_phenotype_mapping_file==''){
       in=""
@@ -83,12 +83,35 @@ process REPLACE_GT_DONOR_ID{
     """
 }
 
+process GT_MATCH_POOL_IBD
+{
+  "${pool_id}_ibd"
 
+  publishDir  path: "${params.outdir}/gtmatch/${pool_id}",
+          mode: "${params.copy_mode}",
+          overwrite: "true"
+
+  if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
+      container "/software/hgi/containers/wtsihgi-nf_yascp_plink1-1.0.img"
+  } else {
+      container "mercury/wtsihgi-nf_yascp_plink1-1.0"
+  }
+
+  label 'process_tiny'
+
+  input:
+    tuple val(pool_id), path(vireo_gt_vcf)
+
+  output:
+    path("${pool_id}.genome.gz", emit:plink_ibd)
+
+  script:
+    """
+      plink --vcf ${vireo_gt_vcf} --genome gz unbounded --const-fid dummy --out ${pool_id}
+    """
+}
 process GT_MATCH_POOL_AGAINST_PANEL
 {
-
-
-
   tag "${pool_id}_vs_${panel_id}"
 
   if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
@@ -144,7 +167,7 @@ process ASSIGN_DONOR_FROM_PANEL
   (_, pool_id) = ("${pool_panel_id}" =~ /^pool_(\S+)_panel_/)[0]
   score_table_out = "${pool_panel_id}_gtcheck_score_table.csv"
   assignment_table_out = "${pool_panel_id}_gtcheck_donor_assignments.csv"
-  
+
   """
     gtcheck_assign.py ${pool_panel_id} ${gtcheck_output_files}
   """
@@ -174,7 +197,7 @@ process ASSIGN_DONOR_OVERALL
     tuple val(pool_id), path("${donor_assignment_file}"), emit: donor_assignments
     path(stats_assignment_table_out), emit: donor_match_table
     path("*.csv")
-    
+
   label 'process_tiny'
 
   script:
@@ -211,7 +234,7 @@ process REPLACE_GT_ASSIGNMENTS_WITH_PHENOTYPE{
   script:
     """
       perform_replacement.py --genotype_phenotype_mapping ${params.genotype_phenotype_mapping_file} --assignemts ${gt_match_results}
-      
+
     """
 
 }
