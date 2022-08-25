@@ -85,7 +85,7 @@ process REPLACE_GT_DONOR_ID{
 
 process GT_MATCH_POOL_IBD
 {
-  "${pool_id}_ibd"
+  tag "${pool_id}_ibd"
 
   publishDir  path: "${params.outdir}/gtmatch/${pool_id}",
           mode: "${params.copy_mode}",
@@ -273,9 +273,6 @@ workflow MATCH_GT_VIREO {
 
   main:
     // ch_ref_vcf.subscribe { println "match_genotypes: ch_ref_vcf = ${it}" }
-
-    // compare genotypes within a pool (identity by descent)
-    GT_MATCH_POOL_IBD(ch_pool_id_vireo_vcf)
 
     // VIREO header causes problems downstream
     VIREO_GT_FIX_HEADER(ch_pool_id_vireo_vcf)

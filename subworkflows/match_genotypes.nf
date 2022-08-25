@@ -1,6 +1,6 @@
 // match deconvoluted donors by genotype to a reference panel
 
-include { MATCH_GT_VIREO } from '../modules/nf-core/modules/genotypes/main'
+include { MATCH_GT_VIREO; GT_MATCH_POOL_IBD } from '../modules/nf-core/modules/genotypes/main'
 
 workflow match_genotypes {
   take:
@@ -17,6 +17,9 @@ workflow match_genotypes {
     .set { ch_ref_vcf }
 
     MATCH_GT_VIREO(ch_pool_id_vireo_vcf, ch_ref_vcf)
+
+    // compare genotypes within a pool (identity by descent)
+    GT_MATCH_POOL_IBD(ch_pool_id_vireo_vcf)
 
   emit:
     pool_id_donor_assignments_csv = MATCH_GT_VIREO.out.pool_id_donor_assignments_csv
