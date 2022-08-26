@@ -206,16 +206,19 @@ def main():
             color_var='pct_counts_gene_group__mito_transcript',
             density_contour=False
         )
-        plot_umi_ngene_mt(
-            df_plot=adata.obs,
-            output_file='plot_umi_ngene_mt_density.facet={}-{}'.format(
-                facet,
-                options.of
-            ),
-            facet_column=facet,
-            color_var='density',
-            density_contour=True
-        )
+        try:
+            plot_umi_ngene_mt(
+                df_plot=adata.obs,
+                output_file='plot_umi_ngene_mt_density.facet={}-{}'.format(
+                    facet,
+                    options.of
+                ),
+                facet_column=facet,
+                color_var='density',
+                density_contour=True
+            )
+        except:
+            print('Failed plotting density')
         if 'cell_passes_qc' in adata.obs:
             plot_umi_ngene_mt(
                 df_plot=adata.obs,
