@@ -4,7 +4,7 @@ process SPLIT_CELL_BARCODES_PER_DONOR
 {
     label 'process_tiny'
 
-    publishDir path: "${params.outdir}/cram/${pool_id}",
+    publishDir path: "${params.outdir}/handover/Donor_Quantification/${pool_id}",
                mode: "${params.copy_mode}",
                pattern: "${outdir}/${oufnprfx}_*.txt",
                overwrite: "true"
@@ -59,7 +59,7 @@ process SPLIT_BAM_BY_CELL_BARCODES
 
     //beforeScript 'ln --physical ${reference_assembly_fasta_name} ./genome.fa; ln --physical ${reference_assembly_fasta_name}.fai ./genome.fa.fai;'
 
-    publishDir path: "${params.outdir}/cram/${pool_id}",
+    publishDir path: "${params.outdir}/handover/Donor_Quantification/${pool_id}",
                mode: "${params.copy_mode}",
                overwrite: "true"
                //pattern:"{*.cram, *.sha256sum}",
@@ -106,8 +106,8 @@ process PREP_REF_ASS
   outdir="reference_assembly"
   reference_assembly_fasta = "${reference_assembly_dir}/genome.fa"
   reference_assembly_index = "${reference_assembly_dir}/genome.fa.fai"
-  println "reference_assembly_fasta = ${reference_assembly_fasta}"
-  println "reference_assembly_index = ${reference_assembly_index}"
+  // println "reference_assembly_fasta = ${reference_assembly_fasta}"
+  // println "reference_assembly_index = ${reference_assembly_index}"
   """
     mkdir reference_assembly
     cp ${reference_assembly_fasta} ./${outdir}/genome.fa
