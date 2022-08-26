@@ -17,7 +17,7 @@ process SPLIT_CELL_BARCODES_PER_DONOR
       path("${oufofn}", emit: bcfiles_fofn)
 
     when:
-      params.cramfiles_per_donor.run_cellranger_bam_splitting
+      params.split_bam
 
     script:
     oufnprfx="${pool_id}_barcodes"
@@ -72,7 +72,7 @@ process SPLIT_BAM_BY_CELL_BARCODES
       path("${oufnprfx}_possorted_bam.cram", emit: possorted_cram_files)
 
     when:
-      params.cramfiles_per_donor.run_cellranger_bam_splitting
+      params.split_bam
 
     script:
     oufnprfx = "${vireo_donor_barcode_filnam}".minus(".txt")
@@ -159,12 +159,12 @@ workflow split_bam_by_donor
       reference_assembly_fasta_dir
     )
 
-    ENCRYPT_DIR(
-      SPLIT_BAM_BY_CELL_BARCODES.out.possorted_cram_files
-    )
+    // ENCRYPT_DIR(
+    //   SPLIT_BAM_BY_CELL_BARCODES.out.possorted_cram_files
+    // )
 
   emit:
     possorted_cram_files = SPLIT_BAM_BY_CELL_BARCODES.out.possorted_cram_files
-    encrypt_files = ENCRYPT_DIR.out.encrypted
-    checksum_files = ENCRYPT_DIR.out.checksums
+    // encrypt_files = ENCRYPT_DIR.out.encrypted
+    // checksum_files = ENCRYPT_DIR.out.checksums
 }

@@ -187,7 +187,9 @@ def scanpy_merge(
         # Record the total number of cells for this experiment_id
         n_cells_dict[row['experiment_id']] = {}
         n_cells_dict[row['experiment_id']]['before_filters'] = adata.n_obs
-
+        if (len(adata.obs)<3):
+            # we skip the donors that have 1 or 2 cells as this will cause issues down the line
+            continue
         # Label mitochondrial encoded trancripts
         # This includes:
         # * Mitochondrially encoded protein coding genes

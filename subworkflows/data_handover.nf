@@ -7,7 +7,7 @@ workflow data_handover{
     take:
         outdir
         qc_input
-        
+        sample_possorted_bam_vireo_donor_ids
 
     main:
         log.info 'running data handover'
@@ -17,7 +17,7 @@ workflow data_handover{
         }
         
         if (params.split_bam){
-            split_bam_by_donor(main_deconvolution.out.sample_possorted_bam_vireo_donor_ids)
+            split_bam_by_donor(sample_possorted_bam_vireo_donor_ids,params.reference_assembly_fasta_dir)
         }
         
         SUMMARY_STATISTICS_PLOTS(outdir,GATHER_DATA.out.outfiles_dataset,params.input_data_table)
