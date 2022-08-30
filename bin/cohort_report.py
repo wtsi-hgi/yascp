@@ -92,13 +92,31 @@ def Generate_Report(GT_MATCH_CONFIDENT,pan):
             SITE = 'NA'
             Amount = 'NA'
             RECIEVED = 'NA'
+        try:
+            Matched_Donor_report.insert(8, 'lab_live_cell_count',live_cell_count)
+        except:
+            print('exists')
+        try:
+            Matched_Donor_report.insert(8, 'viability', viability)
+        except:
+            print('exists')
+        try:
+            Matched_Donor_report.insert(8, 'cohort', cohort)
+        except:
+            print('exists')
+        try:
+            Matched_Donor_report.insert(8, 'Match Expected', row1['Match Expected'])
+        except:
+            print('exists')
+        try:
+            Matched_Donor_report.insert(8, 'site', SITE)
+        except:
+            print('exists')
+        try:
+            Matched_Donor_report.insert(8, 'amount recieved', Amount)
+        except:
+            print('exists')
 
-        Matched_Donor_report.insert(8, 'lab_live_cell_count',live_cell_count)
-        Matched_Donor_report.insert(8, 'viability', viability)
-        Matched_Donor_report.insert(8, 'cohort', cohort)
-        Matched_Donor_report.insert(8, 'Match Expected', row1['Match Expected'])
-        Matched_Donor_report.insert(8, 'site', SITE)
-        Matched_Donor_report.insert(8, 'amount recieved', Amount)
         Matched_Donor_report['Date sample received'] =  RECIEVED
         Matched_Donor_report['Donor id']=row1['donor_gt original'].split('_')[0]
         Total_Report = pd.concat([Total_Report,Matched_Donor_report])
