@@ -181,7 +181,7 @@ class AssignmentTables:
             if final_panel is None:
                 final_panel = 'NONE'
             oustr = "{:s},{:s},{:s}".format(donor, final_assignment, final_panel)
-            
+
             if(final_panel=='NONE'):
                 print('panel is none')
                 df[donor]={'donor_query':donor,'donor_gt':'NONE','score0':0,'score1':0,'score_n':0,'n':0,'mean':0,'sd':0,'z0':0,'z1':0,'final_panel':final_panel}
@@ -198,7 +198,7 @@ class AssignmentTables:
                 'z0':self.panels[final_panel][donor][3],
                 'z1':self.panels[final_panel][donor][4],
                 'final_panel':final_panel}
-            
+
 
             oufh.write(oustr + '\n')
             print(oustr)
