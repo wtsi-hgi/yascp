@@ -40,7 +40,7 @@ process GATHER_DATA{
           --cellbender=${cellbender_input} \
           --resolution=${params.cellbender_resolution_to_use} \
           --write_h5=${params.write_h5} \
-
+          --experiment_name=${params.RUN}
       """
 }
 

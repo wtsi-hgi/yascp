@@ -94,7 +94,11 @@ def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res
         metadata['Sample_id']=folder
         metadata.set_index('Sample_id',drop=True,inplace=True)
         metadata_table=pd.concat([metadata_table,metadata])
-    metadata_table.to_csv(f'{name_dir}/Fetch Pipeline/Submission_Data_Pilot_UKB.file_metadata.tsv')
+    try:
+        os.mkdir(f'{name_dir}/Fetch Pipeline/CSV')
+    except:
+        print('exists')
+    metadata_table.to_csv(f'{name_dir}/Fetch Pipeline/CSV/Submission_Data_Pilot_UKB.file_metadata.tsv',sep='\t')
 
 
     try:

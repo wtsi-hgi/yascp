@@ -157,9 +157,11 @@ workflow SCDECON {
     // ###################################
     // ###################################
 
-    data_handover("${workDir}/../${params.output_dir}",
+    data_handover(
+      "${workDir}/../${params.output_dir}",
       qc.out.LI,
-      ch_poolid_csv_donor_assignments
+      ch_poolid_csv_donor_assignments,
+      main_deconvolution.out.sample_possorted_bam_vireo_donor_ids
       ) //This part gathers the plots for the reporting in a Summary folder. If run through gitlab CI it will triger the data transfer to web.
 }
 

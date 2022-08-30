@@ -8,7 +8,7 @@ workflow data_handover{
         outdir
         qc_input
         ch_poolid_csv_donor_assignments
-
+        sample_possorted_bam_vireo_donor_ids
 
     main:
         log.info 'running data handover'
@@ -18,9 +18,9 @@ workflow data_handover{
         }
 
         SPLIT_DATA_BY_STUDY(outdir, ENCRYPT_DIR.out.encrypted_dir, ch_poolid_csv_donor_assignments.collect())
-        
+
         if (params.split_bam){
-            split_bam_by_donor(main_deconvolution.out.sample_possorted_bam_vireo_donor_ids)
+            split_bam_by_donor(sample_possorted_bam_vireo_donor_ids,params.reference_assembly_fasta_dir)
         }
 
         SUMMARY_STATISTICS_PLOTS(outdir,GATHER_DATA.out.outfiles_dataset,params.input_data_table)

@@ -13,6 +13,7 @@ import random
 import h5py
 import pandas
 import anndata
+
 import os
 os.environ['NUMBA_CACHE_DIR']='/tmp'
 os.environ['MPLCONFIGDIR']='/tmp'
@@ -365,8 +366,14 @@ def gather_donor(donor_id, ad, ad_lane_raw, azimuth_annot, qc_obs, columns_outpu
             # Stats
         print('Performing the stats analysis')
         experiment_id = list(set(df.experiment_id))[0]
-        pool_id = list(set(df.chromium_run_id))[0] #???
-        chromium_channel_number = list(set(df.chromium_run_id))[0]
+        try:
+            pool_id = list(set(df.chromium_run_id))[0] #???
+        except:
+            pool_id=' '
+        try:
+            chromium_channel_number = list(set(df.chromium_channel))[0]
+        except:
+            chromium_channel_number=' '
         donor_id = list(set(df.donor_id))[0]
     else:
         dt = ad.obs
@@ -377,7 +384,8 @@ def gather_donor(donor_id, ad, ad_lane_raw, azimuth_annot, qc_obs, columns_outpu
     dt.to_csv(os.path.join(outdir, oufnam + '.tsv'), sep = "\t", na_rep = "N/A")
     sys.stderr.write("writing file {} ...\n".format(oufnam))
     if write_h5:
-        ad.write(os.path.join(outdir, oufnam + '.h5ad'))
+        path1=os.path.join(outdir, oufnam + '.h5ad')
+        ad.write(path1)
 
     return {
         'Experiment ID':experiment_id,
@@ -395,7 +403,7 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
     except:
         print('dir exists')
 
-
+    
     ######################
     #Cellranger datasets
     ######################
@@ -403,9 +411,7 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
     #Unfiltered
     compression_opts = 'gzip'
     adata_cellranger_raw = scanpy.read_10x_mtx(f"{df_raw.loc[expid, 'data_path_10x_format']}/raw_feature_bc_matrix")
-
-    # test = scanpy.read_10x_h5('/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/qc/ELGH_9th_May_2022/work/dc/731610294d97b3def203635185b1ff/minimal_dataset/CRD_CMB12813646/Cellranger_filtered_feature_bc_matrix_CRD_CMB12813646.h5')
-    # here try to link the cellranger raw and cellrenger filtered outputs.
+    adata_cellranger_filtered = scanpy.read_10x_mtx(f"{df_raw.loc[expid, 'data_path_10x_format']}/filtered_feature_bc_matrix")
     
     zero_count_cells_cellranger_raw = adata_cellranger_raw.obs_names[np.where(adata_cellranger_raw.X.sum(axis=1) == 0)[0]]
     ad_lane_raw = adata_cellranger_raw[adata_cellranger_raw.obs_names.difference(zero_count_cells_cellranger_raw, sort=False)]
@@ -428,6 +434,7 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
         if write_h5:
             try:
                 os.symlink(cellbender_h5, f"./{outdir}/Cellbender_filtered_{Resolution}__{expid}.h5")
+                # Here link also mtx files
             except:
                 print('File already linked')
         dfcb = fetch_cellbender_annotation(df_cellbender, expid,Resolution)
@@ -441,7 +448,7 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
         try:
             # os.system(f"ls -s {df_raw.loc[expid, 'data_path_10x_format']}/raw_feature_bc_matrix.h5 ./{outdir}/{expid}_2Cellranger_raw_feature_bc_matrix.h5")
             os.symlink(f"{df_raw.loc[expid, 'data_path_10x_format']}/raw_feature_bc_matrix.h5", f"./{outdir}/Cellranger_raw_feature_bc_matrix__{expid}.h5")
-            Deconvoluted_Donor_Data = anndata.read_h5ad(path1)
+            # Deconvoluted_Donor_Data = anndata.read_h5ad(path1)
         except:
             print('cant link cellranger file')
 
@@ -452,15 +459,19 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
             print('cant link cellranger file')
 
 
-    zero_count_cells_cellranger_filtered = ad_lane_filtered.obs_names[np.where(ad_lane_filtered.X.sum(axis=1) == 0)[0]]
-    ad_lane_filtered = ad_lane_filtered[ad_lane_filtered.obs_names.difference(zero_count_cells_cellranger_filtered, sort=False)]
-    adata_cellranger_filtered=ad_lane_filtered
-    scanpy.pp.calculate_qc_metrics(adata_cellranger_filtered, inplace=True)
-    df_total_counts = pd.DataFrame(data= adata_cellranger_filtered.obs.sort_values(by=['total_counts'], ascending=False).total_counts)
-    df_total_counts['barcodes'] = df_total_counts.index
-    df_total_counts['barcode_row_number'] = df_total_counts.reset_index().index + 1 
-    df_total_counts_cellranger_filtered = df_total_counts
-    df_total_counts_cellranger_filtered['dataset'] = 'Cellranger Filtered'
+    zero_count_cells = ad_lane_filtered.obs_names[np.where(ad_lane_filtered.X.sum(axis=1) == 0)[0]]
+    ad_lane_filtered = ad_lane_filtered[ad_lane_filtered.obs_names.difference(zero_count_cells, sort=False)]
+
+
+    zero_count_cells = adata_cellranger_filtered.obs_names[np.where(adata_cellranger_filtered.X.sum(axis=1) == 0)[0]]
+    adata_cellranger_filtered = adata_cellranger_filtered[adata_cellranger_filtered.obs_names.difference(zero_count_cells, sort=False)]
+    # adata_cellranger_filtered=ad_lane_filtered
+    # scanpy.pp.calculate_qc_metrics(adata_cellranger_filtered, inplace=True)
+    # df_total_counts = pd.DataFrame(data= adata_cellranger_filtered.obs.sort_values(by=['total_counts'], ascending=False).total_counts)
+    # df_total_counts['barcodes'] = df_total_counts.index
+    # df_total_counts['barcode_row_number'] = df_total_counts.reset_index().index + 1 
+    # df_total_counts_cellranger_filtered = df_total_counts
+    # df_total_counts_cellranger_filtered['dataset'] = 'Cellranger Filtered'
 
     #############
     #Cellranger Metrics Datasheet
@@ -549,12 +560,12 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
         
     
 
-    Raw_counts_data_per_lane = ad_lane_raw
-    Per_lane_QC_File_data = obsqc
+    # Raw_counts_data_per_lane = ad_lane_raw
+    # Per_lane_QC_File_data = obsqc
     Azimuth_Cell_Assignments_data = azt
-    Deconvoluted_Donor_Data_sheet = df_donors
-    All_AnnData_QC_lane = adqc
-    Adata_counts = adqc.to_df()
+    # Deconvoluted_Donor_Data_sheet = df_donors
+    # All_AnnData_QC_lane = adqc
+    # Adata_counts = adqc.to_df()
     
     Donors = list(df_donors.donor_id)
 
@@ -570,19 +581,32 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
     Donors_in_pool = len(Donors)
     Number_of_Reads = int(metrics['Number of Reads'].values[0].replace(',','')) # NOT SURE HOW THIS IS CALCULATED.
     Fraction_Reads_in_Cells = metrics['Fraction Reads in Cells'].values[0]
-    Median_reads_per_cell = int(metrics['Mean Reads per Cell'].values[0].replace(',',''))
+    Mean_reads_per_cell = int(metrics['Mean Reads per Cell'].values[0].replace(',',''))
+    # adata_cellranger_raw.X
+    f = pd.DataFrame(adata_cellranger_filtered.X.sum(axis=1))
+    Median_UMI_Counts_per_cellranger= statistics.median(f[f>0][0])
+    Mean_Reads = statistics.mean(f[f>0][0])
+
+    f = pd.DataFrame(ad_lane_raw.X.sum(axis=1))
+    Median_UMI_Counts_per_before_filter= statistics.median(f[f>0][0])
+
+    f = pd.DataFrame(all_QC_lane.X.sum(axis=1))
+    Median_UMI_Counts_per_Cell_after_all_filter= statistics.median(f[f>0][0])
 
     f = pd.DataFrame(ad_lane_filtered.X.sum(axis=1))
-    Median_UMI_Counts_per_Cell_10x_filter= statistics.median(f[f>0][0])
-    f = pd.DataFrame(ad_lane_filtered.X.sum(axis=1))
-    Median_UMI_Counts_per_Cell= statistics.median(f[f>0][0])
+    Median_UMI_Counts_per_Cell_after_cellbender= statistics.median(f[f>0][0])
+
     f = pd.DataFrame(ad_lane_filtered.X.sum(axis=0)).T
     Median_UMI_Counts_per_Gene = statistics.median(f[f[0]>0][0])
     Valid_Droplet_percentage = metrics['Valid Barcodes'].values[0]
     df1 = ad_lane_filtered.to_df()
     Number_of_cells = len(set(df1.index))
     Total_UMIs_before_10x_filter = np.sum(ad_lane_raw.X) #this may be after the normalisation
-    Total_UMIs_after_cellbender_filter = np.sum(ad_lane_filtered.X)
+
+    # ad_lane_filtered = 
+    Total_UMIs_after_cellbender_filter = np.sum(ad_lane_filtered.X) #This is more 27840
+    Total_UMIs_after_cellbender = sum(all_QC_lane.obs['total_counts']) #This is less 22817
+
     Droplets_removed_by_filtering = len(set(ad_lane_raw.obs.index)-set(ad_lane_filtered.obs.index))
     Total_Drroplets_before_10x_filtering = len(set(pd.DataFrame(ad_lane_raw.obs).index))
     Doublets_donor = 0
@@ -600,8 +624,12 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
     UMIS_mapped_to_ribo_genes = sum(all_QC_lane.obs['total_counts_gene_group__ribo_protein'])
     UMIS_mapped_to_ribo_rna = sum(all_QC_lane.obs['total_counts_gene_group__ribo_rna'])
     UMIs_mapped_to_genes = sum(all_QC_lane.obs['total_counts'])
-    Total_UMIs_after_cellbender = sum(all_QC_lane.obs['total_counts'])
-
+    
+    Donor_Cohort_Assignments = pd.read_csv(f'{args.results_dir}/gtmatch/{expid}/{expid}_gt_donor_assignments.csv')
+    Total_donors_deconvoluted_in_pool = len(Donor_Cohort_Assignments[Donor_Cohort_Assignments['panel']!='NONE'].index)
+    ELGH_Donors_Deconvoluted_in_pool = len(Donor_Cohort_Assignments[Donor_Cohort_Assignments['panel']=='GT_ELGH'].index)
+    UKB_Donors_Deconvoluted_in_pool = len(Donor_Cohort_Assignments[Donor_Cohort_Assignments['panel']=='GT_UKBB'].index)
+    Spikeins_Deconvoluted_in_pool = len(Donor_Cohort_Assignments[Donor_Cohort_Assignments['panel']=='GT_cell_lines'].index)
     data_donor =[]
 
     data_donor_for_stats ={ 'cells before QC filters':[],
@@ -610,6 +638,18 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
     }
     all_probs = pd.DataFrame()
 
+    Tranche_Pass_Fail='PASS'
+    Tranche_Failure_Reason=''
+
+    print("** Fraction_Reads_in_Cells : "+Fraction_Reads_in_Cells.strip('%'))
+    Tranche_Failure_Reason =' '
+    if (float(Fraction_Reads_in_Cells.strip('%'))<=70):
+        Tranche_Pass_Fail='FAIL'
+        Tranche_Failure_Reason +='Fraction of reads in cells for pool<=70%; '
+    if (Mean_reads_per_cell<=25000):
+        Tranche_Pass_Fail='FAIL'
+        Tranche_Failure_Reason +='Mean reads per cell for all cells in pool <=25000; '
+        
 
     for i in df_donors.index:
         # feeds in the individual assignments here.
@@ -633,7 +673,10 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
             s = data['donor_id']
             s=s.reset_index()
             s = s.set_index('donor_id')
-            Mengled_barcodes_donor = list(s.loc[row["donor_id"]]['index'])
+            try:
+                Mengled_barcodes_donor = list(s.loc[row["donor_id"]]['index'])
+            except:
+                continue
             donor_number =row["donor_id"].replace('donor','') #Todo - will need to change upon Vireo runs with genotype, can just pick it as an fctr
             donor_id = row["donor_id"]
             intersect_set = set(Donor_barcodes).intersection(set(ad_lane_filtered.obs.index))
@@ -659,7 +702,7 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
             Donor_matrix_gene_sums = Donor_matrix.sum()
             genes_detected_with_counts_greater_than_0 = len(Donor_matrix_gene_sums[Donor_matrix_gene_sums>0])
             genes_with_UMI_count_larger_than_3 =  len(Donor_matrix_gene_sums[Donor_matrix_gene_sums>=3])
-            Median_UMIs_per_gene= statistics.median(pd.DataFrame(Donor_qc_files.X.sum(axis=1))[0])
+            Median_UMIs_per_gene= statistics.median(pd.DataFrame(Donor_qc_files.X.sum(axis=0))[0])
             Median_UMIs_per_cell= statistics.median(pd.DataFrame(Donor_qc_files.X.sum(axis=1))[0])
 
             Cell_numbers = ''
@@ -679,15 +722,15 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
                 oufh = oufh,
                 lane_id=lane_id
             )
-
+            Donor_Stats['Experiment ID']=args.experiment_name
             if Donor_Stats['Donor id']!='':
                 # Only generate donor stats for the donors excluding unasigned and doublets. 
                 Pass_Fail='PASS'
                 Failure_Reason =' '
 
-                if (Median_UMIs_per_gene<=400):
+                if (Median_UMIs_per_cell<=400):
                     Pass_Fail='FAIL'
-                    Failure_Reason +='Median_UMIs_per_gene<=400; '
+                    Failure_Reason +='Median_UMIs_per_cell<=400; '
                 if (Donor_UMIS_mapped_to_mitochondrial_genes/UMIs>=0.5):
                     Pass_Fail='FAIL'
                     Failure_Reason +='Donor_UMIS_mapped_to_mitochondrial_genes/UMIs>=0.5; '
@@ -726,12 +769,13 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
                     'Total Nr cells fails qc':Donor_cells_fails_qc,
                     'Genes detected with counts > 0':genes_detected_with_counts_greater_than_0,
                     'Genes with UMI count >= 3':genes_with_UMI_count_larger_than_3,
-                    'Cell type numbers':Cell_numbers,
-                    'Cell types detected':Cell_types_detected,
                     'Overall Pass Fail':Pass_Fail,
                     'Failure reason':Failure_Reason,
                     'Date of data transfer':date_of_transfer, # make this the last day of the month
                     'QC Report end date':date_now,
+                    'Cell types detected':Cell_types_detected,
+                    'Cell type numbers':Cell_numbers,
+                    
                 }
 
                 Donor_Stats.update(Donor_Stats_extra)
@@ -760,45 +804,58 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
     Percentage_of_unassigned_cells = Unassigned_donor/(Donors_in_pool+Doublets_donor+Unassigned_donor)*100  
 
     data_tranche = {
-        'Experiment id':expid,
+        'Experiment id':args.experiment_name,
         'Pool id':list(set(Donor_df['Pool ID']))[0],
         'Machine id':Machine_id, #Change this - it will come from the extra metadata file if available
         'Run id':Run_ID, #Generate - feed in from extra metadate if available
         'Date of sample sequencing':date_of_sequencing,#Change this
-        'Total Droplets with donor assignment':Cells_before_QC_filters,
-        'Droplets identified as doublet':Doublets_donor,
-        'Droplets with donor unassigned':Unassigned_donor,
-        'UKB donors deconvoluted in pool':Count_of_UKB, 
-        'ELGH donors in the pool':Count_of_ELGH, 
-        'Spikeins in the pool':Count_of_Spikeins, 
-        'Chromium channel number':chromium_channel,
         'Donors in pool':Donors_in_pool,
+        'Total donors deconvoluted in pool':Total_donors_deconvoluted_in_pool,
+        'UKB donors expected in pool':Count_of_UKB, 
+        'UKB donors deconvoluted in pool':UKB_Donors_Deconvoluted_in_pool, 
+        'ELGH donors expected in the pool':Count_of_ELGH, 
+        'ELGH donors deconvoluted in the pool':ELGH_Donors_Deconvoluted_in_pool, 
+        'Spikeins expected in the pool':Count_of_Spikeins, 
+        'Spikeins deconvoluted in the pool':Spikeins_Deconvoluted_in_pool, 
+        'Chromium channel number':chromium_channel,
         'Number of Reads':Number_of_Reads,
         'Fraction Reads in Cells':Fraction_Reads_in_Cells,
-        'Mean Reads per Cell':Median_reads_per_cell,
-        'Median UMI Counts per Cell after 10x filter':Median_UMI_Counts_per_Cell_10x_filter,
-        'Median UMI Counts per Cell after Cellbender':Median_UMI_Counts_per_Cell,
+        'Mean Reads per Cell':Mean_reads_per_cell,
+
+        'Median UMI Counts per Droplet before filter':Median_UMI_Counts_per_before_filter,
+        'Median UMI Counts per Droplet after Cellranger filter':Median_UMI_Counts_per_cellranger,
+        'Median UMI Counts per Droplet after Cellbender filter':Median_UMI_Counts_per_Cell_after_cellbender,
+        'Median UMI Counts per Cell after Cellbender filter; doublet removal; unassigned removal':Median_UMI_Counts_per_Cell_after_all_filter,
         'Total UMIs before filter':Total_UMIs_before_10x_filter,
         'Total UMIs after Cellbender filter':Total_UMIs_after_cellbender_filter,
+        'Total UMIs after cellbender filter; doublet removal; unassigned removal':Total_UMIs_after_cellbender,
+        
         'UMIS mapped to mitochondrial genes':UMIS_mapped_to_mitochondrial_genes,
         'UMIs mapped to genes':UMIs_mapped_to_genes,
         'UMIS mapped to ribo genes':UMIS_mapped_to_ribo_genes,
         'UMIS mapped to ribo rna':UMIS_mapped_to_ribo_rna,
         'Percentage of unassigned cells':Percentage_of_unassigned_cells,
+
         'Droplets before filtering':Total_Drroplets_before_10x_filtering,
         'Empty droplets - removed by filtering':Droplets_removed_by_filtering,
-        'Total Droplets with a single cell':Number_of_cells,
+        'Droplets identified as doublet':Doublets_donor,
+        'Total Droplets with a single cell':Cells_before_QC_filters+Unassigned_donor,
+        'Droplets with donor unassigned':Unassigned_donor+Doublets_donor,
+        'Number of unassigned cells':Unassigned_donor,
         'Cells before QC filters':Cells_before_QC_filters,
         'Total Cells failing QC':Cells_failing_QC,
         'Total Cells passing QC':Cells_passing_QC,
+        'Total Droplets with donor assignment':Cells_before_QC_filters,
+
         'Median cells passes qc':Median_cells_passes_qc,
         'Median cells fails qc':Median_cells_fails_qc,
         'Median Nr cells for donor':Median_Nr_cells_for_donor,
         'Stdev cells passes qc':Stdev_cells_passes_qc,
         'Stdev cells fails qc':Stdev_cells_fails_qc,
         'Stdev Nr cells for donor':Stdev_Nr_cells_for_donor,
-        'Total UMIs after cellbender':Total_UMIs_after_cellbender,
-        'QC Report end date':date_now
+        'QC Report end date':date_now,
+        'Tranche Pass/Fail':Tranche_Pass_Fail,
+        'Tranche Failure Reason':Tranche_Failure_Reason
     }
     return fctr, data_tranche, data_donor,azt
 
@@ -827,6 +884,10 @@ def set_argument_parser():
     parser.add_argument("--resolution", required = True,
                 help="Cellbender resolution used",
                 dest='resolution')
+    parser.add_argument("--experiment_name", required = False,default='default',
+            help="Cellbender resolution used",
+            dest='experiment_name')
+                
     return parser.parse_args()
 
 if __name__ == '__main__':
@@ -850,9 +911,6 @@ if __name__ == '__main__':
         # here we have run the cellbender as par of pipeline. 
         file_path = glob.glob(f'{args.results_dir}/nf-preprocessing/cellbender/qc_cluster_input_files/*{args.resolution}*')[0]
         df_cellbender = pandas.read_table(file_path, index_col = 'experiment_id')
-
-
-
     else:
         # this is existing_cellbender, hence using this input
         df_cellbender = pandas.read_table(f'{args.cellbender}', index_col = 'experiment_id')
@@ -865,60 +923,59 @@ if __name__ == '__main__':
     All_probs_and_celltypes = pd.DataFrame()
 
 
-    args.extra_metadata = '/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/fetch/ELGH_fech/results/yascp_inputs/Extra_Metadata.tsv'   
     Sample_metadata = pd.DataFrame()
-    try:
-        if args.extra_metadata:
-            Extra_Metadata = pd.read_csv('/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/fetch/ELGH_fech/results/yascp_inputs/Extra_Metadata.tsv',sep='\t')
-            # Extra_Metadata = pd.read_csv(args.extra_metadata,sep='\t')
-            Extra_Metadata=Extra_Metadata.set_index('sanger_sample_id')
-            Mappings_between_sanger_sampe_and_NS = Extra_Metadata['public_name']
-            Library_IDs = pd.read_csv('/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/fetch/ELGH_fech/results/yascp_inputs/Library_IDs.csv',sep='\t')
-            Sample_Manifest = pd.read_csv('/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/fetch/ELGH_fech/results/yascp_inputs/Sample_Manifest.csv',sep='\t')
-            Sample_Manifest=Sample_Manifest.set_index('Barcode (scan)')
-            Library_IDs = Library_IDs.set_index('S2-046 ID')
+    # try:
+    #     if args.extra_metadata:
+    #         Extra_Metadata = pd.read_csv('/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/fetch/ELGH_fech/results/yascp_inputs/Extra_Metadata.tsv',sep='\t')
+    #         # Extra_Metadata = pd.read_csv(args.extra_metadata,sep='\t')
+    #         Extra_Metadata=Extra_Metadata.set_index('sanger_sample_id')
+    #         Mappings_between_sanger_sampe_and_NS = Extra_Metadata['public_name']
+    #         Library_IDs = pd.read_csv('/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/fetch/ELGH_fech/results/yascp_inputs/Library_IDs.csv',sep='\t')
+    #         Sample_Manifest = pd.read_csv('/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/fetch/ELGH_fech/results/yascp_inputs/Sample_Manifest.csv',sep='\t')
+    #         Sample_Manifest=Sample_Manifest.set_index('Barcode (scan)')
+    #         Library_IDs = Library_IDs.set_index('S2-046 ID')
             
-            for Lid in Mappings_between_sanger_sampe_and_NS.iteritems():
-                print(Lid)
-                Samples = Library_IDs[Library_IDs['library ID:'].str.contains(Lid[1])]
-                Samples['Sanger_id']=Lid[0]
-                Samples['NS_ID']=Lid[1]
+    #         for Lid in Mappings_between_sanger_sampe_and_NS.iteritems():
+    #             print(Lid)
+    #             Samples = Library_IDs[Library_IDs['library ID:'].str.contains(Lid[1])]
+    #             Samples['Sanger_id']=Lid[0]
+    #             Samples['NS_ID']=Lid[1]
 
-                intersect = set(Sample_Manifest.index).intersection(set(Samples.index))
-                missing = set(Samples.index)- set(Sample_Manifest.index)
+    #             intersect = set(Sample_Manifest.index).intersection(set(Samples.index))
+    #             missing = set(Samples.index)- set(Sample_Manifest.index)
 
-                # now combine the missing and existing values.
-                All_Vals = pd.DataFrame()
-                if len(intersect)>0:
-                    Recieved_sample_info = Sample_Manifest.loc[intersect]
-                    Recieved_sample_info = Recieved_sample_info[['Volume (ul)','Issue (optional)','Date received']]
-                    All_Vals = pd.concat([All_Vals,Recieved_sample_info],axis=0)
+    #             # now combine the missing and existing values.
+    #             All_Vals = pd.DataFrame()
+    #             if len(intersect)>0:
+    #                 Recieved_sample_info = Sample_Manifest.loc[intersect]
+    #                 Recieved_sample_info = Recieved_sample_info[['Volume (ul)','Issue (optional)','Date received']]
+    #                 All_Vals = pd.concat([All_Vals,Recieved_sample_info],axis=0)
                     
-                if len(missing)>0:
-                    # samples not recorded in sampe reception.
-                    missing = intersect
-                    Recieved_sample_info_missing = pd.DataFrame(columns={'Volume (ul)','Issue (optional)','Date received'},index=[list(missing)])
-                    All_Vals = pd.concat([All_Vals,Recieved_sample_info_missing],axis=0)
-                # 
-                S1 = Samples.join(Recieved_sample_info)
-                # Sample_metadata = Sample_metadata.merge(Samples)
-                Sample_metadata=pd.concat([Sample_metadata,S1])
-                print('Done')
-                # set(Samples.index)
-            # Read in sample manifest
-            # Read in Library IDs
-            print('Done')
-            Sample_metadata2= Sample_metadata[['NS_ID','Volume (ul)','Issue (optional)','Date received','Time blood samples taken','Date and time of last meal:','Sanger_id']]
-            Sample_metadata2.Sanger_id in df_raw.index
-            Sample_metadata2 = Sample_metadata2.reset_index()
-            S2 = Sample_metadata2.set_index('Sanger_id')
-            S3 = S2.loc[set(df_raw.index)]
-            df_raw.index
-            S3.to_csv('Sample_data3.tsv',sep='\t')
+    #             if len(missing)>0:
+    #                 # samples not recorded in sampe reception.
+    #                 missing = intersect
+    #                 Recieved_sample_info_missing = pd.DataFrame(columns={'Volume (ul)','Issue (optional)','Date received'},index=[list(missing)])
+    #                 All_Vals = pd.concat([All_Vals,Recieved_sample_info_missing],axis=0)
+    #             # 
+    #             S1 = Samples.join(Recieved_sample_info)
+    #             # Sample_metadata = Sample_metadata.merge(Samples)
+    #             Sample_metadata=pd.concat([Sample_metadata,S1])
+    #             print('Done')
+    #             # set(Samples.index)
+    #         # Read in sample manifest
+    #         # Read in Library IDs
+    #         print('Done')
+    #         Sample_metadata2= Sample_metadata[['NS_ID','Volume (ul)','Issue (optional)','Date received','Time blood samples taken','Date and time of last meal:','Sanger_id']]
+    #         Sample_metadata2.Sanger_id in df_raw.index
+    #         Sample_metadata2 = Sample_metadata2.reset_index()
+    #         S2 = Sample_metadata2.set_index('Sanger_id')
+    #         S3 = S2.loc[set(df_raw.index)]
+    #         df_raw.index
+    #         S3.to_csv('Sample_data3.tsv',sep='\t')
 
             
-    except:
-        print('not working')
+    # except:
+    #     print('not working')
 
     
 
@@ -936,13 +993,10 @@ if __name__ == '__main__':
     Donor_Report = pd.DataFrame(data_donor_all)
     Tranche_Report = pd.DataFrame(data_tranche_all)
 
-
-
-
-    Donor_Report['Donor id_Experiment ID']=Donor_Report['Donor id']+'_'+Donor_Report['Experiment ID']
-    Donor_Report=Donor_Report.set_index('Donor id_Experiment ID')
-    Donor_Report.to_csv(f'{args.outdir}_summary/Donor_Report.tsv',sep='\t')
-    Tranche_Report.to_csv(f'{args.outdir}_summary/Tranche_Report.tsv',sep='\t',index=False)
+    Donor_Report['Pool_ID.Donor_Id']=Donor_Report['Pool ID']+'_'+Donor_Report['Donor id']
+    Donor_Report=Donor_Report.set_index('Pool_ID.Donor_Id')
+    Donor_Report.to_csv(f'{args.outdir}_summary/{args.experiment_name}_Donor_Report.tsv',sep='\t')
+    Tranche_Report.to_csv(f'{args.outdir}_summary/{args.experiment_name}_Tranche_Report.tsv',sep='\t',index=False)
     oufh.close()
     sys.stderr.write("# wrote {:d} files to directory {:s}\n".format(fctr, args.outdir))
     exit(0)

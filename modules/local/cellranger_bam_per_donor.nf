@@ -4,7 +4,7 @@ process SPLIT_CELL_BARCODES_PER_DONOR
 {
     label 'process_tiny'
 
-    publishDir path: "${params.outdir}/cram/${pool_id}",
+    publishDir path: "${params.outdir}/handover/Donor_Quantification_cram/${pool_id}",
                mode: "${params.copy_mode}",
                pattern: "${outdir}/${oufnprfx}_*.txt",
                overwrite: "true"
@@ -17,7 +17,7 @@ process SPLIT_CELL_BARCODES_PER_DONOR
       path("${oufofn}", emit: bcfiles_fofn)
 
     when:
-      params.cramfiles_per_donor.run_cellranger_bam_splitting
+      params.split_bam
 
     script:
     oufnprfx="${pool_id}_barcodes"
@@ -59,7 +59,7 @@ process SPLIT_BAM_BY_CELL_BARCODES
 
     //beforeScript 'ln --physical ${reference_assembly_fasta_name} ./genome.fa; ln --physical ${reference_assembly_fasta_name}.fai ./genome.fa.fai;'
 
-    publishDir path: "${params.outdir}/cram/${pool_id}",
+    publishDir path: "${params.outdir}/handover/Donor_Quantification_cram/${pool_id}",
                mode: "${params.copy_mode}",
                overwrite: "true"
                //pattern:"{*.cram, *.sha256sum}",
@@ -72,7 +72,7 @@ process SPLIT_BAM_BY_CELL_BARCODES
       path("${oufnprfx}_possorted_bam.cram", emit: possorted_cram_files)
 
     when:
-      params.cramfiles_per_donor.run_cellranger_bam_splitting
+      params.split_bam
 
     script:
     oufnprfx = "${vireo_donor_barcode_filnam}".minus(".txt")
@@ -106,8 +106,8 @@ process PREP_REF_ASS
   outdir="reference_assembly"
   reference_assembly_fasta = "${reference_assembly_dir}/genome.fa"
   reference_assembly_index = "${reference_assembly_dir}/genome.fa.fai"
-  println "reference_assembly_fasta = ${reference_assembly_fasta}"
-  println "reference_assembly_index = ${reference_assembly_index}"
+  // println "reference_assembly_fasta = ${reference_assembly_fasta}"
+  // println "reference_assembly_index = ${reference_assembly_index}"
   """
     mkdir reference_assembly
     cp ${reference_assembly_fasta} ./${outdir}/genome.fa
@@ -159,12 +159,12 @@ workflow split_bam_by_donor
       reference_assembly_fasta_dir
     )
 
-    ENCRYPT_DIR(
-      SPLIT_BAM_BY_CELL_BARCODES.out.possorted_cram_files
-    )
+    // ENCRYPT_DIR(
+    //   SPLIT_BAM_BY_CELL_BARCODES.out.possorted_cram_files
+    // )
 
   emit:
     possorted_cram_files = SPLIT_BAM_BY_CELL_BARCODES.out.possorted_cram_files
-    encrypt_files = ENCRYPT_DIR.out.encrypted
-    checksum_files = ENCRYPT_DIR.out.checksums
+    // encrypt_files = ENCRYPT_DIR.out.encrypted
+    // checksum_files = ENCRYPT_DIR.out.checksums
 }
