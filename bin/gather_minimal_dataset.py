@@ -673,7 +673,10 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
             s = data['donor_id']
             s=s.reset_index()
             s = s.set_index('donor_id')
-            Mengled_barcodes_donor = list(s.loc[row["donor_id"]]['index'])
+            try:
+                Mengled_barcodes_donor = list(s.loc[row["donor_id"]]['index'])
+            except:
+                continue
             donor_number =row["donor_id"].replace('donor','') #Todo - will need to change upon Vireo runs with genotype, can just pick it as an fctr
             donor_id = row["donor_id"]
             intersect_set = set(Donor_barcodes).intersection(set(ad_lane_filtered.obs.index))

@@ -4,7 +4,7 @@ process SPLIT_CELL_BARCODES_PER_DONOR
 {
     label 'process_tiny'
 
-    publishDir path: "${params.outdir}/handover/Donor_Quantification/${pool_id}",
+    publishDir path: "${params.outdir}/handover/Donor_Quantification_cram/${pool_id}",
                mode: "${params.copy_mode}",
                pattern: "${outdir}/${oufnprfx}_*.txt",
                overwrite: "true"
@@ -59,7 +59,7 @@ process SPLIT_BAM_BY_CELL_BARCODES
 
     //beforeScript 'ln --physical ${reference_assembly_fasta_name} ./genome.fa; ln --physical ${reference_assembly_fasta_name}.fai ./genome.fa.fai;'
 
-    publishDir path: "${params.outdir}/handover/Donor_Quantification/${pool_id}",
+    publishDir path: "${params.outdir}/handover/Donor_Quantification_cram/${pool_id}",
                mode: "${params.copy_mode}",
                overwrite: "true"
                //pattern:"{*.cram, *.sha256sum}",
