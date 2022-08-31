@@ -141,6 +141,8 @@ workflow SCDECON {
             }else{
                 file__cells_filtered = Channel.from(params.skip_preprocessing.file__cells_filtered)
             }
+            CREATE_ARTIFICIAL_BAM_CHANNEL(input_channel)
+            bam_split_channel = CREATE_ARTIFICIAL_BAM_CHANNEL.out.ch_experiment_bam_bai_barcodes
         }
         
 
