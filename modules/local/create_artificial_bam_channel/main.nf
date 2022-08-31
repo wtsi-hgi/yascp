@@ -30,12 +30,15 @@ workflow CREATE_ARTIFICIAL_BAM_CHANNEL{
             .splitCsv(header: true, sep: params.input_tables_column_delimiter)
             .map{row->tuple(row.experiment_id, "${row.data_path_10x_format}/possorted_genome_bam.bam","${params.outdir}/deconvolution/vireo/${row.experiment_id}/donor_ids.tsv")}
             .set{ch_experiment_bam_bai_barcodes}
-        ch_experiment_bam_bai_barcodes.view()
-    // ch_experiment_bam_bai_barcodes
-    //               .map { samplename, bam_file, bai_file, barcodes_tsv_gz -> tuple(samplename, file(bam_file)) }
-    //               .combine(vireo_out_sample_donor_ids, by: 0 )
-    //               .set { ch_experiment_bam_vireo_donor_ids }
+        
+
+        input_channel
+            .splitCsv(header: true, sep: params.input_tables_column_delimiter)
+            .map{row->tuple(row.experiment_id, "${params.outdir}/gtmatch/${row.experiment_id}/${row.experiment_id}_gt_donor_assignments.csv")}
+            .set{ch_poolid_csv_donor_assignments}            
+
     emit:
         ch_experiment_bam_bai_barcodes
+        ch_poolid_csv_donor_assignments
 
 }
