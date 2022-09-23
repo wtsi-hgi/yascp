@@ -54,12 +54,18 @@ workflow NF_CORE_TEST {
 */
 
 include { SCDECON } from './workflows/yascp'
+include { DECONVOLUTION } from "$projectDir/workflows/deconvolution"
+
 
 //
 // WORKFLOW: Run main nf-core/yascp analysis pipeline
 //
 workflow NFCORE_SCDECON {
     SCDECON ()
+}
+
+workflow DECONVOLUTION_PIPELINE {
+    DECONVOLUTION ()
 }
 
 /*
@@ -73,7 +79,7 @@ workflow NFCORE_SCDECON {
 // See: https://github.com/nf-core/rnaseq/issues/619
 //
 workflow {
-    NFCORE_SCDECON ()
+    DECONVOLUTION_PIPELINE ()
 }
 
 /*
