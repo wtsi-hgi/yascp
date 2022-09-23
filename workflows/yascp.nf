@@ -21,7 +21,7 @@ ch_multiqc_custom_config = params.multiqc_config ? Channel.fromPath(params.multi
 ========================================================================================
 */
 
-//def modules = params.modules.clone()
+def modules = params.modules.clone()
 
 include { GET_SOFTWARE_VERSIONS } from "$projectDir/modules/local/get_software_versions" addParams( options: [publish_files : ['tsv':'']] )
 include { main_deconvolution } from "$projectDir/subworkflows/main_deconvolution"
@@ -42,8 +42,8 @@ include {capture_cellbender_files} from "../modules/nf-core/modules/cellbender/f
 ========================================================================================
 */
 
-//def multiqc_options   = modules['multiqc']
-//multiqc_options.args += params.multiqc_title ? Utils.joinModuleArgs(["--title \"$params.multiqc_title\""]) : ''
+def multiqc_options   = modules['multiqc']
+multiqc_options.args += params.multiqc_title ? Utils.joinModuleArgs(["--title \"$params.multiqc_title\""]) : ''
 
 /*
 ========================================================================================
