@@ -159,12 +159,15 @@ for confident_panel in set(GT_MATCH['final_panel']):
             Donor_Report2.insert(12, "site",'NONE') 
             Donor_Report2.insert(12, "lab_live_cell_count",'NONE') 
             Donor_Report2.insert(12, "viability",'NONE') 
+            Donor_Report2.insert(5, "Match Expected",'False (No GT match in any cohort)') 
         except: 
+            Donor_Report2['Match Expected']='False (No GT match in any cohort)'
             print('exists')
 
         Donor_Report2.loc[Total_Report2.index,'site']=Total_Report2.loc[Total_Report2.index,'site']
         Donor_Report2.loc[Total_Report2.index,'lab_live_cell_count']=Total_Report2.loc[Total_Report2.index,'lab_live_cell_count']
         Donor_Report2.loc[Total_Report2.index,'viability']=Total_Report2.loc[Total_Report2.index,'viability']
+        Donor_Report2.loc[Total_Report2.index,'Match Expected']=Total_Report2.loc[Total_Report2.index,'Match Expected']
         Donor_Report2 = Donor_Report2.reset_index().set_index('Pool ID')
 
         GT_MATCH2 = GT_MATCH.set_index('pool')
@@ -179,6 +182,9 @@ for confident_panel in set(GT_MATCH['final_panel']):
 
         if (pan=='UKBB'):
             # For UKB samples we only return the expected samples
+            Total_Report = Total_Report[Total_Report['Match Expected']]
+        else:
+            # Disable this if we dont want to limit to only expected
             Total_Report = Total_Report[Total_Report['Match Expected']]
 
         if confident_panel == 'GT_ELGH':
