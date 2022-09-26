@@ -27,6 +27,7 @@ try:
     Donor_Report = pd.read_csv(f"{path}/handover/Donor_Quantification_summary/{project_name}_Donor_Report.tsv",sep='\t')
     Tranch_Report = pd.read_csv(f"{path}/handover/Donor_Quantification_summary/{project_name}_Tranche_Report.tsv",sep='\t')
     Extra_Metadata_Donors = pd.read_csv(f"{prefix}/Summary_plots/{project_name}/Summary/Extra_Metadata_Donors.tsv",sep='\t')
+    Pipeline_inputs = pd.read_csv(f"{prefix}/Summary_plots/{project_name}/Fetch Pipeline/Input/input_table.tsv",sep='\t')
 except:
     prefix='.'
     project_name = os.listdir(f"{prefix}/Summary_plots")[0]
@@ -34,6 +35,7 @@ except:
     Donor_Report = pd.read_csv(f"{path}/handover/Donor_Quantification_summary/{project_name}_Donor_Report.tsv",sep='\t')
     Tranch_Report = pd.read_csv(f"{path}/handover/Donor_Quantification_summary/{project_name}_Tranche_Report.tsv",sep='\t')
     Extra_Metadata_Donors = pd.read_csv(f"{prefix}/Summary_plots/{project_name}/Summary/Extra_Metadata_Donors.tsv",sep='\t')
+    Pipeline_inputs = pd.read_csv(f"{prefix}/Summary_plots/{project_name}/Fetch Pipeline/Input/input_table.tsv",sep='\t')
 # Split Donor Report by cohort
 
 
@@ -42,13 +44,6 @@ try:
     Donor_Report2.insert(0,'Vacutainer ID','NONE')
 except:
     print('Vacutainer ID exists')
-
-try: 
-    Donor_Report2.insert(5, "Match Expected",'False (No GT match in any cohort)') 
-except: 
-    Donor_Report2['Match Expected']='False (No GT match in any cohort)'
-
-
 # here if we enable we can replace the expected number of samples if a mistake was made.
 # nr ukbb samples is already in there.
 
@@ -69,9 +64,6 @@ def Generate_Report(GT_MATCH_CONFIDENT,pan):
         Matched_Donor_report = Donor_Report[Donor_Report['Pool_ID.Donor_Id']==f"{row1['pool']}_{row1['donor_query']}"]
         
         Tranch_stats = Tranch_Report[Tranch_Report['Pool id'] ==row1['pool']]
-        for i,row12 in Matched_Donor_report.iterrows():
-            print(i)
-            print(row12)
         if ('celline' in row1['donor_gt']):
             print('celline')
             gt_match = row1['donor_gt'].split('___')[1].replace('celline_','')
@@ -168,7 +160,7 @@ for confident_panel in set(GT_MATCH['final_panel']):
             Donor_Report2.insert(12, "viability",'NONE') 
             Donor_Report2.insert(5, "Match Expected",'False (No GT match in any cohort)') 
         except: 
-            # Donor_Report2['Match Expected']='False (No GT match in any cohort)'
+            Donor_Report2['Match Expected']='False (No GT match in any cohort)'
             print('exists')
 
         Donor_Report2.loc[Total_Report2.index,'site']=Total_Report2.loc[Total_Report2.index,'site']
@@ -183,9 +175,37 @@ for confident_panel in set(GT_MATCH['final_panel']):
         GT_MATCH2['All IDs expected'] = GT_MATCH2['Emergency_ids expected']+','+GT_MATCH2['Good_ids expected']
         Donor_Report2['All IDs expected']=' '
         for idx1 in GT_MATCH2.index:
-            # print(idx1)
+            print(idx1)
             Donor_Report2.loc[idx1,'All IDs expected']=GT_MATCH2.loc[idx1,'All IDs expected']
         Donor_Report2 = Donor_Report2.reset_index().set_index('Pool_ID.Donor_Id')
+
+
+        Missing = pd.DataFrame()
+        Not_Expected = Missing = pd.DataFrame()
+        for id1 in set(Total_Report['Pool ID']):
+
+            Total_Report_samples = Total_Report[Total_Report['Pool ID']==id1]
+            Donor_Report2_samples = Pipeline_inputs[Pipeline_inputs['experiment_id']==id1]
+            Expected_Samples = set(Donor_Report2_samples.iloc[0]['donor_vcf_ids'].replace('\'','').split(','))
+            # print(Expected_Samples)
+            try:
+                Expected_Samples.remove('')
+            except:
+                _='cant'
+            
+            All_Deconvouted_Samples = set(Total_Report_samples['Vacutainer ID'])
+            Missing_Samples = set(Expected_Samples)-set(All_Deconvouted_Samples)
+            Not_Expected_Samples = set(All_Deconvouted_Samples)-set(Expected_Samples)
+            if (len(Missing_Samples)>0):
+                Missing_Samples2=pd.DataFrame(Missing_Samples,columns=['Sample'])
+                Missing_Samples2['Pool']=id1
+                Missing=pd.concat([Missing,Missing_Samples2])
+
+                Not_Expected_Samples2=pd.DataFrame(Not_Expected_Samples,columns=['Sample'])
+                Not_Expected_Samples2['Pool']=id1
+                Not_Expected=pd.concat([Not_Expected,Not_Expected_Samples2])
+        Not_Expected = Not_Expected.set_index('Pool')
+        Missing = Missing.set_index('Pool')
 
         if (pan=='UKBB'):
             # For UKB samples we only return the expected samples
@@ -196,20 +216,23 @@ for confident_panel in set(GT_MATCH['final_panel']):
 
         if confident_panel == 'GT_ELGH':
             confident_panel_name = 'Cardinal ELGH'
+            confident_panel_name ='ELGH'
         elif confident_panel == 'GT_UKBB':
             confident_panel_name = 'Cardinal UKB'
+
+        
         Expected_Samples = Extra_Metadata_Donors[Extra_Metadata_Donors.cohort == confident_panel_name]
-        Missing_Samples = set(Expected_Samples.donor)-set(Total_Report['Vacutainer ID'])
+        # Missing_Samples = set(Expected_Samples.donor)-set(Total_Report['Vacutainer ID'])
+        # This should loop through each of the inputs - expected ws deconvoluted.
         try:
             os.mkdir(f'{prefix}/Summary_plots/{project_name}/Summary/{pan}_REPORT')
         except:
             print('Dir exists')
-        if (len(Missing_Samples)>0):
-            Extra_Metadata_Donors3 = Extra_Metadata_Donors.copy()
-            Extra_Metadata_Donors3 = Extra_Metadata_Donors3.set_index('donor')
-            Missing = Extra_Metadata_Donors3.loc[Missing_Samples]['experiment_id']
-            Missing = Missing.drop_duplicates()
+        if (len(Missing)>0):
             Missing.to_csv(f'{prefix}/Summary_plots/{project_name}/Summary/{pan}_REPORT/{project_name}_Missing_{pan}_Donors.tsv',sep='\t')
+        if (len(Not_Expected)>0):
+            Not_Expected.to_csv(f'{prefix}/Summary_plots/{project_name}/Summary/{pan}_REPORT/{project_name}_Not_Expected_{pan}_Donors.tsv',sep='\t')
+
         Total_Report.to_csv(f'{prefix}/Summary_plots/{project_name}/Summary/{pan}_REPORT/{project_name}_{pan}_Report.tsv',sep='\t',index=False)
      
 Donor_Report2.to_csv(f"{path}/handover/Donor_Quantification_summary/{project_name}_Donor_Report.tsv",sep='\t',index=True)
