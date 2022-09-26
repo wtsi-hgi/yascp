@@ -179,6 +179,11 @@ for confident_panel in set(GT_MATCH['final_panel']):
             Donor_Report2.loc[idx1,'All IDs expected']=GT_MATCH2.loc[idx1,'All IDs expected']
         Donor_Report2 = Donor_Report2.reset_index().set_index('Pool_ID.Donor_Id')
 
+        if confident_panel == 'GT_ELGH':
+            confident_panel_name = 'Cardinal ELGH'
+            # confident_panel_name ='ELGH'
+        elif confident_panel == 'GT_UKBB':
+            confident_panel_name = 'Cardinal UKB'
 
         Missing = pd.DataFrame()
         Not_Expected = Missing = pd.DataFrame()
@@ -187,12 +192,14 @@ for confident_panel in set(GT_MATCH['final_panel']):
             Total_Report_samples = Total_Report[Total_Report['Pool ID']==id1]
             Donor_Report2_samples = Pipeline_inputs[Pipeline_inputs['experiment_id']==id1]
             Expected_Samples = set(Donor_Report2_samples.iloc[0]['donor_vcf_ids'].replace('\'','').split(','))
+
             # print(Expected_Samples)
             try:
                 Expected_Samples.remove('')
             except:
                 _='cant'
-            
+            Expected_Samples2 = Extra_Metadata_Donors[Extra_Metadata_Donors.cohort == confident_panel_name]
+            Expected_Samples = set(Expected_Samples2.donor).intersection(set(Expected_Samples))
             All_Deconvouted_Samples = set(Total_Report_samples['Vacutainer ID'])
             Missing_Samples = set(Expected_Samples)-set(All_Deconvouted_Samples)
             Not_Expected_Samples = set(All_Deconvouted_Samples)-set(Expected_Samples)
@@ -214,14 +221,10 @@ for confident_panel in set(GT_MATCH['final_panel']):
             # Disable this if we dont want to limit to only expected
             Total_Report = Total_Report[Total_Report['Match Expected']]
 
-        if confident_panel == 'GT_ELGH':
-            confident_panel_name = 'Cardinal ELGH'
-            confident_panel_name ='ELGH'
-        elif confident_panel == 'GT_UKBB':
-            confident_panel_name = 'Cardinal UKB'
+
 
         
-        Expected_Samples = Extra_Metadata_Donors[Extra_Metadata_Donors.cohort == confident_panel_name]
+        
         # Missing_Samples = set(Expected_Samples.donor)-set(Total_Report['Vacutainer ID'])
         # This should loop through each of the inputs - expected ws deconvoluted.
         try:
