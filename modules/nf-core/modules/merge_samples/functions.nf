@@ -228,7 +228,7 @@ process prep_merge_samples {
             path(file_10x_features),
             path(file_10x_matrix)
         )
-
+    label 'process_tiny'
     output:
         path("${experiment_id}---barcodes.tsv.gz", emit: barcodes)
         path("${experiment_id}---features.tsv.gz", emit: features)
@@ -248,7 +248,7 @@ process prep_merge_samples_from_h5ad {
             val(experiment_id),
             path(file_h5ad),
         )
-
+    label 'process_tiny'
     output:
         path("${experiment_id}---h5ad.h5ad", emit: h5ad)
 
