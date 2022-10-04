@@ -50,7 +50,7 @@ process SPLIT_DATA_BY_STUDY
               mode: "${params.copy_mode}",
               overwrite: "true"
 
-  label 'process_small'
+  label 'process_tiny'
 
   if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
       container "/software/hgi/containers/wtsihgi_nf_scrna_qc_6bb6af5-2021-12-23-3270149cf265.sif"
@@ -62,6 +62,7 @@ process SPLIT_DATA_BY_STUDY
   input:
     path(outdir_prev)
     path(input_dir)
+    path(input_dirs_cram)
     val(dummy_val)
 
   output:
@@ -69,9 +70,10 @@ process SPLIT_DATA_BY_STUDY
 
   script:
     donor_assignments_tsv = "${outdir_prev}/deconvolution/vireo_gt_fix/assignments_all_pools.tsv"
-    outdir = "${outdir_prev}/handover_study"
+    outdir = "${outdir_prev}"
     outdir_ukbb = "handover_study/GT_UKBB"
     """
-      split_dataset_by_study.py ${donor_assignments_tsv} ${input_dir} ./handover_study
+      echo "${input_dirs_cram}" > ./cram_dirs.lst
+      split_dataset_by_study.py ${donor_assignments_tsv} ${input_dir} ./handover_study ./cram_dirs.lst
     """
 }

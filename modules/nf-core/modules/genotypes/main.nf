@@ -9,6 +9,24 @@ process VIREO_GT_FIX_HEADER
       container "mercury/wtsihgi-nf_yascp_htstools-1.1"
   }
   //when: params.vireo.run_gtmatch_aposteriori
+  // [W::hts_idx_load3] The index file is older than the data file: sorted_Expected_CRD_CMB13102395.bcf.gz.csi
+  // [W::vcf_parse_info] INFO 'AD' is not defined in the header, assuming Type=String
+  // [W::vcf_parse_info] INFO 'DP' is not defined in the header, assuming Type=String
+  // [W::vcf_parse_info] INFO 'OTH' is not defined in the header, assuming Type=String
+  // [W::vcf_parse_format] FORMAT 'AD' at 1:632317 is not defined in the header, assuming Type=String
+  // [W::vcf_parse_format] FORMAT 'DP' at 1:632317 is not defined in the header, assuming Type=String
+  // [W::vcf_parse_format] FORMAT 'PL' at 1:632317 is not defined in the header, assuming Type=String
+  // Error: The INFO field is not defined in the header: AD
+
+
+  // ##INFO=<ID=AD,Number=A,Type=Integer,Description="alternative allele  (variant-by-cell) of reads">
+  // ##INFO=<ID=DP,Number=1,Type=Integer,Description="depth UMIs for each variant in each cell">
+  //
+  // 
+  // 
+  // 
+  // 
+
 
   label 'process_tiny'
 
@@ -23,8 +41,17 @@ process VIREO_GT_FIX_HEADER
   vireo_fixed_vcf = "${pool_id}_headfix_vireo.vcf.gz"
   """
     # fix header of vireo VCF
-    bcftools view -h ${vireo_gt_vcf} > header.txt
-    sed -i '/^##fileformat=VCFv.*/a ##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">' header.txt
+    bcftools view -h ${vireo_gt_vcf} > init_head.txt
+    sed -i '/^##fileformat=VCFv.*/a ##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">' init_head.txt
+    head -n -1 init_head.txt > header.txt
+    echo '##INFO=<ID=AD,Number=A,Type=Integer,Description="alternative allele  (variant-by-cell) of reads">' >> header.txt
+    echo '##INFO=<ID=DP,Number=1,Type=Integer,Description="depth UMIs for each variant in each cell">' >> header.txt
+    echo '##INFO=<ID=PL,Number=1,Type=Integer,Description="depth UMIs for each variant in each cell">' >> header.txt
+    echo '##INFO=<ID=OTH,Number=1,Type=Integer,Description="????">' >> header.txt
+    echo '##FORMAT=<ID=PL,Number=G,Type=Integer,Description="???">' >> header.txt
+    echo '##FORMAT=<ID=AD,Number=G,Type=Integer,Description="????n">' >> header.txt
+    echo '##FORMAT=<ID=DP,Number=G,Type=Integer,Description="????n">' >> header.txt
+    tail -n1 init_head.txt >> header.txt
 
     # sort VCF file (bcftools sort bails out with an error)
     bcftools view ${vireo_gt_vcf} | \
@@ -32,8 +59,9 @@ process VIREO_GT_FIX_HEADER
     bcftools view -Oz -o ${sorted_vcf} -
 
     bcftools reheader -h header.txt ${sorted_vcf} | \
-    bcftools view -Oz -o ${vireo_fixed_vcf} -
-
+    bcftools view -Oz -o pre_${vireo_fixed_vcf}
+    tabix -p vcf pre_${vireo_fixed_vcf}
+    bcftools +fixref pre_${vireo_fixed_vcf} -Oz -o ${vireo_fixed_vcf} -- -d -f ${params.reference_assembly_fasta_dir}/genome.fa -m flip
     tabix -p vcf ${vireo_fixed_vcf}
   """
 }
@@ -101,13 +129,15 @@ process GT_MATCH_POOL_IBD
 
   input:
     tuple val(pool_id), path(vireo_gt_vcf)
+    val(mode)
+    val(mode2)
 
   output:
-    path("${pool_id}.genome.gz", emit:plink_ibd)
+    tuple val(pool_id),path("*_${pool_id}.genome*"), emit:plink_ibd
 
   script:
     """
-      plink --vcf ${vireo_gt_vcf} --genome gz unbounded --const-fid dummy --out ${pool_id}
+      plink --vcf ${vireo_gt_vcf} --genome unbounded --const-fid dummy --out ${mode2}_${mode}_${pool_id}
     """
 }
 
@@ -197,6 +227,7 @@ process ASSIGN_DONOR_OVERALL
   output:
     tuple val(pool_id), path("${donor_assignment_file}"), emit: donor_assignments
     path(stats_assignment_table_out), emit: donor_match_table
+    tuple val(pool_id),path(stats_assignment_table_out), emit: donor_match_table_with_pool_id
     path("*.csv")
 
   label 'process_tiny'
@@ -240,6 +271,41 @@ process REPLACE_GT_ASSIGNMENTS_WITH_PHENOTYPE{
 
 }
 
+process ENHANCE_STATS_FILE{
+
+
+
+  publishDir  path: "${params.outdir}/gtmatch/${pool_id}",
+        mode: "${params.copy_mode}",
+        overwrite: "true"
+
+
+  if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
+      container "/software/hgi/containers/mercury_scrna_deconvolution_62bd56a-2021-12-15-4d1ec9312485.sif"
+      //// container "/software/hgi/containers/mercury_scrna_deconvolution_latest.img"
+  } else {
+      container "mercury/scrna_deconvolution:62bd56a"
+  }
+
+  label 'process_small'
+
+
+  input:
+    tuple val(pool_id),path(ibd_table),path(stats_table),val(expected_ids)
+    val(condition)
+
+
+  output:
+    tuple val(pool_id),path("PiHAT_${stats_table}"), emit: stats_table_PiHat_enhanced
+    path ('Max_PiHAT_For_Expected*') optional true
+
+  script:
+    """
+      add_PiHat_to_GT_match.py -mt ${stats_table} -ph ${ibd_table} -c ${condition} -e ${expected_ids} -m ${params.genotype_phenotype_mapping_file}
+    """
+
+}
+
 process ENHANCE_VIREO_METADATA_WITH_DONOR{
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "/software/hgi/containers/mercury_scrna_deconvolution_62bd56a-2021-12-15-4d1ec9312485.sif"
@@ -266,6 +332,28 @@ process ENHANCE_VIREO_METADATA_WITH_DONOR{
 
 
 
+process COMBINE_MATCHES_IN_EXPECTED_FORMAT{
+    if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
+        container "/software/hgi/containers/mercury_scrna_deconvolution_62bd56a-2021-12-15-4d1ec9312485.sif"
+        //// container "/software/hgi/containers/mercury_scrna_deconvolution_latest.img"
+    } else {
+        container "mercury/scrna_deconvolution:62bd56a"
+    }
+  label 'process_small'
+
+  input:
+    path(stats_files)
+
+  output:
+    path('All_Infered_Expected.csv'), emit: all_Infered_Expected
+
+  script:
+    """
+      combine_all_GTmatched_in_expected_format.py --files "${stats_files}"
+    """
+}
+
+
 workflow MATCH_GT_VIREO {
   take:
     ch_pool_id_vireo_vcf
@@ -288,7 +376,7 @@ workflow MATCH_GT_VIREO {
     GT_MATCH_POOL_AGAINST_PANEL.out.gtcheck_results
       .groupTuple()
       .set { gt_check_by_panel }
-    gt_check_by_panel.subscribe { println "match_genotypes: gt_check_by_panel = ${it}\n"}
+    
 
     ASSIGN_DONOR_FROM_PANEL(gt_check_by_panel)
     ASSIGN_DONOR_FROM_PANEL.out.gtcheck_assignments
@@ -301,4 +389,6 @@ workflow MATCH_GT_VIREO {
   emit:
     pool_id_donor_assignments_csv = ASSIGN_DONOR_OVERALL.out.donor_assignments
     donor_match_table = ASSIGN_DONOR_OVERALL.out.donor_match_table
+    donor_match_table_with_pool_id = ASSIGN_DONOR_OVERALL.out.donor_match_table_with_pool_id
+    gt_pool = VIREO_GT_FIX_HEADER.out.gt_pool
 }

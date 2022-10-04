@@ -11,7 +11,7 @@ include { SPLIT_DONOR_H5AD } from '../modules/nf-core/modules/split_donor_h5ad/m
 include { PLOT_DONOR_CELLS } from '../modules/nf-core/modules/plot_donor_cells/main'
 include {MULTIPLET} from "../modules/nf-core/modules/multiplet/main"
 include {SOUPORCELL_VS_VIREO} from "../modules/nf-core/modules/plot_souporcell_vs_vireo/main"
-include { MATCH_GT_VIREO; REPLACE_GT_ASSIGNMENTS_WITH_PHENOTYPE; ENHANCE_VIREO_METADATA_WITH_DONOR } from '../modules/nf-core/modules/genotypes/main'
+include { REPLACE_GT_ASSIGNMENTS_WITH_PHENOTYPE; ENHANCE_VIREO_METADATA_WITH_DONOR } from '../modules/nf-core/modules/genotypes/main'
 include { match_genotypes } from './match_genotypes'
 include {REPLACE_GT_DONOR_ID } from '../modules/nf-core/modules/genotypes/main'
 workflow  main_deconvolution {
@@ -88,7 +88,7 @@ workflow  main_deconvolution {
             full_vcf.filter { experiment, cellsnp, npooled, t,ti -> npooled != '1' }.set{full_vcf2}
             full_vcf.filter { experiment, cellsnp, npooled, t,ti -> npooled == '1' }.set{not_deconvoluted}
             VIREO(full_vcf2)
-            vireo_out_sample_donor_vcf = VIREO.out.sample_donor_vcf
+            vireo_out_sample_donor_vcf = VIREO.out.infered_vcf
             vireo_out_sample_summary_tsv = VIREO.out.sample_summary_tsv
             vireo_out_sample__exp_summary_tsv = VIREO.out.sample__exp_summary_tsv
             vireo_out_sample_donor_ids = VIREO.out.sample_donor_ids
@@ -154,7 +154,6 @@ workflow  main_deconvolution {
 
         if (params.run_with_genotype_input & params.genotype_input.posterior_assignment) {
             match_genotypes(vireo_out_sample_donor_vcf)
-            // MATCH_GT_VIREO(vireo_out_sample_donor_vcf)
 
             out_gt = match_genotypes.out.donor_match_table
             ch_poolid_donor_assignment = match_genotypes.out.pool_id_donor_assignments_csv
@@ -289,8 +288,6 @@ workflow  main_deconvolution {
                 }
 
 
-                vireo_out_sample_summary_tsv.view()
-                vireo_out_sample__exp_summary_tsv.view()
                 PLOT_DONOR_CELLS(ch_vireo_donor_n_cells_tsv)
 
 

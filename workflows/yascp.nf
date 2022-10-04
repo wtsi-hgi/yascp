@@ -121,15 +121,20 @@ workflow SCDECON {
                     prepare_inputs.out.ch_experiment_donorsvcf_donorslist,channel__file_paths_10x)
                 ch_poolid_csv_donor_assignments = main_deconvolution.out.ch_poolid_csv_donor_assignments
                 bam_split_channel = main_deconvolution.out.sample_possorted_bam_vireo_donor_ids
-                MERGE_SAMPLES(main_deconvolution.out.out_h5ad,main_deconvolution.out.vireo_out_sample__exp_summary_tsv,'h5ad')
-
+                if (!params.skip_merge){
+                    MERGE_SAMPLES(main_deconvolution.out.out_h5ad,main_deconvolution.out.vireo_out_sample__exp_summary_tsv,'h5ad')
+                }
             }else{
                 channel__metadata = prepare_inputs.out.channel__metadata
-                MERGE_SAMPLES(channel__file_paths_10x,channel__metadata,'barcodes')
+                if (!params.skip_merge){
+                    MERGE_SAMPLES(channel__file_paths_10x,channel__metadata,'barcodes')
+                }
             }
             // TODO: Here add a fundtion to take an extra h5ad and merge it together with the current run. This will be required for the downstream analysis when we want to integrate multiple datasets
-            file__anndata_merged = MERGE_SAMPLES.out.file__anndata_merged
-            file__cells_filtered = MERGE_SAMPLES.out.file__cells_filtered
+            if (!params.skip_merge){
+                file__anndata_merged = MERGE_SAMPLES.out.file__anndata_merged
+                file__cells_filtered = MERGE_SAMPLES.out.file__cells_filtered
+            }
         }else{
             // This option skips all the deconvolution and and takes a preprocessed yascp h5ad file to run the downstream clustering and celltype annotation.
             log.info '''----Skipping Preprocessing since we already have prepeared h5ad input file----'''
@@ -176,30 +181,14 @@ workflow SCDECON {
     // The idea is to also run eQTL analysis, however this is currently not implemented as part of this pipeline.
     // // // Performing eQTL mapping.
 
-    // ###################################
-    // ################################### Readme
-    // Step4. SUMMARY STATISTICS, DONOR SPLITTING and WEB TRANSFER
-    // Once all the processes are done we gather the data in a summary folder in results. This is mainly done for the purposes of reporting on the web and o split the donor based metrics.
-    // ###################################
-    // ###################################
-    // we should make the pipeline capable in running just this qc repoirt generation
-    // ch_experiment_bam_bai_barcodes
-    //               .map { samplename, bam_file, bai_file, barcodes_tsv_gz -> tuple(samplename, file(bam_file)) }
-    //               .combine(vireo_out_sample_donor_ids, by: 0 )
-    //               .set { ch_experiment_bam_vireo_donor_ids }
-    // for this we needa channel with:
-    // samplename,
-    //  bamfile_for_sample, 
-    // vireo_results_for_sample - /lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/qc/Cardinal_45596_Aug_22_2022/results/deconvolution/vireo/CRD_CMB13086613/donor_ids.tsv
-    // Named as sample_possorted_bam_vireo_donor_ids
-
-    // 
     //This part gathers the plots for the reporting in a Summary folder. If run through gitlab CI it will triger the data transfer to web.
-    
-    data_handover(params.output_dir,
-                    process_finish_check_channel,
-                    ch_poolid_csv_donor_assignments,
-                    bam_split_channel) 
+
+    if (!params.skip_handover){
+        data_handover(params.output_dir,
+                        process_finish_check_channel,
+                        ch_poolid_csv_donor_assignments,
+                        bam_split_channel) 
+    }
                     
                     
 }
