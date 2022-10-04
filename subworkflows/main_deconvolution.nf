@@ -153,39 +153,21 @@ workflow  main_deconvolution {
         }
 
         if (params.run_with_genotype_input & params.genotype_input.posterior_assignment) {
+            vireo_out_sample_donor_vcf.view()
             match_genotypes(vireo_out_sample_donor_vcf)
-
             out_gt = match_genotypes.out.donor_match_table
             ch_poolid_donor_assignment = match_genotypes.out.pool_id_donor_assignments_csv
             // //here we fix the genotype ids to the ones matched by the GT match similarly to what vireo would do.
             REPLACE_GT_DONOR_ID(VIREO.out.all_required_data , out_gt.collect())
-            if (params.replace_genotype_ids){
-
-                REPLACE_GT_DONOR_ID.out.sample_donor_vcf.set{vireo_out_sample_donor_vcf}
-                REPLACE_GT_DONOR_ID.out.sample_summary_tsv.set{vireo_out_sample_summary_tsv}
-                REPLACE_GT_DONOR_ID.out.sample__exp_summary_tsv.set{vireo_out_sample__exp_summary_tsv}
-                REPLACE_GT_DONOR_ID.out.sample_donor_ids.set{vireo_out_sample_donor_ids}
-
-
-            }
             REPLACE_GT_DONOR_ID.out.assignments
                     .collectFile(name: "assignments_all_pools.tsv",
                             newLine: false, sort: true,
                             keepHeader: true,
                             // skip:1,
                             storeDir:params.outdir+'/deconvolution/vireo_gt_fix')
-            // otherwise we enhance the vireo metadata report with sample ids.
 
         }
 
-        //here have to fix the vireo outputs based on the GT matching.
-        if (params.replace_genotype_ids){
-            REPLACE_GT_DONOR_ID(VIREO.out.all_required_data , ch_poolid_donor_assignment.collect())
-            REPLACE_GT_DONOR_ID.out.sample_donor_vcf.set{vireo_out_sample_donor_vcf}
-            REPLACE_GT_DONOR_ID.out.sample_summary_tsv.set{vireo_out_sample_summary_tsv}
-            REPLACE_GT_DONOR_ID.out.sample__exp_summary_tsv.set{vireo_out_sample__exp_summary_tsv}
-            REPLACE_GT_DONOR_ID.out.sample_donor_ids.set{vireo_out_sample_donor_ids}
-        }
 
 
         if (params.vireo.run){
@@ -266,9 +248,6 @@ workflow  main_deconvolution {
                 .set{ch_vireo_donor_n_cells_tsv} // donor column: donor0, .., donorx, doublet, unassigned
 
                 out_split = SPLIT_DONOR_H5AD.out.donor_n_cells
-                // here before splitting we may want to add extra metadata if it is based on the genotype ids.
-
-
 
                 // paste experiment_id and donor ID columns with __ separator
                 vireo_out_sample__exp_summary_tsv = out_split
@@ -279,7 +258,7 @@ workflow  main_deconvolution {
 
 
                 if (params.run_with_genotype_input & params.genotype_input.posterior_assignment) {
-                    if (!params.replace_genotype_ids & params.extra_sample_metadata!='' & params.add_donor_metadata){
+                    if (params.extra_sample_metadata!='' & params.add_donor_metadata){
                         // Here we have sample level metadata but we have chosen to keep the donor ids.
                         // in this scenario we enhance the donor level vireo metadata file to add the donor metadata to the h5ads and eventually to the donor and teanche report
                         ENHANCE_VIREO_METADATA_WITH_DONOR(params.extra_sample_metadata,vireo_out_sample__exp_summary_tsv,REPLACE_GT_DONOR_ID.out.assignments.collect())
