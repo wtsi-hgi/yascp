@@ -54,6 +54,15 @@ def main():
         default=None,
         help='Mapping between genotype/phenotype'
     )
+    
+    parser.add_argument(
+       '-id', '--pool_id',
+        action='store',
+        dest='pool_id',
+        required=False,
+        default=None,
+        help='Mapping between genotype/phenotype'
+    )
 
     parser.add_argument(
        '-mt', '--match_table',
@@ -66,7 +75,8 @@ def main():
     options = parser.parse_args()
     Genome_PiHAT = pd.read_csv(options.pihat_match,sep='\s+')
     GT_Match_Table = pd.read_csv(options.match_table,sep=',')
-    Name = options.match_table.replace('stats_','').replace('_gt_donor_assignments.csv','')
+    # Name = options.match_table.replace('stats_','').replace('_gt_donor_assignments.csv','')
+    Name = options.pool_id
     Condition_Column = options.condition
     expected_ids = options.expected.split(',')
     mapping_file = options.mapping_file
@@ -144,7 +154,7 @@ def main():
         except:
             _=''
 
-    GT_Match_Table.to_csv(f"PiHAT_{options.match_table}",index=False,sep=',')
+    GT_Match_Table.to_csv(f"PiHAT_Stats_File_{Name}.csv",index=False,sep=',')
 
 
 if __name__ == '__main__':

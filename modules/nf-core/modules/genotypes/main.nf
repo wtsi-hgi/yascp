@@ -296,12 +296,12 @@ process ENHANCE_STATS_FILE{
 
 
   output:
-    tuple val(pool_id),path("PiHAT_${stats_table}"), emit: stats_table_PiHat_enhanced
+    tuple val(pool_id),path("PiHAT_Stats_File*"), emit: stats_table_PiHat_enhanced optional true
     path ('Max_PiHAT_For_Expected*') optional true
 
   script:
     """
-      add_PiHat_to_GT_match.py -mt ${stats_table} -ph ${ibd_table} -c ${condition} -e ${expected_ids} -m ${params.genotype_phenotype_mapping_file}
+      add_PiHat_to_GT_match.py -mt ${stats_table} -ph ${ibd_table} -c ${condition} -e ${expected_ids} -m ${params.genotype_phenotype_mapping_file} -id ${pool_id}
     """
 
 }
