@@ -32,6 +32,7 @@ nextflow.enable.dsl = 2
 //include { TEST_SPLIT_BAM_PER_DONOR } from './tests/test_bam_per_donor'
 //include { TEST_ENCRYPT_DIR} from './tests/test_encryption'
 include { TEST_SUBSET_GENOTYPES } from './tests/test_subset_genotypes'
+include { match_genotypes } from './subworkflows/match_genotypes'
 
 workflow NF_CORE_TEST {
   //println "**** running NF_CORE_TEST::TEST_MATCH_GENOTYPES"
@@ -49,6 +50,19 @@ workflow NF_CORE_TEST {
   println "**** running NF_CORE_TEST::TEST_SUBSET_GENOTYPES"
   TEST_SUBSET_GENOTYPES()
 }
+
+
+workflow REPORT_UPDATE{
+    // [CRD_CMB13102396, /lustre/scratch123/hgi/mdt1/projects/ukbb_scrna/pipelines/Pilot_UKB/qc/Cardinal_45717_Sep_03_2022/work/28/9c0b54dbae1243523421cf09c2a40f/vireo_CRD_CMB13102396/GT_donors.vireo.vcf.gz]
+    // match_genotypes(vireo_out_sample_donor_vcf)
+    // qc/Cardinal_45717_Sep_03_2022/results/deconvolution/vireo/CRD_CMB13102395/GT_donors.vireo.vcf.gz
+    log.info "#### LETS run the Genotype matching algorythm and PiHat Calculations #####"
+    myFileChannel = Channel.fromPath( './results/deconvolution/vireo/*/GT_donors.vireo.vcf.gz' )
+    myFileChannel.map{row -> tuple(row[-2], row)}.set{vireo_out_sample_donor_vcf}
+    match_genotypes(vireo_out_sample_donor_vcf)
+    
+}
+
 
 /*
 ========================================================================================
