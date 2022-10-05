@@ -153,7 +153,7 @@ workflow  main_deconvolution {
         }
 
         if (params.run_with_genotype_input & params.genotype_input.posterior_assignment) {
-            vireo_out_sample_donor_vcf.view()
+            
             match_genotypes(vireo_out_sample_donor_vcf)
             out_gt = match_genotypes.out.donor_match_table
             ch_poolid_donor_assignment = match_genotypes.out.pool_id_donor_assignments_csv

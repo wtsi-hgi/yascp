@@ -81,9 +81,11 @@ def main():
             
         try:
             replacement = mapping['oragene_id'].values[0]
+            for replacement in mapping['oragene_id']:
+                all_maped_samples.append(replacement)
         except:
             replacement = s1
-        all_maped_samples.append(replacement)
+            all_maped_samples.append(replacement)
 
     # Determine the overlap between samples and available entries in the vcf file
     Data_vcfsamples = pd.read_csv(vcfsamples,header=None)

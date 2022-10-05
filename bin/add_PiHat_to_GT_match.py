@@ -94,10 +94,11 @@ def main():
                 mapping = bridge[bridge['s00046_id']==s2]
                 
             try:
-                replacement = mapping['oragene_id'].values[0]
+                for replacement in mapping['oragene_id']:
+                    all_maped_samples.append({'original':s1,'replacement':replacement})
             except:
                 replacement = s1
-            all_maped_samples.append({'original':s1,'replacement':replacement})
+                all_maped_samples.append({'original':s1,'replacement':replacement})
         all_maped_samples2 = pd.DataFrame(all_maped_samples)
         # all_maped_samples2=all_maped_samples2.set_index('original')
     else:
@@ -107,6 +108,7 @@ def main():
         # Here we produce a new file that indicates all the best matches for the expected samples and their associated PiHat values.
         all_expected_id_best_match_PiHat = []
         for i,s1 in all_maped_samples2.iterrows():
+            print(s1)
             set1 =Genome_PiHAT[Genome_PiHAT['IID1'].str.contains(s1.replacement)]
             set2 =Genome_PiHAT[Genome_PiHAT['IID2'].str.contains(s1.replacement)]
             combo=pd.concat([set1,set2])
@@ -131,7 +133,6 @@ def main():
             all_expected_id_best_match_PiHat.append({'expected_donor_id':s1.original,'Best_Matched_donor_IID':donor_IID,'PiHAT value':max_pihat, 'mapping_id':s1.replacement,'donor_nr':donor_nr})
                 
         all_expected_data_PiHAT = pd.DataFrame(all_expected_id_best_match_PiHat)
-        
         all_expected_data_PiHAT= all_expected_data_PiHAT.sort_values(by=['donor_nr','PiHAT value'])
         all_expected_data_PiHAT=all_expected_data_PiHAT.drop(columns=['donor_nr'])
         all_expected_data_PiHAT.to_csv(f'Max_PiHAT_For_Expected_{Name}.tsv',sep='\t',index=False)

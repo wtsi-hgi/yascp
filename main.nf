@@ -57,7 +57,7 @@ workflow REPORT_UPDATE{
     // match_genotypes(vireo_out_sample_donor_vcf)
     // qc/Cardinal_45717_Sep_03_2022/results/deconvolution/vireo/CRD_CMB13102395/GT_donors.vireo.vcf.gz
     log.info "#### LETS run the Genotype matching algorythm and PiHat Calculations #####"
-    myFileChannel = Channel.fromPath( './results/deconvolution/vireo/*/GT_donors.vireo.vcf.gz' )
+    myFileChannel = Channel.fromPath( "${params.outdir}/deconvolution/vireo/*/GT_donors.vireo.vcf.gz" )
     myFileChannel.map{row -> tuple(row[-2], row)}.set{vireo_out_sample_donor_vcf}
     match_genotypes(vireo_out_sample_donor_vcf)
     

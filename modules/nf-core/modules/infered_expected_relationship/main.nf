@@ -26,8 +26,14 @@ workflow Relationships_Between_Infered_Expected {
       JOIN_STUDIES_MERGE(study_vcfs_per_pool,'Study_Merge')
       JOIN_STUDIES_MERGE.out.merged_expected_genotypes.set{merged_expected_genotypes}
       
+      vireo_GT_Genotypes.map { row -> tuple("${row[0]}", row[1],row[2]) }.set { vireo_GT_Genotypes }
+      // vireo_GT_Genotypes.view()
+      merged_expected_genotypes.map { row -> tuple("${row[0]}", row[1],row[2]) }.set { merged_expected_genotypes }
+      // merged_expected_genotypes.view()
       vireo_GT_Genotypes.mix(merged_expected_genotypes).set{all_Expected_and_infeared}
-      all_Expected_and_infeared.groupTuple().set{grouped}
+      
+      all_Expected_and_infeared.groupTuple(by: 0).set{grouped}
+      // grouped.view()
       JOIN_INFERED_EXPECTED_MERGE(grouped,'Infered_Merge')
       // have to do this for each of the pools too. 
       JOIN_INFERED_EXPECTED_MERGE.out.merged_expected_genotypes.map { row -> tuple(row[0], row[1]) }
@@ -37,7 +43,7 @@ workflow Relationships_Between_Infered_Expected {
     
       GT_MATCH_INFERED_EXPECTED.out.plink_ibd.combine(donor_match_table, by: 0).set{ibd_genome_mix}
       ibd_genome_mix.combine(donors_in_pools, by: 0).set{ibd_genome_expected_mix}
-      ibd_genome_expected_mix.view()
+      // ibd_genome_expected_mix.view()
       // donor_match_table.view()
       // GT_MATCH_INFERED_EXPECTED.out.plink_ibd.view()
       ENHANCE_STATS_FILE(ibd_genome_expected_mix,mode)
