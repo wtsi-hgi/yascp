@@ -100,6 +100,7 @@ def main():
                 replacement = s1
                 all_maped_samples.append({'original':s1,'replacement':replacement})
         all_maped_samples2 = pd.DataFrame(all_maped_samples)
+        all_maped_samples2 = all_maped_samples2.drop_duplicates()
         # all_maped_samples2=all_maped_samples2.set_index('original')
     else:
         all_maped_samples2 = expected_ids
