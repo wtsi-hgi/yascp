@@ -46,6 +46,16 @@ def main():
         help='expected sample IDs'
     )
     
+    
+    parser.add_argument(
+       '-md', '--metadata',
+        action='store',
+        dest='metadata',
+        required=False,
+        default=None,
+        help='Sample metadata that mey contain relatedness info in DRAW DATE'
+    )
+        
     parser.add_argument(
        '-m', '--mapping_file',
         action='store',
@@ -107,9 +117,44 @@ def main():
         
     if Condition_Column=='Expected':
         # Here we produce a new file that indicates all the best matches for the expected samples and their associated PiHat values.
+        
+        if (options.metadata):
+            # Name = 'CRD_CMB12922404'
+            Extra_Metadata_File = pd.read_csv(options.metadata,sep='\t')
+            Pool_Metadata = Extra_Metadata_File[Extra_Metadata_File.experiment_id.str.contains(Name)]
+            list_families = Pool_Metadata['FAMILY']+' '+Pool_Metadata['DRAW_DATE']
+            list_families.index= Pool_Metadata['donor']
+            list_families = list_families.dropna()
+            Unique_Families = set(list_families)
+            Relationship_Clusters = {}
+            for family_id in Unique_Families:
+                Related_individuals = set(list_families[list_families == family_id].index.values)
+                for renated_indiv in Related_individuals:
+                    Relationship_Clusters[renated_indiv]=Related_individuals
+                    
+
+            if len(list_families.dropna())>0:
+                perform_family_check = True
+            else:
+                perform_family_check = False
         all_expected_id_best_match_PiHat = []
         for i,s1 in all_maped_samples2.iterrows():
-            print(s1)
+            if (options.metadata):
+                
+                if perform_family_check:
+                    try:
+                        Reported_Relatives = Relationship_Clusters[s1.original]
+                        
+                        # Reported_Relatives.remove(s1.original)
+                        relatedness = ';'.join(Reported_Relatives)
+                    except:
+                        relatedness = 'No Reports'
+                else:
+                    relatedness = 'No Reports'
+            else:
+                relatedness = 'No Reports'
+ 
+            
             set1 =Genome_PiHAT[Genome_PiHAT['IID1'].str.contains(s1.replacement)]
             set2 =Genome_PiHAT[Genome_PiHAT['IID2'].str.contains(s1.replacement)]
             combo=pd.concat([set1,set2])
@@ -131,7 +176,7 @@ def main():
                 donor_nr =int(donor_IID.replace('donor',''))
             except:
                 donor_nr = -1
-            all_expected_id_best_match_PiHat.append({'expected_donor_id':s1.original,'Best_Matched_donor_IID':donor_IID,'PiHAT value':max_pihat, 'mapping_id':s1.replacement,'donor_nr':donor_nr})
+            all_expected_id_best_match_PiHat.append({'expected_donor_id':s1.original,'Best_Matched_donor_IID':donor_IID,'PiHAT value':max_pihat, 'mapping_id':s1.replacement,'donor_nr':donor_nr, 'relatedness':relatedness})
                 
         all_expected_data_PiHAT = pd.DataFrame(all_expected_id_best_match_PiHat)
         all_expected_data_PiHAT= all_expected_data_PiHAT.sort_values(by=['donor_nr','PiHAT value'])

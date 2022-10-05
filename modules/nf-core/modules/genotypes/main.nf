@@ -273,7 +273,7 @@ process REPLACE_GT_ASSIGNMENTS_WITH_PHENOTYPE{
 
 process ENHANCE_STATS_FILE{
 
-
+  tag "${pool_id}"
 
   publishDir  path: "${params.outdir}/gtmatch/${pool_id}",
         mode: "${params.copy_mode}",
@@ -301,7 +301,7 @@ process ENHANCE_STATS_FILE{
 
   script:
     """
-      add_PiHat_to_GT_match.py -mt ${stats_table} -ph ${ibd_table} -c ${condition} -e ${expected_ids} -m ${params.genotype_phenotype_mapping_file} -id ${pool_id}
+      add_PiHat_to_GT_match.py -mt ${stats_table} -ph ${ibd_table} -c ${condition} -e ${expected_ids} -m ${params.genotype_phenotype_mapping_file} -id ${pool_id} -md ${params.extra_sample_metadata}
     """
 
 }
