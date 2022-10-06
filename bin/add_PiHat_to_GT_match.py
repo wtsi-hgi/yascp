@@ -131,6 +131,7 @@ def main():
         all_maped_samples = []
         for s1 in expected_ids:
             # there are no dublicates atm for the S2 ids, but there are replicates for the genotype ids, this however not conceir us.
+            
             mapping = bridge[bridge['s00046_id']==s1]
             if len(mapping)==0:
                 s2 = re.sub('^0*','',s1)
@@ -138,11 +139,11 @@ def main():
             if len(mapping)==0:
                 s2 = s1.split('_')[0]
                 mapping = bridge[bridge['s00046_id']==s2]
-                
-            try:
+             
+            if (len(mapping['oragene_id'])>0):
                 for replacement in mapping['oragene_id']:
                     all_maped_samples.append({'original':s1,'replacement':replacement})
-            except:
+            else:
                 replacement = s1
                 all_maped_samples.append({'original':s1,'replacement':replacement})
         all_maped_samples2 = pd.DataFrame(all_maped_samples)
@@ -238,7 +239,7 @@ def main():
                 
             except:
                 if (s1.original == s1.replacement):
-                    donor_IID = 'likely that mapping file did not contain bridging info for this sample'
+                    donor_IID = 'mapping file seems to not contain this sample'
                 else:
                     donor_IID = 'likely that sample mapping indicated is not in VCF file'
                 max_pihat = None

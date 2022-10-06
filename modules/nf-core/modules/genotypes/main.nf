@@ -300,8 +300,13 @@ process ENHANCE_STATS_FILE{
     path ('Max_PiHAT_For_Expected*') optional true
 
   script:
+    if (params.extra_sample_metadata==''){
+      md_inp = ""
+    }else{
+      md_inp = "-md ${params.extra_sample_metadata}"
+    }
     """
-      add_PiHat_to_GT_match.py -mt ${stats_table} -ph ${ibd_table} -c ${condition} -e ${expected_ids} -m ${params.genotype_phenotype_mapping_file} -id ${pool_id} -md ${params.extra_sample_metadata} -wpi ${withinn_pool_ibd}
+      add_PiHat_to_GT_match.py -mt ${stats_table} -ph ${ibd_table} -c ${condition} -e ${expected_ids} -m ${params.genotype_phenotype_mapping_file} -id ${pool_id} -wpi ${withinn_pool_ibd} ${md_inp}
     """
 
 }
