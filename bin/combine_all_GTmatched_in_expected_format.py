@@ -28,15 +28,28 @@ def main():
         required=True,
         help='All_stats_files'
     )
-
+    
+    parser.add_argument(
+        '-dr', '--drop',
+        action='store',
+        dest='drop',
+        required=False,
+        default=None,
+        help='Sometimes we may want to drop the cohort.'
+    )
+        
     options = parser.parse_args()
     stats_files = options.stats_files.split(' ')
     Dataset=[]
+    dr1 = options.drop
+    
     for s1 in stats_files:
         # print(s1)
         # break
         experiment_id=s1.replace('stats_','').replace('_gt_donor_assignments.csv','')
         Data= pd.read_csv(s1)
+        if dr1:
+           Data= Data[Data.final_panel!=dr1]
         d1 = list(Data['donor_gt'])
         d1 = list(filter(lambda val: val !=  'NONE', Data['donor_gt']) )
         

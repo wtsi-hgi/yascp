@@ -306,7 +306,7 @@ process ENHANCE_STATS_FILE{
       md_inp = "-md ${params.extra_sample_metadata}"
     }
     """
-      add_PiHat_to_GT_match.py -mt ${stats_table} -ph ${ibd_table} -c ${condition} -e ${expected_ids} -m ${params.genotype_phenotype_mapping_file} -id ${pool_id} -wpi ${withinn_pool_ibd} ${md_inp}
+      add_PiHat_to_GT_match.py -mt ${stats_table} -ph ${ibd_table} -c ${condition} -e ${expected_ids} -m ${params.genotype_phenotype_mapping_file} -id ${pool_id} -wpi ${withinn_pool_ibd} ${md_inp} || echo 'we dont have expected samples in this cohort'
     """
 
 }
@@ -353,8 +353,13 @@ process COMBINE_MATCHES_IN_EXPECTED_FORMAT{
     path('All_Infered_Expected.csv'), emit: all_Infered_Expected
 
   script:
+    if (params.extra_sample_metadata==''){
+      md_in = ""
+    }else{
+      md_in = "-dr ${params.cohorts_to_drop_from_GT_Relatednes_check}"
+    }
     """
-      combine_all_GTmatched_in_expected_format.py --files "${stats_files}"
+      combine_all_GTmatched_in_expected_format.py --files "${stats_files}" ${md_in}
     """
 }
 
