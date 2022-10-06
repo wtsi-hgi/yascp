@@ -10,7 +10,8 @@ workflow Relationships_Between_Infered_Expected {
       donors_in_pools
       vireo_GT_Genotypes
       mode
-      donor_match_table 
+      donor_match_table
+      idb_pool
     main:
       
       donors_in_pools.combine(ch_ref_vcf).set{all_GT_pannels_and_pools}
@@ -29,6 +30,7 @@ workflow Relationships_Between_Infered_Expected {
       vireo_GT_Genotypes.map { row -> tuple("${row[0]}", row[1],row[2]) }.set { vireo_GT_Genotypes }
       // vireo_GT_Genotypes.view()
       merged_expected_genotypes.map { row -> tuple("${row[0]}", row[1],row[2]) }.set { merged_expected_genotypes }
+      idb_pool.map{ row -> tuple("${row[0]}", row[1]) }.set { idb_pool }
       // merged_expected_genotypes.view()
       vireo_GT_Genotypes.mix(merged_expected_genotypes).set{all_Expected_and_infeared}
       
@@ -42,7 +44,7 @@ workflow Relationships_Between_Infered_Expected {
       GT_MATCH_INFERED_EXPECTED(sample_name_vcf_no_csi,'Expected_Infered',mode)
     
       GT_MATCH_INFERED_EXPECTED.out.plink_ibd.combine(donor_match_table, by: 0).set{ibd_genome_mix}
-      ibd_genome_mix.combine(donors_in_pools, by: 0).set{ibd_genome_expected_mix}
+      ibd_genome_mix.combine(idb_pool, by: 0).set{ibd_genome_expected_mix}
       // ibd_genome_expected_mix.view()
       // donor_match_table.view()
       // GT_MATCH_INFERED_EXPECTED.out.plink_ibd.view()

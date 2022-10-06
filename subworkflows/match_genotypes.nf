@@ -40,7 +40,7 @@ workflow match_genotypes {
     // «««««««««
     // compare genotypes within a pool (identity by descent)
     GT_MATCH_POOL_IBD(ch_pool_id_vireo_vcf,'Withing_pool','InferedOnly')
-    
+    GT_MATCH_POOL_IBD.out.plink_ibd.set{idb_pool}
     // compare genotypes with the expected/matched genotypes to estimate the relationship between matches.
     // #### Note: this code takes in the subset genotypes (either determines as an expected inputs or determined as final matches [dependant on flag] and also the final GT match results to later extract the PI_HAT value)
 
@@ -60,8 +60,8 @@ workflow match_genotypes {
     .set { ch_ref_vcf }
 
     
-    Relationships_Between_Infered_Expected(ch_ref_vcf,donors_in_pools,vireo_GT_Genotypes,'Expected',MATCH_GT_VIREO.out.donor_match_table_with_pool_id)
-    Relationships_Between_Infered_GT_Matched(ch_ref_vcf,gt_matched_samples,vireo_GT_Genotypes,'GT_Matched', Relationships_Between_Infered_Expected.out.donor_match_table)
+    Relationships_Between_Infered_Expected(ch_ref_vcf,donors_in_pools,vireo_GT_Genotypes,'Expected',MATCH_GT_VIREO.out.donor_match_table_with_pool_id,idb_pool)
+    Relationships_Between_Infered_GT_Matched(ch_ref_vcf,gt_matched_samples,vireo_GT_Genotypes,'GT_Matched', Relationships_Between_Infered_Expected.out.donor_match_table,idb_pool)
 
    
     // Now based on these two files we will enhance the stats file with PiHat values.
