@@ -44,11 +44,14 @@ workflow Relationships_Between_Infered_Expected {
       GT_MATCH_INFERED_EXPECTED(sample_name_vcf_no_csi,'Expected_Infered',mode)
     
       GT_MATCH_INFERED_EXPECTED.out.plink_ibd.combine(donor_match_table, by: 0).set{ibd_genome_mix}
-      ibd_genome_mix.combine(idb_pool, by: 0).set{ibd_genome_expected_mix}
-      // ibd_genome_expected_mix.view()
+      
+      ibd_genome_mix.combine(donors_in_pools, by: 0).set{ibd_genome_expected_mix}
+      ibd_genome_expected_mix.combine(idb_pool, by: 0).set{ibd_genome_expected_mix2}
+
+      ibd_genome_expected_mix2.view()
       // donor_match_table.view()
       // GT_MATCH_INFERED_EXPECTED.out.plink_ibd.view()
-      ENHANCE_STATS_FILE(ibd_genome_expected_mix,mode)
+      ENHANCE_STATS_FILE(ibd_genome_expected_mix2,mode)
 
     emit:
         donor_match_table = ENHANCE_STATS_FILE.out.stats_table_PiHat_enhanced

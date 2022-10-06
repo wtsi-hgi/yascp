@@ -291,7 +291,7 @@ process ENHANCE_STATS_FILE{
 
 
   input:
-    tuple val(pool_id),path(ibd_table),path(stats_table),val(expected_ids)
+    tuple val(pool_id),path(ibd_table),path(stats_table),val(expected_ids),path(withinn_pool_ibd)
     val(condition)
 
 
@@ -301,7 +301,7 @@ process ENHANCE_STATS_FILE{
 
   script:
     """
-      add_PiHat_to_GT_match.py -mt ${stats_table} -ph ${ibd_table} -c ${condition} -e ${expected_ids} -m ${params.genotype_phenotype_mapping_file} -id ${pool_id} -md ${params.extra_sample_metadata}
+      add_PiHat_to_GT_match.py -mt ${stats_table} -ph ${ibd_table} -c ${condition} -e ${expected_ids} -m ${params.genotype_phenotype_mapping_file} -id ${pool_id} -md ${params.extra_sample_metadata} -wpi ${withinn_pool_ibd}
     """
 
 }
