@@ -191,23 +191,30 @@ def main():
         
         if (options.metadata):
             # Name = 'CRD_CMB12922404'
-            Extra_Metadata_File = pd.read_csv(options.metadata,sep='\t')
-            Pool_Metadata = Extra_Metadata_File[Extra_Metadata_File.experiment_id.str.contains(Name)]
-            list_families = Pool_Metadata['FAMILY']+' '+Pool_Metadata['DRAW_DATE']
-            list_families.index= Pool_Metadata['donor']
-            list_families = list_families.dropna()
-            Unique_Families = set(list_families)
             Relationship_Clusters = {}
-            for family_id in Unique_Families:
-                Related_individuals = set(list_families[list_families == family_id].index.values)
-                for renated_indiv in Related_individuals:
-                    Relationship_Clusters[renated_indiv]=Related_individuals
-                    
+            Extra_Metadata_File = pd.read_csv(options.metadata,sep='\t')
+            try:
+                Pool_Metadata = Extra_Metadata_File[Extra_Metadata_File.experiment_id.str.contains(Name)]
+                Pool_Metadata = Pool_Metadata.dropna(subset=['FAMILY','DRAW_DATE'])
+                list_families = Pool_Metadata['FAMILY'].fillna('')+' '+Pool_Metadata['DRAW_DATE']
+                
+                list_families.index= Pool_Metadata['donor']
+                list_families = list_families.dropna()
+                Unique_Families = set(list_families)
+            
+                for family_id in Unique_Families:
+                    Related_individuals = set(list_families[list_families == family_id].index.values)
+                    for renated_indiv in Related_individuals:
+                        Relationship_Clusters[renated_indiv]=Related_individuals
+                        
 
-            if len(list_families.dropna())>0:
-                perform_family_check = True
-            else:
+                if len(list_families.dropna())>0:
+                    perform_family_check = True
+                else:
+                    perform_family_check = False
+            except:
                 perform_family_check = False
+                
         all_expected_id_best_match_PiHat = []
         for i,s1 in all_maped_samples2.iterrows():
             if (options.metadata):
