@@ -72,15 +72,13 @@ GT_Assignments['Match Expected']='False'
 GT_Assignments['pool']=pool
 GT_Assignments['tranche']=tranche
 GT_Assignments['donor_gt original']=GT_Assignments['donor_gt']
+D2 = pd.DataFrame(All_expected_ids,columns=['col1'])
 for ix in GT_Assignments.index:
     # print(ix)
     
     #Here should add a a filter to estimate whether it is a good match.
     replacement = GT_Assignments.loc[ix,'donor_gt']
-    if 'THP1' in replacement:
-        replacement = 'celline_THP1'
-    if 'U937' in replacement:
-        replacement = 'celline_U937'
+
     expected = 'NA'
     poor_replacement =''
     if ix in Unassigned:
@@ -91,21 +89,33 @@ for ix in GT_Assignments.index:
     
     if (len(gp_ma)>0):
         try:
+            # replacement = 'S2-046-01741'
             replacement = str(gp_ma.loc[replacement][0])
+            print(replacement)
             # replacement = replacement.values[0]
-            if replacement in All_expected_ids:
+            
+            if len(D2[D2.col1.str.contains(replacement)])>0:
                 GT_Assignments.loc[ix,'Match Expected']='True'
         except:
             try:
-                replacement = str(gp_ma.loc[replacement.split('_')[0]].values[0])
+                # replacement='15001608190388_204238910153_R09C02'
+                
+                replacements = gp_ma.loc[replacement.split('_')[0]]
+                replacement = 'No_mapping___'+replacement
                 # replacement = replacement.values[0]
-                if replacement in All_expected_ids:
-                    GT_Assignments.loc[ix,'Match Expected']='True'
+                for rep1 in replacements.iloc[:,0]:
+                    
+                    if len(D2[D2.col1.str.contains(rep1)])>0:
+                        GT_Assignments.loc[ix,'Match Expected']='True'
+                        replacement = rep1
             except:
                 replacement = 'No_mapping___'+replacement
     else:
-        
         _ = ''
+    if 'THP1' in replacement:
+        replacement = 'celline_THP1'
+    if 'U937' in replacement:
+        replacement = 'celline_U937'
     if poor_replacement == 'Poor_GT_score___':
         replacement = poor_replacement+replacement
 
