@@ -201,7 +201,7 @@ for confident_panel in set(GT_MATCH['final_panel']):
             Expected_Samples2 = Extra_Metadata_Donors[Extra_Metadata_Donors.cohort == confident_panel_name]
             Expected_Samples = set(Expected_Samples2.donor).intersection(set(Expected_Samples))
             All_Deconvouted_Samples = set(Total_Report_samples['Vacutainer ID'])
-            
+            DF2= pd.DataFrame(Expected_Samples,columns=['col1'])
             Expected_Samples = set(DF2.col1.str.replace('^0*', ''))
             Missing_Samples = set(Expected_Samples)-set(All_Deconvouted_Samples)
             Not_Expected_Samples = set(All_Deconvouted_Samples)-set(Expected_Samples)
