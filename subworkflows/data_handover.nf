@@ -50,9 +50,6 @@ workflow data_handover{
         .subscribe onNext: {println "ch_poolid_csv_donor_assignment_gathered: $it"},
           onComplete: {println "ch_poolid_csv_donor_assignment_gathered: done"}
 
-        ENCRYPT_DIR.out.encrypted_dir
-          .subscribe onNext: {println "ENCRYPT_DIR.out.encrypted_dir: $it"},
-            onComplete: {println "ENCRYPT_DIR.out.encrypted_dir: done"}
 
         SPLIT_DATA_BY_STUDY(
           outdir,

@@ -17,8 +17,8 @@ args = parser.parse_args()
 exp_id = args.exp_id
 Report_Donor = pd.read_csv(f'results/handover/Donor_Quantification_summary/{exp_id}_Donor_Report.tsv',sep='\t')
 Tranche_report = pd.read_csv(f'results/handover/Donor_Quantification_summary/{exp_id}_Tranche_Report.tsv',sep='\t')
-args.met_folder
-Extra_Metadata = pd.read_csv(f'{args.met_folder}/Extra_Metadata.tsv',sep='\t')
+
+Extra_Metadata = pd.read_csv(f'{args.met_folder}',sep='\t')
 Extra_Metadata = Extra_Metadata.set_index('experiment_id')
 Report_Donor['Pool ID']
 
