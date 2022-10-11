@@ -83,7 +83,7 @@ workflow REPORT_UPDATE{
     //             bam_split_channel) 
     LI=process_finish_check_channel1.mix(process_finish_check_channel2)
     SUMMARY_STATISTICS_PLOTS(params.output_dir,LI,params.input_data_table)
-    TRANSFER(SUMMARY_STATISTICS_PLOTS.out.summary_plots)
+    TRANSFER(SUMMARY_STATISTICS_PLOTS.out.summary_plots,params.rsync_to_web_file)
 }
 
 

@@ -27,6 +27,7 @@ process SUMMARY_STATISTICS_PLOTS {
         }
         outdir = "${outdir_prev}/handover"
       """
+
           transfer_data.py    --results_dir ${outdir_prev} \
                               --cb_res ${params.cellbender_resolution_to_use} \
                               --cellbender ${cellbender_input} \
@@ -45,6 +46,7 @@ process TRANSFER {
 
     input: 
         path(summary_plots)
+        path(rsync_to_web_file)
 
 
     when:
@@ -52,6 +54,6 @@ process TRANSFER {
     script:
 
       """ 
-        ../../../scripts/rsync_to_web.sh ${params.project_name}          
+        ./rsync_to_web.sh ${params.project_name}          
       """
 }

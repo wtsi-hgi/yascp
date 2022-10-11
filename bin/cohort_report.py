@@ -151,6 +151,7 @@ for confident_panel in set(GT_MATCH['final_panel']):
 
         Total_Report = Generate_Report(GT_PANEL_CELLINE,pan)
         Total_Report2 = Total_Report.set_index('Pool_ID.Donor_Id')
+        Total_Report = Total_Report.set_index('Pool_ID.Donor_Id')
         Donor_Report2.loc[Total_Report2.index,'Vacutainer ID']=Total_Report2.loc[Total_Report2.index,'Vacutainer ID']
         Donor_Report2.loc[Total_Report2.index,'Chromium channel number']=Total_Report2.loc[Total_Report2.index,'Chromium channel number']
 
@@ -188,7 +189,22 @@ for confident_panel in set(GT_MATCH['final_panel']):
         Missing = pd.DataFrame()
         Not_Expected = Missing = pd.DataFrame()
         for id1 in set(Total_Report['Pool ID']):
-
+            try:
+                Stats_File = pd.read_csv(f"{path}/gtmatch/{id1}/PiHAT_Stats_File_{id1}.csv",sep=',')
+                Stats_File['exp_id']=id1+'_'+Stats_File['donor_query']
+                Stats_File = Stats_File.set_index('exp_id')
+                overlapping_index=set(Total_Report.index).intersection(set(Stats_File.index))
+                if (len(overlapping_index)>0):
+                    Total_Report.loc[overlapping_index,'PiHat: Expected']=Stats_File.loc[overlapping_index,'PiHat: Expected'].fillna('  ')
+                    Total_Report.loc[overlapping_index,'Infered Relatednes (PiHAT>0.3']=Stats_File.loc[overlapping_index,'Infered Relatednes (PiHAT>0.3'].fillna('  ')
+                    # Total_Report['Infered Relatednes (PiHAT>0.3)']=Stats_File['Infered Relatednes (PiHAT>0.3)'].fillna('  ')
+                    # PiHat: Expected 
+                    # if pan!='UKBB':
+                    #     Total_Report.loc[overlapping_index,'PiHat: Expected']=Stats_File.loc[overlapping_index,'PiHat: Expected'].fillna('  ')
+                    
+            except:
+                print('Stats file not available')
+            
             Total_Report_samples = Total_Report[Total_Report['Pool ID']==id1]
             Donor_Report2_samples = Pipeline_inputs[Pipeline_inputs['experiment_id']==id1]
             Expected_Samples = set(Donor_Report2_samples.iloc[0]['donor_vcf_ids'].replace('\'','').split(','))
@@ -215,6 +231,11 @@ for confident_panel in set(GT_MATCH['final_panel']):
                 Not_Expected=pd.concat([Not_Expected,Not_Expected_Samples2])
         Not_Expected = Not_Expected.set_index('Pool')
         Missing = Missing.set_index('Pool')
+        try:
+            Donor_Report2.loc[Total_Report.index,'PiHat: Expected']=Total_Report.loc[Total_Report.index,'PiHat: Expected']
+            Donor_Report2.loc[Total_Report.index,'Infered Relatednes (PiHAT>0.3)']=Total_Report.loc[Total_Report.index,'Infered Relatednes (PiHAT>0.3)']
+        except:
+            _=''
 
         if (pan=='UKBB'):
             # For UKB samples we only return the expected samples
@@ -238,7 +259,7 @@ for confident_panel in set(GT_MATCH['final_panel']):
         if (len(Not_Expected)>0):
             Not_Expected.to_csv(f'{prefix}/Summary_plots/{project_name}/Summary/{pan}_REPORT/{project_name}_Not_Expected_{pan}_Donors.tsv',sep='\t')
 
-        Total_Report.to_csv(f'{prefix}/Summary_plots/{project_name}/Summary/{pan}_REPORT/{project_name}_{pan}_Report.tsv',sep='\t',index=False)
+        Total_Report.to_csv(f'{prefix}/Summary_plots/{project_name}/Summary/{pan}_REPORT/{project_name}_{pan}_Report.tsv',sep='\t')
      
 Donor_Report2.to_csv(f"{path}/handover/Donor_Quantification_summary/{project_name}_Donor_Report.tsv",sep='\t',index=True)
 Donor_Report2.to_csv(f"{prefix}/Summary_plots/{project_name}/Summary/{project_name}_Donor_Report.tsv",sep='\t',index=True)
