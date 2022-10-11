@@ -353,7 +353,7 @@ process COMBINE_MATCHES_IN_EXPECTED_FORMAT{
     path('All_Infered_Expected.csv'), emit: all_Infered_Expected
 
   script:
-    if (params.extra_sample_metadata==''){
+    if (params.cohorts_to_drop_from_GT_Relatednes_check==''){
       md_in = ""
     }else{
       md_in = "-dr ${params.cohorts_to_drop_from_GT_Relatednes_check}"

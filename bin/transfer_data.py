@@ -89,11 +89,21 @@ def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res
     metadata_table = pd.DataFrame()
     for folder in df_raw.index:
         dir3 = f"{df_raw.loc[folder, 'data_path_10x_format']}"
-        copyfile(f'{dir3}/web_summary.html', f'{name_dir}/Fetch Pipeline/html_{folder}.html')
-        metadata = pd.read_csv(f'{dir3}/metrics_summary.csv',sep=',',index_col=False)
-        metadata['Sample_id']=folder
-        metadata.set_index('Sample_id',drop=True,inplace=True)
-        metadata_table=pd.concat([metadata_table,metadata])
+        try:
+            copyfile(f'{dir3}/web_summary.html', f'{name_dir}/Fetch Pipeline/html_{folder}.html')
+            metadata = pd.read_csv(f'{dir3}/metrics_summary.csv',sep=',',index_col=False)
+            metadata['Sample_id']=folder
+            metadata.set_index('Sample_id',drop=True,inplace=True)
+            metadata_table=pd.concat([metadata_table,metadata])
+        except:
+            copyfile(f'{results_dir}/handover/{name_dir}/Fetch Pipeline/html_{folder}.html', f'{name_dir}/Fetch Pipeline/html_{folder}.html')
+            try:
+                metadata_table = pd.read_csv(f'{results_dir}/handover/{name_dir}/Fetch Pipeline/CSV/Submission_Data_Pilot_UKB.file_metadata.tsv',sep='\t')
+                metadata_table.set_index('Sample_id',drop=True,inplace=True)
+            except:
+                metadata_table = pd.read_csv(f'{results_dir}/handover/{name_dir}/Fetch Pipeline/Submission_Data_Pilot_UKB.file_metadata.tsv',sep=',')
+                metadata_table.set_index('Sample_id',drop=True,inplace=True)
+
     try:
         os.mkdir(f'{name_dir}/Fetch Pipeline/CSV')
     except:
@@ -165,7 +175,7 @@ def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res
         # copyfile(fil1, f'{name_dir}/QC metrics/plot_ecdf-x_log10.var=total_counts.color=experiment_id-adata.png')
         files = glob.glob(f'{folder1}/*[!.gz]')
         for file1 in files:
-            print(file1)
+            # print(file1)
             copy(file1, f'{name_dir}/Cell-type assignment')
 
 
@@ -178,7 +188,7 @@ def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res
         # copyfile(fil1, f'{name_dir}/QC metrics/plot_ecdf-x_log10.var=total_counts.color=experiment_id-adata.png')
         files = glob.glob(f'{folder1}/*[!.gz]')
         for file1 in files:
-            print(file1)
+            # print(file1)
             copy(file1, f'{name_dir}/Cell-type assignment')
 
 

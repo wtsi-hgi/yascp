@@ -36,6 +36,7 @@ include { match_genotypes } from "$projectDir/subworkflows/match_genotypes"
 include { metadata_posthoc;replace_donors_posthoc } from "$projectDir/modules/local/report_update/main"
 include {data_handover} from "$projectDir/subworkflows/data_handover"
 include { CREATE_ARTIFICIAL_BAM_CHANNEL } from "$projectDir/modules/local/create_artificial_bam_channel/main"
+include { TRANSFER;SUMMARY_STATISTICS_PLOTS } from "$projectDir/modules/nf-core/modules/summary_statistics_plots/main"
 
 workflow NF_CORE_TEST {
   //println "**** running NF_CORE_TEST::TEST_MATCH_GENOTYPES"
@@ -76,11 +77,13 @@ workflow REPORT_UPDATE{
     replace_donors_posthoc(update_input_channel)
     process_finish_check_channel = replace_donors_posthoc.out.dummy_out
     // Once everything is updated we need to make sure that the dataon the website and in the cardinal analysis foder is accurate and up to date, hence we rerun the data_handover scripts.
-    data_handover(params.output_dir,
-                process_finish_check_channel,
-                ch_poolid_csv_donor_assignments,
-                bam_split_channel) 
-    
+    // data_handover(params.output_dir,
+    //             process_finish_check_channel,
+    //             ch_poolid_csv_donor_assignments,
+    //             bam_split_channel) 
+
+    SUMMARY_STATISTICS_PLOTS(params.output_dir,process_finish_check_channel,params.input_data_table)
+    TRANSFER(SUMMARY_STATISTICS_PLOTS.out.summary_plots)
 }
 
 
