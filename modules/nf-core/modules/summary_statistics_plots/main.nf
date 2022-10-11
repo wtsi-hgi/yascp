@@ -27,7 +27,7 @@ process SUMMARY_STATISTICS_PLOTS {
         }
         outdir = "${outdir_prev}/handover"
       """
-
+          echo "${gather_dummy_input}" >dummy.out
           transfer_data.py    --results_dir ${outdir_prev} \
                               --cb_res ${params.cellbender_resolution_to_use} \
                               --cellbender ${cellbender_input} \
@@ -47,6 +47,7 @@ process TRANSFER {
     input: 
         path(summary_plots)
         path(rsync_to_web_file)
+        path(results_dir)
 
 
     when:

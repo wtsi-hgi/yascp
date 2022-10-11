@@ -298,7 +298,7 @@ process ENHANCE_STATS_FILE{
   output:
     tuple val(pool_id),path("PiHAT_Stats_File*"), emit: stats_table_PiHat_enhanced optional true
     path ('Max_PiHAT_For_Expected*') optional true
-
+    path('Done.tmp'), emit: done_validation
   script:
     if (params.extra_sample_metadata==''){
       md_inp = ""
@@ -306,7 +306,9 @@ process ENHANCE_STATS_FILE{
       md_inp = "-md ${params.extra_sample_metadata}"
     }
     """
+      
       add_PiHat_to_GT_match.py -mt ${stats_table} -ph ${ibd_table} -c ${condition} -e ${expected_ids} -m ${params.genotype_phenotype_mapping_file} -id ${pool_id} -wpi ${withinn_pool_ibd} ${md_inp} || echo 'we dont have expected samples in this cohort'
+      echo 'Done' > Done.tmp
     """
 
 }

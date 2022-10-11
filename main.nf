@@ -68,22 +68,23 @@ workflow REPORT_UPDATE{
     myFileChannel = Channel.fromPath( "${params.outdir}/deconvolution/vireo/*/GT_donors.vireo.vcf.gz" )
     myFileChannel.map{row -> tuple(row[-2], row)}.set{vireo_out_sample_donor_vcf}
     match_genotypes(vireo_out_sample_donor_vcf)
-    process_finish_check_channel1 = match_genotypes.out.out_finish_val
+    match_genotypes.out.out_finish_val.set{o1}
     // updating the Metadata if something new has been fetched,
     // UKBB is sending us samples once a week and sometimes the sample mappings may be present at a later date, hence we update previously run samples accordingly.
     Channel.from([["${params.RUN}","${params.output_dir}"]]).set{update_input_channel}
     // We sometimes aslo chnge apporach in the data fetch and we need to add in some extra metadata
     // metadata_posthoc(update_input_channel)
     replace_donors_posthoc(update_input_channel)
-    process_finish_check_channel2 = replace_donors_posthoc.out.dummy_out
+    replace_donors_posthoc.out.dummy_out.set{o2}
+    o1.mix(o2).set{o3}
     // Once everything is updated we need to make sure that the dataon the website and in the cardinal analysis foder is accurate and up to date, hence we rerun the data_handover scripts.
     // data_handover(params.output_dir,
     //             process_finish_check_channel,
     //             ch_poolid_csv_donor_assignments,
     //             bam_split_channel) 
-    LI=process_finish_check_channel1.mix(process_finish_check_channel2)
-    SUMMARY_STATISTICS_PLOTS(params.output_dir,LI,params.input_data_table)
-    TRANSFER(SUMMARY_STATISTICS_PLOTS.out.summary_plots,params.rsync_to_web_file)
+    
+    SUMMARY_STATISTICS_PLOTS(params.output_dir,o1,params.input_data_table)
+    TRANSFER(SUMMARY_STATISTICS_PLOTS.out.summary_plots,params.rsync_to_web_file,params.output_dir)
 }
 
 
