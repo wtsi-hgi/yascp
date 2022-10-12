@@ -65,7 +65,7 @@ def Generate_Report(GT_MATCH_CONFIDENT,pan):
     Total_Report = pd.DataFrame()               
     for i,row1 in GT_MATCH_CONFIDENT.iterrows():
         print(i)
-        # print(row1)
+        print(row1)
         print(f"{row1['pool']}_{row1['donor_query']}")
         
         Matched_Donor_report = ''
@@ -78,7 +78,10 @@ def Generate_Report(GT_MATCH_CONFIDENT,pan):
         else:
             gt_match = row1['donor_gt']
         
-        Extra_Metadata_Donor1 = Extra_Metadata_Donors[Extra_Metadata_Donors['experiment_id'].str.contains(f"{row1['pool']}__{gt_match}")]
+        Extra_Metadata_Donor1 = Extra_Metadata_Donors[Extra_Metadata_Donors['experiment_id'].str.contains(f"{row1['pool']}")]
+        Extra_Metadata_Donor1 = Extra_Metadata_Donor1[Extra_Metadata_Donor1['experiment_id'].str.contains(f"{gt_match}")]
+        
+
         try:
             Matched_Donor_report.insert(2, "Vacutainer ID", gt_match)
         except:
@@ -197,6 +200,7 @@ for confident_panel in set(GT_MATCH['final_panel']):
         Missing = pd.DataFrame()
         Not_Expected = Missing = pd.DataFrame()
         for id1 in set(Total_Report['Pool ID']):
+            print(id1)
             try:
                 Stats_File = pd.read_csv(f"{path}/gtmatch/{id1}/PiHAT_Stats_File_{id1}.csv",sep=',')
                 Stats_File['exp_id']=id1+'_'+Stats_File['donor_query']
@@ -204,7 +208,7 @@ for confident_panel in set(GT_MATCH['final_panel']):
                 overlapping_index=set(Total_Report.index).intersection(set(Stats_File.index))
                 if (len(overlapping_index)>0):
                     Total_Report.loc[overlapping_index,'PiHat: Expected']=Stats_File.loc[overlapping_index,'PiHat: Expected'].fillna('  ')
-                    Total_Report.loc[overlapping_index,'Infered Relatednes (PiHAT>0.3']=Stats_File.loc[overlapping_index,'Infered Relatednes (PiHAT>0.3'].fillna('  ')
+                    Total_Report.loc[overlapping_index,'Infered Relatednes (PiHAT>0.3)']=Stats_File.loc[overlapping_index,'Infered Relatednes (PiHAT>0.3'].fillna('  ')
                     # Total_Report['Infered Relatednes (PiHAT>0.3)']=Stats_File['Infered Relatednes (PiHAT>0.3)'].fillna('  ')
                     # PiHat: Expected 
                     # if pan!='UKBB':
@@ -240,6 +244,9 @@ for confident_panel in set(GT_MATCH['final_panel']):
                 Not_Expected_Samples2=pd.DataFrame(Not_Expected_Samples,columns=['Sample'])
                 Not_Expected_Samples2['Pool']=id1
                 Not_Expected=pd.concat([Not_Expected,Not_Expected_Samples2])
+            else:
+                Missing = pd.DataFrame(columns=['Pool'])
+                Not_Expected = pd.DataFrame(columns=['Pool'])
         Not_Expected = Not_Expected.set_index('Pool')
         Missing = Missing.set_index('Pool')
         try:
