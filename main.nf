@@ -76,14 +76,14 @@ workflow REPORT_UPDATE{
     // metadata_posthoc(update_input_channel)
     replace_donors_posthoc(update_input_channel)
     replace_donors_posthoc.out.dummy_out.set{o2}
-    o1.mix(o2).set{o3}
+    o1.mix(o2).last().set{o3}
     // Once everything is updated we need to make sure that the dataon the website and in the cardinal analysis foder is accurate and up to date, hence we rerun the data_handover scripts.
     // data_handover(params.output_dir,
     //             process_finish_check_channel,
     //             ch_poolid_csv_donor_assignments,
     //             bam_split_channel) 
     
-    SUMMARY_STATISTICS_PLOTS(params.output_dir,o1,params.input_data_table)
+    SUMMARY_STATISTICS_PLOTS(params.output_dir,o3,params.input_data_table)
     TRANSFER(SUMMARY_STATISTICS_PLOTS.out.summary_plots,params.rsync_to_web_file,params.output_dir)
 }
 
