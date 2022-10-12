@@ -21,13 +21,17 @@ options = parser.parse_args()
 path = options.path
 
 try:
-    prefix=f'{path}/handover/' #this is used for the updating reports posthoc, -> for this disable the next line
-    project_name = os.listdir(f"{prefix}/Summary_plots")[0]
+    prefix=f'{path}' #this is used for the updating reports posthoc, -> for this disable the next line
+    project_name = os.listdir(f"{prefix}/handover/Summary_plots")[0]
     GT_MATCH = pd.read_csv(f"{path}/deconvolution/vireo_gt_fix/assignments_all_pools.tsv",sep='\t')
     Donor_Report = pd.read_csv(f"{path}/handover/Donor_Quantification_summary/{project_name}_Donor_Report.tsv",sep='\t')
     Tranch_Report = pd.read_csv(f"{path}/handover/Donor_Quantification_summary/{project_name}_Tranche_Report.tsv",sep='\t')
-    Extra_Metadata_Donors = pd.read_csv(f"{prefix}/Summary_plots/{project_name}/Summary/Extra_Metadata_Donors.tsv",sep='\t')
-    Pipeline_inputs = pd.read_csv(f"{prefix}/Summary_plots/{project_name}/Fetch Pipeline/Input/input_table.tsv",sep='\t')
+    try:
+        Extra_Metadata_Donors = pd.read_csv(f"{prefix}/handover/Summary_plots/{project_name}/Summary/Extra_Metadata_Donors.tsv",sep='\t')
+        Pipeline_inputs = pd.read_csv(f"{prefix}/Summary_plots/{project_name}/Fetch Pipeline/Input/input_table.tsv",sep='\t')
+    except:
+        Extra_Metadata_Donors = pd.read_csv(f"Summary_plots/{project_name}/Summary/Extra_Metadata_Donors.tsv",sep='\t')
+        Pipeline_inputs = pd.read_csv(f"Summary_plots/{project_name}/Fetch Pipeline/Input/input_table.tsv",sep='\t')
 except:
     prefix='.'
     project_name = os.listdir(f"{prefix}/Summary_plots")[0]
@@ -35,7 +39,7 @@ except:
     Donor_Report = pd.read_csv(f"{path}/handover/Donor_Quantification_summary/{project_name}_Donor_Report.tsv",sep='\t')
     Tranch_Report = pd.read_csv(f"{path}/handover/Donor_Quantification_summary/{project_name}_Tranche_Report.tsv",sep='\t')
     try:
-        Extra_Metadata_Donors = pd.read_csv(f"{prefix}/Summary_plots/{project_name}/Summary/Extra_Metadata_Donors.tsv",sep='\t')
+        Extra_Metadata_Donors = pd.read_csv(f"{prefix}Summary_plots/{project_name}/Summary/Extra_Metadata_Donors.tsv",sep='\t')
     except:
         prefix=f'{path}/handover/'
         Extra_Metadata_Donors = pd.read_csv(f"{prefix}/Summary_plots/{project_name}/Summary/Extra_Metadata_Donors.tsv",sep='\t')
@@ -222,7 +226,10 @@ for confident_panel in set(GT_MATCH['final_panel']):
             Expected_Samples = set(Expected_Samples2.donor).intersection(set(Expected_Samples))
             All_Deconvouted_Samples = set(Total_Report_samples['Vacutainer ID'])
             DF2= pd.DataFrame(Expected_Samples,columns=['col1'])
+            DF3= pd.DataFrame(All_Deconvouted_Samples,columns=['col1'])
+            
             Expected_Samples = set(DF2.col1.str.replace('^0*', ''))
+            All_Deconvouted_Samples = set(DF3.col1.str.replace('^0*', ''))
             Missing_Samples = set(Expected_Samples)-set(All_Deconvouted_Samples)
             Not_Expected_Samples = set(All_Deconvouted_Samples)-set(Expected_Samples)
             if (len(Missing_Samples)>0):
@@ -255,17 +262,17 @@ for confident_panel in set(GT_MATCH['final_panel']):
         # Missing_Samples = set(Expected_Samples.donor)-set(Total_Report['Vacutainer ID'])
         # This should loop through each of the inputs - expected ws deconvoluted.
         try:
-            os.mkdir(f'{prefix}/Summary_plots/{project_name}/Summary/{pan}_REPORT')
+            os.mkdir(f'Summary_plots/{project_name}/Summary/{pan}_REPORT')
         except:
             print('Dir exists')
         if (len(Missing)>0):
-            Missing.to_csv(f'{prefix}/Summary_plots/{project_name}/Summary/{pan}_REPORT/{project_name}_Missing_{pan}_Donors.tsv',sep='\t')
+            Missing.to_csv(f'Summary_plots/{project_name}/Summary/{pan}_REPORT/{project_name}_Missing_{pan}_Donors.tsv',sep='\t')
         if (len(Not_Expected)>0):
-            Not_Expected.to_csv(f'{prefix}/Summary_plots/{project_name}/Summary/{pan}_REPORT/{project_name}_Not_Expected_{pan}_Donors.tsv',sep='\t')
+            Not_Expected.to_csv(f'Summary_plots/{project_name}/Summary/{pan}_REPORT/{project_name}_Not_Expected_{pan}_Donors.tsv',sep='\t')
 
-        Total_Report.to_csv(f'{prefix}/Summary_plots/{project_name}/Summary/{pan}_REPORT/{project_name}_{pan}_Report.tsv',sep='\t')
+        Total_Report.to_csv(f'Summary_plots/{project_name}/Summary/{pan}_REPORT/{project_name}_{pan}_Report.tsv',sep='\t')
      
-Donor_Report2.to_csv(f"{path}/handover/Donor_Quantification_summary/{project_name}_Donor_Report.tsv",sep='\t',index=True)
-Donor_Report2.to_csv(f"{prefix}/Summary_plots/{project_name}/Summary/{project_name}_Donor_Report.tsv",sep='\t',index=True)
+Donor_Report2.to_csv(f"results/handover/Donor_Quantification_summary/{project_name}_Donor_Report.tsv",sep='\t',index=True)
+Donor_Report2.to_csv(f"Summary_plots/{project_name}/Summary/{project_name}_Donor_Report.tsv",sep='\t',index=True)
 
 print('Done')

@@ -34,7 +34,7 @@ process SUMMARY_STATISTICS_PLOTS {
                               --input_table ${input_data_table} \
                               --web_transfer ${params.webtransfer} \
                               --project_name ${params.project_name}
-          ln -s ${params.extra_sample_metadata} Summary_plots/*/Summary
+          cp ${params.extra_sample_metadata} Summary_plots/*/Summary || echo 'not available'
           cohort_report.py -d ${outdir_prev}
       """
 }
