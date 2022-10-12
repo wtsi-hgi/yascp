@@ -25,6 +25,8 @@ input_id =args.in_file
 
 try:
     GT_Assignments = pd.read_csv(f'{input_id}',sep=',')
+    if len(GT_Assignments.columns)==1:
+        GT_Assignments = pd.read_csv(f'{input_id}',sep='\t')
 except:
     GT_Assignments = pd.read_csv(f'{input_id}',sep='\t')
 
