@@ -197,9 +197,9 @@ for confident_panel in set(GT_MATCH['final_panel']):
         elif confident_panel == 'GT_UKBB':
             confident_panel_name = 'Cardinal UKB'
 
-        Missing = pd.DataFrame()
-        Not_Expected = Missing = pd.DataFrame()
-        for id1 in set(Total_Report['Pool ID']):
+        Missing = pd.DataFrame(columns=['Pool'])
+        Not_Expected = pd.DataFrame(columns=['Pool'])
+        for id1 in set(GT_MATCH['pool']):
             print(id1)
             try:
                 Stats_File = pd.read_csv(f"{path}/gtmatch/{id1}/PiHAT_Stats_File_{id1}.csv",sep=',')
@@ -245,8 +245,7 @@ for confident_panel in set(GT_MATCH['final_panel']):
                 Not_Expected_Samples2['Pool']=id1
                 Not_Expected=pd.concat([Not_Expected,Not_Expected_Samples2])
             else:
-                Missing = pd.DataFrame(columns=['Pool'])
-                Not_Expected = pd.DataFrame(columns=['Pool'])
+                print('all good')
         Not_Expected = Not_Expected.set_index('Pool')
         Missing = Missing.set_index('Pool')
         try:
