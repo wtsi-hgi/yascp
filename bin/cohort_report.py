@@ -208,7 +208,7 @@ for confident_panel in set(GT_MATCH['final_panel']):
                 overlapping_index=set(Total_Report.index).intersection(set(Stats_File.index))
                 if (len(overlapping_index)>0):
                     Total_Report.loc[overlapping_index,'PiHat: Expected']=Stats_File.loc[overlapping_index,'PiHat: Expected'].fillna('  ')
-                    Total_Report.loc[overlapping_index,'Infered Relatednes (PiHAT>0.3)']=Stats_File.loc[overlapping_index,'Infered Relatednes (PiHAT>0.3'].fillna('  ')
+                    Total_Report.loc[overlapping_index,'Infered Relatednes (PiHAT>0.3)']=Stats_File.loc[overlapping_index,'Infered Relatednes (PiHAT>0.3)'].fillna('  ')
                     # Total_Report['Infered Relatednes (PiHAT>0.3)']=Stats_File['Infered Relatednes (PiHAT>0.3)'].fillna('  ')
                     # PiHat: Expected 
                     # if pan!='UKBB':
@@ -219,7 +219,10 @@ for confident_panel in set(GT_MATCH['final_panel']):
             
             Total_Report_samples = Total_Report[Total_Report['Pool ID']==id1]
             Donor_Report2_samples = Pipeline_inputs[Pipeline_inputs['experiment_id']==id1]
-            Expected_Samples = set(Donor_Report2_samples.iloc[0]['donor_vcf_ids'].replace('\'','').split(','))
+            DF1 = pd.DataFrame(Donor_Report2_samples.iloc[0]['donor_vcf_ids'].replace('\'','').split(','),columns=['col1'])
+            DF1['col1']= DF1['col1'].str.replace(r'U937_.*', 'U937', regex=True).astype('str')
+            DF1['col1']= DF1['col1'].str.replace(r'THP1_.*', 'THP1', regex=True).astype('str')
+            Expected_Samples = set(DF1.col1)
 
             # print(Expected_Samples)
             try:
@@ -227,9 +230,17 @@ for confident_panel in set(GT_MATCH['final_panel']):
             except:
                 _='cant'
             Expected_Samples2 = Extra_Metadata_Donors[Extra_Metadata_Donors.cohort == confident_panel_name]
-            Expected_Samples = set(Expected_Samples2.donor).intersection(set(Expected_Samples))
+            Expected_Samples3 = Extra_Metadata_Donors[Extra_Metadata_Donors.cohort == 'Cardinal controls']
+            Expected_Samples3['donor']= Expected_Samples3['donor'].str.replace(r'U937_.*', 'U937', regex=True).astype('str')
+            Expected_Samples3['donor']= Expected_Samples3['donor'].str.replace(r'THP1_.*', 'THP1', regex=True).astype('str')
+            
+            combo = set(Expected_Samples2.donor).union(Expected_Samples3.donor)
+            Expected_Samples = set(combo).intersection(set(Expected_Samples))
             All_Deconvouted_Samples = set(Total_Report_samples['Vacutainer ID'])
             DF2= pd.DataFrame(Expected_Samples,columns=['col1'])
+            
+            # DF2['col1'] = DF2['col1'].str.replace(r'U937_.*', 'U937', regex=True).astype('str')
+            # DF2['col1'] = DF2['col1'].str.replace(r'THP1_.*', 'THP1', regex=True).astype('str')
             DF3= pd.DataFrame(All_Deconvouted_Samples,columns=['col1'])
             
             Expected_Samples = set(DF2.col1.str.replace('^0*', ''))
