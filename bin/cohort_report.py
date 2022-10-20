@@ -282,10 +282,10 @@ for confident_panel in set(GT_MATCH['final_panel']):
             os.mkdir(f'Summary_plots/{project_name}/Summary/{pan}_REPORT')
         except:
             print('Dir exists')
-        if (len(Missing)>0):
-            Missing.to_csv(f'Summary_plots/{project_name}/Summary/{pan}_REPORT/{project_name}_Missing_{pan}_Donors.tsv',sep='\t')
-        if (len(Not_Expected)>0):
-            Not_Expected.to_csv(f'Summary_plots/{project_name}/Summary/{pan}_REPORT/{project_name}_Not_Expected_{pan}_Donors.tsv',sep='\t')
+        # if (len(Missing)>0):
+        Missing.to_csv(f'Summary_plots/{project_name}/Summary/{pan}_REPORT/{project_name}_Missing_{pan}_Donors.tsv',sep='\t')
+        # if (len(Not_Expected)>0):
+        Not_Expected.to_csv(f'Summary_plots/{project_name}/Summary/{pan}_REPORT/{project_name}_Not_Expected_{pan}_Donors.tsv',sep='\t')
 
         Total_Report.to_csv(f'Summary_plots/{project_name}/Summary/{pan}_REPORT/{project_name}_{pan}_Report.tsv',sep='\t')
      
