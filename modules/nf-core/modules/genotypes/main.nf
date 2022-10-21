@@ -1,7 +1,9 @@
 process VIREO_GT_FIX_HEADER
 {
   tag "${pool_id}"
-
+  publishDir  path: "${params.outdir}/infered_genotypes/${pool_id}/",
+        mode: "${params.copy_mode}",
+        overwrite: "true"
   if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
       // println "container: /software/hgi/containers/wtsihgi-nf_genotype_match-1.0.sif\n"
       container "/software/hgi/containers/wtsihgi-nf_yascp_htstools-1.1.sif"
