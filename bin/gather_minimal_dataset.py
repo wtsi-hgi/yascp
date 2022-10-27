@@ -624,12 +624,17 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
     UMIS_mapped_to_ribo_genes = sum(all_QC_lane.obs['total_counts_gene_group__ribo_protein'])
     UMIS_mapped_to_ribo_rna = sum(all_QC_lane.obs['total_counts_gene_group__ribo_rna'])
     UMIs_mapped_to_genes = sum(all_QC_lane.obs['total_counts'])
-    
-    Donor_Cohort_Assignments = pd.read_csv(f'{args.results_dir}/gtmatch/{expid}/{expid}_gt_donor_assignments.csv')
+    try:
+        Donor_Cohort_Assignments = pd.read_csv(f'{args.results_dir}/gtmatch/{expid}/{expid}_gt_donor_assignments.csv')
+    except:
+        Donor_Cohort_Assignments = pd.DataFrame(columns=['panel'])
+        
     Total_donors_deconvoluted_in_pool = len(Donor_Cohort_Assignments[Donor_Cohort_Assignments['panel']!='NONE'].index)
     ELGH_Donors_Deconvoluted_in_pool = len(Donor_Cohort_Assignments[Donor_Cohort_Assignments['panel']=='GT_ELGH'].index)
     UKB_Donors_Deconvoluted_in_pool = len(Donor_Cohort_Assignments[Donor_Cohort_Assignments['panel']=='GT_UKBB'].index)
     Spikeins_Deconvoluted_in_pool = len(Donor_Cohort_Assignments[Donor_Cohort_Assignments['panel']=='GT_cell_lines'].index)
+    if (Total_donors_deconvoluted_in_pool==0):
+        Total_donors_deconvoluted_in_pool=1
     data_donor =[]
 
     data_donor_for_stats ={ 'cells before QC filters':[],

@@ -640,7 +640,7 @@ def scanpy_merge(
                     print(f' {col} already exist')
                 else:
                     print(col)
-                    adata.obs[col] = np.repeat(extra_sample_metadata[col].values, adata.n_obs)
+                    adata.obs[col] = np.repeat(list(set(extra_sample_metadata[col].values)), adata.n_obs)
         adata_orig_cols = list(adata.obs.columns)
         
         for col in metadata_smpl.columns:

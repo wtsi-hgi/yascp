@@ -30,13 +30,14 @@ process VIREO_GT_FIX_HEADER
   // 
 
 
-  label 'process_tiny'
+  label 'process_low'
 
   input:
     tuple val(pool_id), path(vireo_gt_vcf)
 
   output:
     tuple val(pool_id), path("${vireo_fixed_vcf}"), path("${vireo_fixed_vcf}.tbi"), emit: gt_pool
+    tuple val(pool_id), path("${vireo_fixed_vcf}"), emit: infered_vcf
 
   script:
   sorted_vcf = "${pool_id}_vireo_srt.vcf.gz"
@@ -66,6 +67,42 @@ process VIREO_GT_FIX_HEADER
     bcftools +fixref pre_${vireo_fixed_vcf} -Oz -o ${vireo_fixed_vcf} -- -d -f ${params.reference_assembly_fasta_dir}/genome.fa -m flip
     tabix -p vcf ${vireo_fixed_vcf}
   """
+}
+process REPLACE_GT_DONOR_ID2{
+
+    publishDir  path: "${params.outdir}/deconvolution/vireo_gt_fix/${samplename}/",
+          pattern: "GT_replace_*",
+          mode: "${params.copy_mode}",
+          overwrite: "true"
+    if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
+        container "/software/hgi/containers/mercury_scrna_deconvolution_62bd56a-2021-12-15-4d1ec9312485.sif"
+        //// container "/software/hgi/containers/mercury_scrna_deconvolution_latest.img"
+    } else {
+        container "mercury/scrna_deconvolution:62bd56a"
+    }
+
+  label 'process_medium'
+
+  input:
+    tuple val(samplename), path(gt_donors), path(vireo_sample_summary),path(vireo___exp_sample_summary),path(vireo__donor_ids),path(vcf_file),path(donor_gt_csi)
+   
+  output:
+    tuple val(samplename), path("GT_replace_donor_ids.tsv"), emit: sample_donor_ids
+    tuple val(samplename), path("GT_replace_GT_donors.vireo.vcf.gz"), path(vcf_file),path(donor_gt_csi), emit: sample_donor_vcf
+    tuple val(samplename), path("GT_replace_GT_donors.vireo.vcf.gz"), emit: infered_vcf
+    path("GT_replace_${samplename}.sample_summary.txt"), emit: sample_summary_tsv
+    path("GT_replace_${samplename}__exp.sample_summary.txt"), emit: sample__exp_summary_tsv
+    path("GT_replace_${samplename}_assignments.tsv"), emit: assignments
+
+  script:
+
+    in=""
+
+    """
+      bcftools query -l GT_donors.vireo.vcf.gz > donors_in_vcf.tsv
+      replace_donors.py -id ${samplename} ${in} --input_file ${params.input_data_table}
+      bcftools reheader --samples replacement_assignments.tsv -o GT_replace_GT_donors.vireo.vcf.gz GT_donors.vireo.vcf.gz 
+    """
 }
 
 process REPLACE_GT_DONOR_ID{
@@ -370,21 +407,16 @@ process COMBINE_MATCHES_IN_EXPECTED_FORMAT{
 
 workflow MATCH_GT_VIREO {
   take:
-    ch_pool_id_vireo_vcf
-    ch_ref_vcf
+    gt_math_pool_against_panel_input
+
 
   main:
-    // ch_ref_vcf.subscribe { println "match_genotypes: ch_ref_vcf = ${it}" }
-
     // VIREO header causes problems downstream
-    VIREO_GT_FIX_HEADER(ch_pool_id_vireo_vcf)
-    VIREO_GT_FIX_HEADER.out.gt_pool
-      .combine(ch_ref_vcf)
-      .set { ch_gt_pool_ref_vcf }
+
     // ch_gt_pool_ref_vcf.subscribe { println "match_genotypes: ch_gt_pool_ref_vcf = ${it}\n" }
 
     // now match genotypes against a panels
-    GT_MATCH_POOL_AGAINST_PANEL(ch_gt_pool_ref_vcf)
+    GT_MATCH_POOL_AGAINST_PANEL(gt_math_pool_against_panel_input)
 
     // group by panel id
     GT_MATCH_POOL_AGAINST_PANEL.out.gtcheck_results
@@ -404,5 +436,4 @@ workflow MATCH_GT_VIREO {
     pool_id_donor_assignments_csv = ASSIGN_DONOR_OVERALL.out.donor_assignments
     donor_match_table = ASSIGN_DONOR_OVERALL.out.donor_match_table
     donor_match_table_with_pool_id = ASSIGN_DONOR_OVERALL.out.donor_match_table_with_pool_id
-    gt_pool = VIREO_GT_FIX_HEADER.out.gt_pool
 }
