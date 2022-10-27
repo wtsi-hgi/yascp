@@ -217,9 +217,11 @@ def split_h5ad_per_donor(vireo_donor_ids_tsv, filtered_matrix_h5, samplename,
             logging.info('filtering cells of AnnData to donor ' + donor_id)
             adata_donor = adata[adata.obs['donor_id'] == donor_id, :]
             logging.info("n cells len(adata_donor.obs) for " + donor_id  + ': ' + str(len(adata_donor.obs)) + '/' + str(len(adata.obs)))
-            if len(adata_donor.obs) > 0:
+            if len(adata_donor.obs) > 3:
                 count+=1
-                logging.info("more than 0 cells for donor")
+                logging.info("more than 3 cells for donor")
+                
+                logging.info("we have set the cells to >3 as the downstram processes can not perform calculations on 3 or less cells")
                 adata_nr_cells[count]={'experiment_id':f'{samplename}__{donor_id}','n_cells':len(adata_donor.obs)}
                 adata_donors.append((donor_id, adata_donor))
                 output_file = output_dir + '/donor_level_anndata/' + donor_id + '.' + samplename
