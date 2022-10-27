@@ -422,30 +422,23 @@ def scanpy_normalize_and_pca(
     # Calculate the highly variable genes on the log1p(norm) data.
     # Do so for each sample and then merge - this avoids the selection of
     # batch-specific, highly variable genes.
-    import scipy
-    adata.X = scipy.sparse.csr_matrix(adata.X) 
-    try:
-        sc.pp.highly_variable_genes(
-            adata,
-            # min_mean=0.0125,
-            # max_mean=3,
-            # min_disp=0.5,
-            flavor='seurat',
-            n_top_genes=n_variable_features,  # 2000 = SeuratFindVariableFeatures
-            batch_key=variable_feature_batch_key,
-            inplace=True
-        )
-
-        if verbose:
-            print('{}: {} (all batches); {} ({})'.format(
-                'Number of variable features detected',
-                adata.var['highly_variable_intersection'].sum(),
-                adata.var['highly_variable'].sum(),
-                'after ranking the number of batches where a feature is variable'
-            ))
-    except:
-        print('Cant')
-
+    sc.pp.highly_variable_genes(
+        adata,
+        # min_mean=0.0125,
+        # max_mean=3,
+        # min_disp=0.5,
+        flavor='seurat',
+        n_top_genes=n_variable_features,  # 2000 = SeuratFindVariableFeatures
+        batch_key=variable_feature_batch_key,
+        inplace=True
+    )
+    if verbose:
+        print('{}: {} (all batches); {} ({})'.format(
+            'Number of variable features detected',
+            adata.var['highly_variable_intersection'].sum(),
+            adata.var['highly_variable'].sum(),
+            'after ranking the number of batches where a feature is variable'
+        ))
     # If n_top_genes = None, then one needs to set 'highly_variable'.
     # Here, highly_variable_intersection is only true for genes variable across
     # all batch keys (i.e., 'highly_variable_nbatches' = n_batch_keys):
@@ -468,16 +461,12 @@ def scanpy_normalize_and_pca(
 
     if plot:
         # Plot highly variable genes.
-        try:
-            _ = sc.pl.highly_variable_genes(
-                adata,
-                log=False,
-                show=False,
-                save='-{}.pdf'.format(output_file)
-            
-            )
-        except:
-            print('failed with hvg')
+        _ = sc.pl.highly_variable_genes(
+            adata,
+            log=False,
+            show=False,
+            save='-{}.pdf'.format(output_file)
+        )
         # _ = sc.pl.highly_variable_genes(
         #     adata,
         #     log=True,
@@ -508,33 +497,31 @@ def scanpy_normalize_and_pca(
     #         ['highly_variable']
     #     ] = False
     # Exclude other genes from highly variable gene set.
-    try:
-        if len(exclude_hv_gene_df) > 0:
-            # Annotate the exclusion dataframe with the genes that are highly
-            # variable.
-            exclude_hv_gene_df['highly_variable'] = exclude_hv_gene_df[
-                'ensembl_gene_id'
-            ].isin(adata.var.loc[adata.var.highly_variable, :].index)
+    if len(exclude_hv_gene_df) > 0:
+        # Annotate the exclusion dataframe with the genes that are highly
+        # variable.
+        exclude_hv_gene_df['highly_variable'] = exclude_hv_gene_df[
+            'ensembl_gene_id'
+        ].isin(adata.var.loc[adata.var.highly_variable, :].index)
 
-            # Exclude these genes.
-            adata.var.loc[
-                exclude_hv_gene_df.loc[
-                    exclude_hv_gene_df.highly_variable, :
-                ]['ensembl_gene_id'],
-                ['highly_variable']
-            ] = False
+        # Exclude these genes.
+        adata.var.loc[
+            exclude_hv_gene_df.loc[
+                exclude_hv_gene_df.highly_variable, :
+            ]['ensembl_gene_id'],
+            ['highly_variable']
+        ] = False
 
-            # Add record of gene exclustions
-            adata.uns['df_highly_variable_gene_filter'] = exclude_hv_gene_df
+        # Add record of gene exclustions
+        adata.uns['df_highly_variable_gene_filter'] = exclude_hv_gene_df
 
-            # Print out the number of genes excluded
-            if verbose:
-                print('Within highly variable genes, {} genes are {}'.format(
-                    exclude_hv_gene_df['highly_variable'].sum(),
-                    'in the list of genes to exclude.'
-                ))
-    except:
-        print('fail')
+        # Print out the number of genes excluded
+        if verbose:
+            print('Within highly variable genes, {} genes are {}'.format(
+                exclude_hv_gene_df['highly_variable'].sum(),
+                'in the list of genes to exclude.'
+            ))
+
     if len(vars_to_regress) == 0:
         # Scale the data to unit variance.
         # This effectively weights each gene evenly. Otherwise
