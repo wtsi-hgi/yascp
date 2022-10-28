@@ -66,7 +66,7 @@ for i,row1 in GT_Assignments.iterrows():
                 int1+=1
             replacement = f"donor{int1}"
             int1+=1
-    replacement=f"{pool}.{replacement}"
+    # replacement=f"{pool}.{replacement}"
     GT_Assignments.loc[i,'donor_gt'] = replacement
     GT_Assignments__exp_sample_summary_txt.loc[:,0] = GT_Assignments__exp_sample_summary_txt.loc[:,0].replace(f'{input_id}__{don1}', f'{input_id}__{replacement}')
     GT_Assignments__sample_summary_txt.loc[:,1]=GT_Assignments__sample_summary_txt.loc[:,1].replace(don1, replacement)
@@ -83,9 +83,9 @@ slipt1='\t'.join(slipt1)
 vcf[:1].values[0,0]=slipt1
 # Now that we have loaded them replace all the files with the correct donor ids.
 
-GT_Assignments__sample_summary_txt.to_csv(f'GT_replace_{input_id}.sample_summary.txt',sep='\t',index=False)
-GT_Assignments__exp_sample_summary_txt.to_csv(f'GT_replace_{input_id}__exp.sample_summary.txt',sep='\t',index=False)
-GT_Assignments.to_csv(f'GT_replace_{input_id}_assignments.tsv',sep='\t')
+GT_Assignments__sample_summary_txt.to_csv(f'GT_replace_{input_id}.sample_summary.txt',sep='\t',index=False,header=False)
+GT_Assignments__exp_sample_summary_txt.to_csv(f'GT_replace_{input_id}__exp.sample_summary.txt',sep='\t',index=False,header=False)
+GT_Assignments.to_csv(f'GT_replace_{input_id}_assignments.tsv',sep='\t',index=False,header=False)
 donor_ids.to_csv(f'GT_replace_donor_ids.tsv',sep='\t',index=False)
 # vcf.to_csv(f'GT_replace_GT_donors.vireo.vcf',sep=',',index=False)
 GT_Assignments.to_csv(f'replacement_assignments.tsv',sep=' ',index=False,header=False)
