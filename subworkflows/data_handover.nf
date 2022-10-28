@@ -19,7 +19,7 @@ workflow data_handover{
         }
 
         if (params.split_bam){
-            split_bam_by_donor(sample_possorted_bam_vireo_donor_ids, params.reference_assembly_fasta_dir)
+            split_bam_by_donor(sample_possorted_bam_vireo_donor_ids, params.reference_assembly_fasta_dir_bam_split)
             ENCRYPT_TARGET(split_bam_by_donor.out.possorted_cram_files)
             cram_encrypted_dirs = ENCRYPT_TARGET.out.encrypted_dir
         } else {

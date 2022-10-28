@@ -1,3 +1,31 @@
+
+process VIREO_ADD_SAMPLE_PREFIX{
+
+    tag "${pool_id}"
+    label 'process_low'
+
+    if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
+        // println "container: /software/hgi/containers/wtsihgi-nf_genotype_match-1.0.sif\n"
+        container "/software/hgi/containers/wtsihgi-nf_yascp_htstools-1.1.sif"
+    } else {
+        container "mercury/wtsihgi-nf_yascp_htstools-1.1"
+    }
+
+    input:
+      tuple val(pool_id), path(vireo_gt_vcf)
+
+    output:
+      tuple val(pool_id), path(vireo_fixed_vcf), emit: infered_vcf
+
+    script:
+      sorted_vcf = "${pool_id}_vireo_srt.vcf.gz"
+      vireo_fixed_vcf = "${pool_id}_pool_headfix_vireo.vcf.gz"
+    """
+      bcftools query -l ${vireo_gt_vcf} | awk '\$0=""\$0" ${pool_id}_"\$0' > replacement_assignments.tsv
+      bcftools reheader --samples replacement_assignments.tsv -o ${vireo_fixed_vcf} ${vireo_gt_vcf}
+    """
+}
+
 process VIREO_GT_FIX_HEADER
 {
   tag "${pool_id}"
@@ -10,25 +38,6 @@ process VIREO_GT_FIX_HEADER
   } else {
       container "mercury/wtsihgi-nf_yascp_htstools-1.1"
   }
-  //when: params.vireo.run_gtmatch_aposteriori
-  // [W::hts_idx_load3] The index file is older than the data file: sorted_Expected_CRD_CMB13102395.bcf.gz.csi
-  // [W::vcf_parse_info] INFO 'AD' is not defined in the header, assuming Type=String
-  // [W::vcf_parse_info] INFO 'DP' is not defined in the header, assuming Type=String
-  // [W::vcf_parse_info] INFO 'OTH' is not defined in the header, assuming Type=String
-  // [W::vcf_parse_format] FORMAT 'AD' at 1:632317 is not defined in the header, assuming Type=String
-  // [W::vcf_parse_format] FORMAT 'DP' at 1:632317 is not defined in the header, assuming Type=String
-  // [W::vcf_parse_format] FORMAT 'PL' at 1:632317 is not defined in the header, assuming Type=String
-  // Error: The INFO field is not defined in the header: AD
-
-
-  // ##INFO=<ID=AD,Number=A,Type=Integer,Description="alternative allele  (variant-by-cell) of reads">
-  // ##INFO=<ID=DP,Number=1,Type=Integer,Description="depth UMIs for each variant in each cell">
-  //
-  // 
-  // 
-  // 
-  // 
-
 
   label 'process_low'
 
@@ -66,6 +75,7 @@ process VIREO_GT_FIX_HEADER
     tabix -p vcf pre_${vireo_fixed_vcf}
     bcftools +fixref pre_${vireo_fixed_vcf} -Oz -o ${vireo_fixed_vcf} -- -d -f ${params.reference_assembly_fasta_dir}/genome.fa -m flip
     tabix -p vcf ${vireo_fixed_vcf}
+
   """
 }
 process REPLACE_GT_DONOR_ID2{
