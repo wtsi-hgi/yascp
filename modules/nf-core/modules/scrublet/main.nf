@@ -39,7 +39,7 @@ process SCRUBLET {
                 overwrite: "true"
 
     input:
-        val(outdir_prev)
+        path(outdir_prev)
         tuple(
             val(experiment_id),
             path(file_10x_barcodes),

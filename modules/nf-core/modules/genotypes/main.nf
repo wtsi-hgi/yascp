@@ -155,7 +155,7 @@ process REPLACE_GT_DONOR_ID2{
 
     """
       bcftools query -l GT_donors.vireo.vcf.gz > donors_in_vcf.tsv
-      replace_donors.py -id ${samplename} ${in} --input_file ${params.input_data_table}
+      replace_donors.py -id ${samplename} ${in} --input_file "${params.input_data_table}""
       bcftools reheader --samples replacement_assignments.tsv -o GT_replace_GT_donors.vireo.vcf.gz GT_donors.vireo.vcf.gz 
     """
 }
@@ -189,7 +189,7 @@ process ENHANCE_STATS_GT_MATCH{
     }
 
     """
-      replace_donors2.py -id ${samplename} ${in} --input_file ${params.input_data_table}
+      replace_donors2.py -id ${samplename} ${in} --input_file "${params.input_data_table}"
     """
 }
 
