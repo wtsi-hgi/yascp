@@ -93,7 +93,8 @@ process REPLACE_GT_DONOR_ID2{
     path("GT_replace_${samplename}.sample_summary.txt"), emit: sample_summary_tsv
     path("GT_replace_${samplename}__exp.sample_summary.txt"), emit: sample__exp_summary_tsv
     path("GT_replace_${samplename}_assignments.tsv"), emit: assignments
-
+    tuple  val(samplename), path("GT_replace_GT_donors.vireo.vcf.gz"), path("GT_replace_${samplename}.sample_summary.txt"),path("GT_replace_${samplename}__exp.sample_summary.txt"),path("GT_replace_donor_ids.tsv"),path(vcf_file),path(donor_gt_csi), emit: all_required_data
+    
   script:
 
     in=""
@@ -105,13 +106,8 @@ process REPLACE_GT_DONOR_ID2{
     """
 }
 
-process REPLACE_GT_DONOR_ID{
+process ENHANCE_STATS_GT_MATCH{
 
-
-    publishDir  path: "${params.outdir}/deconvolution/vireo_gt_fix/${samplename}/",
-          pattern: "GT_replace_*",
-          mode: "${params.copy_mode}",
-          overwrite: "true"
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "/software/hgi/containers/mercury_scrna_deconvolution_62bd56a-2021-12-15-4d1ec9312485.sif"
         //// container "/software/hgi/containers/mercury_scrna_deconvolution_latest.img"
@@ -125,13 +121,9 @@ process REPLACE_GT_DONOR_ID{
     tuple val(samplename), path(gt_donors), path(vireo_sample_summary),path(vireo___exp_sample_summary),path(vireo__donor_ids),path(vcf_file),path(donor_gt_csi)
     path(gt_match_results)
   output:
-    path("test.out", emit: replacements)
-    tuple val(samplename), path("GT_replace_donor_ids.tsv"), emit: sample_donor_ids
-    tuple val(samplename), path("GT_replace_GT_donors.vireo.vcf.gz"), path(vcf_file),path(donor_gt_csi), emit: sample_donor_vcf
-    path("GT_replace_${samplename}.sample_summary.txt"), emit: sample_summary_tsv
-    path("GT_replace_${samplename}__exp.sample_summary.txt"), emit: sample__exp_summary_tsv
-    path("GT_replace_${samplename}_assignments.tsv"), emit: assignments
 
+    path("GT_replace_${samplename}_assignments.tsv"), emit: assignments
+    
   script:
     if(params.genotype_phenotype_mapping_file==''){
       in=""
@@ -143,10 +135,7 @@ process REPLACE_GT_DONOR_ID{
     }
 
     """
-      echo ${samplename} > test.out
-      gunzip -k -d --force GT_donors.vireo.vcf.gz
-      replace_donors.py -id ${samplename} ${in} --input_file ${params.input_data_table}
-      bgzip GT_replace_GT_donors.vireo.vcf
+      replace_donors2.py -id ${samplename} ${in} --input_file ${params.input_data_table}
     """
 }
 

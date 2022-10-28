@@ -1,8 +1,7 @@
 // match deconvoluted donors by genotype to a reference panel
 
-include { MATCH_GT_VIREO; GT_MATCH_POOL_IBD } from '../modules/nf-core/modules/genotypes/main'
-include {GT_IBD_MATCH_RELATIONSHIPS} from '../modules/nf-core/modules/ibd_relationsips/main'
-include {COMBINE_MATCHES_IN_EXPECTED_FORMAT} from '../modules/nf-core/modules/genotypes/main'
+include { MATCH_GT_VIREO; GT_MATCH_POOL_IBD } from "$projectDir/modules/nf-core/modules/genotypes/main"
+include {COMBINE_MATCHES_IN_EXPECTED_FORMAT} from "$projectDir/modules/nf-core/modules/genotypes/main"
 include {Relationships_Between_Infered_Expected; Relationships_Between_Infered_Expected as Relationships_Between_Infered_GT_Matched} from '../modules/nf-core/modules/infered_expected_relationship/main'
 include {SUBSET_WORKF} from "$projectDir/modules/nf-core/modules/subset_genotype/main"
 
@@ -68,12 +67,6 @@ workflow match_genotypes {
     // Now based on these two files we will enhance the stats file with PiHat values and
     // 
 
-    // REPLACE_GT_DONOR_ID(VIREO.out.all_required_data , out_gt.collect())
-    // outfile_for_final_gt.collectFile(name: "assignments_all_pools.tsv",
-    //                 newLine: false, sort: true,
-    //                 keepHeader: true,
-    //                 // skip:1,
-    //                 storeDir:params.outdir+'/deconvolution/vireo_gt_fix')
 
   emit:
     pool_id_donor_assignments_csv = MATCH_GT_VIREO.out.pool_id_donor_assignments_csv

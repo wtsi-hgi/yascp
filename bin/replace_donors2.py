@@ -31,10 +31,10 @@ GT_Assignments=GT_Assignments.set_index('donor_query')
 import os
 tranche = os.getcwd().split('/')[-4]
 pool = input_id
-GT_Assignments__sample_summary_txt = pd.read_csv(f'{input_id}.sample_summary.txt',sep='\t',header=None)
-GT_Assignments__exp_sample_summary_txt = pd.read_csv(f'{input_id}__exp.sample_summary.txt',sep='\t',header=None)
-donor_ids=pd.read_csv(f'donor_ids.tsv',sep='\t')
-vcf = pd.read_csv(f'GT_donors.vireo.vcf',sep='XXXXXXXdummy')
+GT_Assignments__sample_summary_txt = pd.read_csv(f'GT_replace_{input_id}.sample_summary.txt',sep='\t',header=None)
+GT_Assignments__exp_sample_summary_txt = pd.read_csv(f'GT_replace_{input_id}__exp.sample_summary.txt',sep='\t',header=None)
+donor_ids=pd.read_csv(f'GT_replace_donor_ids.tsv',sep='\t')
+vcf = pd.read_csv(f'GT_replace_GT_donors.vireo.vcf.gz',sep='XXXXXXXdummy')
 input_table_file = pd.read_csv(args.input_file,sep='\t')
 input_table_file =input_table_file.set_index('experiment_id')
 slipt1 = vcf[:1].values[0,0].split('\t')
@@ -74,7 +74,7 @@ GT_Assignments['tranche']=tranche
 GT_Assignments['donor_gt original']=GT_Assignments['donor_gt']
 D2 = pd.DataFrame(All_expected_ids,columns=['col1'])
 for ix in GT_Assignments.index:
-    # print(ix)
+    print(ix)
     
     #Here should add a a filter to estimate whether it is a good match.
     replacement = GT_Assignments.loc[ix,'donor_gt']

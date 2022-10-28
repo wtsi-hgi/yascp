@@ -13,7 +13,7 @@ include {MULTIPLET} from "$projectDir/modules/nf-core/modules/multiplet/main"
 include {SOUPORCELL_VS_VIREO} from "$projectDir/modules/nf-core/modules/plot_souporcell_vs_vireo/main"
 include { REPLACE_GT_ASSIGNMENTS_WITH_PHENOTYPE; ENHANCE_VIREO_METADATA_WITH_DONOR } from "$projectDir/modules/nf-core/modules/genotypes/main"
 include { match_genotypes } from './match_genotypes'
-include {REPLACE_GT_DONOR_ID } from "$projectDir/modules/nf-core/modules/genotypes/main"
+include {ENHANCE_STATS_GT_MATCH } from "$projectDir/modules/nf-core/modules/genotypes/main"
 include {SUBSET_WORKF} from "$projectDir/modules/nf-core/modules/subset_genotype/main"
 include {REPLACE_GT_DONOR_ID2 } from "$projectDir/modules/nf-core/modules/genotypes/main"
 include {VIREO_GT_FIX_HEADER} from "$projectDir/modules/nf-core/modules/genotypes/main"
@@ -133,6 +133,15 @@ workflow  main_deconvolution {
         if (params.genotype_input.run_with_genotype_input) {
             match_genotypes(vireo_out_sample_donor_vcf,merged_expected_genotypes,VIREO_GT_FIX_HEADER.out.gt_pool,gt_math_pool_against_panel_input)
             gt_matches = match_genotypes.out.donor_match_table.collect()
+
+            ENHANCE_STATS_GT_MATCH(REPLACE_GT_DONOR_ID2.out.all_required_data , gt_matches)
+            ENHANCE_STATS_GT_MATCH.out.assignments.collectFile(name: "assignments_all_pools.tsv",
+                            newLine: false, sort: true,
+                            keepHeader: true,
+                            // skip:1,
+                            storeDir:params.outdir+'/deconvolution/vireo_gt_fix')
+
+
         }else{
             gt_matches = Channel.from("$projectDir/assets/fake_file.fq")
         }
