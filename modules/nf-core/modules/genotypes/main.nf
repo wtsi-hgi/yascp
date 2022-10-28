@@ -1,12 +1,13 @@
 process VIREO_GT_FIX_HEADER
 {
   tag "${pool_id}"
+	publishDir "${versionsDir}", pattern: "*.versions.yml", mode: "${params.versions.copy_mode}"
 
   if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
       // println "container: /software/hgi/containers/wtsihgi-nf_genotype_match-1.0.sif\n"
       container "/software/hgi/containers/wtsihgi-nf_yascp_htstools-1.1.sif"
   } else {
-      container "mercury/wtsihgi-nf_yascp_htstools-1.1"
+      container "wtsihgi/htstools:7f601a4e15b0" //"mercury/wtsihgi-nf_yascp_htstools-1.1"
   }
   //when: params.vireo.run_gtmatch_aposteriori
 
@@ -17,6 +18,7 @@ process VIREO_GT_FIX_HEADER
 
   output:
     tuple val(pool_id), path("${vireo_fixed_vcf}"), path("${vireo_fixed_vcf}.tbi"), emit: gt_pool
+    path ('*.versions.yml')         , emit: versions 
 
   script:
   sorted_vcf = "${pool_id}_vireo_srt.vcf.gz"
@@ -35,6 +37,15 @@ process VIREO_GT_FIX_HEADER
     bcftools view -Oz -o ${vireo_fixed_vcf} -
 
     tabix -p vcf ${vireo_fixed_vcf}
+
+    ####
+    ## capture software version
+    ####
+    version=\$(bcftools --version-only)
+    versionTabix=\$(tabix --version | sed "s/tabix (htslib) //g" | head -n 1)
+    echo "${task.process}:" > ${task.process}.versions.yml
+    echo "    bcftools: \$version" >> ${task.process}.versions.yml
+    echo "    tabix: \$versionTabix" >> ${task.process}.versions.yml
   """
 }
 
@@ -45,6 +56,8 @@ process REPLACE_GT_DONOR_ID{
           pattern: "GT_replace_*",
           mode: "${params.copy_mode}",
           overwrite: "true"
+    publishDir "${versionsDir}", pattern: "*.versions.yml", mode: "${params.versions.copy_mode}"
+
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "/software/hgi/containers/mercury_scrna_deconvolution_62bd56a-2021-12-15-4d1ec9312485.sif"
         //// container "/software/hgi/containers/mercury_scrna_deconvolution_latest.img"
@@ -64,6 +77,7 @@ process REPLACE_GT_DONOR_ID{
     path("GT_replace_${samplename}.sample_summary.txt"), emit: sample_summary_tsv
     path("GT_replace_${samplename}__exp.sample_summary.txt"), emit: sample__exp_summary_tsv
     path("GT_replace_${samplename}_assignments.tsv"), emit: assignments
+    path ('*.versions.yml')         , emit: versions 
 
   script:
     if(params.genotype_phenotype_mapping_file==''){
@@ -80,6 +94,12 @@ process REPLACE_GT_DONOR_ID{
       gunzip -k -d --force GT_donors.vireo.vcf.gz
       replace_donors.py -id ${samplename} ${in} --input_file ${params.input_data_table}
       bgzip GT_replace_GT_donors.vireo.vcf
+    ####
+    ## capture software version
+    ####
+    version=\$(bgzip --version| sed "s/bgzip (htslib) //g" | head -n 1)
+    echo "${task.process}:" > ${task.process}.versions.yml
+    echo "    bgzip: \$version" >> ${task.process}.versions.yml
     """
 }
 
@@ -90,11 +110,12 @@ process GT_MATCH_POOL_IBD
   publishDir  path: "${params.outdir}/gtmatch/${pool_id}",
           mode: "${params.copy_mode}",
           overwrite: "true"
+	publishDir "${versionsDir}", pattern: "*.versions.yml", mode: "${params.versions.copy_mode}"
 
   if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
       container "/software/hgi/containers/wtsihgi-nf_yascp_plink1-1.0.img"
   } else {
-      container "mercury/wtsihgi-nf_yascp_plink1-1.0"
+      container "wtsihgi/plink:c712b43bfe18"  //"mercury/wtsihgi-nf_yascp_plink1-1.0"
   }
 
   label 'process_tiny'
@@ -104,22 +125,31 @@ process GT_MATCH_POOL_IBD
 
   output:
     path("${pool_id}.genome.gz", emit:plink_ibd)
+    path ('*.versions.yml')         , emit: versions 
 
   script:
     """
       plink --vcf ${vireo_gt_vcf} --genome gz unbounded --const-fid dummy --out ${pool_id}
+
+          ####
+    ## capture software version
+    ####
+    version=\$(plink --version| sed "s/PLINK v//g")
+    echo "${task.process}:" > ${task.process}.versions.yml
+    echo "    plink: \$version" >> ${task.process}.versions.yml
     """
 }
 
 process GT_MATCH_POOL_AGAINST_PANEL
 {
   tag "${pool_id}_vs_${panel_id}"
+  publishDir "${versionsDir}", pattern: "*.versions.yml", mode: "${params.versions.copy_mode}"
 
   if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
       // println "container: /software/hgi/containers/wtsihgi-nf_genotype_match-1.0.sif\n"
       container "/software/hgi/containers/wtsihgi-nf_yascp_htstools-1.1.sif"
   } else {
-      container "mercury/wtsihgi-nf_yascp_htstools-1.1"
+      container "wtsihgi/htstools:7f601a4e15b0" //"mercury/wtsihgi-nf_yascp_htstools-1.1"
   }
 
   label 'process_long'
@@ -130,6 +160,7 @@ process GT_MATCH_POOL_AGAINST_PANEL
 
   output:
     tuple val(pool_panel_id), path("${gt_check_output_txt}"), emit:gtcheck_results
+    path ('*.versions.yml')         , emit: versions 
 
   script:
   pool_panel_id = "pool_${pool_id}_panel_${panel_id}"
@@ -137,6 +168,13 @@ process GT_MATCH_POOL_AGAINST_PANEL
   gt_check_output_txt = "${pool_id}_gtcheck_${panel_filnam}.txt"
   """
     bcftools gtcheck --no-HWE-prob -g ${ref_gt_vcf} ${vireo_gt_vcf} > ${gt_check_output_txt}
+
+    ####
+    ## capture software version
+    ####
+    version=\$(bcftools --version-only)
+    echo "${task.process}:" > ${task.process}.versions.yml
+    echo "    bcftools: \$version" >> ${task.process}.versions.yml
   """
 }
 
@@ -208,9 +246,6 @@ process ASSIGN_DONOR_OVERALL
     gtcheck_assign_summary.py ${donor_assignment_file} ${gtcheck_assign_files}
   """
 }
-
-
-
 
 process REPLACE_GT_ASSIGNMENTS_WITH_PHENOTYPE{
   label 'process_low'

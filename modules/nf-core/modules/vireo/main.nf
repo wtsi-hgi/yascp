@@ -3,7 +3,9 @@ process VIREO {
     tag "${samplename}"
     label 'process_high'
     publishDir "${params.outdir}/deconvolution/vireo/${samplename}/",  mode: "${params.vireo.copy_mode}", overwrite: true,
-	  saveAs: {filename -> if (filename.endsWith("${vcf_file}")) {
+	  publishDir "${versionsDir}", pattern: "*.versions.yml", mode: "${params.versions.copy_mode}"
+
+    saveAs: {filename -> if (filename.endsWith("${vcf_file}")) {
                         null
                     }  else if (filename.endsWith("${donor_gt_csi}")) {
                         null
@@ -33,6 +35,7 @@ process VIREO {
       path("vireo_${samplename}/${samplename}.sample_summary.txt"), emit: sample_summary_tsv
       path("vireo_${samplename}/${samplename}__exp.sample_summary.txt"), emit: sample__exp_summary_tsv
       tuple  val(samplename), path("vireo_${samplename}/GT_donors.vireo.vcf.gz"), path("vireo_${samplename}/${samplename}.sample_summary.txt"),path("vireo_${samplename}/${samplename}__exp.sample_summary.txt"),path("vireo_${samplename}/donor_ids.tsv"),path(vcf_file),path(donor_gt_csi), emit: all_required_data
+      path ('*.versions.yml')         , emit: versions 
 
     script:
       vcf_file = ""
@@ -61,5 +64,11 @@ process VIREO {
         tail -n +2 | \\
         sed s\"/^/${samplename}__/\"g > vireo_${samplename}/${samplename}__exp.sample_summary.txt
 
+    ####
+    ## capture software version
+    ####
+    version=\$(vireo | grep -P 'Welcome' | sed "s/.*v//g" | sed 's/!//g')
+    echo "${task.process}:" > ${task.process}.versions.yml
+    echo "    vireo: \$version" >> ${task.process}.versions.yml
     """
 }

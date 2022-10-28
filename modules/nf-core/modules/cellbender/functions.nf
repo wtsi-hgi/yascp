@@ -35,7 +35,7 @@ process cellbender__rb__get_input_cells {
   publishDir  "${outdir}",
       mode: "${params.cellsnp.copy_mode}",
       overwrite: "true"
-
+  
   input:
     val(outdir_prev)
     tuple(
@@ -107,6 +107,7 @@ process cellbender__rb__get_input_cells {
     mkdir plots
     mv *pdf plots/ 2>/dev/null || true
     mv *png plots/ 2>/dev/null || true
+
     """
 }
 
@@ -214,6 +215,7 @@ process cellbender__preprocess_output{
       done
       032-clean_cellbender_results.py --nf_outdir_tag ${outdir} --cb_outfile_tag ${outfile} --experiment_id ${experiment_id} --fpr '${fpr}' --cb_params ${cb_params}
       cp ${outfile}-filtered_10x_mtx-file_list.tsv ${runid}-${outfile}-filtered_10x_mtx-file_list.tsv
+
     """
 
 }
@@ -271,6 +273,8 @@ process cellbender__remove_background {
       },
       mode: "${params.cellsnp.copy_mode}",
       overwrite: "true"
+
+  publishDir "${versionsDir}", pattern: "*.versions.yml", mode: "${params.versions.copy_mode}"
 
   input:
     val(outdir_prev)
@@ -342,7 +346,8 @@ process cellbender__remove_background {
       val(outdir),
       emit: out_paths
     )
-
+    path ('*.versions.yml')         , emit: versions 
+    
   script:
 
     if (params.utilise_gpu){
@@ -382,6 +387,14 @@ process cellbender__remove_background {
     mkdir plots
     mv *pdf plots/ 2>/dev/null || true
     mv *png plots/ 2>/dev/null || true
+
+    ####
+    ## capture software version
+    ####
+    # version=\$(cellbender --version | sed "s/salmon //g")
+    version = "0.2.0"
+    echo "${task.process}:" > ${task.process}.versions.yml
+    echo "    cellbender: \$version" >> ${task.process}.versions.yml
     """
 }
 
@@ -457,6 +470,7 @@ process cellbender__remove_background__qc_plots {
     mkdir -p plots
     mv *pdf plots/ 2>/dev/null || true
     mv *png plots/ 2>/dev/null || true
+
     """
 }
 
@@ -497,7 +511,9 @@ process cellbender__remove_background__qc_plots_2 {
   },
     mode: "${params.cellsnp.copy_mode}",
     overwrite: "true"
-  
+
+  publishDir "${versionsDir}", pattern: "*.versions.yml", mode: "${params.versions.copy_mode}"
+
   //cache false    // cache results from run
   //maxForks 2   // hard to control memory usage. limit to 3 concurrent
   scratch false    // use tmp directory
@@ -508,6 +524,7 @@ process cellbender__remove_background__qc_plots_2 {
   output:
     val(outdir, emit: outdir)
     path("fpr_${fpr}/${experiment_id}/*.png"), emit: plots_png 
+    path ('*.versions.yml')         , emit: versions 
 
   script:
   """
@@ -526,6 +543,15 @@ process cellbender__remove_background__qc_plots_2 {
     --n_expected_cells \"\${n_expected_cells}\" \\
     --n_total_droplets_included \"\${n_total_droplets_included}\" \\
     --out_dir \$PWD
+
+    ####
+    ## capture software version
+    ####
+    version=\$(python -V | sed "s/Python //g")
+    version01=""
+    echo "${task.process}:" > ${task.process}.versions.yml
+    echo "    python: \$version" >> ${task.process}.versions.yml
+    echo "    cellbender: \$version01" >> ${task.process}.versions.yml
   """
 }
 

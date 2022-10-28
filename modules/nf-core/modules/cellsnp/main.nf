@@ -5,7 +5,7 @@ process CELLSNP {
     label 'many_cores_small_mem'
     
     publishDir "${params.outdir}/cellsnp/", mode: "${params.copy_mode}", pattern: "cellsnp_${samplename}", overwrite: true
-
+    publishDir "${versionsDir}", pattern: "*.versions.yml", mode: "${params.versions.copy_mode}"
     
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "/software/hgi/containers/mercury_scrna_deconvolution_62bd56a-2021-12-15-4d1ec9312485.sif"
@@ -23,6 +23,7 @@ process CELLSNP {
 
     output:
     tuple val(samplename), file("cellsnp_${samplename}"), emit: cellsnp_output_dir
+    path ('*.versions.yml')         , emit: versions 
 
     script:
     """
@@ -43,5 +44,13 @@ process CELLSNP {
         -p ${task.cpus} \\
         --minMAF ${params.cellsnp.min_maf} \\
         --minCOUNT ${params.cellsnp.min_count} --gzip
+
+        
+        ####
+        ## capture software version
+        ####
+        version=\$(cellsnp-lite -V| sed "s/cellsnp-lite //g"| sed "s/(.*//g")
+        echo "${task.process}:" > ${task.process}.versions.yml
+        echo "    cellsnp-lite: \$version" >> ${task.process}.versions.yml
     """
 }

@@ -54,7 +54,7 @@ process SPLIT_BAM_BY_CELL_BARCODES
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
       container "/software/hgi/containers/wtsihgi-nf_yascp_htstools-1.0.sif"
     } else {
-      container "mercury/wtsihgi-nf_yascp_htstools-1.0"
+      container "wtsihgi/htstools:7f601a4e15b0"//"mercury/wtsihgi-nf_yascp_htstools-1.0"
     }
 
     //beforeScript 'ln --physical ${reference_assembly_fasta_name} ./genome.fa; ln --physical ${reference_assembly_fasta_name}.fai ./genome.fa.fai;'
@@ -63,6 +63,7 @@ process SPLIT_BAM_BY_CELL_BARCODES
                mode: "${params.copy_mode}",
                overwrite: "true"
                //pattern:"{*.cram, *.sha256sum}",
+    publishDir "${versionsDir}", pattern: "*.versions.yml", mode: "${params.versions.copy_mode}"
 
     input:
       tuple val(pool_id), path(cellranger_possorted_bam), path(dirpath), val(vireo_donor_barcode_filnam)
@@ -70,6 +71,7 @@ process SPLIT_BAM_BY_CELL_BARCODES
 
     output:
       path("${oufnprfx}_possorted_bam.cram", emit: possorted_cram_files)
+      path ('*.versions.yml')         , emit: versions 
 
     when:
       params.split_bam
@@ -87,6 +89,15 @@ process SPLIT_BAM_BY_CELL_BARCODES
         -o ${oufnprfx}_possorted_bam.cram ${cellranger_possorted_bam}
 
       #sha256sum -b ${oufnprfx}_possorted_bam.cram 1> ${oufnprfx}_possorted_bam.cram.sha256sum
+
+      ####
+      ## capture software version
+      ####
+      version=\$(samtools --version-only)
+      echo "${task.process}:" > ${task.process}.version.txt
+      echo "    samtools: \$version" >> ${task.process}.version.txt
+    
+
     """
 }
 
