@@ -1,4 +1,48 @@
 
+process MERGE_GENOTYPES_IN_ONE_VCF{
+
+    label 'process_medium'
+    publishDir  path: "${params.outdir}/infered_genotypes/",
+          mode: "${params.copy_mode}",
+          overwrite: "true"
+    if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
+        // println "container: /software/hgi/containers/wtsihgi-nf_genotype_match-1.0.sif\n"
+        container "/software/hgi/containers/wtsihgi-nf_yascp_htstools-1.1.sif"
+    } else {
+        container "mercury/wtsihgi-nf_yascp_htstools-1.1"
+    }
+
+    input:
+       path(vireo_gt_vcf)
+
+    output:
+       tuple path("merged_vcf_file_all_pools.vcf.gz"),path("merged_vcf_file_all_pools.vcf.gz.csi"), emit: merged_infered_genotypes
+
+    script:
+
+    """
+      fofn_input_subset.sh "${vireo_gt_vcf}"
+
+      for VARIABLE in ${vireo_gt_vcf}
+      do
+          bcftools index -f \$VARIABLE
+      done
+
+      if [ \$(cat fofn_vcfs.txt | wc -l) -gt 1 ]; then
+          echo 'yes'
+          bcftools merge -file-list ${vireo_gt_vcf} -Ou | bcftools sort -Oz -o merged_vcf_file_all_pools.vcf.gz
+          bcftools index merged_vcf_file_all_pools.vcf.gz
+      else
+        echo 'no'
+        bcftools view ${vireo_gt_vcf} | bcftools sort -Oz -o merged_vcf_file_all_pools.vcf.gz
+        bcftools index merged_vcf_file_all_pools.vcf.gz
+        
+      fi
+    """
+
+}
+
+
 process VIREO_ADD_SAMPLE_PREFIX{
 
     tag "${pool_id}"
@@ -15,7 +59,7 @@ process VIREO_ADD_SAMPLE_PREFIX{
       tuple val(pool_id), path(vireo_gt_vcf)
 
     output:
-      tuple val(pool_id), path(vireo_fixed_vcf), emit: infered_vcf
+      path(vireo_fixed_vcf), emit: infered_vcf
 
     script:
       sorted_vcf = "${pool_id}_vireo_srt.vcf.gz"

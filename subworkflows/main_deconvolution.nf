@@ -16,7 +16,7 @@ include { match_genotypes } from './match_genotypes'
 include {ENHANCE_STATS_GT_MATCH } from "$projectDir/modules/nf-core/modules/genotypes/main"
 include {SUBSET_WORKF} from "$projectDir/modules/nf-core/modules/subset_genotype/main"
 include {REPLACE_GT_DONOR_ID2 } from "$projectDir/modules/nf-core/modules/genotypes/main"
-include {VIREO_GT_FIX_HEADER; VIREO_ADD_SAMPLE_PREFIX} from "$projectDir/modules/nf-core/modules/genotypes/main"
+include {VIREO_GT_FIX_HEADER; VIREO_ADD_SAMPLE_PREFIX; MERGE_GENOTYPES_IN_ONE_VCF} from "$projectDir/modules/nf-core/modules/genotypes/main"
 
 workflow  main_deconvolution {
 
@@ -125,7 +125,7 @@ workflow  main_deconvolution {
             .combine(ch_ref_vcf)
             .set { gt_math_pool_against_panel_input }
         VIREO_ADD_SAMPLE_PREFIX(VIREO_GT_FIX_HEADER.out.infered_vcf)
-        // MERGE_GENOTYPES_IN_ONE_VCF(VIREO_GT_FIX_HEADER)
+        MERGE_GENOTYPES_IN_ONE_VCF(VIREO_ADD_SAMPLE_PREFIX.out.infered_vcf.collect())
         
         vireo_out_sample_donor_vcf = VIREO_GT_FIX_HEADER.out.infered_vcf
         vireo_out_sample_summary_tsv = REPLACE_GT_DONOR_ID2.out.sample_summary_tsv
