@@ -27,7 +27,7 @@ process SCRUBLET {
         container "wtsihgi/nf_scrna_qc:6bb6af5"
     }
     
-    publishDir  path: "${outdir}",
+    publishDir  path: "${params.outdir}/multiplet.method=scrublet",
                 saveAs: {filename ->
                     if (filename.endsWith("multiplet_calls_published.txt")) {
                         null
