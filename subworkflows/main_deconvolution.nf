@@ -2,7 +2,7 @@ nextflow.enable.dsl=2
 
 // main deconvolution modules, common to all input modes:
 
-include { CELLSNP } from "$projectDir/modules/nf-core/modules/cellsnp/main"
+include { CELLSNP;capture_cellsnp_files } from "$projectDir/modules/nf-core/modules/cellsnp/main"
 include { SUBSET_GENOTYPE } from "$projectDir/modules/nf-core/modules/subset_genotype/main"
 include { VIREO } from "$projectDir/modules/nf-core/modules/vireo/main"
 include { GUZIP_VCF } from "$projectDir/modules/nf-core/modules/guzip_vcf/main"
@@ -62,9 +62,16 @@ workflow  main_deconvolution {
         ch_experiment_donorsvcf_donorslist.map { experiment, donorsvcf, donorstbi,donorslist -> tuple(experiment, donorslist.replaceAll(/,/, " ").replaceAll(/"/, ""))}.set{donors_in_lane}
 
         if (params.existing_cellsnp != ''){
-            expl1 = Channel.fromPath( "${params.existing_cellsnp}/*/*.vcf.gz")
-            expl1.map{row -> tuple("${row[-2]}".replaceAll('cellsnp_',''), "${row}".replaceAll('/cellSNP.base.vcf.gz',''))}.set{cellsnp_output_dir}
+            log.info('Capturing CELLSNP')
+            capture_cellsnp_files(params.existing_cellsnp)
+            capture_cellsnp_files.out.cellsnp_loc.splitCsv(header: false, sep: ' ')
+                .map{row->tuple(row[0], "${row[1]}")}
+                .set{cellsnp_output_dir}
             
+            // expl1 = Channel.fromPath( "${expl1}/*/*.vcf.gz")
+            // expl1.map{row -> tuple("${row[-2]}".replaceAll('cellsnp_',''), "${row}".replaceAll('/cellSNP.base.vcf.gz',''))}.set{cellsnp_output_dir}
+        
+                
         }else{
             log.info('Running CELLSNP')
             channel_input_data_table
@@ -93,6 +100,9 @@ workflow  main_deconvolution {
         // Here we run Vireo software to perform the donor deconvolution. Note that we have coded the pipeline to be capable in using
         // the full genotypes as an input and also subset to the individuals provided as an input in the donor_vcf_ids column. The
         // VIREO:
+        ch_experiment_npooled.view()
+        cellsnp_output_dir.view()
+        merged_expected_genotypes.view()
         if (params.genotype_input.vireo_with_gt) {
             log.info "---running Vireo with genotype input----"
             // for each experiment_id to deconvolute, subset donors vcf to its donors and subset genomic regions.
@@ -109,7 +119,8 @@ workflow  main_deconvolution {
             cellsnp_output_dir.combine(ch_experiment_npooled, by: 0).set{full_vcf}
             full_vcf.map {experiment, cellsnp, npooled -> tuple(experiment, cellsnp, npooled,[],[])}.set{full_vcf}
         }
-
+        full_vcf.view()
+        
         // When all the channels are prpeared accordingly we exacute the vireo with the prpeared channel.
         full_vcf.filter { experiment, cellsnp, npooled, t,ti -> npooled != '1' }.set{full_vcf2}
         full_vcf.filter { experiment, cellsnp, npooled, t,ti -> npooled == '1' }.set{not_deconvoluted}

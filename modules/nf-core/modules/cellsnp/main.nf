@@ -1,3 +1,22 @@
+process capture_cellsnp_files{
+  publishDir  path: "${params.outdir}"
+  label 'process_tiny'
+  input:
+    path(cellsnp_location)
+   
+  output:
+    path("output_cellsnp.csv"),emit:cellsnp_loc
+  script:
+  """
+    echo 'setting link to get cellsnp results in this directory'
+    for OUTPUT in \$(ls ${cellsnp_location})
+    do
+    samplename1=\$(echo \$OUTPUT | sed 's/cellsnp_//g')
+    echo "\$samplename1 \$PWD/\$OUTPUT" >> output_cellsnp.csv
+    done
+  """    
+
+}
 
 process CELLSNP {
     tag "${samplename}"
