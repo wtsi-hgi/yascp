@@ -468,7 +468,7 @@ process capture_cellbender_files{
     val(outdir)
   output:
     path(cellbender_location)
-    path("cellbender/qc_cluster_input_files/file_paths_10x-*${params.cellbender_resolution_to_use}.tsv", emit: celbender_path)
+    path("${cellbender_location}/qc_cluster_input_files/file_paths_10x-*${params.cellbender_resolution_to_use}.tsv", emit: celbender_path)
   script:
   """
     echo 'setting link to get cellbender results in this directory'

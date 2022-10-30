@@ -6,6 +6,7 @@ process capture_cellsnp_files{
    
   output:
     path("output_cellsnp.csv"),emit:cellsnp_loc
+    path(cellsnp_location)
   script:
   """
     echo 'setting link to get cellsnp results in this directory'
