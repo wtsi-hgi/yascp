@@ -13,7 +13,7 @@ process capture_cellsnp_files{
     for OUTPUT in \$(ls ${cellsnp_location})
     do
     samplename1=\$(echo \$OUTPUT | sed 's/cellsnp_//g')
-    echo "\$samplename1 \$PWD/\$OUTPUT" >> output_cellsnp.csv
+    echo "\$samplename1 \$PWD/${cellsnp_location}/\$OUTPUT" >> output_cellsnp.csv
     done
   """    
 

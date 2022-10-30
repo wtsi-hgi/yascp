@@ -100,9 +100,7 @@ workflow  main_deconvolution {
         // Here we run Vireo software to perform the donor deconvolution. Note that we have coded the pipeline to be capable in using
         // the full genotypes as an input and also subset to the individuals provided as an input in the donor_vcf_ids column. The
         // VIREO:
-        ch_experiment_npooled.view()
-        cellsnp_output_dir.view()
-        merged_expected_genotypes.view()
+
         if (params.genotype_input.vireo_with_gt) {
             log.info "---running Vireo with genotype input----"
             // for each experiment_id to deconvolute, subset donors vcf to its donors and subset genomic regions.
