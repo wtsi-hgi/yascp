@@ -1,6 +1,6 @@
 process GATHER_DATA{
 
-    publishDir  path: "${outdir}",
+    publishDir  path: "${params.outdir}",
                 mode: "${params.copy_mode}",
                 overwrite: "true"
     label 'process_medium'
@@ -46,7 +46,7 @@ process GATHER_DATA{
 
 process SPLIT_DATA_BY_STUDY
 {
-  publishDir  path: "${outdir}",
+  publishDir  path: "${params.outdir}",
               mode: "${params.copy_mode}",
               overwrite: "true"
 
