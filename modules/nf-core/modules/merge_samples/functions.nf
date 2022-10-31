@@ -36,7 +36,7 @@ process merge_samples_from_h5ad {
     tag "${samplename}"
     
     label 'process_medium_single_CPU' 
-    label 'process_high_memory'
+    label 'process_medium_memory'
 
     publishDir  path: "${outdir}/merged_h5ad",
                 saveAs: {filename -> filename.replaceAll("${runid}-", "pre_QC_")},

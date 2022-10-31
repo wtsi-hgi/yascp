@@ -1,6 +1,6 @@
 process GATHER_DATA{
 
-    publishDir  path: "${outdir}",
+    publishDir  path: "${params.outdir}",
                 mode: "${params.copy_mode}",
                 overwrite: "true"
     label 'process_medium'
