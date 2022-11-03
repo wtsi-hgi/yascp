@@ -1,6 +1,6 @@
 process GATHER_DATA{
 
-    publishDir  path: "${params.outdir}",
+    publishDir  path: "${params.outdir}/handover",
                 mode: "${params.copy_mode}",
                 overwrite: "true"
     label 'process_medium'
