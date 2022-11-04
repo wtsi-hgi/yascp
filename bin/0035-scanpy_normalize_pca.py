@@ -881,6 +881,17 @@ def main():
         )
         adata.obs = obs_prior
 
+    # Removing any donors with less than 3 cells as these must be outliers - the batch key needs at least 3 entires to calculate highly variable genes
+    x=np.array(adata.obs[options.bk])
+    unique, counts = np.unique(x, return_counts=True)
+    freqs = pd.DataFrame({'unique':unique,'counts':counts})
+    freqs=freqs.set_index(unique)
+    to_keep = list(freqs[freqs['counts']>3]['unique'])
+    d2= pd.DataFrame(adata.obs[options.bk])
+    to_keep_ix = [i for i,row1 in d2.iterrows() if row1[options.bk] in to_keep]
+    adata = adata[to_keep_ix, :]
+    
+
     # Split the vars to regress list
     vars_to_regress = []
     if options.vr != '':
