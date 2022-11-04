@@ -215,7 +215,7 @@ process JOIN_CHROMOSOMES{
 process JOIN_STUDIES_MERGE{
     tag "${samplename}"
     label 'process_small'
-    publishDir "${params.outdir}/subset_genotype/", mode: "${params.copy_mode}", pattern: "${samplename}.${sample_subset_file}.subset.vcf.gz"
+    publishDir "${params.outdir}/subset_genotype/Genotype_${samplename}", mode: "${params.copy_mode}"
 
 
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
