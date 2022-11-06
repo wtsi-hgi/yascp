@@ -1,6 +1,6 @@
 process capture_cellsnp_files{
   publishDir  path: "${params.outdir}"
-  cache false
+  // cache false
   label 'process_tiny'
   input:
     path(cellsnp_location)

@@ -463,7 +463,7 @@ process cellbender__remove_background__qc_plots {
 process capture_cellbender_files{
   publishDir  path: "${outdir}"
   label 'process_tiny'
-  cache false
+  // cache false
   input:
     path(cellbender_location)
     val(outdir)

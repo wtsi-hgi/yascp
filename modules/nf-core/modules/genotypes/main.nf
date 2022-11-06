@@ -148,12 +148,13 @@ process REPLACE_GT_DONOR_ID2{
     path("GT_replace_${samplename}__exp.sample_summary.txt"), emit: sample__exp_summary_tsv
     path("GT_replace_${samplename}_assignments.tsv"), emit: assignments
     tuple  val(samplename), path("GT_replace_GT_donors.vireo.vcf.gz"), path("GT_replace_${samplename}.sample_summary.txt"),path("GT_replace_${samplename}__exp.sample_summary.txt"),path("GT_replace_donor_ids.tsv"),path(vcf_file),path(donor_gt_csi), emit: all_required_data
-    
+    path("Output_validation_${params.genotype_input.vireo_with_gt}.dummy")
   script:
 
     in=""
 
     """
+      echo "${params.genotype_input.vireo_with_gt}" > "Output_validation_${params.genotype_input.vireo_with_gt}.dummy"
       bcftools query -l GT_donors.vireo.vcf.gz > donors_in_vcf.tsv
       replace_donors.py -id ${samplename} ${in} --input_file "${params.input_data_table}"
       bcftools reheader --samples replacement_assignments.tsv -o GT_replace_GT_donors.vireo.vcf.gz GT_donors.vireo.vcf.gz 
