@@ -3,13 +3,7 @@ process VIREO {
     tag "${samplename}"
     label 'process_high'
     publishDir "${params.outdir}/deconvolution/vireo/${samplename}/",  mode: "${params.vireo.copy_mode}", overwrite: true,
-	  saveAs: {filename -> if (filename.endsWith("${vcf_file}")) {
-                        null
-                    }  else if (filename.endsWith("${donor_gt_csi}")) {
-                        null
-                    }else{
-                      filename.replaceFirst("vireo_${samplename}/","") 
-                    }}
+	  saveAs: {filename -> filename.replaceFirst("vireo_${samplename}/","") }
 
 
 

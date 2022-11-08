@@ -247,7 +247,7 @@ def load_scrublet_assignments(expid, datadir_scrublet):
     scb = pandas.read_table(filpath).set_index('cell_barcode', drop = True)
     return scb
 
-def fetch_qc_obs_from_anndata(adqc, expid, df_cellbender = None,Resolution='0pt5'):
+def fetch_qc_obs_from_anndata(adqc, expid, cell_bender_path = None,Resolution='0pt5'):
 
     s = adqc.obs['convoluted_samplename'] == expid
     if s.shape[0] < 1:
@@ -265,9 +265,9 @@ def fetch_qc_obs_from_anndata(adqc, expid, df_cellbender = None,Resolution='0pt5
         'cell_passes_qc','mengled_index'
     ]].set_index("barcode", drop = True)
 
-    if df_cellbender is not None:
+    if cell_bender_path is not None:
         # cellbender removes the barcodes - 
-        dfcb = fetch_cellbender_annotation(df_cellbender, expid,Resolution)
+        dfcb = fetch_cellbender_annotation(cell_bender_path, expid,Resolution)
         dc = pandas.concat([df, dfcb], axis = 1, join = 'inner')
         if dc.shape[0] != df.shape[0]:
             sys.exit("ERROR: barcodes missing in cellbender file.")
@@ -442,6 +442,7 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
     else:
         ad_lane_filtered = scanpy.read_10x_mtx(f"{df_raw.loc[expid, 'data_path_10x_format']}/filtered_feature_bc_matrix")
         df_cellbender=None
+        cell_bender_path=None
 
     # os.
     if write_h5:
@@ -518,7 +519,7 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
     donor_table = os.path.join(datadir_deconv, expid, "{}.donors.h5ad.tsv".format(expid))
     
     df_donors = pandas.read_table(donor_table, header=None, names=("experiment_id", "donor_id", "file_path_h5ad"))
-    obsqc,all_QC_lane = fetch_qc_obs_from_anndata(adqc, expid, df_cellbender = df_cellbender,Resolution=Resolution)
+    obsqc,all_QC_lane = fetch_qc_obs_from_anndata(adqc, expid, cell_bender_path = cell_bender_path,Resolution=Resolution)
 
     if scb is not None:
         obsqc = pandas.concat([obsqc,scb], axis = 1, join = 'outer')

@@ -154,6 +154,7 @@ process REPLACE_GT_DONOR_ID2{
     in=""
 
     """
+    
       echo "${params.genotype_input.vireo_with_gt}" > "Output_validation_${params.genotype_input.vireo_with_gt}.dummy"
       bcftools query -l GT_donors.vireo.vcf.gz > donors_in_vcf.tsv
       replace_donors.py -id ${samplename} ${in} --input_file "${params.input_data_table}"
