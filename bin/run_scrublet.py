@@ -212,7 +212,7 @@ def run_scrublet(
     # * Multiplet score calculation
     # * Multiplet score threshold detection and multiplet calling
     multiplet_scores, predicted_multiplets = scrub.scrub_doublets(
-        verbose=False
+        verbose=True
     )
 
     # Calculate the threshold for calling multiplets

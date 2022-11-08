@@ -499,11 +499,14 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
     datadir_scrublet=f'{args.results_dir}/multiplet.method=scrublet'
     if os.path.isdir(datadir_scrublet):
         # Scrublet loading QC
-        scb = load_scrublet_assignments(
-            expid,
-            datadir_scrublet=datadir_scrublet
-        )
-        columns_output = {**columns_output,  **COLUMNS_SCRUBLET}
+        try:
+            scb = load_scrublet_assignments(
+                expid,
+                datadir_scrublet=datadir_scrublet
+            )
+            columns_output = {**columns_output,  **COLUMNS_SCRUBLET}
+        except:
+            print('Scrubblet was not performed for this pool - potential reason is that there are not enough cells for assignment')
     else:
         scb = None
         
@@ -513,6 +516,7 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
     ###########################################
     datadir_deconv=f'{args.results_dir}/deconvolution/split_donor_h5ad'
     donor_table = os.path.join(datadir_deconv, expid, "{}.donors.h5ad.tsv".format(expid))
+    
     df_donors = pandas.read_table(donor_table, header=None, names=("experiment_id", "donor_id", "file_path_h5ad"))
     obsqc,all_QC_lane = fetch_qc_obs_from_anndata(adqc, expid, df_cellbender = df_cellbender,Resolution=Resolution)
 
@@ -986,14 +990,17 @@ if __name__ == '__main__':
 
 
     for expid in df_raw.index:
-        nf, data_tranche, data_donor, azt = gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = oufh, lane_id=count,Resolution=Resolution)
-        # add the stuff to the adata.
-        azt=azt.set_index('mangled_cell_id')
-        All_probs_and_celltypes=pd.concat([All_probs_and_celltypes,azt])
-        data_tranche_all.append(data_tranche)
-        data_donor_all= data_donor_all+data_donor
-        count += 1
-        fctr += nf
+        try:
+            nf, data_tranche, data_donor, azt = gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = oufh, lane_id=count,Resolution=Resolution)
+            # add the stuff to the adata.
+            azt=azt.set_index('mangled_cell_id')
+            All_probs_and_celltypes=pd.concat([All_probs_and_celltypes,azt])
+            data_tranche_all.append(data_tranche)
+            data_donor_all= data_donor_all+data_donor
+            count += 1
+            fctr += nf
+        except:
+            print(f"pool {expid} was ignored as it did not contain deconvoluted donors.")
     
     Donor_Report = pd.DataFrame(data_donor_all)
     Tranche_Report = pd.DataFrame(data_tranche_all)

@@ -87,21 +87,25 @@ workflow  main_deconvolution {
             cellsnp_output_dir = CELLSNP.out.cellsnp_output_dir
         }
 
-        MULTIPLET(
-            params.output_dir,
-            channel__file_paths_10x,
-            params.sample_qc.cell_filters.filter_multiplets.expected_multiplet_rate,
-            params.sample_qc.cell_filters.filter_multiplets.n_simulated_multiplet,
-            params.sample_qc.cell_filters.filter_multiplets.multiplet_threshold_method,
-            params.sample_qc.cell_filters.filter_multiplets.scale_log10
-        )
-
+        if (params.sample_qc.cell_filters.filter_multiplets.run_process){
+            MULTIPLET(
+                params.output_dir,
+                channel__file_paths_10x,
+                params.sample_qc.cell_filters.filter_multiplets.expected_multiplet_rate,
+                params.sample_qc.cell_filters.filter_multiplets.n_simulated_multiplet,
+                params.sample_qc.cell_filters.filter_multiplets.multiplet_threshold_method,
+                params.sample_qc.cell_filters.filter_multiplets.scale_log10
+            )
+            scrublet_paths = MULTIPLET.out.scrublet_paths
+        }else{
+            scrublet_paths = Channel.of()
+        }
 
         // Here we run Vireo software to perform the donor deconvolution. Note that we have coded the pipeline to be capable in using
         // the full genotypes as an input and also subset to the individuals provided as an input in the donor_vcf_ids column. The
         // VIREO:
-        cellsnp_output_dir.view()
-        ch_experiment_npooled.view()
+        // cellsnp_output_dir.view()
+        // ch_experiment_npooled.view()
 
         if (params.genotype_input.vireo_with_gt) {
             log.info "---running Vireo with genotype input----"
@@ -223,8 +227,8 @@ workflow  main_deconvolution {
 
         // If sample is not deconvoluted we will use scrublet to detect the doublets and remove them.
         not_deconvoluted.map{ experiment, donorsvcf, npooled,t,t2 -> tuple(experiment, 'None')}.set{not_deconvoluted2}
-        file_cellmetadata = MULTIPLET.out.file__cellmetadata
-        scrublet_paths = MULTIPLET.out.scrublet_paths
+        // file_cellmetadata = MULTIPLET.out.file__cellmetadata
+        
         split_channel = vireo_out_sample_donor_ids.combine(ch_experiment_filth5, by: 0)
         split_channel2 = not_deconvoluted2.combine(ch_experiment_filth5, by: 0)
         // combining these 2 channels in one
