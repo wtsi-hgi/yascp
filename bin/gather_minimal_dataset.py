@@ -426,7 +426,7 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
         try:
             # depends whether the absolute or relative path was recorded.
             cell_bender_path = f"{df_cellbender.loc[expid, 'data_path_10x_format']}"
-            
+            cell_bender_path = './'+'/'.join(cell_bender_path.split('/')[-6:])
         except:
             cell_bender_path = f"{args.results_dir}/{df_cellbender.loc[expid, 'data_path_10x_format']}"
         cellbender_h5 = f"{cell_bender_path}/../cellbender_FPR_{Resolution}_filtered.h5"
