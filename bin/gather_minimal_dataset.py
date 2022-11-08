@@ -277,8 +277,8 @@ def fetch_qc_obs_from_anndata(adqc, expid, df_cellbender = None,Resolution='0pt5
         ad.obs['cellbender_latent_probability']=dc['cellbender_latent_probability']
     return df,ad
 
-def fetch_cellbender_annotation(df_cellbender, expid,Resolution):
-    dirpath = df_cellbender.loc[expid, 'data_path_10x_format']
+def fetch_cellbender_annotation(dirpath, expid,Resolution):
+    
     try:
         h5_path = f"{args.results_dir}/{os.path.dirname(dirpath)}/cellbender_FPR_{Resolution}_filtered.h5"
         f = h5py.File(h5_path, 'r')
@@ -437,7 +437,7 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
                 # Here link also mtx files
             except:
                 print('File already linked')
-        dfcb = fetch_cellbender_annotation(df_cellbender, expid,Resolution)
+        dfcb = fetch_cellbender_annotation(cell_bender_path, expid,Resolution)
         columns_output = {**columns_output, **COLUMNS_CELLBENDER}
     else:
         ad_lane_filtered = scanpy.read_10x_mtx(f"{df_raw.loc[expid, 'data_path_10x_format']}/filtered_feature_bc_matrix")
