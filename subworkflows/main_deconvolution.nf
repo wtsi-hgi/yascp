@@ -29,8 +29,6 @@ workflow  main_deconvolution {
 
     main:
 		log.info "#### running DECONVOLUTION workflow #####"
-        channel_input_data_table = Channel.fromPath(params.input_data_table, followLinks: true, checkIfExists: true)
-        
         if (params.genotype_input.run_with_genotype_input) {
             // We have to produce a single vcf file for each individual pool.
             // Therefore we create 2 channels:
@@ -74,13 +72,6 @@ workflow  main_deconvolution {
                 
         }else{
             log.info('Running CELLSNP')
-            channel_input_data_table
-                .splitCsv(header: true, sep: params.input_tables_column_delimiter)
-                .map{row->tuple(row.experiment_id, "${row.data_path_10x_format}/possorted_genome_bam.bam" ,row.data_path_10x_format+'/filtered_feature_bc_matrix/barcodes.tsv.gz')}
-                .set{pre_ch_experiment_bam_barcodes}
-            pre_ch_experiment_bam_barcodes
-                .map { a,b,c -> tuple(a, file(b), file("${b}.bai"), file(c))}
-                .set {ch_experiment_bam_bai_barcodes}
 
             CELLSNP(ch_experiment_bam_bai_barcodes,
                 Channel.fromPath(params.cellsnp.vcf_candidate_snps).collect())
@@ -123,8 +114,7 @@ workflow  main_deconvolution {
             cellsnp_output_dir.combine(ch_experiment_npooled, by: 0).set{full_vcf}
             full_vcf.map {experiment, cellsnp, npooled -> tuple(experiment, cellsnp, npooled,[],[])}.set{full_vcf}
         }
-        full_vcf.view()
-        
+
         // When all the channels are prpeared accordingly we exacute the vireo with the prpeared channel.
         full_vcf.filter { experiment, cellsnp, npooled, t,ti -> npooled != '1' }.set{full_vcf2}
         full_vcf.filter { experiment, cellsnp, npooled, t,ti -> npooled == '1' }.set{not_deconvoluted}

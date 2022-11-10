@@ -83,7 +83,7 @@ workflow CELLBENDER {
             cellbender__remove_background.out.cb_plot_input,
             cellbender__remove_background.out.experimentid_outdir_cellbenderunfiltered_expectedcells_totaldropletsinclude,
         )
-
+        // cellbender__preprocess_output.out.alternative_input.view
         // Make some basic plots
         cellbender__remove_background__qc_plots(
             cellbender__preprocess_output.out.cb_plot_input
@@ -109,7 +109,7 @@ workflow CELLBENDER {
 
         results_list = cellbender__preprocess_output.out.out_paths
         // prepeare the output channel for utilising in the deconvolution instead of barcode input.
-        cellbender_path = cellbender__gather_qc_input.out.celbender_path
+        cellbender_path = cellbender__preprocess_output.out.alternative_input
 
         emit:
             // results_list //results list is not needed to be emited - if done it will wait for all the cellbender stuff to finish.

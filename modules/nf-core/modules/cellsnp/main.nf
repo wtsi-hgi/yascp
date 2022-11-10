@@ -47,6 +47,7 @@ process CELLSNP {
 
     script:
     """
+    
       umask 2 # make files group_writable
 
       if [[ ${barcodes_tsv_gz} =~ \\.gz\$ ]]; then

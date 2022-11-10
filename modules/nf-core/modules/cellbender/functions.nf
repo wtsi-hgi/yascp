@@ -113,7 +113,7 @@ process cellbender__rb__get_input_cells {
 
 process cellbender__preprocess_output{
     label 'process_low'
-  
+    tag "${experiment_id}_cb"
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
       container "/software/hgi/containers/wtsihgi_nf_cellbender_container_3cc9983-2021-12-14-5e3143ef9e66.sif"
       //// container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/wtsihgi_nf_cellbender_v1.2.img"
@@ -169,7 +169,7 @@ process cellbender__preprocess_output{
     path("*filtered_10x_mtx/barcodes.tsv.gz", emit: tenx_barcodes)
     path("*filtered_10x_mtx/features.tsv.gz", emit: tenx_features)
     path("*filtered_10x_mtx/matrix.mtx.gz", emit: tenx_matrix)
-
+    tuple(val(experiment_id),path("cellbender-FPR_${params.cellbender_resolution_to_use}-filtered_10x_mtx"), emit: alternative_input)
     path(
       "${runid}-${outfile}-filtered_10x_mtx-file_list.tsv",
        emit: results_list
@@ -227,7 +227,7 @@ process cellbender__remove_background {
   //maxForks 2   // hard to control memory usage. limit to 3 concurrent
 // cb_plot_input,out_paths,results_list,experimentid_outdir_cellbenderunfiltered_expectedcells_totaldropletsinclude
 
-  
+  tag "${experiment_id}_cb"
   if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
     container "/software/hgi/containers/wtsihgi_nf_cellbender_container_3cc9983-2021-12-14-5e3143ef9e66.sif"
     //// container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/wtsihgi_nf_cellbender_v1.2.img"
@@ -393,7 +393,7 @@ process cellbender__remove_background__qc_plots {
   } else {
     container "wtsihgi/nf_scrna_qc:6bb6af5"
   }
-
+  
 
   // QC plots from cellbdender
   // ------------------------------------------------------------------------
@@ -470,6 +470,7 @@ process capture_cellbender_files{
   output:
     path(cellbender_location)
     path("${cellbender_location}/qc_cluster_input_files/file_paths_10x-*${params.cellbender_resolution_to_use}.tsv", emit: celbender_path)
+    path("${cellbender_location}/*/cellbender-epochs_*/cellbender-FPR_${params.cellbender_resolution_to_use}-filtered_10x_mtx"),emit:alt_input
   script:
   """
     echo 'setting link to get cellbender results in this directory'

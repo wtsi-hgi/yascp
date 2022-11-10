@@ -1,7 +1,7 @@
-include { GATHER_DATA;  SPLIT_DATA_BY_STUDY} from '../modules/nf-core/modules/gather_data/main'
-include { ENCRYPT_DIR; ENCRYPT_TARGET } from '../modules/local/encrypt'
-include { TRANSFER;SUMMARY_STATISTICS_PLOTS } from '../modules/nf-core/modules/summary_statistics_plots/main'
-include { split_bam_by_donor } from "../modules/local/cellranger_bam_per_donor"
+include { GATHER_DATA;  SPLIT_DATA_BY_STUDY} from "$projectDir/modules/nf-core/modules/gather_data/main"
+include { ENCRYPT_DIR; ENCRYPT_TARGET } from "$projectDir/modules/local/encrypt"
+include { TRANSFER;SUMMARY_STATISTICS_PLOTS } from "$projectDir/modules/nf-core/modules/summary_statistics_plots/main"
+include { split_bam_by_donor } from "$projectDir/modules/local/cellranger_bam_per_donor"
 
 workflow data_handover{
     take:
