@@ -49,13 +49,14 @@ def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res
         for folder in df_cellbender.index:
             print(folder)
             print("yes!!")
-            dir1 = f"{df_cellbender.loc[folder,'data_path_10x_format']}/.."
-            dir = f"{df_cellbender.loc[folder,'data_path_10x_format']}/../.."
+            # dir1 = f"{df_cellbender.loc[folder,'data_path_10x_format']}/.."
+            dir1 = '/'.join(df_cellbender.loc[folder,'data_path_10x_format'].split('/')[:-1])
+            dir = '/'.join(df_cellbender.loc[folder,'data_path_10x_format'].split('/')[:-2])
             print(dir1)
             if os.path.isdir(dir1):
                 print("yes22!!")
                 try:
-                    copyfile(f'{dir1}/plots/cellbender_results-cellbender_FPR_{cb_res}_filtered-ambient_signature-scatter_genenames.png', f'{name_dir}/Cellbender/{folder}_ambient_signature-scatter_genenames.png')
+                    copyfile(f'{dir1_b}/plots/cellbender_results-cellbender_FPR_{cb_res}_filtered-ambient_signature-scatter_genenames.png', f'{name_dir}/Cellbender/{folder}_ambient_signature-scatter_genenames.png')
                 except:
                     print('missing1')
                 try:
