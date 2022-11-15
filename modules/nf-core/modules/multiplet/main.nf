@@ -1,6 +1,5 @@
 include {SCRUBLET} from '../scrublet/main'
 include {make_cellmetadata_pipeline_input} from './functions.nf'
-include {KERAS_CELLTYPE} from "$projectDir/modules/nf-core/modules/keras_celltype/main"
 
 workflow MULTIPLET {
     take:

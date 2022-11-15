@@ -25,6 +25,9 @@ workflow CELL_TYPE_ASSIGNEMT{
         SPLIT_BATCH_H5AD.out.sample_file
             .splitCsv(header: true, sep: "\t", by: 1)
             .map{row -> tuple(row.experiment_id, file(row.h5ad_filepath))}.set{ch_experiment_filth5}
+        SPLIT_BATCH_H5AD.out.az_sample_file
+            .splitCsv(header: true, sep: "\t", by: 1)
+            .map{row -> tuple(row.experiment_id, file(row.h5ad_filepath))}.set{az_ch_experiment_filth5}
 
         SPLIT_BATCH_H5AD.out.files_anndata_batch.flatMap().set{ch_batch_files}
         // }else{
@@ -42,7 +45,7 @@ workflow CELL_TYPE_ASSIGNEMT{
 
         ch_experiment_filth5.view()    
         AZIMUTH(params.output_dir,ch_batch_files)
-        CELLTYPIST(ch_experiment_filth5.combine(ch_celltypist_models))
+        CELLTYPIST(az_ch_experiment_filth5.combine(ch_celltypist_models))
         
         CELLTYPE_FILE_MERGE(AZIMUTH.out.predicted_celltype_labels.collect(),CELLTYPIST.out.sample_predicted_labels_csv.collect(),file__anndata_merged)
         file__anndata_merged2=CELLTYPE_FILE_MERGE.out.file__anndata_merged2

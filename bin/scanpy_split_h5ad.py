@@ -25,6 +25,7 @@ def split_h5ad_by_batch(ad, oufnprfx, colnam_batch = 'batch', anndata_compressio
     oufn_list_AZ = []
     batch_labels = pandas.Categorical(ad.obs[colnam_batch].apply(lambda a: a.split('__')[0])) # <class 'pandas.core.series.Series'>
     samples = {}
+    samples_AZ = {}
     count=0
     if (option == 'true'):
         print("Here we split the h5ad we just normalise for celltype assignmet")
@@ -33,7 +34,7 @@ def split_h5ad_by_batch(ad, oufnprfx, colnam_batch = 'batch', anndata_compressio
             count+=1
             oufnam = '{0}_{1}.h5ad'.format(oufnprfx, bl)
             samples[count]={'experiment_id':bl,'h5ad_filepath':f"{os.getcwd()}/{oufnam}"}
-            oufn_list.append(oufnam)
+            samples_AZ[count]={'experiment_id':bl,'h5ad_filepath':f"{os.getcwd()}/AZ_{oufnam}"}
             adb = ad[batch_labels == bl,:]
             # strip unneccessary meta data - this seems to aid subsequent transformation to Seurat h5 format
             # assumes that cells failing qc already were stripped out
@@ -68,13 +69,13 @@ def split_h5ad_by_batch(ad, oufnprfx, colnam_batch = 'batch', anndata_compressio
                     compression='gzip',
                     compression_opts=anndata_compression_opts
                 )
-                adb.write(
+                adb_AZ.write(
                     f"AZ_{oufnam}",
                     compression='gzip',
                     compression_opts=anndata_compression_opts
                 )                
                 
-            oufn_list_AZ.append(oufnam)
+            oufn_list_AZ.append(f'AZ_{oufnam}')
             oufn_list.append(oufnam)
     else:
         print("Here we dont split the h5ad we just normalise for celltype assignmet")
@@ -82,35 +83,49 @@ def split_h5ad_by_batch(ad, oufnprfx, colnam_batch = 'batch', anndata_compressio
         count+=1
         oufnam = '{0}_{1}.h5ad'.format(oufnprfx, bl)
         samples[count]={'experiment_id':bl,'h5ad_filepath':f"{os.getcwd()}/{oufnam}"}
+        samples_AZ[count]={'experiment_id':bl,'h5ad_filepath':f"{os.getcwd()}/AZ_{oufnam}"}
         adb = ad
-        adb.obs = pandas.DataFrame(adb.obs.index, index = adb.obs.index, columns = ["cell_barcode"])
+        adb_AZ = adb.copy()
+        # disable
+        adb_AZ.obs = pandas.DataFrame(adb_AZ.obs.index, index = adb_AZ.obs.index, columns = ["cell_barcode"])
+        
         try:
-            vdf = adb.var[["feature_types", "genome"]]
+            vdf = adb_AZ.var[["feature_types", "genome"]]
         except:
-            adb.var['genome']='GRCh38'
-            vdf = adb.var[["feature_types", "genome"]]
+            adb_AZ.var['genome']='GRCh38'
+            vdf = adb_AZ.var[["feature_types", "genome"]]
 
         vdf.insert(1,"gene_ids", vdf.index)
         vdf.index = pandas.Index(adb.var['gene_symbols'].astype('str'))
         # vdf.index.name = None
         #ad.var = vdf.set_index("gene_symbols", drop = True, verify_integrity = False)
-        adb.var = vdf
-        del adb.layers
-        adata = scanpy.AnnData(adb.X)
-        adata.obs= adb.obs
-        adata.var = adb.var
-        adb = adata
+        adb_AZ.var = vdf
+        del adb_AZ.layers
+        adata = scanpy.AnnData(adb_AZ.X)
+        adata.obs= adb_AZ.obs
+        adata.var = adb_AZ.var
+        adb_AZ = adata
         if anndata_compression_opts is None:
             adb.write(oufnam)
+            adb_AZ.write(f"AZ_{oufnam}")
         else:
             adb.write(
                 oufnam,
                 compression='gzip',
                 compression_opts=anndata_compression_opts)
+            adb_AZ.write(
+                f"AZ_{oufnam}",
+                compression='gzip',
+                compression_opts=anndata_compression_opts
+            )                     
         oufn_list.append(oufnam)
+        oufn_list_AZ.append(f'AZ_{oufnam}')
 
     Samples = pandas.DataFrame(samples).T
     Samples.to_csv('Samples.tsv',sep='\t',index=False)
+    
+    Samples_AZ = pandas.DataFrame(samples_AZ).T
+    Samples_AZ.to_csv('AZ_Samples.tsv',sep='\t',index=False)
     with open(oufn_list_fnam, 'w') as oufh:
         for fn in oufn_list:
             oufh.write(fn + '\n')

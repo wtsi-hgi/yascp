@@ -15,8 +15,9 @@ process SPLIT_BATCH_H5AD {
         val(mode)
 
     output:
-        path("${outfil_prfx}_*.h5ad", emit:files_anndata_batch)
+        path("AZ_${outfil_prfx}_*.h5ad", emit:files_anndata_batch)
         path("Samples.tsv", emit:sample_file)
+        path("AZ_Samples.tsv", emit:az_sample_file)
         path(outfile, emit: file_batch_list)
 
     script:
