@@ -468,12 +468,22 @@ process capture_cellbender_files{
     path(cellbender_location)
     val(outdir)
   output:
-    path(cellbender_location)
-    path("${cellbender_location}/qc_cluster_input_files/file_paths_10x-*${params.cellbender_resolution_to_use}.tsv", emit: celbender_path)
-    path("${cellbender_location}/*/cellbender-epochs_*/cellbender-FPR_${params.cellbender_resolution_to_use}-filtered_10x_mtx"),emit:alt_input
+    path("tmp1234/cellbender")
+    // path("tmp1234/cellbender/qc_cluster_input_files/file_paths_10x-*${params.cellbender_resolution_to_use}.tsv", emit: celbender_path) optional 
+    path("captured/*/cellbender-FPR_${params.cellbender_resolution_to_use}*"),emit:alt_input
+    
   script:
   """
-    echo 'setting link to get cellbender results in this directory'
+    mkdir tmp1234
+    mkdir tmp1234/cellbender
+    cd tmp1234/cellbender
+    for d in ../../${cellbender_location}/* ; do
+        echo \$d
+        ln -s \$d .
+    done
+    cd ../..
+    capture_res_files_cb.py
+
   """    
 
 }

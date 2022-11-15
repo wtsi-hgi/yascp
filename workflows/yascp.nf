@@ -25,16 +25,16 @@ def modules = params.modules.clone()
 
 include { GET_SOFTWARE_VERSIONS } from "$projectDir/modules/local/get_software_versions" addParams( options: [publish_files : ['tsv':'']] )
 include { main_deconvolution } from "$projectDir/subworkflows/main_deconvolution"
-include {cellbender} from "$projectDir/subworkflows/cellbender"
+include {ambient_RNA} from "$projectDir/subworkflows/ambient_RNA"
 include {qc} from "$projectDir/subworkflows/qc"
 include {data_handover} from "$projectDir/subworkflows/data_handover"
 include { prepare_inputs } from "$projectDir/subworkflows/prepare_inputs"
 include { DECONV_INPUTS } from "$projectDir/subworkflows/prepare_inputs/deconvolution_inputs"
 include { CREATE_ARTIFICIAL_BAM_CHANNEL } from "$projectDir/modules/local/create_artificial_bam_channel/main"
 include {MERGE_SAMPLES} from "$projectDir/modules/nf-core/modules/merge_samples/main"
-include {MULTIPLET} from "../modules/nf-core/modules/multiplet/main"
-include {dummy_filtered_channel} from "../modules/nf-core/modules/merge_samples/functions"
-include {capture_cellbender_files} from "../modules/nf-core/modules/cellbender/functions"
+include {MULTIPLET} from "$projectDir/modules/nf-core/modules/multiplet/main"
+include {dummy_filtered_channel} from "$projectDir/modules/nf-core/modules/merge_samples/functions"
+include {capture_cellbender_files} from "$projectDir/modules/nf-core/modules/cellbender/functions"
 
 /*
 ========================================================================================
@@ -79,10 +79,10 @@ workflow SCDECON {
             // // Removing the background using cellbender which is then used in the deconvolution.
             if (params.input == 'cellbender'){
                 log.info ' ---- using cellbender to remove background---'
-                cellbender(prepare_inputs.out.ch_experimentid_paths10x_raw,
+                ambient_RNA(prepare_inputs.out.ch_experimentid_paths10x_raw,
                     prepare_inputs.out.ch_experimentid_paths10x_filtered,prepare_inputs.out.channel__metadata)
                 log.info ' ---- Out results - cellbender to remove background---'
-                DECONV_INPUTS(cellbender.out.cellbender_path,prepare_inputs)
+                DECONV_INPUTS(ambient_RNA.out.cellbender_path,prepare_inputs)
                 channel__file_paths_10x = DECONV_INPUTS.out.channel__file_paths_10x
                 ch_experiment_bam_bai_barcodes= DECONV_INPUTS.out.ch_experiment_bam_bai_barcodes
                 ch_experiment_filth5= DECONV_INPUTS.out.ch_experiment_filth5
@@ -90,8 +90,29 @@ workflow SCDECON {
                 // Here we are using the existing cellbender from a different run, Nothe that the structure of the cellbender folder should be same as produced by this pipeline.
                 log.info ' ---- using existing cellbender output for deconvolution---'
                 capture_cellbender_files(params.cellbender_location,"${params.output_dir}/nf-preprocessing")
-                capture_cellbender_files.out.alt_input.flatten().map{sample -> tuple(sample[-3],sample)}.set{alt_input}
-                DECONV_INPUTS(alt_input,prepare_inputs)
+                capture_cellbender_files.out.alt_input.flatten().map{sample -> tuple("${sample}".replaceFirst(/.*\/captured\//,"").replaceFirst(/\/.*/,""),sample)}.set{alt_input}
+                // remove the unncessary inputs.
+
+                // Run only the files that are not processed. 
+                // prepare_inputs.out.channel__metadata.view()
+                prepare_inputs.out.ch_experimentid_paths10x_raw.join(alt_input, remainder: true).set{post_ch_experimentid_paths10x_raw}
+                prepare_inputs.out.ch_experimentid_paths10x_filtered.join(alt_input, remainder: true).set{post_ch_experimentid_paths10x_filtered}
+                
+                post_ch_experimentid_paths10x_raw.filter{ it[1] != null }.filter{ it[2] == null }.map{row -> tuple(row[0], row[1])}.set{ch_experimentid_paths10x_raw_2}
+                post_ch_experimentid_paths10x_filtered.filter{ it[1] != null }.filter{ it[2] == null }.map{row -> tuple(row[0], row[1])}.set{ch_experimentid_paths10x_filtered_2}
+                post_ch_experimentid_paths10x_raw.filter{ it[1] != null }.filter{ it[2] == null }.map{row -> tuple(row[0])}.set{test2}
+                post_ch_experimentid_paths10x_raw.filter{ it[1] != null }.filter{ it[2] != null }.map{row -> tuple(row[0],row[2])}.set{alt_input3}
+
+                test2.count().view()
+                // alt_input3.subscribe { println "value alt_input3: $it" }
+                // alt_input.subscribe { println "value alt_input: $it" }
+                alt_input3.count().view()
+                post_ch_experimentid_paths10x_raw.count().view()
+                ambient_RNA(ch_experimentid_paths10x_raw_2,
+                    ch_experimentid_paths10x_filtered_2,prepare_inputs.out.channel__metadata)
+                alt_input2 = alt_input3.mix(ambient_RNA.out.cellbender_path)
+                DECONV_INPUTS(alt_input2,prepare_inputs)
+               
                 channel__file_paths_10x = DECONV_INPUTS.out.channel__file_paths_10x
                 ch_experiment_bam_bai_barcodes= DECONV_INPUTS.out.ch_experiment_bam_bai_barcodes
                 ch_experiment_filth5= DECONV_INPUTS.out.ch_experiment_filth5

@@ -33,15 +33,13 @@ workflow CELLBENDER {
         channel__metadata
         
     main:
-        channel__file_paths_10x = Channel
-        .fromPath(params.input_data_table)
-        .splitCsv(header: true, sep: "\t", by: 1)
-        .map{row -> tuple(
-            row.experiment_id,
-            file("${row.data_path_10x_format}/raw_feature_bc_matrix/barcodes.tsv.gz"),
-            file("${row.data_path_10x_format}/raw_feature_bc_matrix/features.tsv.gz"),
-            file("${row.data_path_10x_format}/raw_feature_bc_matrix/matrix.mtx.gz")
-        )}
+        // ch_experimentid_paths10x_raw.view()
+        ch_experimentid_paths10x_raw.map{row -> tuple(
+            row[0],
+            file("${row[1]}/barcodes.tsv.gz"),
+            file("${row[1]}/features.tsv.gz"),
+            file("${row[1]}/matrix.mtx.gz")
+        )}.set{channel__file_paths_10x}
     
         outdir =  outdir+'/cellbender'
         
@@ -50,16 +48,23 @@ workflow CELLBENDER {
             channel__metadata.splitCsv(header: true, sep: "\t", by: 1).map{row -> tuple(
                 row.experiment_id,
                 row.Estimated_Number_of_Cells,
-            )}.set{ncells_cellranger}
+            )}.set{ncells_cellranger_pre}
         }else{
             channel__metadata.splitCsv(header: true, sep: "\t", by: 1).map{row -> tuple(
                 row.experiment_id,
                 '0',
-            )}.set{ncells_cellranger}
+            )}.set{ncells_cellranger_pre}
         }
 
-        channel__file_paths_10x.combine(ncells_cellranger, by: 0).set{channel__file_paths_10x_with_ncells}
+        // channel__file_paths_10x.view()
         
+        ncells_cellranger_pre.join(ch_experimentid_paths10x_raw, remainder: false).set{post_ncells_cellranger} 
+        // post_ncells_cellranger.view()
+        post_ncells_cellranger.map{row -> tuple(row[0], row[1])}.filter{ it[2] == null }.set{ncells_cellranger}
+                
+
+        channel__file_paths_10x.combine(ncells_cellranger, by: 0).set{channel__file_paths_10x_with_ncells}
+       
         cellbender__rb__get_input_cells(
             outdir,
             channel__file_paths_10x_with_ncells,

@@ -2,7 +2,7 @@
 // Load base.config by default for all pipelines - typically included in the nextflow config.
 include { CELLBENDER } from '../modules/nf-core/modules/cellbender/main'
 
-workflow cellbender {
+workflow ambient_RNA {
     take:
         ch_experimentid_paths10x_raw
 		ch_experimentid_paths10x_filtered

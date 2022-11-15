@@ -52,6 +52,8 @@ workflow  main_deconvolution {
             SUBSET_WORKF(ch_ref_vcf,donors_in_pools)
             merged_expected_genotypes = SUBSET_WORKF.out.merged_expected_genotypes
 
+        }else{
+            ch_ref_vcf = Channel.of()
         }
 
 
@@ -126,9 +128,7 @@ workflow  main_deconvolution {
         vireo_out_sample_donor_vcf = REPLACE_GT_DONOR_ID2.out.infered_vcf
         // Vireo also has a wrong header, and this has to be fixed, here we do that.
         VIREO_GT_FIX_HEADER(vireo_out_sample_donor_vcf)
-        VIREO_GT_FIX_HEADER.out.gt_pool
-            .combine(ch_ref_vcf)
-            .set { gt_math_pool_against_panel_input }
+
         VIREO_ADD_SAMPLE_PREFIX(VIREO_GT_FIX_HEADER.out.infered_vcf)
         MERGE_GENOTYPES_IN_ONE_VCF(VIREO_ADD_SAMPLE_PREFIX.out.infered_vcf.collect())
         
@@ -138,6 +138,10 @@ workflow  main_deconvolution {
         vireo_out_sample_donor_ids = REPLACE_GT_DONOR_ID2.out.sample_donor_ids
 
         if (params.genotype_input.run_with_genotype_input) {
+            VIREO_GT_FIX_HEADER.out.gt_pool
+                .combine(ch_ref_vcf)
+                .set { gt_math_pool_against_panel_input }
+
             match_genotypes(vireo_out_sample_donor_vcf,merged_expected_genotypes,VIREO_GT_FIX_HEADER.out.gt_pool,gt_math_pool_against_panel_input)
             gt_matches = match_genotypes.out.donor_match_table.collect()
 
