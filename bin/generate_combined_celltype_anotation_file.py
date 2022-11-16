@@ -33,6 +33,14 @@ def main():
         required=True,
         help='List of csv-delimited files of celltypes assigned by azimuth.'
     )
+    
+    parser.add_argument(
+        '-af', '--all_other_paths',
+        action='store',
+        dest='all_alternitive',
+        required=True,
+        help='List of csv-delimited files of celltypes assigned by azimuth.'
+    )
 
     parser.add_argument(
         '-ad', '--adata',
@@ -72,7 +80,25 @@ def main():
             except:
                 Data_All[f'Celltypist:{Model}']=''
                 Data_All.loc[Data['predicted_labels'].index,f'Celltypist:{Model}']=Data['predicted_labels']
-
+    
+    
+    all_alternitive = options.all_alternitive.split('::')
+    all_indexes_full=set({})
+    for d1 in all_alternitive:
+        Dataset = pd.read_csv(d1,sep='\t',index_col=0)
+        all_indexes = set(Dataset.index)
+        all_indexes_full = all_indexes_full.union(all_indexes)
+    Data_All_alt=pd.DataFrame(index=all_indexes_full)    
+    for d1 in all_alternitive:
+        Dataset = pd.read_csv(d1,sep='\t',index_col=0)
+        for col1 in Dataset.columns:
+            try:
+                _ = Data_All_alt[col1]
+            except:
+                Data_All_alt[col1]=''
+        Data_All_alt.loc[Dataset.index]=Dataset
+    
+    Data_All = pd.concat([Data_All,Data_All_alt],axis=1)
     Donor_Exp = Data_All.index.str.split('-').str[-1]
     Donor = Donor_Exp.str.split('__').str[-1]
     Exp = Donor_Exp.str.split('__').str[0]
@@ -96,8 +122,8 @@ def main():
         for donor in set(Exp_Data['Donor']):
             dict_donor_cells = {}
             for col in Exp_Data.columns:
-                if not 'score' in col and col !='Exp' and col !='Donor':
-                    print(col)
+                if not 'score' in col and not 'probability' in col and col !='Exp' and col !='Donor':
+                    # print(col)
                     # col='Azimuth:predicted.celltype.l2'
                     counts = Exp_Data[col].value_counts()
                     counts.index = counts.index+' - '+col

@@ -30,6 +30,7 @@ process KERAS_CELLTYPE {
             val(experiment_id),
             path("*predictions.h5ad"), 
             emit: to_merge)
+        path('*_celltypes.tsv', emit:predicted_celltype_labels)
     
     script:
         """

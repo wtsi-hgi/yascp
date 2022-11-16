@@ -165,21 +165,27 @@ def main():
 
     # For each color to plot, loop over the different iterations.
     for color_var in colors_quantitative:
-        save_pc_fig(
-            adata=adata,
-            out_file_base=out_file_base,
-            color_var=color_var,
-            colors_quantitative=True,
-            num_PCs=num_PCs
-        )
+        try:
+            save_pc_fig(
+                adata=adata,
+                out_file_base=out_file_base,
+                color_var=color_var,
+                colors_quantitative=True,
+                num_PCs=num_PCs
+            )
+        except:
+            print(f'{color_var} doesnt exist')
     for color_var in colors_categorical:
-        save_pc_fig(
-            adata=adata,
-            out_file_base=out_file_base,
-            color_var=color_var,
-            colors_quantitative=False,
-            num_PCs=num_PCs
-        )
+        try:
+            save_pc_fig(
+                adata=adata,
+                out_file_base=out_file_base,
+                color_var=color_var,
+                colors_quantitative=False,
+                num_PCs=num_PCs
+            )
+        except:
+            print(f'{color_var} doesnt exist')
     save_pc_genes_fig(
         adata=adata,
         out_file_base=out_file_base,

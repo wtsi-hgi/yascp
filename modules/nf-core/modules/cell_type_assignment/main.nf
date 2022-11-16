@@ -30,15 +30,7 @@ workflow CELL_TYPE_ASSIGNEMT{
             .map{row -> tuple(row.experiment_id, file(row.h5ad_filepath))}.set{az_ch_experiment_filth5}
 
         SPLIT_BATCH_H5AD.out.files_anndata_batch.flatMap().set{ch_batch_files}
-        // }else{
-        //     log.info '---Running assignment for full ad---'
-        //     PREPERE_H5AD_FOR_CELLTYPE(file__anndata_merged)
-        //     ch_batch_files = file__anndata_merged
-        //     ch_experiment_filth5 = Channel.from("dummy").map { dummy -> tuple("full_h5ad") }
-        //     ch_experiment_filth5=ch_experiment_filth5.combine(file__anndata_merged)
-        //     ch_experiment_filth5.view()
-        //     ch_batch_files.view()
-        // }
+
         KERAS_CELLTYPE(ch_experiment_filth5) 
         Channel.fromList(params.celltypist.models)
             .set{ch_celltypist_models}
@@ -47,7 +39,7 @@ workflow CELL_TYPE_ASSIGNEMT{
         AZIMUTH(params.output_dir,ch_batch_files)
         CELLTYPIST(az_ch_experiment_filth5.combine(ch_celltypist_models))
         
-        CELLTYPE_FILE_MERGE(AZIMUTH.out.predicted_celltype_labels.collect(),CELLTYPIST.out.sample_predicted_labels_csv.collect(),file__anndata_merged)
+        CELLTYPE_FILE_MERGE(AZIMUTH.out.predicted_celltype_labels.collect(),CELLTYPIST.out.sample_predicted_labels_csv.collect(),KERAS_CELLTYPE.out.predicted_celltype_labels.collect(),file__anndata_merged)
         file__anndata_merged2=CELLTYPE_FILE_MERGE.out.file__anndata_merged2
 
     emit:

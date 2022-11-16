@@ -57,41 +57,43 @@ def main():
     # Plot the data.
     for pheno in pheno_to_plot:
         # plt_width = adata.obs['cluster'].nunique() * 0.25
+        try:
+            gplt = plt9.ggplot(adata.obs)
+            gplt = gplt + plt9.geom_boxplot(plt9.aes(x='cluster', y=pheno))
+            gplt = gplt + plt9.theme(axis_text_x=plt9.element_text(angle=90))
+            gplt.save(
+                'boxplot-{}.png'.format(pheno),
+                #dpi=300,
+                width=plt_width,
+                height=plt_height
+            )
 
-        gplt = plt9.ggplot(adata.obs)
-        gplt = gplt + plt9.geom_boxplot(plt9.aes(x='cluster', y=pheno))
-        gplt = gplt + plt9.theme(axis_text_x=plt9.element_text(angle=90))
-        gplt.save(
-            'boxplot-{}.png'.format(pheno),
-            #dpi=300,
-            width=plt_width,
-            height=plt_height
-        )
-
-        # Add log10 transformation plot
-        lab = 'log10'
-        if adata.obs[pheno].min() < 0:
-            adata.obs[pheno] = adata.obs[pheno] + abs(
-                adata.obs[pheno].min()
-            ) + 1
-            lab = 'plusmin1log10'
-        elif adata.obs[pheno].min() == 0:
-            adata.obs[pheno] = adata.obs[pheno] + 1
-            lab = 'plus1log10'
-        gplt = plt9.ggplot(adata.obs)
-        gplt = gplt + plt9.geom_boxplot(plt9.aes(x='cluster', y=pheno))
-        gplt = gplt + plt9.theme(axis_text_x=plt9.element_text(angle=90))
-        gplt = gplt + plt9.scale_y_continuous(
-            trans='log10',
-            # labels=comma_labels,
-            minor_breaks=0
-        )
-        gplt.save(
-            'boxplot_{}-{}.png'.format(lab, pheno),
-            #dpi=300,
-            width=plt_width,
-            height=plt_height
-        )
+            # Add log10 transformation plot
+            lab = 'log10'
+            if adata.obs[pheno].min() < 0:
+                adata.obs[pheno] = adata.obs[pheno] + abs(
+                    adata.obs[pheno].min()
+                ) + 1
+                lab = 'plusmin1log10'
+            elif adata.obs[pheno].min() == 0:
+                adata.obs[pheno] = adata.obs[pheno] + 1
+                lab = 'plus1log10'
+            gplt = plt9.ggplot(adata.obs)
+            gplt = gplt + plt9.geom_boxplot(plt9.aes(x='cluster', y=pheno))
+            gplt = gplt + plt9.theme(axis_text_x=plt9.element_text(angle=90))
+            gplt = gplt + plt9.scale_y_continuous(
+                trans='log10',
+                # labels=comma_labels,
+                minor_breaks=0
+            )
+            gplt.save(
+                'boxplot_{}-{}.png'.format(lab, pheno),
+                #dpi=300,
+                width=plt_width,
+                height=plt_height
+            )    
+        except:
+            print(f'{pheno} doesnt exist')                                           
 
 
 if __name__ == '__main__':

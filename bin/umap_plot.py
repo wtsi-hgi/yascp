@@ -114,6 +114,7 @@ def save_plot(
         # sc.pl.embedding(
         #     basis='X_umap',
         if color_var != 'embedding_density':
+
             sc.pl.umap(
                 adata=adata,
                 color=color_var,
@@ -124,6 +125,7 @@ def save_plot(
                 ax=ax,
                 show=False
             )
+
         else:
             # NOTE: i__umap looks something like X_umap__n_neighbors=15...
             adata.obs['umap_density'] = adata.obs[
@@ -278,23 +280,29 @@ def main():
 
     # For each color to plot, loop over the different iterations.
     for color_var in colors_quantitative:
-        save_plot(
-            adata=adata,
-            dict__umap_dim_and_params=dict__umap_dim_and_params,
-            out_file_base=out_file_base,
-            color_var=color_var,
-            colors_quantitative=True,
-            drop_legend=options.drop_legend
-        )
+        try:       
+            save_plot(
+                adata=adata,
+                dict__umap_dim_and_params=dict__umap_dim_and_params,
+                out_file_base=out_file_base,
+                color_var=color_var,
+                colors_quantitative=True,
+                drop_legend=options.drop_legend
+            )
+        except:
+            print(f'{color_var} doesnt')
     for color_var in colors_categorical:
-        save_plot(
-            adata=adata,
-            dict__umap_dim_and_params=dict__umap_dim_and_params,
-            out_file_base=out_file_base,
-            color_var=color_var,
-            colors_quantitative=False,
-            drop_legend=options.drop_legend
-        )
+        try:
+            save_plot(
+                adata=adata,
+                dict__umap_dim_and_params=dict__umap_dim_and_params,
+                out_file_base=out_file_base,
+                color_var=color_var,
+                colors_quantitative=False,
+                drop_legend=options.drop_legend
+            )
+        except:
+            print(f'{color_var} doesnt')
 
     # adata.write(
     #     '{}.h5ad'.format('test'),

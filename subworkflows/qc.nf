@@ -33,7 +33,7 @@ workflow qc {
         //     log.info '''--- No extra metadata to add to h5ad ---'''
         // }
         file__anndata_merged.map{val1 -> tuple('full', val1)}.set{out1}
-        KERAS_CELLTYPE(out1)
+        // KERAS_CELLTYPE(out1)
         //FILTERING OUTLIER CELLS
         if (params.sample_qc.cell_filters.filter_outliers.run_process) {
             log.info """---Running automatic outlier cell filtering.----"""
