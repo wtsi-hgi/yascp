@@ -213,12 +213,12 @@ workflow REPORT_UPDATE{
     //             process_finish_check_channel,
     //             ch_poolid_csv_donor_assignments,
     //             bam_split_channel) 
-    data_handover(params.output_dir,
-                o3,
-                ch_poolid_csv_donor_assignments,
-                bam_split_channel) 
-    // SUMMARY_STATISTICS_PLOTS(params.output_dir,o3,params.input_data_table)
-    // TRANSFER(SUMMARY_STATISTICS_PLOTS.out.summary_plots,params.rsync_to_web_file,params.output_dir)
+    // data_handover(params.output_dir,
+    //             o3,
+    //             ch_poolid_csv_donor_assignments,
+    //             bam_split_channel) 
+    SUMMARY_STATISTICS_PLOTS(params.output_dir,o3,params.input_data_table)
+    TRANSFER(SUMMARY_STATISTICS_PLOTS.out.summary_plots,params.rsync_to_web_file,params.output_dir)
 }
 
 

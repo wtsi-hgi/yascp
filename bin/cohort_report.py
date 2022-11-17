@@ -87,7 +87,7 @@ if (os.path.exists(f"{path}/deconvolution/vireo_gt_fix")):
             try:
                 Matched_Donor_report.insert(2, "Vacutainer ID", gt_match)
             except:
-                print('exists')
+                Matched_Donor_report['Vacutainer ID']=gt_match
             Matched_Donor_report['Experiment ID'] = project_name
             Matched_Donor_report['Chromium channel number'] = Tranch_stats['Chromium channel number'].values[0]
             Matched_Donor_report['Date of sample sequencing'] = Tranch_stats['Date of sample sequencing'].values[0]
