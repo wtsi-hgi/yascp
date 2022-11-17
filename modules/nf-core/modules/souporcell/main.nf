@@ -58,6 +58,7 @@ process SOUPORCELL {
         souporcell_pipeline.py \\
           -i ${bam_file} \\
           -b bar_codes.txt \\
+          --skip_remap
           -f ${reference_fasta} \\
           -t ${task.cpus} \\
           -o ${samplename} \\
