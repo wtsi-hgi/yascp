@@ -461,7 +461,15 @@ process cellbender__remove_background__qc_plots {
 }
 
 process capture_cellbender_files{
-  publishDir  path: "${outdir}"
+  publishDir  path: "${outdir}",
+        saveAs: {filename -> if (filename.contains("tmp1234")) {
+          null
+        }else{
+          filename.replaceAll("tmp1234/cellbender", "cellbender")
+        }
+      }, mode: "${params.cellsnp.copy_mode}",
+    overwrite: "true"
+
   label 'process_tiny'
   // cache false
   input:
@@ -469,7 +477,6 @@ process capture_cellbender_files{
     val(outdir)
   output:
     path("tmp1234/cellbender")
-    // path("tmp1234/cellbender/qc_cluster_input_files/file_paths_10x-*${params.cellbender_resolution_to_use}.tsv", emit: celbender_path) optional 
     path("captured/*/cellbender-FPR_${params.cellbender_resolution_to_use}*"),emit:alt_input
     
   script:
