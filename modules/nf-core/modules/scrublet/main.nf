@@ -14,7 +14,7 @@ process SCRUBLET {
     //tag { output_dir }
     //cache false        // cache results from run
 
-    tag "${samplename}"
+    tag "${experiment_id}"
     //scratch true        // use tmp directory
 
 

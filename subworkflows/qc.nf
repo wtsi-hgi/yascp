@@ -51,7 +51,7 @@ workflow qc {
             file__cells_filtered = OUTLIER_FILTER.out.cells_filtered
         }
 
-        if (params.run_celltype_assignment){
+        if (params.celltype_assignment.run_celltype_assignment){
             CELL_TYPE_ASSIGNEMT(file__anndata_merged,file__cells_filtered)
             file__anndata_merged=CELL_TYPE_ASSIGNEMT.out.file__anndata_merged2
         }

@@ -30,16 +30,31 @@ workflow CELL_TYPE_ASSIGNEMT{
             .map{row -> tuple(row.experiment_id, file(row.h5ad_filepath))}.set{az_ch_experiment_filth5}
 
         SPLIT_BATCH_H5AD.out.files_anndata_batch.flatMap().set{ch_batch_files}
-
-        KERAS_CELLTYPE(ch_experiment_filth5) 
-        Channel.fromList(params.celltypist.models)
-            .set{ch_celltypist_models}
-
-        ch_experiment_filth5.view()    
-        AZIMUTH(params.output_dir,ch_batch_files)
-        CELLTYPIST(az_ch_experiment_filth5.combine(ch_celltypist_models))
+        if (params.celltype_assignment.run_keras){
+            KERAS_CELLTYPE(ch_experiment_filth5) 
+            all_extra_fields = KERAS_CELLTYPE.out.predicted_celltype_labels.collect()
+        }else{
+            all_extra_fields = Channel.of()
+        }
         
-        CELLTYPE_FILE_MERGE(AZIMUTH.out.predicted_celltype_labels.collect(),CELLTYPIST.out.sample_predicted_labels_csv.collect(),KERAS_CELLTYPE.out.predicted_celltype_labels.collect(),file__anndata_merged)
+
+        if (params.celltype_assignment.run_azimuth){
+            AZIMUTH(params.output_dir,ch_batch_files)
+            az_out = AZIMUTH.out.predicted_celltype_labels.collect()
+        }else{
+            az_out = Channel.of()
+        }
+
+        if (params.celltype_assignment.run_azimuth){
+            Channel.fromList(params.celltypist.models)
+                .set{ch_celltypist_models}
+            CELLTYPIST(az_ch_experiment_filth5.combine(ch_celltypist_models))
+            ct_out = CELLTYPIST.out.sample_predicted_labels_csv.collect()
+        }else{
+            ct_out = Channel.of()
+        }
+        
+        CELLTYPE_FILE_MERGE(az_out,ct_out,all_extra_fields,file__anndata_merged)
         file__anndata_merged2=CELLTYPE_FILE_MERGE.out.file__anndata_merged2
 
     emit:

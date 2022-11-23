@@ -75,7 +75,8 @@ workflow  main_deconvolution {
         }else{
             log.info('Running CELLSNP')
 
-            CELLSNP(ch_experiment_bam_bai_barcodes,
+            ch_experiment_bam_bai_barcodes.combine(ch_experiment_npooled, by: 0).set{cellsnp_with_npooled}
+            CELLSNP(cellsnp_with_npooled,
                 Channel.fromPath(params.cellsnp.vcf_candidate_snps).collect())
             cellsnp_output_dir = CELLSNP.out.cellsnp_output_dir
         }

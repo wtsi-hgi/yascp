@@ -39,15 +39,20 @@ process CELLSNP {
         params.cellsnp.run
 
     input: 
-        tuple val(samplename), path(bam_file), path(bai_file), path(barcodes_tsv_gz)
+        tuple val(samplename), path(bam_file), path(bai_file), path(barcodes_tsv_gz),val(n_pooled)
         file(region_vcf)
 
     output:
     tuple val(samplename), file("cellsnp_${samplename}"), emit: cellsnp_output_dir
 
     script:
+    if (n_pooled=='1'){
+      genotype_file=' --genotype '
+    }else{
+      genotype_file=' --genotype '
+    }
     """
-    
+      echo ${n_pooled}
       umask 2 # make files group_writable
 
       if [[ ${barcodes_tsv_gz} =~ \\.gz\$ ]]; then
@@ -64,6 +69,6 @@ process CELLSNP {
         -R ${region_vcf} \\
         -p ${task.cpus} \\
         --minMAF ${params.cellsnp.min_maf} \\
-        --minCOUNT ${params.cellsnp.min_count} --gzip
+        --minCOUNT ${params.cellsnp.min_count} --gzip ${genotype_file}
     """
 }

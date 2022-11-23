@@ -1,7 +1,7 @@
 
 process CELLTYPIST {
     tag "${samplename}"
-    label 'process_medium'
+    label 'process_high_memory'
     publishDir "${params.outdir}/celltype/celltypist/${model}/${sample}/", mode: "${params.celltypist.copy_mode}", overwrite: true,
 	  saveAs: {filename -> filename.replaceFirst("outputs/","").replaceFirst("figures/","") }
     

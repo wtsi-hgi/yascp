@@ -631,6 +631,7 @@ def scanpy_merge(
         ]
         try:
             extra_sample_metadata = extra_metadata[extra_metadata[metadata_key]==idx1]
+            extra_sample_metadata= extra_sample_metadata.drop_duplicates(subset=['experiment_id'], keep='last')
         except:
             extra_sample_metadata = pd.DataFrame()
         if (len(extra_sample_metadata)>0):
@@ -640,7 +641,9 @@ def scanpy_merge(
                     print(f' {col} already exist')
                 else:
                     print(col)
-                    adata.obs[col] = np.repeat(list(set(extra_sample_metadata[col].values)), adata.n_obs)
+                    # d1 = extra_sample_metadata[col].values
+                    d2 = extra_sample_metadata[col].values
+                    adata.obs[col] = np.repeat(list(set(d2)), adata.n_obs)
         adata_orig_cols = list(adata.obs.columns)
         
         for col in metadata_smpl.columns:

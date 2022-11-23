@@ -211,9 +211,16 @@ def run_scrublet(
     # * Normalization, gene filtering, rescaling, PCA
     # * Multiplet score calculation
     # * Multiplet score threshold detection and multiplet calling
-    multiplet_scores, predicted_multiplets = scrub.scrub_doublets(
-        verbose=True
-    )
+    try:
+        multiplet_scores, predicted_multiplets = scrub.scrub_doublets(
+            verbose=True,n_prin_comps=5
+        )
+    except:
+        # this is to resolve an issue sometimes encountered when small nr o cells provided in adata
+        # ValueError: n_components=30 must be between 1 and min(n_samples, n_features)=27 with svd_solver='arpack'
+        multiplet_scores, predicted_multiplets = scrub.scrub_doublets(
+            verbose=True,n_prin_comps=len(adata)-1
+        )
 
     # Calculate the threshold for calling multiplets
     # The default method for scrublet is `threshold_minimum`, but in our

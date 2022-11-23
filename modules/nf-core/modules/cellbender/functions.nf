@@ -462,7 +462,7 @@ process cellbender__remove_background__qc_plots {
 
 process capture_cellbender_files{
   publishDir  path: "${outdir}",
-        saveAs: {filename -> if (filename.contains("tmp1234")) {
+        saveAs: {filename -> if (filename.contains("captured")) {
           null
         }else{
           filename.replaceAll("tmp1234/cellbender", "cellbender")

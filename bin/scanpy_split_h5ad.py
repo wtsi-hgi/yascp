@@ -19,6 +19,57 @@ import anndata
 # for testing use
 # infnam = "/lustre/scratch123/hgi/mdt1/projects/ukbb_scrna/pipelines/Pilot_UKB/qc/franke_data/work/2a/ebdc5079ae949777263ce3b1aca510/BF61CE54F4603C9F-adata.h5ad"
 
+def write_h5_out_for_ct(ad,oufn_list_AZ,oufnam,oufn_list,samples,samples_AZ,bl,count,anndata_compression_opts,batch_labels=None):
+    samples[count]={'experiment_id':bl,'h5ad_filepath':f"{os.getcwd()}/{oufnam}"}
+    samples_AZ[count]={'experiment_id':bl,'h5ad_filepath':f"{os.getcwd()}/AZ_{oufnam}"}
+    if (bl=='full'):
+        adb =ad
+    else:
+        adb = ad[batch_labels == bl,:]
+        
+    # strip unneccessary meta data - this seems to aid subsequent transformation to Seurat h5 format
+    # assumes that cells failing qc already were stripped out
+    # ad.obs = ad.obs[['convoluted_samplename', 'cell_passes_qc']]
+    # ad.var = ad.var[['feature_types', 'genome', 'gene_symbols']]
+    adb_AZ = adb.copy()
+    # disable
+    adb_AZ.obs = pandas.DataFrame(adb_AZ.obs.index, index = adb_AZ.obs.index, columns = ["cell_barcode"])
+
+    try:
+        vdf = adb_AZ.var[["feature_types", "genome"]]
+    except:
+        adb_AZ.var['genome']='GRCh38'
+        vdf = adb_AZ.var[["feature_types", "genome"]]
+    vdf.insert(1,"gene_ids", vdf.index)
+    vdf.index = pandas.Index(adb_AZ.var['gene_symbols'].astype('str'))
+    #ad.var = vdf.set_index("gene_symbols", drop = True, verify_integrity = False)
+    adb_AZ.var = vdf
+
+    del adb_AZ.uns
+    adata = scanpy.AnnData(adb_AZ.X)
+    adata.obs= adb_AZ.obs
+    adata.var = adb_AZ.var
+    adb_AZ = adata
+    # disable
+    if anndata_compression_opts is None:
+        adb.write(oufnam)
+        adb_AZ.write(f"AZ_{oufnam}")
+    else:
+        adb.write(
+            oufnam,
+            compression='gzip',
+            compression_opts=anndata_compression_opts
+        )
+        adb_AZ.write(
+            f"AZ_{oufnam}",
+            compression='gzip',
+            compression_opts=anndata_compression_opts
+        )                
+        
+    oufn_list_AZ.append(f'AZ_{oufnam}')
+    oufn_list.append(oufnam)
+    return oufn_list_AZ,oufn_list,samples,samples_AZ
+
 def split_h5ad_by_batch(ad, oufnprfx, colnam_batch = 'batch', anndata_compression_opts=None, option='true'):
     oufn_list_fnam = '{}_files.txt'.format(oufnprfx)
     oufn_list = []
@@ -33,93 +84,14 @@ def split_h5ad_by_batch(ad, oufnprfx, colnam_batch = 'batch', anndata_compressio
             print(bl)
             count+=1
             oufnam = '{0}_{1}.h5ad'.format(oufnprfx, bl)
-            samples[count]={'experiment_id':bl,'h5ad_filepath':f"{os.getcwd()}/{oufnam}"}
-            samples_AZ[count]={'experiment_id':bl,'h5ad_filepath':f"{os.getcwd()}/AZ_{oufnam}"}
-            adb = ad[batch_labels == bl,:]
-            # strip unneccessary meta data - this seems to aid subsequent transformation to Seurat h5 format
-            # assumes that cells failing qc already were stripped out
-            # ad.obs = ad.obs[['convoluted_samplename', 'cell_passes_qc']]
-            # ad.var = ad.var[['feature_types', 'genome', 'gene_symbols']]
-            adb_AZ = adb.copy()
-            # disable
-            adb_AZ.obs = pandas.DataFrame(adb_AZ.obs.index, index = adb_AZ.obs.index, columns = ["cell_barcode"])
+            oufn_list_AZ,oufn_list,samples,samples_AZ = write_h5_out_for_ct(ad,oufn_list_AZ,oufnam,oufn_list,samples,samples_AZ,bl,count,anndata_compression_opts,batch_labels=batch_labels)
 
-            try:
-                vdf = adb_AZ.var[["feature_types", "genome"]]
-            except:
-                adb_AZ.var['genome']='GRCh38'
-                vdf = adb_AZ.var[["feature_types", "genome"]]
-            vdf.insert(1,"gene_ids", vdf.index)
-            vdf.index = pandas.Index(adb_AZ.var['gene_symbols'].astype('str'))
-            #ad.var = vdf.set_index("gene_symbols", drop = True, verify_integrity = False)
-            adb_AZ.var = vdf
-
-            del adb_AZ.uns
-            adata = scanpy.AnnData(adb_AZ.X)
-            adata.obs= adb_AZ.obs
-            adata.var = adb_AZ.var
-            adb_AZ = adata
-            # disable
-            if anndata_compression_opts is None:
-                adb.write(oufnam)
-                adb_AZ.write(f"AZ_{oufnam}")
-            else:
-                adb.write(
-                    oufnam,
-                    compression='gzip',
-                    compression_opts=anndata_compression_opts
-                )
-                adb_AZ.write(
-                    f"AZ_{oufnam}",
-                    compression='gzip',
-                    compression_opts=anndata_compression_opts
-                )                
-                
-            oufn_list_AZ.append(f'AZ_{oufnam}')
-            oufn_list.append(oufnam)
     else:
         print("Here we dont split the h5ad we just normalise for celltype assignmet")
         bl ='full'
         count+=1
         oufnam = '{0}_{1}.h5ad'.format(oufnprfx, bl)
-        samples[count]={'experiment_id':bl,'h5ad_filepath':f"{os.getcwd()}/{oufnam}"}
-        samples_AZ[count]={'experiment_id':bl,'h5ad_filepath':f"{os.getcwd()}/AZ_{oufnam}"}
-        adb = ad
-        adb_AZ = adb.copy()
-        # disable
-        adb_AZ.obs = pandas.DataFrame(adb_AZ.obs.index, index = adb_AZ.obs.index, columns = ["cell_barcode"])
-        
-        try:
-            vdf = adb_AZ.var[["feature_types", "genome"]]
-        except:
-            adb_AZ.var['genome']='GRCh38'
-            vdf = adb_AZ.var[["feature_types", "genome"]]
-
-        vdf.insert(1,"gene_ids", vdf.index)
-        vdf.index = pandas.Index(adb.var['gene_symbols'].astype('str'))
-        # vdf.index.name = None
-        #ad.var = vdf.set_index("gene_symbols", drop = True, verify_integrity = False)
-        adb_AZ.var = vdf
-        del adb_AZ.layers
-        adata = scanpy.AnnData(adb_AZ.X)
-        adata.obs= adb_AZ.obs
-        adata.var = adb_AZ.var
-        adb_AZ = adata
-        if anndata_compression_opts is None:
-            adb.write(oufnam)
-            adb_AZ.write(f"AZ_{oufnam}")
-        else:
-            adb.write(
-                oufnam,
-                compression='gzip',
-                compression_opts=anndata_compression_opts)
-            adb_AZ.write(
-                f"AZ_{oufnam}",
-                compression='gzip',
-                compression_opts=anndata_compression_opts
-            )                     
-        oufn_list.append(oufnam)
-        oufn_list_AZ.append(f'AZ_{oufnam}')
+        oufn_list_AZ,oufn_list,samples,samples_AZ = write_h5_out_for_ct(ad,oufn_list_AZ,oufnam,oufn_list,samples,samples_AZ,bl,count,anndata_compression_opts)
 
     Samples = pandas.DataFrame(samples).T
     Samples.to_csv('Samples.tsv',sep='\t',index=False)
