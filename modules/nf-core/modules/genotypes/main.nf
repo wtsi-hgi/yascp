@@ -59,14 +59,14 @@ process VIREO_ADD_SAMPLE_PREFIX{
       tuple val(pool_id), path(vireo_gt_vcf)
 
     output:
-      path(vireo_fixed_vcf), emit: infered_vcf
+      path("prefix_${vireo_fixed_vcf}"), emit: infered_vcf
 
     script:
       sorted_vcf = "${pool_id}_vireo_srt.vcf.gz"
       vireo_fixed_vcf = "${pool_id}_pool_headfix_vireo.vcf.gz"
     """
       bcftools query -l ${vireo_gt_vcf} | awk '\$0=""\$0" ${pool_id}_"\$0' > replacement_assignments.tsv
-      bcftools reheader --samples replacement_assignments.tsv -o ${vireo_fixed_vcf} ${vireo_gt_vcf}
+      bcftools reheader --samples replacement_assignments.tsv -o prefix_${vireo_fixed_vcf} ${vireo_gt_vcf}
     """
 }
 
@@ -123,7 +123,7 @@ process VIREO_GT_FIX_HEADER
   """
 }
 process REPLACE_GT_DONOR_ID2{
-
+    tag "${samplename}"
     publishDir  path: "${params.outdir}/deconvolution/vireo_gt_fix/${samplename}/",
           pattern: "GT_replace_*",
           mode: "${params.copy_mode}",
@@ -138,27 +138,25 @@ process REPLACE_GT_DONOR_ID2{
   label 'process_medium'
 
   input:
-    tuple val(samplename), path(gt_donors), path(vireo_sample_summary),path(vireo___exp_sample_summary),path(vireo__donor_ids),path(vcf_file),path(donor_gt_csi)
-   
+    tuple val(samplename), path(gt_donors), path(vireo_sample_summary),path(vireo___exp_sample_summary),path(vireo__donor_ids),path(vcf_file),path(donor_gt_csi),val(mode)
+
   output:
-    tuple val(samplename), path("GT_replace_donor_ids.tsv"), emit: sample_donor_ids
-    tuple val(samplename), path("GT_replace_GT_donors.vireo.vcf.gz"), path(vcf_file),path(donor_gt_csi), emit: sample_donor_vcf
-    tuple val(samplename), path("GT_replace_GT_donors.vireo.vcf.gz"), emit: infered_vcf
-    path("GT_replace_${samplename}.sample_summary.txt"), emit: sample_summary_tsv
-    path("GT_replace_${samplename}__exp.sample_summary.txt"), emit: sample__exp_summary_tsv
-    path("GT_replace_${samplename}_assignments.tsv"), emit: assignments
-    tuple  val(samplename), path("GT_replace_GT_donors.vireo.vcf.gz"), path("GT_replace_${samplename}.sample_summary.txt"),path("GT_replace_${samplename}__exp.sample_summary.txt"),path("GT_replace_donor_ids.tsv"),path(vcf_file),path(donor_gt_csi), emit: all_required_data
-    path("Output_validation_${params.genotype_input.vireo_with_gt}.dummy")
+    tuple val(samplename), path("GT_replace_donor_ids_${mode}.tsv"), emit: sample_donor_ids
+    tuple val(samplename), path("GT_replace_GT_donors.vireo_${mode}.vcf.gz"), path(vcf_file),path(donor_gt_csi), emit: sample_donor_vcf
+    tuple val(samplename), path("GT_replace_GT_donors.vireo_${mode}.vcf.gz"), emit: infered_vcf
+    path("GT_replace_${samplename}.sample_summary_${mode}.txt"), emit: sample_summary_tsv
+    path("GT_replace_${samplename}__exp.sample_summary_${mode}.txt"), emit: sample__exp_summary_tsv
+    path("GT_replace_${samplename}_assignments_${mode}.tsv"), emit: assignments
+    tuple  val(samplename), path("GT_replace_GT_donors.vireo_${mode}.vcf.gz"), path("GT_replace_${samplename}.sample_summary_${mode}.txt"),path("GT_replace_${samplename}__exp.sample_summary_${mode}.txt"),path("GT_replace_donor_ids_${mode}.tsv"),path(vcf_file),path(donor_gt_csi), emit: all_required_data
+
   script:
 
     in=""
 
     """
-    
-      echo "${params.genotype_input.vireo_with_gt}" > "Output_validation_${params.genotype_input.vireo_with_gt}.dummy"
-      bcftools query -l GT_donors.vireo.vcf.gz > donors_in_vcf.tsv
-      replace_donors.py -id ${samplename} ${in} --input_file "${params.input_data_table}"
-      bcftools reheader --samples replacement_assignments.tsv -o GT_replace_GT_donors.vireo.vcf.gz GT_donors.vireo.vcf.gz 
+      bcftools query -l GT_donors.vireo.vcf.gz > ${mode}_donors_in_vcf.tsv
+      replace_donors.py -id ${samplename} ${in} --input_file "${params.input_data_table}" -m ${mode}
+      bcftools reheader --samples replacement_assignments_${mode}.tsv -o GT_replace_GT_donors.vireo_${mode}.vcf.gz GT_donors.vireo.vcf.gz 
     """
 }
 
@@ -191,7 +189,7 @@ process ENHANCE_STATS_GT_MATCH{
     }
 
     """
-      replace_donors2.py -id ${samplename} ${in} --input_file "${params.input_data_table}"
+      enhance_stats.py -id ${samplename} ${in} --input_file "${params.input_data_table}" -m ${params.genotype_input.vireo_with_gt}
     """
 }
 
@@ -291,7 +289,7 @@ process ASSIGN_DONOR_FROM_PANEL
 process ASSIGN_DONOR_OVERALL
 {
   // decide final donor assignment across different panels from per-panel donor assignments
-  tag "${pool_panel_id}"
+  tag "${pool_id}"
 
   publishDir  path: "${params.outdir}/gtmatch/${pool_id}",
           pattern: "*.csv",

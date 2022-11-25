@@ -16,15 +16,19 @@ parser.add_argument("-gp", "--genotype_phenotype_mapping", metavar="genotype_phe
 parser.add_argument("-if", "--input_file", metavar="input_file", dest = "input_file",
                     help="", type=str,
                     default=None)
-                    
+parser.add_argument("-m", "--mode", metavar="input_file", dest = "mode",
+                    help="", type=str,
+                    default=None)
+                     
 args = parser.parse_args()
+mode =args.mode
 if (args.genotype_phenotype_mapping):
     gp_ma = pd.read_csv(args.genotype_phenotype_mapping,sep='\t',index_col=0)
     gp_ma.index = gp_ma.index.astype(str)
 else:
     gp_ma = pd.DataFrame()
 input_id =args.donor_id
-donors_in_vcf = pd.read_csv('donors_in_vcf.tsv',header=None)
+donors_in_vcf = pd.read_csv(f'{mode}_donors_in_vcf.tsv',header=None)
 # input_id = 'ELGH_VAL11650907'
 # stats_CRD_CMB12979963_gt_donor_assignments.csv
 # GT_Assignments = pd.read_csv(f'stats_{input_id}_gt_donor_assignments.csv',sep=',')
@@ -83,10 +87,9 @@ slipt1='\t'.join(slipt1)
 vcf[:1].values[0,0]=slipt1
 # Now that we have loaded them replace all the files with the correct donor ids.
 
-GT_Assignments__sample_summary_txt.to_csv(f'GT_replace_{input_id}.sample_summary.txt',sep='\t',index=False,header=False)
-GT_Assignments__exp_sample_summary_txt.to_csv(f'GT_replace_{input_id}__exp.sample_summary.txt',sep='\t',index=False,header=False)
-GT_Assignments.to_csv(f'GT_replace_{input_id}_assignments.tsv',sep='\t',index=False,header=False)
-donor_ids.to_csv(f'GT_replace_donor_ids.tsv',sep='\t',index=False)
-# vcf.to_csv(f'GT_replace_GT_donors.vireo.vcf',sep=',',index=False)
-GT_Assignments.to_csv(f'replacement_assignments.tsv',sep=' ',index=False,header=False)
+GT_Assignments__sample_summary_txt.to_csv(f'GT_replace_{input_id}.sample_summary_{mode}.txt',sep='\t',index=False,header=False)
+GT_Assignments__exp_sample_summary_txt.to_csv(f'GT_replace_{input_id}__exp.sample_summary_{mode}.txt',sep='\t',index=False,header=False)
+GT_Assignments.to_csv(f'GT_replace_{input_id}_assignments_{mode}.tsv',sep='\t',index=False,header=False)
+donor_ids.to_csv(f'GT_replace_donor_ids_{mode}.tsv',sep='\t',index=False)
+GT_Assignments.to_csv(f'replacement_assignments_{mode}.tsv',sep=' ',index=False,header=False)
 print("Done")

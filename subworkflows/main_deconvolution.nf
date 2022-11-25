@@ -124,12 +124,13 @@ workflow  main_deconvolution {
 
         //Vireo creates per pool vcf vit donor0 etc, or if genotypes are provided genotype IDs will be placed there.
         VIREO(full_vcf2)
-        //But to make it consistent we still randomly assign fonor IDs per pool for each of the names.
-        REPLACE_GT_DONOR_ID2(VIREO.out.all_required_data)
-        vireo_out_sample_donor_vcf = REPLACE_GT_DONOR_ID2.out.infered_vcf
-        // Vireo also has a wrong header, and this has to be fixed, here we do that.
-        VIREO_GT_FIX_HEADER(vireo_out_sample_donor_vcf)
-
+        //But to make it consistent we still randomly assign donor IDs per pool for each of the names.
+        VIREO.out.all_required_data.set{replacement_input}
+        vireo_with_gt = Channel.of(params.genotype_input.vireo_with_gt)
+        replacement_input.combine(vireo_with_gt).set{vir_repl_input}
+        REPLACE_GT_DONOR_ID2(vir_repl_input)
+        vir_repl_input.view()
+        VIREO_GT_FIX_HEADER(REPLACE_GT_DONOR_ID2.out.infered_vcf)
         VIREO_ADD_SAMPLE_PREFIX(VIREO_GT_FIX_HEADER.out.infered_vcf)
         MERGE_GENOTYPES_IN_ONE_VCF(VIREO_ADD_SAMPLE_PREFIX.out.infered_vcf.collect())
         

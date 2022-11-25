@@ -189,27 +189,30 @@ def main():
 
     # Plot the data.
     for facet in facets_to_plot:
-        plot_umi_mt_density(
-            df_plot=adata.obs,
-            output_file='plot_umi_mt_density.facet={}-{}'.format(
-                facet,
-                options.of
-            ),
-            facet_column=facet,
-            color_var='density',
-            density_contour=True
-        )
-        if 'cell_passes_qc' in adata.obs:
+        try:
             plot_umi_mt_density(
                 df_plot=adata.obs,
-                output_file='plot_umi_mt_cellpassqc.facet={}-{}'.format(
+                output_file='plot_umi_mt_density.facet={}-{}'.format(
                     facet,
                     options.of
                 ),
                 facet_column=facet,
-                color_var='cell_passes_qc',
-                density_contour=False
+                color_var='density',
+                density_contour=True
             )
+            if 'cell_passes_qc' in adata.obs:
+                plot_umi_mt_density(
+                    df_plot=adata.obs,
+                    output_file='plot_umi_mt_cellpassqc.facet={}-{}'.format(
+                        facet,
+                        options.of
+                    ),
+                    facet_column=facet,
+                    color_var='cell_passes_qc',
+                    density_contour=False
+                )
+        except:
+            print(f'{facet} -- probably missing in adata')
 
 
 if __name__ == '__main__':

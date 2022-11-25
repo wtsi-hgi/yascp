@@ -925,7 +925,7 @@ if __name__ == '__main__':
         # this is existing_cellbender, hence using this input
         df_cellbender = pandas.read_table(f'{args.cellbender}', index_col = 'experiment_id')
     Resolution = args.resolution
-    adqc = anndata.read_h5ad(f'{args.results_dir}/adata.h5ad')
+    adqc = anndata.read_h5ad(f'{args.results_dir}/merged_h5ad/outlier_filtered_adata.h5ad')
     fctr = 0
     data_tranche_all=[]
     data_donor_all=[]

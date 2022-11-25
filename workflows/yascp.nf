@@ -27,6 +27,8 @@ include { GET_SOFTWARE_VERSIONS } from "$projectDir/modules/local/get_software_v
 include { main_deconvolution } from "$projectDir/subworkflows/main_deconvolution"
 include {ambient_RNA} from "$projectDir/subworkflows/ambient_RNA"
 include {qc} from "$projectDir/subworkflows/qc"
+include {eQTL} from "$projectDir/subworkflows/eQTL"
+include {celltype} from "$projectDir/subworkflows/celltype"
 include {data_handover} from "$projectDir/subworkflows/data_handover"
 include { prepare_inputs } from "$projectDir/subworkflows/prepare_inputs"
 include { DECONV_INPUTS } from "$projectDir/subworkflows/prepare_inputs/deconvolution_inputs"
@@ -175,6 +177,10 @@ workflow SCDECON {
             // /lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/qc/Cardinal_45673_Aug_28_2022/results/gtmatch/CRD_CMB13098028/CRD_CMB13098028_gt_donor_assignments.csv
         }
         
+        if (params.celltype_assignment.run_celltype_assignment){
+            celltype(file__anndata_merged,file__cells_filtered)
+            file__anndata_merged=celltype.out.file__anndata_merged2
+        }
 
         // ###################################
         // ################################### Readme
@@ -187,10 +193,14 @@ workflow SCDECON {
         if (!params.skip_qc){
             qc(file__anndata_merged,file__cells_filtered) //This runs the Clusterring and qc assessments of the datasets.
             process_finish_check_channel = qc.out.LI
+            file__anndata_merged = qc.out.file__anndata_merged
         }else{
             // if we are not running qc step we need to account for an dummy channel. 
             process_finish_check_channel = Channel.of([1, 'dummy'])
         }
+
+        eQTL(file__anndata_merged)
+
     }else{
         // since for the downstreem preocess we do a bam split, and this is generated as part of a main_deconvolution step, we have to generate this input artificially here based on the results directory and fech location.
         CREATE_ARTIFICIAL_BAM_CHANNEL(input_channel)

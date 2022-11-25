@@ -14,7 +14,7 @@ process CELLTYPE_FILE_MERGE{
     }
     output:
         path('adata.h5ad', emit:file__anndata_merged2)
-        path "All_Celltype_Assignments.csv"
+        path("All_Celltype_Assignments.csv",emit:celltype_assignments)
         path "tranche_celltype_report.tsv"
         path "donor_celltype_report.tsv"
 

@@ -2,20 +2,17 @@
 // Load base.config by default for all pipelines - typically included in the nextflow config.
 // Modules to include.
 
-include {OUTLIER_FILTER} from "../modules/nf-core/modules/outlier_filter/main"
-include {PLOT_STATS} from "../modules/nf-core/modules/plot_stats/main"
-include {CELL_TYPE_ASSIGNEMT} from "../modules/nf-core/modules/cell_type_assignment/main"
-include {ESTIMATE_PCA_ELBOW} from "../modules/nf-core/modules/estimate_pca_elbow/main"
-include {SUBSET_PCS} from "../modules/nf-core/modules/subset_pcs/main"
-include {NORMALISE_AND_PCA} from "../modules/nf-core/modules/normalise_and_pca/main"
-include {HARMONY} from "../modules/nf-core/modules/harmony/main"
-include {BBKNN} from "../modules/nf-core/modules/bbknn/main"
-include {ADD_EXTRA_METADATA_TO_H5AD} from "../modules/nf-core/modules/adata_manipulations/main"
-include {LISI} from "../modules/nf-core/modules/lisi/main"
-include {UMAP; UMAP as UMAP_HARMONY; UMAP as UMAP_BBKNN;} from "../modules/nf-core/modules/umap/main"
-include {CLUSTERING; CLUSTERING as CLUSTERING_HARMONY; CLUSTERING as CLUSTERING_BBKNN;} from "../modules/nf-core/modules/clustering/main"
-include {KERAS_CELLTYPE} from "$projectDir/modules/nf-core/modules/keras_celltype/main"
-
+include {OUTLIER_FILTER} from "$projectDir/modules/nf-core/modules/outlier_filter/main"
+include {PLOT_STATS} from "$projectDir/modules/nf-core/modules/plot_stats/main"
+include {ESTIMATE_PCA_ELBOW} from "$projectDir/modules/nf-core/modules/estimate_pca_elbow/main"
+include {SUBSET_PCS} from "$projectDir/modules/nf-core/modules/subset_pcs/main"
+include {NORMALISE_AND_PCA} from "$projectDir/modules/nf-core/modules/normalise_and_pca/main"
+include {HARMONY} from "$projectDir/modules/nf-core/modules/harmony/main"
+include {BBKNN} from "$projectDir/modules/nf-core/modules/bbknn/main"
+include {ADD_EXTRA_METADATA_TO_H5AD} from "$projectDir/modules/nf-core/modules/adata_manipulations/main"
+include {LISI} from "$projectDir/modules/nf-core/modules/lisi/main"
+include {UMAP; UMAP as UMAP_HARMONY; UMAP as UMAP_BBKNN;} from "$projectDir/modules/nf-core/modules/umap/main"
+include {CLUSTERING; CLUSTERING as CLUSTERING_HARMONY; CLUSTERING as CLUSTERING_BBKNN;} from "$projectDir/modules/nf-core/modules/clustering/main"
 
 params.output_dir = "nf-qc_cluster"
     
@@ -49,11 +46,6 @@ workflow qc {
             )
             file__anndata_merged = OUTLIER_FILTER.out.anndata
             file__cells_filtered = OUTLIER_FILTER.out.cells_filtered
-        }
-
-        if (params.celltype_assignment.run_celltype_assignment){
-            CELL_TYPE_ASSIGNEMT(file__anndata_merged,file__cells_filtered)
-            file__anndata_merged=CELL_TYPE_ASSIGNEMT.out.file__anndata_merged2
         }
 
         NORMALISE_AND_PCA(params.output_dir+'/clustering',
@@ -250,5 +242,6 @@ workflow qc {
         LI=LI.mix(LI4)
     emit:
         LI
+        file__anndata_merged
         
 }

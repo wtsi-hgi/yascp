@@ -270,60 +270,63 @@ def main():
 
     for facet in facets_to_plot:
         for var in variables_to_plot:
-            # Ensure our facet variable is a string (e.g., if batch = [1,2])
-            if facet != 'none':
-                adata.obs[facet] = adata.obs[facet].apply(str)
-            # Plot the data.
-            if options.ecdf:
-                _ = plot_ecdf(
-                    df_plot=adata.obs,
-                    variable_column=var,
-                    output_file='{}.var={}.color={}-{}'.format(
-                        'plot_ecdf',
-                        var,
-                        facet,
-                        options.of
-                    ),
-                    color_column=facet,
-                    x_log10=False
-                )
-                _ = plot_ecdf(
-                    df_plot=adata.obs,
-                    variable_column=var,
-                    output_file='{}.var={}.color={}-{}'.format(
-                        'plot_ecdf-x_log10',
-                        var,
-                        facet,
-                        options.of
-                    ),
-                    color_column=facet,
-                    x_log10=True
-                )
-            else:
-                _ = plot_histogram(
-                    df_plot=adata.obs,
-                    variable_column=var,
-                    output_file='{}.var={}.facet={}-{}'.format(
-                        'plot_histogram',
-                        var,
-                        facet,
-                        options.of
-                    ),
-                    facet_column=facet,
-                    x_log10=False
-                )
-                _ = plot_histogram(
-                    df_plot=adata.obs,
-                    variable_column=var,
-                    output_file='{}.var={}.facet={}-{}'.format(
-                        'plot_histogram-x_log10',
-                        var,
-                        facet,
-                        options.of
-                    ),
-                    facet_column=facet,
-                    x_log10=True
-                )
+            try:
+                # Ensure our facet variable is a string (e.g., if batch = [1,2])
+                if facet != 'none':
+                    adata.obs[facet] = adata.obs[facet].apply(str)
+                # Plot the data.
+                if options.ecdf:
+                    _ = plot_ecdf(
+                        df_plot=adata.obs,
+                        variable_column=var,
+                        output_file='{}.var={}.color={}-{}'.format(
+                            'plot_ecdf',
+                            var,
+                            facet,
+                            options.of
+                        ),
+                        color_column=facet,
+                        x_log10=False
+                    )
+                    _ = plot_ecdf(
+                        df_plot=adata.obs,
+                        variable_column=var,
+                        output_file='{}.var={}.color={}-{}'.format(
+                            'plot_ecdf-x_log10',
+                            var,
+                            facet,
+                            options.of
+                        ),
+                        color_column=facet,
+                        x_log10=True
+                    )
+                else:
+                    _ = plot_histogram(
+                        df_plot=adata.obs,
+                        variable_column=var,
+                        output_file='{}.var={}.facet={}-{}'.format(
+                            'plot_histogram',
+                            var,
+                            facet,
+                            options.of
+                        ),
+                        facet_column=facet,
+                        x_log10=False
+                    )
+                    _ = plot_histogram(
+                        df_plot=adata.obs,
+                        variable_column=var,
+                        output_file='{}.var={}.facet={}-{}'.format(
+                            'plot_histogram-x_log10',
+                            var,
+                            facet,
+                            options.of
+                        ),
+                        facet_column=facet,
+                        x_log10=True
+                    )
+            except:
+                print(f"facet {facet} or var {var} doesnt exist")
 
 
 if __name__ == '__main__':

@@ -3,10 +3,9 @@ include {AZIMUTH} from "$projectDir/modules/nf-core/modules/azimuth/main"
 include {CELLTYPIST} from "$projectDir/modules/nf-core/modules/celltypist/main"
 include {SPLIT_BATCH_H5AD} from "$projectDir/modules/nf-core/modules/split_batch_h5ad/main"
 include {KERAS_CELLTYPE} from "$projectDir/modules/nf-core/modules/keras_celltype/main"
-include {PSEUDOBULK_AGREGATION_PER_CELLTYPE} from "$projectDir/modules/nf-core/modules/pseudobulk_aggregation_per_celltype/main"
-include {CELLTYPE_FILE_MERGE} from './functions'
+include {CELLTYPE_FILE_MERGE} from "$projectDir/modules/nf-core/modules/cell_type_assignment/functions"
 
-workflow CELL_TYPE_ASSIGNEMT{
+workflow celltype{
     
     take:
         file__anndata_merged
@@ -57,7 +56,6 @@ workflow CELL_TYPE_ASSIGNEMT{
         CELLTYPE_FILE_MERGE(az_out,ct_out,all_extra_fields,file__anndata_merged)
         
         file__anndata_merged2=CELLTYPE_FILE_MERGE.out.file__anndata_merged2
-        PSEUDOBULK_AGREGATION_PER_CELLTYPE(file__anndata_merged2,CELLTYPE_FILE_MERGE.out.celltype_assignments)
 
     emit:
         file__anndata_merged2
