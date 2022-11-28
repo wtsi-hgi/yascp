@@ -50,10 +50,15 @@ if (os.path.exists(f"{path}/deconvolution/vireo_gt_fix")):
 
 
     Donor_Report2 = Donor_Report.set_index('Pool_ID.Donor_Id')
+    
     try:
         Donor_Report2.insert(0,'Vacutainer ID','NONE')
     except:
         print('Vacutainer ID exists')
+    try:
+        Donor_Report2['Match Expected']='False'
+    except:
+        print('field doesnt exist')
     # here if we enable we can replace the expected number of samples if a mistake was made.
     # nr ukbb samples is already in there.
 
@@ -173,8 +178,9 @@ if (os.path.exists(f"{path}/deconvolution/vireo_gt_fix")):
                 Donor_Report2.insert(12, "lab_live_cell_count",'NONE') 
                 Donor_Report2.insert(12, "viability",'NONE') 
                 Donor_Report2.insert(5, "Match Expected",'False') 
+                
             except: 
-                Donor_Report2['Match Expected']='False'
+                
                 print('exists')
 
             Donor_Report2.loc[Total_Report2.index,'site']=Total_Report2.loc[Total_Report2.index,'site']
