@@ -172,9 +172,9 @@ if (os.path.exists(f"{path}/deconvolution/vireo_gt_fix")):
                 Donor_Report2.insert(12, "site",'NONE') 
                 Donor_Report2.insert(12, "lab_live_cell_count",'NONE') 
                 Donor_Report2.insert(12, "viability",'NONE') 
-                Donor_Report2.insert(5, "Match Expected",'False (No GT match in any cohort)') 
+                Donor_Report2.insert(5, "Match Expected",'False') 
             except: 
-                Donor_Report2['Match Expected']='False (No GT match in any cohort)'
+                Donor_Report2['Match Expected']='False'
                 print('exists')
 
             Donor_Report2.loc[Total_Report2.index,'site']=Total_Report2.loc[Total_Report2.index,'site']
