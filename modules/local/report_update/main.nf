@@ -1,8 +1,5 @@
 process metadata_posthoc
 {
-  publishDir  path: "${outdir}",
-              mode: "${params.copy_mode}",
-              overwrite: "true"
 
   label 'process_tiny'
 
