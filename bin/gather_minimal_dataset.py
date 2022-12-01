@@ -13,7 +13,7 @@ import random
 import h5py
 import pandas
 import anndata
-
+import re
 import os
 os.environ['NUMBA_CACHE_DIR']='/tmp'
 os.environ['MPLCONFIGDIR']='/tmp'
@@ -666,6 +666,7 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
         Donor_Stats=[]
         row = df_donors.loc[i]
         path1 = row['file_path_h5ad']
+        path1 = re.sub('.*/results/', 'results/', path1)
         # print(path1)
         #################
         #Deconvolution data
