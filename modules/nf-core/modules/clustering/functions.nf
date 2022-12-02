@@ -15,6 +15,7 @@ process cluster {
     //cache false        // cache results from run
     scratch false      // use tmp directory
     label 'process_medium'
+    label 'process_high_memory'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "/software/hgi/containers/wtsihgi_nf_scrna_qc_6bb6af5-2021-12-23-3270149cf265.sif"
         //// container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/nf_qc_cluster_2.4.img"
@@ -35,7 +36,7 @@ process cluster {
                     } else if(filename.endsWith("reduced_dims.tsv.gz")) {
                         null
                     } else {
-                        filename.replaceAll("${runid}-", "")
+                        filename.replaceAll("", "")
                     }
                 },
                 mode: "${params.copy_mode}",
@@ -54,17 +55,17 @@ process cluster {
 
     output:
         val(outdir, emit: outdir)
-        path("${runid}-${outfile}-clustered.h5ad", emit: anndata)
+        path("${outfile}-clustered.h5ad", emit: anndata)
         path(file__metadata, emit: metadata)
         path(file__pcs, emit: pcs)
         path(file__reduced_dims, emit: reduced_dims)
-        path("${runid}-${outfile}-clustered.tsv.gz", emit: clusters)
+        path("${outfile}-clustered.tsv.gz", emit: clusters)
         val(outdir_prev, emit: outdir__reduced_dims)
-        path("plots/*.pdf") optional true
-        path("plots/*.png") optional true
+        path("*.pdf") optional true
+        path("*.png") optional true
 
     script:
-        runid = random_hex(16)
+        
         resolution_str = "${resolution}" //.replaceAll("\\.", "pt")
         outdir = "${outdir_prev}/cluster"
         outdir = "${outdir}.number_neighbors=${number_neighbors}"
@@ -72,14 +73,13 @@ process cluster {
         outdir = "${outdir}.resolution=${resolution_str}"
         // For output file, use anndata name. First need to drop the runid
         // from the file__anndata job.
-        outfile = "${file__anndata}".minus(".h5ad").split("-").drop(1).join("-")
-        process_info = "${runid} (runid)"
+        outfile = "clustering_${resolution}"
+        process_info = "(runid)"
         process_info = "${process_info}, ${task.cpus} (cpus)"
         process_info = "${process_info}, ${task.memory} (memory)"
         """
         echo "cluster: ${process_info}"
         echo "publish_directory: ${outdir}"
-        rm -fr plots
         0053-scanpy_cluster.py \
             --h5_anndata ${file__anndata} \
             --tsv_pcs ${file__reduced_dims} \
@@ -87,10 +87,7 @@ process cluster {
             --cluster_method ${method} \
             --resolution ${resolution} \
             --number_cpu ${task.cpus} \
-            --output_file ${runid}-${outfile}-clustered
-        mkdir plots
-        mv *pdf plots/ 2>/dev/null || true
-        mv *png plots/ 2>/dev/null || true
+            --output_file ${outfile}-clustered
         """
 }
 

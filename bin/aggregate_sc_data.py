@@ -23,13 +23,14 @@ def main():
         version='%(prog)s {version}'.format(version=__version__)
     )
 # --method ${params.aggregation_method}
-    # parser.add_argument(
-    #     '-gp', '--genotype_phenotype',
-    #     action='store',
-    #     dest='genotype_phenotype',
-    #     required=false,
-    #     help=''
-    # )    
+    parser.add_argument(
+        '-gp', '--genotype_phenotype',
+        action='store',
+        dest='genotype_phenotype',
+        required=False,
+        help='',default=False
+    )
+     
     parser.add_argument(
         '-method', '--method',
         action='store',
@@ -80,11 +81,12 @@ def main():
     agg_columns = agg_columns.split(",")
     n_individ = int(options.n_individ)
     n_cells = int(options.n_cells)
-    # if options.genotype_phenotype:
-    #     genotype_phenotype = options.genotype_phenotype
-    #     genotype_phenotype = pd.read_csv(genotype_phenotype)
-    # else:
-        # here we estimate the genotype phenotype interaction file from the genotype, since the IDs are the same. 
+    if options.genotype_phenotype:
+        genotype_phenotype = options.genotype_phenotype
+        genotype_phenotype = pd.read_csv(genotype_phenotype,sep='\t')
+    else:
+        genotype_phenotype = pd.DataFrame()
+        print('here we estimate the genotype phenotype interaction file from the genotype, since the IDs are the same. ')
 
     adata = sc.read_h5ad(filename=h5ad)
     adata.obs['adata_phenotype_id'] = adata.obs.donor_id.astype('str')+'_'+adata.obs.convoluted_samplename.astype('str')
@@ -105,7 +107,12 @@ def main():
                         individual_1_adata = cell_adata[cell_adata.obs['adata_phenotype_id']==individual_1]
                         if(individual_1_adata.obs.shape[0]>n_cells):
                             print(individual_1)
-                            Genotype = individual_1_adata.obs.donor_id.unique()[0]
+                            Genotype = individual_1
+                            if(len(genotype_phenotype)>0):
+                                try:
+                                    Genotype = genotype_phenotype[genotype_phenotype['pool_donor']==individual_1]['donor_gt original'].values[0]
+                                except:
+                                    _='no_replacement'
                             f = individual_1_adata.to_df()
                             # Change this to any aggregation strategy
                             #as per https://www.medrxiv.org/content/10.1101/2021.10.09.21264604v1.full.pdf 

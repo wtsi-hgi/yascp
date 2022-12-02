@@ -199,10 +199,10 @@ def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res
             os.mkdir(f'{name_dir}/QC metrics')
         except:
             print('dire exists')
-        copyfile(f'{folder1}/adata-cell_desity.png', f'{name_dir}/QC metrics/adata-cell_desity.png')
+        copyfile(f'{folder1}/merged_h5ad/plots/outlier_filtered_adata-cell_desity.png', f'{name_dir}/QC metrics/adata-cell_desity.png')
         copyfile(f'{folder1}/adata-cell_filtered_per_experiment-n_cells_before_after.png', f'{name_dir}/QC metrics/adata-cell_filtered_per_experiment-n_cells_before_after.png')
         copyfile(f'{folder1}/scatterplot-sex_sample_swap_check.png', f'{name_dir}/QC metrics/scatterplot-sex_sample_swap_check.png')
-        copyfile(f'{folder1}/adata-outlier_cells.png', f'{name_dir}/QC metrics/adata-outlier_cells.png')
+        copyfile(f'{folder1}/merged_h5ad/plots/outlier_filtered_adata-outlier_cells.png', f'{name_dir}/QC metrics/adata-outlier_cells.png')
         fil1 = glob.glob(f'{folder1}/plot_ecdf-x_log10*total_counts*')[0]
         copyfile(fil1, f'{name_dir}/QC metrics/plot_ecdf-x_log10.var=total_counts.color=experiment_id-adata.png')
 

@@ -2,7 +2,7 @@
 process MERGE_GENOTYPES_IN_ONE_VCF{
 
     label 'process_medium'
-    publishDir  path: "${params.outdir}/infered_genotypes/",
+    publishDir  path: "${params.outdir}/${mode}_genotypes/",
           mode: "${params.copy_mode}",
           overwrite: "true"
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
@@ -14,9 +14,10 @@ process MERGE_GENOTYPES_IN_ONE_VCF{
 
     input:
        path(vireo_gt_vcf)
+       val(mode)
 
     output:
-       tuple path("merged_vcf_file_all_pools.vcf.gz"),path("merged_vcf_file_all_pools.vcf.gz.csi"), emit: merged_infered_genotypes
+       tuple path("${mode}_merged_vcf_file_all_pools.vcf.gz"),path("${mode}_merged_vcf_file_all_pools.vcf.gz.csi"), emit: merged_infered_genotypes
 
     script:
 
@@ -30,12 +31,12 @@ process MERGE_GENOTYPES_IN_ONE_VCF{
 
       if [ \$(cat fofn_vcfs.txt | wc -l) -gt 1 ]; then
           echo 'yes'
-          bcftools merge -file-list ${vireo_gt_vcf} -Ou | bcftools sort -Oz -o merged_vcf_file_all_pools.vcf.gz
-          bcftools index merged_vcf_file_all_pools.vcf.gz
+          bcftools merge --force-samples -file-list ${vireo_gt_vcf} -Ou | bcftools sort -Oz -o ${mode}_merged_vcf_file_all_pools.vcf.gz
+          bcftools index ${mode}_merged_vcf_file_all_pools.vcf.gz
       else
         echo 'no'
-        bcftools view ${vireo_gt_vcf} | bcftools sort -Oz -o merged_vcf_file_all_pools.vcf.gz
-        bcftools index merged_vcf_file_all_pools.vcf.gz
+        bcftools view ${vireo_gt_vcf} | bcftools sort -Oz -o ${mode}_merged_vcf_file_all_pools.vcf.gz
+        bcftools index ${mode}_merged_vcf_file_all_pools.vcf.gz
         
       fi
     """

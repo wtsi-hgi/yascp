@@ -16,36 +16,30 @@ process plot_filtered_cells {
         container "wtsihgi/nf_scrna_qc:6bb6af5"
     }
 
-    publishDir  path: "${outdir}",
-                saveAs: {filename -> filename.replaceAll("${runid}-", "")},
+    publishDir  path: "${outdir}/plots",
                 mode: "${params.copy_mode}",
                 overwrite: "true"
 
     input:
-        val(outdir_prev)
+        val(outdir)
         path(file__filtered_cells)
 
     output:
-        val(outdir, emit: outdir)
-        path("plots/*.png") optional true
-        path("plots/*.pdf") optional true
+        path("*.png") optional true
+        path("*.pdf") optional true
 
     script:
-        runid = random_hex(16)
-        outdir = "${outdir_prev}"
-        process_info = "${runid} (runid)"
+        
+        process_info = ""
         process_info = "${process_info}, ${task.cpus} (cpus)"
         process_info = "${process_info}, ${task.memory} (memory)"
         """
         echo "plot_filtered_cells: ${process_info}"
         echo "publish_directory: ${outdir}"
-        rm -fr plots
         0026-plot_filtered_cells.py \
             --tsv_file ${file__filtered_cells} \
-            --output_file ${runid}-adata-cell_filtered_per_experiment
-        mkdir plots
-        mv *pdf plots/ 2>/dev/null || true
-        mv *png plots/ 2>/dev/null || true
+            --output_file adata-cell_filtered_per_experiment
+
         """
 }
 
@@ -67,13 +61,12 @@ process plot_pcs {
         container "wtsihgi/nf_scrna_qc:6bb6af5"
     }
 
-    publishDir  path: "${outdir}",
-                saveAs: {filename -> filename.replaceAll("${runid}-", "")},
+    publishDir  path: "${outdir}/plots",
                 mode: "${params.copy_mode}",
                 overwrite: "true"
 
     input:
-        val(outdir_prev)
+        val(outdir)
         path(file__anndata)
         each n_pcs
         val(colors_quantitative)
@@ -81,15 +74,11 @@ process plot_pcs {
 
     output:
         val(outdir, emit: outdir)
-        path("plots/*.png"), emit: out_png
-        path("plots/*.pdf") optional true
+        path("*.png"), emit: out_png
+        path("*.pdf") optional true
 
     script:
-        runid = random_hex(16)
-        outdir = "${outdir_prev}"
-        // For output file, use anndata name. First need to drop the runid
-        // from the file__anndata job.
-        // outfile = "${file__anndata}".minus(".h5ad").split("-").drop(1).join("-")
+        
         outfile = "pca"
         cmd__colors_quant = ""
         if (colors_quantitative != "") {
@@ -103,7 +92,7 @@ process plot_pcs {
         // if (cmd__colors_cat.contains("experiment_id")) {
         //     drop_legend_n = "8"
         // }
-        process_info = "${runid} (runid)"
+        process_info = ""
         process_info = "${process_info}, ${task.cpus} (cpus)"
         process_info = "${process_info}, ${task.memory} (memory)"
         """
@@ -115,10 +104,7 @@ process plot_pcs {
             --num_pcs ${n_pcs} \
             ${cmd__colors_quant} \
             ${cmd__colors_cat} \
-            --output_file ${runid}-${outfile}
-        mkdir plots
-        mv *pdf plots/ 2>/dev/null || true
-        mv *png plots/ 2>/dev/null || true
+            --output_file ${outfile}
         """
 }
 
@@ -137,38 +123,30 @@ process plot_predicted_sex {
         container "wtsihgi/nf_scrna_qc:6bb6af5"
     }
 
-    publishDir  path: "${outdir}",
-                saveAs: {filename -> filename.replaceAll("${runid}-", "")},
+    publishDir  path: "${outdir}/plots",
                 mode: "${params.copy_mode}",
                 overwrite: "true"
 
     input:
-        val(outdir_prev)
+        val(outdir)
         path(file__anndata)
 
     output:
-        val(outdir, emit: outdir)
-        path("plots/*.png") optional true
-        path("plots/*.pdf") optional true
+        path("*.png") optional true
+        path("*.pdf") optional true
 
     script:
-        runid = random_hex(16)
-        outdir = "${outdir_prev}"
-        // Append run_id to output file.
-        outfile = "${runid}-scatterplot-sex_sample_swap_check"
-        process_info = "${runid} (runid)"
+
+        outfile = "scatterplot-sex_sample_swap_check"
+        process_info = ""
         process_info = "${process_info}, ${task.cpus} (cpus)"
         process_info = "${process_info}, ${task.memory} (memory)"
         """
         echo "plot_predicted_sex: ${process_info}"
         echo "publish_directory: ${outdir}"
-        rm -fr plots
         0028-plot_predicted_sex.py \
             --h5_anndata ${file__anndata} \
             --output_file ${outfile}
-        mkdir plots
-        mv *pdf plots/ 2>/dev/null || true
-        mv *png plots/ 2>/dev/null || true
         """
 }
 
@@ -195,43 +173,34 @@ process plot_qc {
 	
     }
 
-    publishDir  path: "${outdir}",
-                saveAs: {filename -> filename.replaceAll("${runid}-", "")},
+    publishDir  path: "${outdir}/plots",
                 mode: "${params.copy_mode}",
                 overwrite: "true"
 
     input:
-        val(outdir_prev)
+        val(outdir)
         path(file__anndata)
         each facet_columns
 
     output:
-        val(outdir, emit: outdir)
-        path("plots/*.png")
-        path("plots/*.pdf") optional true
+        path("*.png")
+        path("*.pdf") optional true
         path("*.tsv") optional true
 
     script:
-        runid = random_hex(16)
-        outdir = "${outdir_prev}"
-        // For output file, use anndata name. First need to drop the runid
-        // from the file__anndata job.
-        outfile = "${file__anndata}".minus(".h5ad")
-            .split("-").drop(1).join("-")
-        // Append run_id to output file.
-        outfile = "${runid}-${outfile}"
+
+        outfile = "outfile"
         // Figure out if we are facetting the plot and update accordingly.
         cmd__facet_columns = ""
         if (facet_columns != "") {
             cmd__facet_columns = "--facet_columns ${facet_columns}"
         }
-        process_info = "${runid} (runid)"
+        process_info = ""
         process_info = "${process_info}, ${task.cpus} (cpus)"
         process_info = "${process_info}, ${task.memory} (memory)"
         """
             echo "plot_qc: ${process_info}"
             echo "publish_directory: ${outdir}"
-            rm -fr plots
             plot_qc_umi_nfeature_mt.py \
                 --h5_anndata ${file__anndata} \
                 --output_file ${outfile} \
@@ -248,10 +217,6 @@ process plot_qc {
                 --h5_anndata ${file__anndata} \
                 --qc_key 'pct_counts_gene_group__mito_transcript,pct_counts_gene_group__mito_protein,pct_counts_gene_group__ribo_protein,pct_counts_gene_group__ribo_rna,total_counts,n_genes_by_counts' \
                 --output_file mads
-            mkdir plots
-            cp mads.tsv plots/
-            mv *pdf plots/ 2>/dev/null || true
-            mv *png plots/ 2>/dev/null || true
         """
 }
 
@@ -272,32 +237,24 @@ process plot_distributions {
         container "wtsihgi/nf_scrna_qc:6bb6af5"
     }
 
-    publishDir  path: "${outdir}",
-                saveAs: {filename -> filename.replaceAll("${runid}-", "")},
+    publishDir  path: "${outdir}/plots",
                 mode: "${params.copy_mode}",
                 overwrite: "true"
 
     input:
-        val(outdir_prev)
+        val(outdir)
         path(file__anndata)
         each facet_columns
         each variable_columns_distribution_plots
 
     output:
-        val(outdir, emit: outdir)
-        path("plots/*.png")
-        path("plots/*.pdf") optional true
+
+        path("*.png")
+        path("*.pdf") optional true
         path("*.tsv") optional true
 
     script:
-        runid = random_hex(16)
-        outdir = "${outdir_prev}"
-        // For output file, use anndata name. First need to drop the runid
-        // from the file__anndata job.
-        outfile = "${file__anndata}".minus(".h5ad")
-            .split("-").drop(1).join("-")
-        // Append run_id to output file.
-        outfile = "${runid}-${outfile}"
+        outfile = "outfile"
         // Figure out if we are facetting the plot and update accordingly.
         cmd__facet_columns = ""
         if (facet_columns != "") {
@@ -314,17 +271,13 @@ process plot_distributions {
             cmd__anndataobs = "${cmd__anndataobs} ${cmd__facet_columns}"
             cmd__anndataobs_ecdf = "${cmd__anndataobs} --ecdf"
         }
-        process_info = "${runid} (runid)"
+        process_info = ""
         process_info = "${process_info}, ${task.cpus} (cpus)"
         process_info = "${process_info}, ${task.memory} (memory)"
         """
         echo "plot_distributions: ${process_info}"
         echo "publish_directory: ${outdir}"
-        rm -fr plots
         ${cmd__anndataobs}
         ${cmd__anndataobs_ecdf}
-        mkdir plots
-        mv *pdf plots/ 2>/dev/null || true
-        mv *png plots/ 2>/dev/null || true
         """
 }

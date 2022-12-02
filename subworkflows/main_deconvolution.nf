@@ -16,7 +16,7 @@ include { match_genotypes } from './match_genotypes'
 include {ENHANCE_STATS_GT_MATCH } from "$projectDir/modules/nf-core/modules/genotypes/main"
 include {SUBSET_WORKF} from "$projectDir/modules/nf-core/modules/subset_genotype/main"
 include {REPLACE_GT_DONOR_ID2 } from "$projectDir/modules/nf-core/modules/genotypes/main"
-include {VIREO_GT_FIX_HEADER; VIREO_ADD_SAMPLE_PREFIX; MERGE_GENOTYPES_IN_ONE_VCF} from "$projectDir/modules/nf-core/modules/genotypes/main"
+include {VIREO_GT_FIX_HEADER; VIREO_ADD_SAMPLE_PREFIX; MERGE_GENOTYPES_IN_ONE_VCF as MERGE_GENOTYPES_IN_ONE_VCF_INFERED; MERGE_GENOTYPES_IN_ONE_VCF as MERGE_GENOTYPES_IN_ONE_VCF_SUBSET} from "$projectDir/modules/nf-core/modules/genotypes/main"
 
 workflow  main_deconvolution {
 
@@ -51,6 +51,7 @@ workflow  main_deconvolution {
             // This will subsequently result in a joint vcf file for all the cohorts listed for each of the pools that can be used in VIREO and/or GT matching algorythm.
             SUBSET_WORKF(ch_ref_vcf,donors_in_pools)
             merged_expected_genotypes = SUBSET_WORKF.out.merged_expected_genotypes
+            MERGE_GENOTYPES_IN_ONE_VCF_SUBSET(SUBSET_WORKF.out.study_merged_vcf.collect(),'subset')
 
         }else{
             ch_ref_vcf = Channel.of()
@@ -132,7 +133,7 @@ workflow  main_deconvolution {
         vir_repl_input.view()
         VIREO_GT_FIX_HEADER(REPLACE_GT_DONOR_ID2.out.infered_vcf)
         VIREO_ADD_SAMPLE_PREFIX(VIREO_GT_FIX_HEADER.out.infered_vcf)
-        MERGE_GENOTYPES_IN_ONE_VCF(VIREO_ADD_SAMPLE_PREFIX.out.infered_vcf.collect())
+        MERGE_GENOTYPES_IN_ONE_VCF_INFERED(VIREO_ADD_SAMPLE_PREFIX.out.infered_vcf.collect(),'infered')
         
         vireo_out_sample_donor_vcf = VIREO_GT_FIX_HEADER.out.infered_vcf
         vireo_out_sample_summary_tsv = REPLACE_GT_DONOR_ID2.out.sample_summary_tsv
@@ -152,11 +153,12 @@ workflow  main_deconvolution {
                             newLine: false, sort: true,
                             keepHeader: true,
                             // skip:1,
-                            storeDir:params.outdir+'/deconvolution/vireo_gt_fix')
+                            storeDir:params.outdir+'/deconvolution/vireo_gt_fix').set{assignments_all_pools}
 
 
         }else{
             gt_matches = Channel.from("$projectDir/assets/fake_file.fq")
+            assignments_all_pools = Channel.from("$projectDir/assets/fake_file.fq")
         }
 
         if (params.souporcell.run){
@@ -316,4 +318,5 @@ workflow  main_deconvolution {
         vireo_out_sample_donor_vcf
         ch_poolid_csv_donor_assignments = ch_poolid_donor_assignment
         sample_possorted_bam_vireo_donor_ids = ch_experiment_bam_vireo_donor_ids
+        assignments_all_pools
 }

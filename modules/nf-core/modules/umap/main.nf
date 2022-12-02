@@ -33,7 +33,7 @@ workflow UMAP {
             umap_spread
         )
 
-        umap_gather_input = umap_calculate.out.outdir_anndata.groupTuple()
+        umap_calculate.out.outdir_anndata.groupTuple()
             .reduce([:]) { map, tuple ->  // 'map' is used to collect values;
                                           // 'tuple' is the record
                 def file_id = tuple[0]    // the first item is the 'iter_id'
@@ -47,13 +47,12 @@ workflow UMAP {
                 group[6] = tuple[6]     // list of umaps to merge
                 map[file_id] = group    // set back into the map
                 return map // return it so it will be used in the next iteration
-            }
-            .flatMap { it.values() } // tricky part: get the list of values of
+            }.flatMap { it.values() }.set{umap_gather_input} // tricky part: get the list of values of
                                      // in the map, each value is the
                                      // aggregation build above
                                      // the 'flatMap' emits each of these
                                      // aggregation list as a single item
-                                    
+        umap_calculate.out.outdir_anndata.view()                            
         umap_gather_input.view()
         // Gather step.
         // Gather by tuple ... if we just to a collect, then will get all
@@ -61,14 +60,8 @@ workflow UMAP {
         // http://nextflow-io.github.io/patterns/index.html#_process_outputs_into_groups
         umap_gather(
             umap_gather_input
-            // outdir,
-            // anndata,
-            // metadata,
-            // pcs,
-            // reduced_dims,
-            // umap_calculate.out.outdir_anndata.groupTuple()
-            //umap_calculate.out.original_plus_umap.groupTuple()
         )
+
         if (params.run_celltype_assignment){
             generate_final_UMAPS(umap_gather.out.anndata,params.output_dir)
         }

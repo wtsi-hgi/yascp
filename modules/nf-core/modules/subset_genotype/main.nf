@@ -121,7 +121,7 @@ process CONCAT_STUDY_VCFS {
 process SUBSET_GENOTYPE {
     tag "${samplename}.${sample_subset_file}"
     label 'process_medium'
-    publishDir "${params.outdir}/subset_genotype/", mode: "${params.copy_mode}", pattern: "${samplename}.${sample_subset_file}.subset.vcf.gz"
+    publishDir "${params.outdir}/subset_genotypes/", mode: "${params.copy_mode}", pattern: "${samplename}.${sample_subset_file}.subset.vcf.gz"
 
 
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
@@ -151,7 +151,7 @@ process SUBSET_GENOTYPE {
 process SUBSET_GENOTYPE2 {
     tag "${samplename}.${sample_subset_file}"
     label 'process_medium'
-    publishDir "${params.outdir}/subset_genotype/", mode: "${params.copy_mode}", pattern: "${samplename}.${sample_subset_file}.subset.vcf.gz"
+    publishDir "${params.outdir}/subset_genotypes/", mode: "${params.copy_mode}", pattern: "${samplename}.${sample_subset_file}.subset.vcf.gz"
 
 
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
@@ -182,7 +182,7 @@ process SUBSET_GENOTYPE2 {
 process JOIN_CHROMOSOMES{
     tag "${samplename}"
     label 'process_small'
-    publishDir "${params.outdir}/subset_genotype/", mode: "${params.copy_mode}", pattern: "${samplename}.${sample_subset_file}.subset.vcf.gz"
+    publishDir "${params.outdir}/subset_genotypes/", mode: "${params.copy_mode}", pattern: "${samplename}.${sample_subset_file}.subset.vcf.gz"
 
 
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
@@ -215,7 +215,7 @@ process JOIN_CHROMOSOMES{
 process JOIN_STUDIES_MERGE{
     tag "${samplename}"
     label 'process_small'
-    publishDir "${params.outdir}/subset_genotype/Genotype_${samplename}", mode: "${params.copy_mode}"
+    publishDir "${params.outdir}/subset_genotypes/Genotype_${samplename}", mode: "${params.copy_mode}"
 
 
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
@@ -232,7 +232,7 @@ process JOIN_STUDIES_MERGE{
 
     output:
       tuple val(samplename), path("${mode}_sorted_Expected_${samplename}.vcf.gz"),path("${mode}_sorted_Expected_${samplename}.vcf.gz.csi"), emit: merged_expected_genotypes
-
+      path("${mode}_sorted_Expected_${samplename}.vcf.gz",emit:study_merged_vcf)
     script:
       // if (mode=='Infered_Merge'){
         cmd__run = "overlapping_positions_vcfs.py -vcfs '${study_vcf_files}'"
@@ -276,7 +276,11 @@ workflow SUBSET_WORKF{
       // Merge all the pools.
       JOIN_STUDIES_MERGE(study_vcfs_per_pool,'Study_Merge')
       JOIN_STUDIES_MERGE.out.merged_expected_genotypes.set{merged_expected_genotypes}
+      study_merged_vcf = JOIN_STUDIES_MERGE.out.study_merged_vcf
+      
+
   emit:
     merged_expected_genotypes
+    study_merged_vcf
 
 }

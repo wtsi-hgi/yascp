@@ -23,8 +23,8 @@ process OUTLIER_FILTER {
         container "wtsihgi/nf_scrna_qc:6bb6af5"
     }
 
-    publishDir  path: "${outdir}/merged_h5ad",
-                saveAs: {filename -> filename.replaceAll("${runid}-", "outlier_filtered_")},
+    publishDir  path: "${outdir}",
+                saveAs: {filename -> filename.replaceAll("${runid}-", "")},
                 mode: "${params.copy_mode}",
                 overwrite: "true"
 
