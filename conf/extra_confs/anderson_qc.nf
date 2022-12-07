@@ -223,7 +223,7 @@ params{
 
         variables_boxplot{
             decription = 'Generate boxplots of these variables for each cluster.'
-            value ='total_counts,age,pct_counts_gene_group__mito_transcript,pct_counts_gene_group__mito_protein,pct_counts_gene_group__ribo_protein,scrublet__multiplet_zscores,S_score,G2M_score,b_cell__activation,b_cell__differentiation,colon_compartment__epithelial,colon_compartment__immune,colon_compartment__stromal,crypt__axis_score,t_cell__coinhibition_signature,t_cell__costimulation_signature,t_cell__cytotoxicity_signature,t_cell__cd8_cytotoxic,t_cell__cell_cycling,t_cell__central_memory,t_cell__immunoregulation,t_cell__resident_memory,villus__bottom_enterocytes,villus__top_enterocytes,hallmark_apoptosis,hallmark_hypoxia,mense_hypoxia_up,hallmark_inflammatory_response,inflammation_signature__smilliecs_31348891,colon_compartment__epithelial,colon_compartment__immune,colon_compartment__stromal'
+            value ='total_counts,age,pct_counts_gene_group__mito_transcript,pct_counts_gene_group__mito_protein,pct_counts_gene_group__ribo_protein,S_score,G2M_score,b_cell__activation,b_cell__differentiation,colon_compartment__epithelial,colon_compartment__immune,colon_compartment__stromal,crypt__axis_score,t_cell__coinhibition_signature,t_cell__costimulation_signature,t_cell__cytotoxicity_signature,t_cell__cd8_cytotoxic,t_cell__cell_cycling,t_cell__central_memory,t_cell__immunoregulation,t_cell__resident_memory,villus__bottom_enterocytes,villus__top_enterocytes,hallmark_apoptosis,hallmark_hypoxia,mense_hypoxia_up,hallmark_inflammatory_response,inflammation_signature__smilliecs_31348891,colon_compartment__epithelial,colon_compartment__immune,colon_compartment__stromal'
         }
 
         known_markers{
@@ -279,7 +279,7 @@ params{
         description = 'Parameters for umap.'
         colors_quantitative{
             description = 'Comma separated string of quantitative variables that will be used to color points.'
-            value = 'total_counts,age,pct_counts_gene_group__mito_transcript,pct_counts_gene_group__mito_protein,pct_counts_gene_group__ribo_protein,scrublet__multiplet_zscores,S_score,G2M_score,b_cell__activation,b_cell__differentiation,colon_compartment__epithelial,colon_compartment__immune,colon_compartment__stromal,crypt__axis_score,t_cell__coinhibition_signature,t_cell__costimulation_signature,t_cell__cytotoxicity_signature,t_cell__cd8_cytotoxic,t_cell__cell_cycling,t_cell__central_memory,t_cell__immunoregulation,t_cell__resident_memory,villus__bottom_enterocytes,villus__top_enterocytes,hallmark_apoptosis,hallmark_hypoxia,mense_hypoxia_up,hallmark_inflammatory_response,inflammation_signature__smilliecs_31348891,colon_compartment__epithelial,colon_compartment__immune,colon_compartment__stromal'
+            value = 'total_counts,age,pct_counts_gene_group__mito_transcript,pct_counts_gene_group__mito_protein,pct_counts_gene_group__ribo_protein,S_score,G2M_score,b_cell__activation,b_cell__differentiation,colon_compartment__epithelial,colon_compartment__immune,colon_compartment__stromal,crypt__axis_score,t_cell__coinhibition_signature,t_cell__costimulation_signature,t_cell__cytotoxicity_signature,t_cell__cd8_cytotoxic,t_cell__cell_cycling,t_cell__central_memory,t_cell__immunoregulation,t_cell__resident_memory,villus__bottom_enterocytes,villus__top_enterocytes,hallmark_apoptosis,hallmark_hypoxia,mense_hypoxia_up,hallmark_inflammatory_response,inflammation_signature__smilliecs_31348891,colon_compartment__epithelial,colon_compartment__immune,colon_compartment__stromal'
         }
         colors_categorical{
             description = 'Comma separated string of categorical variables that will be used to color points.'
@@ -292,7 +292,7 @@ params{
                 this number to the number of experiments/samples is a good place to
                 start. Note: values separated with a comma will be run within the
                 same script call (rather than swarm)."""
-            value= [30,50,100]
+            value= [30,50]
         }
 
         umap_init{
@@ -304,7 +304,7 @@ params{
             description = """The effective minimum distance between embedded points.
                 Recommended value between 0-1. Note: values separated with a comma
                 will be run within the same script call (rather than swarm)."""
-            value = [0.0,0.25,0.5,0.75,1.0]
+            value = [0.25,0.5,1.0]
         }
 
         umap_spread{
@@ -330,3 +330,70 @@ params{
 
 }
 
+
+process {
+
+    withName: umap_calculate{
+        memory = 300.GB
+    }
+    withName: umap_gather{
+        memory = 600.GB
+        time   = 12.h
+        queue = 'long'
+        maxRetries = 1
+    }
+
+    withName: cluster{
+        memory = 500.GB
+        time   = 24.h
+        errorStrategy = { task.attempt > 1 ? 'ignore' : 'retry' }
+        queue = 'long'
+        maxRetries = 1
+    }
+
+    withName: plot_qc{
+        memory = 200.GB
+        queue = 'long'
+        time   = 24.h
+    }
+
+    withName: cluster_markers{
+        memory = 200.GB
+        errorStrategy = { task.attempt > 2 ? 'ignore' : 'retry' }
+    }
+
+    withName: plot_known_markers{
+        memory = 200.GB
+    }
+        withName: umap_plot_swarm{
+        memory = 200.GB
+    }
+        withName: generate_final_UMAPS{
+        memory = 200.GB
+    }
+    withName: sccaf_assess_clustering{
+        memory = 200.GB
+    }
+    withName: sccaf_optimize_clustering{
+        memory = 200.GB
+    }    
+    withName: plot_known_markers{
+        memory = 300.GB
+        errorStrategy = { task.attempt > 2 ? 'ignore' : 'retry' }
+    }
+    withName: prep_cellxgene{
+        memory = 200.GB
+        errorStrategy = { task.attempt > 2 ? 'ignore' : 'retry' }
+    }    
+    withName: umap_calculate_and_plot{
+        memory = 200.GB
+        errorStrategy = { task.attempt > 2 ? 'ignore' : 'retry' }
+    }
+    withname: sccaf_assess_clustering{
+        time   = 12.h
+        memory = 300.GB
+    }
+    withName: plot_phenotype_across_clusters{
+        memory = 200.GB
+    }
+}

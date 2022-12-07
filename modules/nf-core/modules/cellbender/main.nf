@@ -33,7 +33,7 @@ workflow CELLBENDER {
         channel__metadata
         
     main:
-        // ch_experimentid_paths10x_raw.view()
+  
         ch_experimentid_paths10x_raw.map{row -> tuple(
             row[0],
             file("${row[1]}/barcodes.tsv.gz"),
@@ -56,10 +56,10 @@ workflow CELLBENDER {
             )}.set{ncells_cellranger_pre}
         }
 
-        // channel__file_paths_10x.view()
+
         
         ncells_cellranger_pre.join(ch_experimentid_paths10x_raw, remainder: false).set{post_ncells_cellranger} 
-        // post_ncells_cellranger.view()
+
         post_ncells_cellranger.map{row -> tuple(row[0], row[1])}.filter{ it[2] == null }.set{ncells_cellranger}
                 
 
@@ -88,7 +88,7 @@ workflow CELLBENDER {
             cellbender__remove_background.out.cb_plot_input,
             cellbender__remove_background.out.experimentid_outdir_cellbenderunfiltered_expectedcells_totaldropletsinclude,
         )
-        // cellbender__preprocess_output.out.alternative_input.view
+
         // Make some basic plots
         cellbender__remove_background__qc_plots(
             cellbender__preprocess_output.out.cb_plot_input

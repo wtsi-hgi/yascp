@@ -32,7 +32,7 @@ workflow UMAP {
             umap_min_dist,
             umap_spread
         )
-
+        umap_calculate.out.adata_out.collect().set{all_umaps}
         umap_calculate.out.outdir_anndata.groupTuple()
             .reduce([:]) { map, tuple ->  // 'map' is used to collect values;
                                           // 'tuple' is the record
@@ -52,8 +52,10 @@ workflow UMAP {
                                      // aggregation build above
                                      // the 'flatMap' emits each of these
                                      // aggregation list as a single item
-        umap_calculate.out.outdir_anndata.view()                            
+   
+        Channel.of('key',outdir,anndata,metadata,pcs,reduced_dims,all_umaps).set{all_umaps2}               
         umap_gather_input.view()
+        all_umaps2.view()
         // Gather step.
         // Gather by tuple ... if we just to a collect, then will get all
         // umap_calculate calls, not split by reduced_dims. See link below:

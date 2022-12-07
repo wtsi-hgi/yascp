@@ -1,7 +1,6 @@
 
 // Load base.config by default for all pipelines - typically included in the nextflow config.
 // Modules to include.
-
 include {OUTLIER_FILTER} from "$projectDir/modules/nf-core/modules/outlier_filter/main"
 include {PLOT_STATS} from "$projectDir/modules/nf-core/modules/plot_stats/main"
 include {ESTIMATE_PCA_ELBOW} from "$projectDir/modules/nf-core/modules/estimate_pca_elbow/main"
@@ -48,6 +47,7 @@ workflow qc {
             file__cells_filtered = OUTLIER_FILTER.out.cells_filtered
         }
 
+
         NORMALISE_AND_PCA(params.output_dir+'/clustering',
             file__anndata_merged,
             params.mode,
@@ -80,7 +80,12 @@ workflow qc {
             n_pcs
         )
 
-        PLOT_STATS(file__anndata_merged,file__cells_filtered,SUBSET_PCS.out.outdir,SUBSET_PCS.out.anndata,n_pcs)
+        PLOT_STATS(file__anndata_merged,
+                    file__cells_filtered,
+                    SUBSET_PCS.out.outdir,
+                    SUBSET_PCS.out.anndata,
+                    n_pcs)
+
         LI4 = PLOT_STATS.out.LI
 
         if (params.cluster.known_markers.run_process) {

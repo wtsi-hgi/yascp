@@ -918,13 +918,15 @@ if __name__ == '__main__':
     if (args.cellbender)=='cellranger':
         # here we do not use cellbender and go with default cellranger
         df_cellbender = None
-    elif (args.cellbender)=='cellbender':
-        # here we have run the cellbender as par of pipeline. 
-        file_path = glob.glob(f'{args.results_dir}/nf-preprocessing/cellbender/qc_cluster_input_files/*{args.resolution}*')[0]
-        df_cellbender = pandas.read_table(file_path, index_col = 'experiment_id')
     else:
-        # this is existing_cellbender, hence using this input
-        df_cellbender = pandas.read_table(f'{args.cellbender}', index_col = 'experiment_id')
+        # here we have run the cellbender as par of pipeline. 
+        # cellbender/*/cellbender-epochs_*/cellbender-FPR_0pt01-filtered_10x_mtx
+        file_path = glob.glob(f'{args.results_dir}/nf-preprocessing/cellbender/*/cellbender-epochs_*/*{args.resolution}*10x_mtx*')
+        file_path2 = glob.glob(f'{args.results_dir}/nf-preprocessing/cellbender/*/*{args.resolution}*10x_mtx*')
+        joined_file_paths = file_path+file_path2
+        df_cellbender = pd.DataFrame(joined_file_paths,columns=['data_path_10x_format'])
+        df_cellbender['experiment_id']=df_cellbender['data_path_10x_format'].str.split('/').str[3]
+        df_cellbender= df_cellbender.set_index('experiment_id')
     Resolution = args.resolution
     try:
         adqc = anndata.read_h5ad(f'{args.results_dir}/merged_h5ad/outlier_filtered_adata.h5ad')

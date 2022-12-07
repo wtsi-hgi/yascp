@@ -117,15 +117,13 @@ def main():
         adata = add_info_to_adata_file(adata, adata)
     else:
         adata = sc.read_h5ad(filename=options.h5_root)
+    print('got here')
 
-    # Loop over the remaining AnnData files and:
-    # 1. Read in the parameters.
-    # 2. Copy the apporpriate dataslots to the first adata object to the
-    #    appropriate new slot based on the parameters recorded in the original
-    #    AnnData object.
     for file in adata_file_list:
+        print(file)
         adata_i = sc.read_h5ad(filename=file)
         adata = add_info_to_adata_file(adata, adata_i)
+        del adata_i
 
     # Get the out file base.
     out_file_base = options.of

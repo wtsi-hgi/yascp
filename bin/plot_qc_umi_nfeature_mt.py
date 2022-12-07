@@ -223,16 +223,19 @@ def main():
         except:
             print(f'Failed plotting density for facte {facet}')
         if 'cell_passes_qc' in adata.obs:
-            plot_umi_ngene_mt(
-                df_plot=adata.obs,
-                output_file='plot_umi_ngene_cellpassqc.facet={}-{}'.format(
-                    facet,
-                    options.of
-                ),
-                facet_column=facet,
-                color_var='cell_passes_qc',
-                density_contour=False
-            )
+            try:
+                plot_umi_ngene_mt(
+                    df_plot=adata.obs,
+                    output_file='plot_umi_ngene_cellpassqc.facet={}-{}'.format(
+                        facet,
+                        options.of
+                    ),
+                    facet_column=facet,
+                    color_var='cell_passes_qc',
+                    density_contour=False
+                )
+            except:
+                print(f'Failed plotting density for facte {facet}')
 
 
 if __name__ == '__main__':

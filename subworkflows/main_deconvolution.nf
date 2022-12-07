@@ -61,26 +61,23 @@ workflow  main_deconvolution {
         
         ch_poolid_donor_assignment = Channel.empty()
         ch_experiment_donorsvcf_donorslist.map { experiment, donorsvcf, donorstbi,donorslist -> tuple(experiment, donorslist.replaceAll(/,/, " ").replaceAll(/"/, ""))}.set{donors_in_lane}
-
+        ch_experiment_bam_bai_barcodes.combine(ch_experiment_npooled, by: 0).set{cellsnp_with_npooled}
         if (params.existing_cellsnp != ''){
-            log.info('Capturing CELLSNP')
+            log.info('Capturing some of the existing CELLSNP files')
             capture_cellsnp_files(params.existing_cellsnp)
             capture_cellsnp_files.out.cellsnp_loc.splitCsv(header: false, sep: ' ')
                 .map{row->tuple(row[0], "${row[1]}")}
-                .set{cellsnp_output_dir}
-            
-            // expl1 = Channel.fromPath( "${expl1}/*/*.vcf.gz")
-            // expl1.map{row -> tuple("${row[-2]}".replaceAll('cellsnp_',''), "${row}".replaceAll('/cellSNP.base.vcf.gz',''))}.set{cellsnp_output_dir}
-        
-                
+                .set{cellsnp_output_dir1}
+            cellsnp_output_dir1.join(cellsnp_with_npooled, remainder: true).set{filter_channel}
+            filter_channel.filter{ it[1] == null }.map{row -> tuple(row[0], row[2],row[3],row[4],row[5])}.set{cellsnp_with_npooled}
+            cellsnp_with_npooled.view()
         }else{
-            log.info('Running CELLSNP')
-
-            ch_experiment_bam_bai_barcodes.combine(ch_experiment_npooled, by: 0).set{cellsnp_with_npooled}
-            CELLSNP(cellsnp_with_npooled,
-                Channel.fromPath(params.cellsnp.vcf_candidate_snps).collect())
-            cellsnp_output_dir = CELLSNP.out.cellsnp_output_dir
+            cellsnp_output_dir1 = Channel.of()
         }
+        CELLSNP(cellsnp_with_npooled,
+            Channel.fromPath(params.cellsnp.vcf_candidate_snps).collect())
+        cellsnp_output_dir2 = CELLSNP.out.cellsnp_output_dir
+        cellsnp_output_dir=cellsnp_output_dir1.concat(cellsnp_output_dir2)
 
         if (params.sample_qc.cell_filters.filter_multiplets.run_process){
             MULTIPLET(

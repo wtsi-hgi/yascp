@@ -12,6 +12,23 @@ import pandas as pd
 import scanpy
 
 
+def combine_reports(all_alternitive):
+    all_indexes_full=set({})
+    for d1 in all_alternitive:
+        Dataset = pd.read_csv(d1,sep='\t',index_col=0)
+        all_indexes = set(Dataset.index)
+        all_indexes_full = all_indexes_full.union(all_indexes)
+    Data_All_alt=pd.DataFrame(index=all_indexes_full)    
+    for d1 in all_alternitive:
+        Dataset = pd.read_csv(d1,sep='\t',index_col=0)
+        for col1 in Dataset.columns:
+            try:
+                _ = Data_All_alt[col1]
+            except:
+                Data_All_alt[col1]=''
+        Data_All_alt.loc[Dataset.index]=Dataset
+    return Data_All_alt
+
 def main():
     """Run CLI."""
     parser = argparse.ArgumentParser(
@@ -67,12 +84,17 @@ def main():
         Data=pd.read_csv(azimuth_file1,compression='gzip',sep='\t')
         Data = Data.rename(columns={'predicted.celltype.l2':'Azimuth:predicted.celltype.l2','predicted.celltype.l2.score':'Azimuth:predicted.celltype.l2.score','mapping.score':'Azimuth:mapping.score'})
         Data_All = pd.concat([Data_All,Data])
-
+    
     celltypist_files = options.all_celltypist_files.split('::')
-    for celltypist_file1 in celltypist_files:
+    celltypist_files2 = pd.DataFrame(celltypist_files,columns=['col1'])
+    celltypist_files3 =list(celltypist_files2[~celltypist_files2['col1'].str.contains('input')]['col1'])
+    
+    for celltypist_file1 in celltypist_files3:
+        print(celltypist_file1)
         if 'input.' in celltypist_file1:
-            print('skip')
+            _ ='skip'
         else:
+            print('yes')
             Model = celltypist_file1.split('___')[1]
             Data=pd.read_csv(celltypist_file1,index_col=0)
             try:
@@ -83,20 +105,8 @@ def main():
     
     
     all_alternitive = options.all_alternitive.split('::')
-    all_indexes_full=set({})
-    for d1 in all_alternitive:
-        Dataset = pd.read_csv(d1,sep='\t',index_col=0)
-        all_indexes = set(Dataset.index)
-        all_indexes_full = all_indexes_full.union(all_indexes)
-    Data_All_alt=pd.DataFrame(index=all_indexes_full)    
-    for d1 in all_alternitive:
-        Dataset = pd.read_csv(d1,sep='\t',index_col=0)
-        for col1 in Dataset.columns:
-            try:
-                _ = Data_All_alt[col1]
-            except:
-                Data_All_alt[col1]=''
-        Data_All_alt.loc[Dataset.index]=Dataset
+    Data_All_alt = combine_reports(all_alternitive)
+
     
     Data_All = pd.concat([Data_All,Data_All_alt],axis=1)
     Donor_Exp = Data_All.index.str.split('-').str[-1]

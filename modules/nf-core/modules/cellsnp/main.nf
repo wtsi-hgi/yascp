@@ -10,7 +10,7 @@ process capture_cellsnp_files{
     path(cellsnp_location)
   script:
   """
-    echo 'setting link to get cellsnp results in this directory'
+    echo '${params.cellsnp_recapture}'
     for OUTPUT in \$(ls ${cellsnp_location})
     do
     samplename1=\$(echo \$OUTPUT | sed 's/cellsnp_//g')

@@ -47,6 +47,7 @@ process umap_calculate {
             file("${outfile}.h5ad"),
             emit: outdir_anndata
         )
+        path("${outfile}.h5ad",emit:adata_out)
 
     script:
         in_file_id = file__reduced_dims.toString().tokenize('-').get(0)
@@ -60,9 +61,7 @@ process umap_calculate {
         if (use_pcs_as_reduced_dims == "True") {
             cmd__tsv_pcs = "--tsv_pcs ${file__pcs}"
         }
-        process_info = "(runid)"
-        process_info = "${process_info}, ${task.cpus} (cpus)"
-        process_info = "${process_info}, ${task.memory} (memory)"
+
         """
             umap_calculate.py \
                 --h5_anndata ${file__anndata} \
@@ -161,9 +160,6 @@ process umap_gather {
         
         outfile = "umap_gather_out"
         files__anndata = files__anndata.join(',')
-        process_info = "(runid)"
-        process_info = "${process_info}, ${task.cpus} (cpus)"
-        process_info = "${process_info}, ${task.memory} (memory)"
 
         """
             umap_gather.py \
@@ -213,9 +209,7 @@ process umap_plot_swarm {
         if (colors_categorical != "") {
             cmd__colors_cat = "--colors_categorical ${colors_categorical}"
         }
-        process_info = ""
-        process_info = "${process_info}, ${task.cpus} (cpus)"
-        process_info = "${process_info}, ${task.memory} (memory)"
+
         """
             umap_plot.py \
                 --h5_anndata ${file__anndata} \
@@ -282,9 +276,7 @@ process umap_calculate_and_plot {
         if (use_pcs_as_reduced_dims == "True") {
             cmd__tsv_pcs = "--tsv_pcs ${file__pcs}"
         }
-        process_info = "(runid)"
-        process_info = "${process_info}, ${task.cpus} (cpus)"
-        process_info = "${process_info}, ${task.memory} (memory)"
+
         """
 
         umap_calculate_and_plot.py \

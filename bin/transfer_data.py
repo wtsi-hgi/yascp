@@ -33,11 +33,13 @@ def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res
         df_cellbender = None
     elif (cellbender)=='cellbender':
         # here we have run the cellbender as par of pipeline. 
-        file_path = glob.glob(f'{results_dir}/nf-preprocessing/cellbender/qc_cluster_input_files/*{cb_res}*')[0]
-        df_cellbender = pd.read_table(file_path, index_col = 'experiment_id')
-    else:
-        # this is existing_cellbender, hence using this input
-        df_cellbender = pd.read_table(f'{cellbender}', index_col = 'experiment_id')
+        # file_path = glob.glob(f'{results_dir}/nf-preprocessing/cellbender/qc_cluster_input_files/*{cb_res}*')[0]
+        file_path = glob.glob(f'{results_dir}/nf-preprocessing/cellbender/*/cellbender-epochs_*/*{cb_res}*10x_mtx*')
+        file_path2 = glob.glob(f'{results_dir}/nf-preprocessing/cellbender/*/*{cb_res}*10x_mtx*')
+        joined_file_paths = file_path+file_path2
+        df_cellbender = pd.DataFrame(joined_file_paths,columns=['data_path_10x_format'])
+        df_cellbender['experiment_id']=df_cellbender['data_path_10x_format'].str.split('/').str[3]
+        df_cellbender= df_cellbender.set_index('experiment_id')
     
     print(df_cellbender)
     # folder1 = f'{directory}/nf-preprocessing/cellbender'
@@ -199,10 +201,18 @@ def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res
             os.mkdir(f'{name_dir}/QC metrics')
         except:
             print('dire exists')
-        copyfile(f'{folder1}/merged_h5ad/plots/outlier_filtered_adata-cell_desity.png', f'{name_dir}/QC metrics/adata-cell_desity.png')
+        try:
+            copyfile(f'{folder1}/adata-cell_desity.png', f'{name_dir}/QC metrics/adata-cell_desity.png')
+        except:
+            copyfile(f'{directory}/merged_h5ad/plots/outlier_filtered_adata-cell_desity.png', f'{name_dir}/QC metrics/adata-cell_desity.png')
+        
         copyfile(f'{folder1}/adata-cell_filtered_per_experiment-n_cells_before_after.png', f'{name_dir}/QC metrics/adata-cell_filtered_per_experiment-n_cells_before_after.png')
         copyfile(f'{folder1}/scatterplot-sex_sample_swap_check.png', f'{name_dir}/QC metrics/scatterplot-sex_sample_swap_check.png')
-        copyfile(f'{folder1}/merged_h5ad/plots/outlier_filtered_adata-outlier_cells.png', f'{name_dir}/QC metrics/adata-outlier_cells.png')
+        try:
+            copyfile(f'{folder1}/adata-outlier_cells.png', f'{name_dir}/QC metrics/adata-outlier_cells.png')
+        except:
+            copyfile(f'{directory}/merged_h5ad/plots/outlier_filtered_adata-outlier_cells.png', f'{name_dir}/QC metrics/adata-outlier_cells.png')
+        
         fil1 = glob.glob(f'{folder1}/plot_ecdf-x_log10*total_counts*')[0]
         copyfile(fil1, f'{name_dir}/QC metrics/plot_ecdf-x_log10.var=total_counts.color=experiment_id-adata.png')
 

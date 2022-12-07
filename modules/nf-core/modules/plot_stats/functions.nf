@@ -88,17 +88,8 @@ process plot_pcs {
         if (colors_categorical != "") {
             cmd__colors_cat = "--colors_categorical ${colors_categorical}"
         }
-        // drop_legend_n = "-1"
-        // if (cmd__colors_cat.contains("experiment_id")) {
-        //     drop_legend_n = "8"
-        // }
-        process_info = ""
-        process_info = "${process_info}, ${task.cpus} (cpus)"
-        process_info = "${process_info}, ${task.memory} (memory)"
+
         """
-        echo "pca_plot: ${process_info}"
-        echo "publish_directory: ${outdir}"
-        rm -fr plots
         pca_plot.py \
             --h5_anndata ${file__anndata} \
             --num_pcs ${n_pcs} \
