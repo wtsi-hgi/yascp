@@ -14,9 +14,6 @@ workflow data_handover{
         log.info 'running data handover'
 
         GATHER_DATA(outdir,qc_input.collect(),params.input_data_table)
-        if (params.encrypt){
-            ENCRYPT_DIR(GATHER_DATA.out.outfiles_dataset)
-        }
 
         if (params.split_bam){
             split_bam_by_donor(sample_possorted_bam_vireo_donor_ids, params.reference_assembly_fasta_dir_bam_split)
@@ -26,40 +23,21 @@ workflow data_handover{
           cram_encrypted_dirs = Channel.empty()
         }
 
-        cram_encrypted_dirs
-          .subscribe onNext: {println "cram_encrypted_dirs: $it"},
-            onComplete: {println "cram_encrypted_dirs: done"}
 
-        cram_encrypted_dirs
-          .collect()
-          .set { ch_cram_encrypted_dirs }
+        if (params.encrypt){
+            ENCRYPT_DIR(GATHER_DATA.out.outfiles_dataset)
+        
+            cram_encrypted_dirs
+              .collect()
+              .set { ch_cram_encrypted_dirs }
 
-        ch_cram_encrypted_dirs
-          .subscribe onNext: {println "ch_cram_encrypted_dirs: $it"},
-            onComplete: {println "ch_cram_encrypted_dirs: done"}
-
-        ch_poolid_csv_donor_assignments
-        .subscribe onNext: {println "ch_poolid_csv_donor_assignments: $it"},
-          onComplete: {println "ch_poolid_csv_donor_assignments: done"}
-
-        ch_poolid_csv_donor_assignments
-          .collect()
-          .set { ch_poolid_csv_donor_assignment_gathered }
-
-        ch_poolid_csv_donor_assignment_gathered
-        .subscribe onNext: {println "ch_poolid_csv_donor_assignment_gathered: $it"},
-          onComplete: {println "ch_poolid_csv_donor_assignment_gathered: done"}
-
-
-        SPLIT_DATA_BY_STUDY(
-          outdir,
-          ENCRYPT_DIR.out.encrypted_dir,
-          ch_cram_encrypted_dirs,
-          ch_poolid_csv_donor_assignment_gathered
-          )
-        // SPLIT_DATA_BY_STUDY(outdir, 
-        // ENCRYPT_DIR.out.encrypted_dir, 
-        // ch_poolid_csv_donor_assignments.collect())
+            SPLIT_DATA_BY_STUDY(
+              outdir,
+              ENCRYPT_DIR.out.encrypted_dir,
+              ch_cram_encrypted_dirs,
+              ch_poolid_csv_donor_assignment_gathered
+              )
+        }
 
         SUMMARY_STATISTICS_PLOTS(outdir,GATHER_DATA.out.outfiles_dataset,params.input_data_table)
 

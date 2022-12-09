@@ -94,62 +94,64 @@ if (os.path.exists(f"{path}/deconvolution/vireo_gt_fix")):
             except:
                 Matched_Donor_report['Vacutainer ID']=gt_match
             Matched_Donor_report['Experiment ID'] = project_name
-            Matched_Donor_report['Chromium channel number'] = Tranch_stats['Chromium channel number'].values[0]
-            Matched_Donor_report['Date of sample sequencing'] = Tranch_stats['Date of sample sequencing'].values[0]
-            cohort = row1['final_panel']
             try:
-                live_cell_count = Extra_Metadata_Donor1['live_cell_count'].values[0]
-                viability =Extra_Metadata_Donor1['viability'].values[0]
-                SITE = Extra_Metadata_Donor1['SITE'].values[0]
-                Amount = Extra_Metadata_Donor1['Amount'].values[0]
-                RECIEVED = Extra_Metadata_Donor1['RECIEVED'].values[0]
-            except:
-                live_cell_count = 'NA'
-                viability ='NA'
-                SITE = 'NA'
-                Amount = 'NA'
-                RECIEVED = 'NA'
-                
-            try:
-                Matched_Donor_report.insert(8, 'lab_live_cell_count',live_cell_count)
-            except:
-                print('exists')
-                Matched_Donor_report['lab_live_cell_count'] =  live_cell_count
+                Matched_Donor_report['Chromium channel number'] = Tranch_stats['Chromium channel number'].values[0]
+                Matched_Donor_report['Date of sample sequencing'] = Tranch_stats['Date of sample sequencing'].values[0]
+                cohort = row1['final_panel']
+                try:
+                    live_cell_count = Extra_Metadata_Donor1['live_cell_count'].values[0]
+                    viability =Extra_Metadata_Donor1['viability'].values[0]
+                    SITE = Extra_Metadata_Donor1['SITE'].values[0]
+                    Amount = Extra_Metadata_Donor1['Amount'].values[0]
+                    RECIEVED = Extra_Metadata_Donor1['RECIEVED'].values[0]
+                except:
+                    live_cell_count = 'NA'
+                    viability ='NA'
+                    SITE = 'NA'
+                    Amount = 'NA'
+                    RECIEVED = 'NA'
+                    
+                try:
+                    Matched_Donor_report.insert(8, 'lab_live_cell_count',live_cell_count)
+                except:
+                    print('exists')
+                    Matched_Donor_report['lab_live_cell_count'] =  live_cell_count
 
-            try:
-                Matched_Donor_report.insert(8, 'viability', viability)
+                try:
+                    Matched_Donor_report.insert(8, 'viability', viability)
+                except:
+                    print('exists')
+                    Matched_Donor_report['viability'] =  viability
+
+                try:
+                    Matched_Donor_report.insert(8, 'cohort', cohort)
+                except:
+                    print('exists')
+                    Matched_Donor_report['cohort'] =  cohort
+
+                try:
+                    Matched_Donor_report.insert(8, 'Match Expected', row1['Match Expected'])
+                except:
+                    print('exists')
+                    Matched_Donor_report['Match Expected'] =  row1['Match Expected']
+
+                try:
+                    Matched_Donor_report.insert(8, 'site', SITE)
+                except:
+                    print('exists')
+                    Matched_Donor_report['site'] =  SITE
+
+                try:
+                    Matched_Donor_report.insert(8, 'amount recieved', Amount)
+                except:
+                    print('exists')
+                    Matched_Donor_report['amount recieved'] =  Amount
+
+                Matched_Donor_report['Date sample received'] =  RECIEVED
+                Matched_Donor_report['Donor id']=row1['donor_gt original'].split('_')[0]
+                Total_Report = pd.concat([Total_Report,Matched_Donor_report])
             except:
-                print('exists')
-                Matched_Donor_report['viability'] =  viability
-
-            try:
-                Matched_Donor_report.insert(8, 'cohort', cohort)
-            except:
-                print('exists')
-                Matched_Donor_report['cohort'] =  cohort
-
-            try:
-                Matched_Donor_report.insert(8, 'Match Expected', row1['Match Expected'])
-            except:
-                print('exists')
-                Matched_Donor_report['Match Expected'] =  row1['Match Expected']
-
-            try:
-                Matched_Donor_report.insert(8, 'site', SITE)
-            except:
-                print('exists')
-                Matched_Donor_report['site'] =  SITE
-
-            try:
-                Matched_Donor_report.insert(8, 'amount recieved', Amount)
-            except:
-                print('exists')
-                Matched_Donor_report['amount recieved'] =  Amount
-
-            Matched_Donor_report['Date sample received'] =  RECIEVED
-            Matched_Donor_report['Donor id']=row1['donor_gt original'].split('_')[0]
-            Total_Report = pd.concat([Total_Report,Matched_Donor_report])
-
+                print('no successful matches in this cohort')
         return Total_Report
 
 

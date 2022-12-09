@@ -481,6 +481,7 @@ process capture_cellbender_files{
   script:
   """
   
+  
     mkdir tmp1234
     mkdir tmp1234/cellbender
     cd tmp1234/cellbender
