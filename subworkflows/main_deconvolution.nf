@@ -241,40 +241,40 @@ workflow  main_deconvolution {
         // collect file paths to h5ad files in tsv tables:
         SPLIT_DONOR_H5AD.out.donors_h5ad_tsv
         .collectFile(name: "donors_h5ad.tsv",
-                newLine: false, sort: true,
+                newLine: false, sort: true,cache:false,
                 seed: "experiment_id\tdonor\th5ad_filepath\n",
                 storeDir:params.outdir+'/deconvolution/filepaths')
 
         // paste experiment_id and donor ID columns with __ separator
         SPLIT_DONOR_H5AD.out.exp__donors_h5ad_tsv
         .collectFile(name: "exp__donors_h5ad.tsv",
-                newLine: false, sort: true,
+                newLine: false, sort: true,cache:false,
                 seed: "experiment_id\th5ad_filepath\n",
                 storeDir:params.outdir+'/deconvolution/filepaths')
 
         SPLIT_DONOR_H5AD.out.donors_h5ad_assigned_tsv
         .collectFile(name: "donors_h5ad_assigned.tsv",
-                newLine: false, sort: true,
+                newLine: false, sort: true,cache:false,
                 seed: "experiment_id\tdonor\th5ad_filepath\n",
                 storeDir:params.outdir+'/deconvolution/filepaths')
 
         // paste experiment_id and donor ID columns with __ separator
         out_h5ad =SPLIT_DONOR_H5AD.out.exp__donors_h5ad_assigned_tsv
         .collectFile(name: "exp__donors_h5ad_assigned.tsv",
-                newLine: false, sort: true,
+                newLine: false, sort: true,cache:false,
                 seed: "experiment_id\th5ad_filepath\n",
                 storeDir:params.outdir+'/deconvolution/filepaths')
 
         SPLIT_DONOR_H5AD.out.h5ad_tsv
         .collectFile(name: "cellranger_as_h5ad.tsv",
-                newLine: true, sort: true, // only one line in each file to collate, without ending new line character, so add it here.
+                newLine: true, sort: true,cache:false, // only one line in each file to collate, without ending new line character, so add it here.
                 seed: "experiment_id\th5ad_filepath", // don't need \n here since newLine: true
                 storeDir:params.outdir+'/deconvolution/filepaths')
 
         // all vireo() outputs collected -> plot_donor_ncells():
         vireo_out_sample_summary_tsv
         .collectFile(name: "vireo_donor_n_cells.tsv",
-                newLine: false, sort: true,
+                newLine: false, sort: true,cache:false,
                 seed: "experiment_id\tdonor\tn_cells\n",
                 storeDir:params.outdir+'/deconvolution/filepaths')
         .set{ch_vireo_donor_n_cells_tsv} // donor column: donor0, .., donorx, doublet, unassigned
@@ -284,7 +284,7 @@ workflow  main_deconvolution {
         // paste experiment_id and donor ID columns with __ separator
         vireo_out_sample__exp_summary_tsv = out_split
             .collectFile(name: "vireo_exp__donor_n_cells.tsv",
-                    newLine: false, sort: true,
+                    newLine: false, sort: true,cache:false,
                     seed: "experiment_id\tn_cells\n",
                     storeDir:params.outdir+'/deconvolution/filepaths')
 
