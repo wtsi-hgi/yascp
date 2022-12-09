@@ -127,9 +127,10 @@ process cellbender__preprocess_output{
         saveAs: {filename ->
           if (filename == "barcodes.tsv.gz") {
           null
-          } else if(filename.equalsIgnoreCase("features.tsv.gz")) {
-          null
-          } else if(filename.equalsIgnoreCase("matrix.mtx.gz")) {
+          } else if(filename.equalsIgnoreCase("features.tsv.gz")){
+            null
+          }
+          else if(filename.equalsIgnoreCase("matrix.mtx.gz")) {
           null
           } else {
           filename.replaceAll("${runid}-", "")
@@ -166,10 +167,10 @@ process cellbender__preprocess_output{
 
 
   output:
+    tuple(val(experiment_id),path("cellbender-FPR_${params.cellbender_resolution_to_use}-filtered_10x_mtx"), emit: alternative_input)
     path("*filtered_10x_mtx/barcodes.tsv.gz", emit: tenx_barcodes)
     path("*filtered_10x_mtx/features.tsv.gz", emit: tenx_features)
     path("*filtered_10x_mtx/matrix.mtx.gz", emit: tenx_matrix)
-    tuple(val(experiment_id),path("cellbender-FPR_${params.cellbender_resolution_to_use}-filtered_10x_mtx"), emit: alternative_input)
     path(
       "${runid}-${outfile}-filtered_10x_mtx-file_list.tsv",
        emit: results_list
@@ -461,13 +462,11 @@ process cellbender__remove_background__qc_plots {
 }
 
 process capture_cellbender_files{
-  publishDir  path: "${outdir}",
-        saveAs: {filename -> if (filename.contains("captured")) {
-          null
-        }else{
-          filename.replaceAll("tmp1234/cellbender", "cellbender")
-        }
-      }, mode: "${params.cellsnp.copy_mode}",
+  publishDir  path: "${outdir}/cellbender",
+  saveAs: {filename -> 
+          filename.replaceAll("tmp1234/cellbender/", "")
+      },
+        mode: "${params.copy_mode}",
     overwrite: "true"
 
   label 'process_tiny'
@@ -476,11 +475,12 @@ process capture_cellbender_files{
     path(cellbender_location)
     val(outdir)
   output:
-    path("tmp1234/cellbender")
+    path("tmp1234/cellbender/*")
     path("captured/*/cellbender-FPR_${params.cellbender_resolution_to_use}*"),emit:alt_input
     
   script:
   """
+  
     mkdir tmp1234
     mkdir tmp1234/cellbender
     cd tmp1234/cellbender
@@ -490,7 +490,6 @@ process capture_cellbender_files{
     done
     cd ../..
     capture_res_files_cb.py
-
   """    
 
 }
