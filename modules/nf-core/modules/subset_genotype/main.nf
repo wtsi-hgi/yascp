@@ -228,11 +228,12 @@ process JOIN_STUDIES_MERGE{
     input:
       tuple val(samplename), path(study_vcf_files),path(study_vcf_csi_files)
       val(mode)
+      val(mode2)
 
 
     output:
-      tuple val(samplename), path("${mode}_sorted_Expected_${samplename}.vcf.gz"),path("${mode}_sorted_Expected_${samplename}.vcf.gz.csi"), emit: merged_expected_genotypes
-      path("${mode}_sorted_Expected_${samplename}.vcf.gz",emit:study_merged_vcf)
+      tuple val(samplename), path("${mode}_${mode2}_${samplename}.vcf.gz"),path("${mode}_${mode2}_${samplename}.vcf.gz.csi"), emit: merged_expected_genotypes
+      path("${mode}_${mode2}_${samplename}.vcf.gz",emit:study_merged_vcf)
     script:
       // if (mode=='Infered_Merge'){
         cmd__run = "overlapping_positions_vcfs.py -vcfs '${study_vcf_files}'"
@@ -245,16 +246,16 @@ process JOIN_STUDIES_MERGE{
         fofn_input_subset.sh "${study_vcf_files}"
         if [ \$(cat fofn_vcfs.txt | wc -l) -gt 1 ]; then
             echo 'yes'
-            bcftools merge -file-list ${study_vcf_files} -Ou | bcftools sort -Oz -o pre_${mode}_sorted_Expected_${samplename}.vcf.gz
-            bcftools index pre_${mode}_sorted_Expected_${samplename}.vcf.gz
+            bcftools merge -file-list ${study_vcf_files} -Ou | bcftools sort -Oz -o pre_${mode}_${mode2}_${samplename}.vcf.gz
+            bcftools index pre_${mode}_${mode2}_${samplename}.vcf.gz
         else
           echo 'no'
-          bcftools view ${study_vcf_files} | bcftools sort -Oz -o pre_${mode}_sorted_Expected_${samplename}.vcf.gz
-          bcftools index pre_${mode}_sorted_Expected_${samplename}.vcf.gz
+          bcftools view ${study_vcf_files} | bcftools sort -Oz -o pre_${mode}_${mode2}_${samplename}.vcf.gz
+          bcftools index pre_${mode}_${mode2}_${samplename}.vcf.gz
           
         fi
-        bcftools view -R Bed_File_record.bed pre_${mode}_sorted_Expected_${samplename}.vcf.gz -Oz -o ${mode}_sorted_Expected_${samplename}.vcf.gz
-        bcftools index ${mode}_sorted_Expected_${samplename}.vcf.gz
+        bcftools view -R Bed_File_record.bed pre_${mode}_${mode2}_${samplename}.vcf.gz -Oz -o ${mode}_${mode2}_${samplename}.vcf.gz
+        bcftools index ${mode}_${mode2}_${samplename}.vcf.gz
       """
 }
 
@@ -263,6 +264,7 @@ workflow SUBSET_WORKF{
   take:
     ch_ref_vcf
     donors_in_pools
+    mode
   main:
       donors_in_pools.combine(ch_ref_vcf).set{all_GT_pannels_and_pools}
       // subset genotypes per pool, per chromosome split.
@@ -274,7 +276,7 @@ workflow SUBSET_WORKF{
       JOIN_CHROMOSOMES(chromosome_vcfs_per_studypool)
       JOIN_CHROMOSOMES.out.joined_chromosomes_per_studytrance.groupTuple().set{study_vcfs_per_pool}
       // Merge all the pools.
-      JOIN_STUDIES_MERGE(study_vcfs_per_pool,'Study_Merge')
+      JOIN_STUDIES_MERGE(study_vcfs_per_pool,'Study_Merge',mode)
       JOIN_STUDIES_MERGE.out.merged_expected_genotypes.set{merged_expected_genotypes}
       study_merged_vcf = JOIN_STUDIES_MERGE.out.study_merged_vcf
       

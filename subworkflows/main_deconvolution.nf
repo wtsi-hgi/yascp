@@ -49,7 +49,7 @@ workflow  main_deconvolution {
             .set { ch_ref_vcf }
 
             // This will subsequently result in a joint vcf file for all the cohorts listed for each of the pools that can be used in VIREO and/or GT matching algorythm.
-            SUBSET_WORKF(ch_ref_vcf,donors_in_pools)
+            SUBSET_WORKF(ch_ref_vcf,donors_in_pools,'AllExpectedGT')
             merged_expected_genotypes = SUBSET_WORKF.out.merged_expected_genotypes
             MERGE_GENOTYPES_IN_ONE_VCF_SUBSET(SUBSET_WORKF.out.study_merged_vcf.collect(),'subset')
 

@@ -23,7 +23,7 @@ workflow Relationships_Between_Infered_Expected {
       
       all_Expected_and_infeared.groupTuple(by: 0).set{grouped}
       // grouped.view()
-      JOIN_INFERED_EXPECTED_MERGE(grouped,'Infered_Merge')
+      JOIN_INFERED_EXPECTED_MERGE(grouped,'InferedMerge',mode)
       // have to do this for each of the pools too. 
       JOIN_INFERED_EXPECTED_MERGE.out.merged_expected_genotypes.map { row -> tuple(row[0], row[1]) }
       .set { sample_name_vcf_no_csi }
