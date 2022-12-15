@@ -53,12 +53,12 @@ workflow match_genotypes {
     .map { row -> tuple(row.label, file(row.vcf_file_path), file("${row.vcf_file_path}.csi")) }
     .set { ch_ref_vcf }
 
-    SUBSET_WORKF(ch_ref_vcf,gt_matched_samples)
+    SUBSET_WORKF(ch_ref_vcf,gt_matched_samples,'GTMatchedSubset')
     merged_GT_Matched_genotypes = SUBSET_WORKF.out.merged_expected_genotypes
 
-    Relationships_Between_Infered_Expected(donors_in_pools,merged_expected_genotypes,gt_pool,'Expected',MATCH_GT_VIREO.out.donor_match_table_with_pool_id,idb_pool)
+    Relationships_Between_Infered_Expected(donors_in_pools,merged_expected_genotypes,gt_pool,'InferedExpected',MATCH_GT_VIREO.out.donor_match_table_with_pool_id,idb_pool)
     outfile_for_final_gt = Relationships_Between_Infered_Expected.out.donor_match_table
-    Relationships_Between_Infered_GT_Matched(gt_matched_samples,merged_GT_Matched_genotypes,gt_pool,'GT_Matched', Relationships_Between_Infered_Expected.out.donor_match_table,idb_pool)
+    Relationships_Between_Infered_GT_Matched(gt_matched_samples,merged_GT_Matched_genotypes,gt_pool,'InferedGTMatched', Relationships_Between_Infered_Expected.out.donor_match_table,idb_pool)
     outfile_for_final_gt = Relationships_Between_Infered_GT_Matched.out.donor_match_table
     Relationships_Between_Infered_Expected.out.done_validation.set{ou1}
     Relationships_Between_Infered_GT_Matched.out.done_validation.set{ou2}
