@@ -72,7 +72,7 @@ process cellbender__rb__get_input_cells {
     path("plots/*.pdf") optional true
 
   script:
-    runid = random_hex(16)
+
     outdir = "${outdir_prev}/${experiment_id}"
     outdir = "${outdir}/cellbender-estimate_ncells_nemptydroplets"
     outfile = "umi_count_estimates"
@@ -83,9 +83,6 @@ process cellbender__rb__get_input_cells {
     if ("${outdir}" == "${outdir_prev}/${experiment_id}/cellbender-params_setbyuser") {
     outdir = "${outdir_prev}/${experiment_id}/cellbender-estimated_ncells_nemptydroplets"
     }
-    process_info = "${runid} (runid)"
-    process_info = "${process_info}, ${task.cpus} (cpus)"
-    process_info = "${process_info}, ${task.memory} (memory)"
 
     if (params.cellbender_rb.estimate_params_umis.value.method_estimate_ncells=='expected'){
         ncells2=ncells.toInteger()-1000
@@ -133,7 +130,7 @@ process cellbender__preprocess_output{
           else if(filename.equalsIgnoreCase("matrix.mtx.gz")) {
           null
           } else {
-          filename.replaceAll("${runid}-", "")
+          filename.replaceAll("-", "")
           }
         },
         mode: "${params.cellsnp.copy_mode}",
@@ -172,7 +169,7 @@ process cellbender__preprocess_output{
     path("*filtered_10x_mtx/features.tsv.gz", emit: tenx_features)
     path("*filtered_10x_mtx/matrix.mtx.gz", emit: tenx_matrix)
     path(
-      "${runid}-${outfile}-filtered_10x_mtx-file_list.tsv",
+      "${outfile}-filtered_10x_mtx-file_list.tsv",
        emit: results_list
     )  
     tuple(
@@ -203,7 +200,6 @@ process cellbender__preprocess_output{
     // cp cellbender-filtered_10x_mtx-file_list.tsv AA868D1A8EB8249-cellbender-filtered_10x_mtx-file_list.tsv
 
     outfile = "cellbender"
-    runid = random_hex(16)
     """
       export LD_PRELOAD=/opt/conda/envs/conda_cellbender/lib/libmkl_core.so:/opt/conda/envs/conda_cellbender/lib/libmkl_sequential.so
       for i in \$(ls *.h5); do
@@ -214,7 +210,7 @@ process cellbender__preprocess_output{
         echo \$out_file
       done
       032-clean_cellbender_results.py --nf_outdir_tag ${outdir} --cb_outfile_tag ${outfile} --experiment_id ${experiment_id} --fpr '${fpr}' --cb_params ${cb_params}
-      cp ${outfile}-filtered_10x_mtx-file_list.tsv ${runid}-${outfile}-filtered_10x_mtx-file_list.tsv
+      cp ${outfile}-filtered_10x_mtx-file_list.tsv ${outfile}-filtered_10x_mtx-file_list.tsv
     """
 
 }
@@ -267,7 +263,7 @@ process cellbender__remove_background {
         } else if(filename.equalsIgnoreCase("matrix.mtx.gz")) {
         null
         } else {
-        filename.replaceAll("${runid}-", "")
+        filename.replaceAll("-", "")
         }
       },
       mode: "${params.cellsnp.copy_mode}",
@@ -413,7 +409,7 @@ process cellbender__remove_background__qc_plots {
         } else if(filename.equalsIgnoreCase("matrix.mtx.gz")) {
         null
         } else {
-        filename.replaceAll("${runid}-", "")
+        filename.replaceAll("-", "")
         }
       },
       mode: "${params.copy_mode}",
@@ -434,12 +430,8 @@ process cellbender__remove_background__qc_plots {
     path("plots/*.pdf") optional true
 
   script:
-    runid = random_hex(16)
     outdir = "${outdir_prev}" // /${experiment_id}"
     h5_filtered_cellbender = h5_filtered_cellbender.join(",")
-    process_info = "${runid} (runid)"
-    process_info = "${process_info}, ${task.cpus} (cpus)"
-    process_info = "${process_info}, ${task.memory} (memory)"
     """
     echo "cellbender__remove_background__qc_plots: ${process_info}"
     echo "outdir: ${outdir}"
@@ -566,7 +558,7 @@ process cellbender__gather_qc_input {
   // ------------------------------------------------------------------------
 
   publishDir  path: "${outdir}",
-      saveAs: {filename -> filename.replaceAll("${runid}-", "")},
+      saveAs: {filename -> filename.replaceAll("-", "")},
       mode: "${params.cellsnp.copy_mode}",
       overwrite: "true"
 
@@ -579,12 +571,10 @@ process cellbender__gather_qc_input {
     path("*.tsv", emit: qc_input_files)
     path("file_paths_10x-*${params.cellbender_resolution_to_use}.tsv", emit: celbender_path)
   script:
-    runid = random_hex(16)
+    
     outdir = "${outdir_prev}/qc_cluster_input_files"
     cb_results_tsvs = cb_results_tsvs.join(",")
-    process_info = "${runid} (runid)"
-    process_info = "${process_info}, ${task.cpus} (cpus)"
-    process_info = "${process_info}, ${task.memory} (memory)"
+
     """
         045-prepare_nf_qc_cluster_input.py --cb_results_tsvs ${cb_results_tsvs}
     """
