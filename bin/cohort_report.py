@@ -239,13 +239,16 @@ if (os.path.exists(f"{path}/deconvolution/vireo_gt_fix")):
                     Expected_Samples.remove('')
                 except:
                     _='cant'
-                Expected_Samples2 = Extra_Metadata_Donors[Extra_Metadata_Donors.cohort == confident_panel_name]
-                Expected_Samples3 = Extra_Metadata_Donors[Extra_Metadata_Donors.cohort == 'Cardinal controls']
-                Expected_Samples3['donor']= Expected_Samples3['donor'].str.replace(r'U937_.*', 'U937', regex=True).astype('str')
-                Expected_Samples3['donor']= Expected_Samples3['donor'].str.replace(r'THP1_.*', 'THP1', regex=True).astype('str')
-                
-                combo = set(Expected_Samples2.donor).union(Expected_Samples3.donor)
-                Expected_Samples = set(combo).intersection(set(Expected_Samples))
+                try:
+                    Expected_Samples2 = Extra_Metadata_Donors[Extra_Metadata_Donors.cohort == confident_panel_name]
+                    Expected_Samples3 = Extra_Metadata_Donors[Extra_Metadata_Donors.cohort == 'Cardinal controls']
+                    Expected_Samples3['donor']= Expected_Samples3['donor'].str.replace(r'U937_.*', 'U937', regex=True).astype('str')
+                    Expected_Samples3['donor']= Expected_Samples3['donor'].str.replace(r'THP1_.*', 'THP1', regex=True).astype('str')
+                    
+                    combo = set(Expected_Samples2.donor).union(Expected_Samples3.donor)
+                    Expected_Samples = set(combo).intersection(set(Expected_Samples))
+                except:
+                    print('Donor level metadata with cohort info is not provided, assuming that all are there.')
                 All_Deconvouted_Samples = set(Total_Report_samples['Vacutainer ID'])
                 DF2= pd.DataFrame(Expected_Samples,columns=['col1'])
                 
