@@ -433,7 +433,6 @@ process cellbender__remove_background__qc_plots {
     outdir = "${outdir_prev}" // /${experiment_id}"
     h5_filtered_cellbender = h5_filtered_cellbender.join(",")
     """
-    echo "cellbender__remove_background__qc_plots: ${process_info}"
     echo "outdir: ${outdir}"
     mkdir -p txd_input
     ln --physical ${file_10x_barcodes} txd_input/barcodes.tsv.gz

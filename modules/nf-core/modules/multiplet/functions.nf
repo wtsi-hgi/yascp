@@ -11,7 +11,7 @@ process make_cellmetadata_pipeline_input {
     //cache false        // cache results from run
 
     publishDir  path: "${outdir}",
-                saveAs: {filename -> filename.replaceAll("${runid}-", "")},
+                saveAs: {filename -> filename.replaceAll("-", "")},
                 mode: "${params.copy_mode}",
                 overwrite: "true"
 
@@ -24,11 +24,9 @@ process make_cellmetadata_pipeline_input {
         path('file_cellmetadata.tsv', emit: file__cellmetadata)
 
     script:
-        runid = random_hex(16)
+
         outdir = "${outdir_prev}"
-        process_info = "${runid} (runid)"
-        process_info = "${process_info}, ${task.cpus} (cpus)"
-        process_info = "${process_info}, ${task.memory} (memory)"
+
         """
         # Note: the default paste delim is tab
         cat *multiplet_calls_published.txt \

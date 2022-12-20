@@ -24,7 +24,7 @@ process OUTLIER_FILTER {
     }
 
     publishDir  path: "${outdir}/merged_h5ad",
-                saveAs: {filename -> filename.replaceAll("${runid}-", "outlier_filtered_")},
+                saveAs: {filename -> filename.replaceAll("-", "outlier_filtered_")},
                 mode: "${params.copy_mode}",
                 overwrite: "true"
 
@@ -39,24 +39,20 @@ process OUTLIER_FILTER {
         val(anndata_compression_opts)
 
     output:
-        path("${runid}-adata.h5ad", emit: anndata)
+        path("outlier_filtered_adata.h5ad", emit: anndata)
         path(
-            "${runid}-adata-cell_filtered_per_experiment.tsv.gz",
+            "adata-cell_filtered_per_experiment.tsv.gz",
             emit: cells_filtered
         )
         path("plots/*.png") optional true
         path("plots/*.pdf") optional true
 
     script:
-        runid = random_hex(16)
+        
         outdir = "${outdir_prev}"
         // Append run_id to output file.
-        outfile = "${runid}-adata"
-        process_info = "${runid} (runid)"
-        process_info = "${process_info}, ${task.cpus} (cpus)"
-        process_info = "${process_info}, ${task.memory} (memory)"
+        outfile = "outlier_filtered_adata"
         """
-        echo "filter_outlier_cells: ${process_info}"
         echo "publish_directory: ${outdir}"
         rm -fr plots
         0026-filter_outlier_cells.py \

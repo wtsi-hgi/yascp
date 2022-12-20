@@ -25,7 +25,7 @@ process ESTIMATE_PCA_ELBOW {
     }
 
     publishDir  path: "${outdir}",
-                saveAs: {filename -> filename.replaceAll("${runid}-", "")},
+                saveAs: {filename -> filename.replaceAll("-", "")},
                 mode: "${params.copy_mode}",
                 overwrite: "true"
 
@@ -36,32 +36,28 @@ process ESTIMATE_PCA_ELBOW {
 
     output:
         val(outdir, emit: outdir)
-        path("${runid}-${outfile}.tsv", emit: pca_elbow_estimate)
+        path("${outfile}.tsv", emit: pca_elbow_estimate)
         env(AUTO_ELBOW, emit: auto_elbow)
         path("plots/*.png")
         path("plots/*.pdf") optional true
 
     script:
-        runid = random_hex(16)
+        
         outdir = "${outdir_prev}"
         log.info("""outdir = ${outdir}""")
-        // For output file, use anndata name. First need to drop the runid
         // from the file__anndata job.
         outfile = "${file__anndata}".minus(".h5ad")
             .split("-").drop(1).join("-")
         outfile = "${outfile}-knee"
-        process_info = "${runid} (runid)"
-        process_info = "${process_info}, ${task.cpus} (cpus)"
-        process_info = "${process_info}, ${task.memory} (memory)"
         """
             rm -fr plots
             0030-estimate_pca_elbow.py \
                 --h5_anndata ${file__anndata} \
                 --add_n_pcs_to_elbow ${add_n_to_estimate} \
-                --output_file ${runid}-${outfile}
+                --output_file ${outfile}
             mkdir plots
             mv *pdf plots/ 2>/dev/null || true
             mv *png plots/ 2>/dev/null || true
-            AUTO_ELBOW=\$(cat ${runid}-${outfile}-auto_elbow_estimate.tsv)
+            AUTO_ELBOW=\$(cat ${outfile}-auto_elbow_estimate.tsv)
         """
 }

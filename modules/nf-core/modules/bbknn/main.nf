@@ -36,7 +36,7 @@ process BBKNN{
                     } else if(filename.endsWith("${param_details}.tsv.gz")) {
                         null
                     } else {
-                        filename.replaceAll("${runid}-", "")
+                        filename.replaceAll("-", "")
                     }
                 },
                 mode: "${params.copy_mode}",
@@ -69,12 +69,8 @@ process BBKNN{
         param_details = "${param_details}.batch=${batch_var}"
         param_details = "${param_details}.n_pcs=${n_pcs}"
         outdir = "${outdir_prev}/reduced_dims-${param_details}"
-        // For output file, use anndata name. First need to drop the runid
         // from the file__anndata job.
         outfile = "outfile_adata"
-        process_info = ""
-        process_info = "${process_info}, ${task.cpus} (cpus)"
-        process_info = "${process_info}, ${task.memory} (memory)"
         """
         
         0045-bbknn.py \

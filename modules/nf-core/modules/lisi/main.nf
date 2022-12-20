@@ -30,7 +30,7 @@ process LISI{
                     } else if(filename.endsWith("pcs.tsv.gz")) {
                         null
                     } else {
-                        filename.replaceAll("${runid}-", "")
+                        filename.replaceAll("-", "")
                     }
                 },
                 mode: "${params.copy_mode}",
@@ -46,14 +46,13 @@ process LISI{
     output:
         val(outdir, emit: outdir)
         path(file__metadata, emit: metadata)
-        path("${runid}-${outfile}-lisi.tsv.gz", emit: clusters)
+        path("${outfile}-lisi.tsv.gz", emit: clusters)
         path("plots/*.pdf") optional true
         path("plots/*.png") optional true
 
     script:
-        runid = random_hex(16)
         outdir = "${outdir_prev}"
-        // For output file, use anndata name. First need to drop the runid
+
         // from the file__metadata job.
         outfile = "${file__metadata}".minus(".tsv.gz")
             .split("-").drop(1).join("-")
@@ -61,9 +60,7 @@ process LISI{
         label__reduced_dims = file__reduced_dims
             .replaceAll("reduced_dims-", "")
             .replaceAll(".tsv.gz", "")
-        process_info = "${runid} (runid)"
-        process_info = "${process_info}, ${task.cpus} (cpus)"
-        process_info = "${process_info}, ${task.memory} (memory)"
+
         """
         echo "lisi: ${process_info}"
         echo "publish_directory: ${outdir}"
@@ -75,7 +72,7 @@ process LISI{
             --metadata_tsv ${file__metadata} \
             --metadata_columns ${variables} \
             --perplexity 30 \
-            --output_file ${runid}-${outfile}-lisi
+            --output_file ${outfile}-lisi
         mkdir plots
         mv *pdf plots/ 2>/dev/null || true
         mv *png plots/ 2>/dev/null || true

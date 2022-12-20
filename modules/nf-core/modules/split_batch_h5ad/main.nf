@@ -21,7 +21,6 @@ process SPLIT_BATCH_H5AD {
         path(outfile, emit: file_batch_list)
 
     script:
-        process_info = "${task.cpus} (cpus), ${task.memory} (memory)"
         outfil_prfx = "${file__anndata}".minus(".h5ad")
         outfile = "${outfil_prfx}".plus("_files.txt")
         """

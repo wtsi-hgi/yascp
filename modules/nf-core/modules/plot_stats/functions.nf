@@ -29,12 +29,8 @@ process plot_filtered_cells {
         path("*.pdf") optional true
 
     script:
-        
-        process_info = ""
-        process_info = "${process_info}, ${task.cpus} (cpus)"
-        process_info = "${process_info}, ${task.memory} (memory)"
+
         """
-        echo "plot_filtered_cells: ${process_info}"
         echo "publish_directory: ${outdir}"
         0026-plot_filtered_cells.py \
             --tsv_file ${file__filtered_cells} \
@@ -129,11 +125,7 @@ process plot_predicted_sex {
     script:
 
         outfile = "scatterplot-sex_sample_swap_check"
-        process_info = ""
-        process_info = "${process_info}, ${task.cpus} (cpus)"
-        process_info = "${process_info}, ${task.memory} (memory)"
         """
-        echo "plot_predicted_sex: ${process_info}"
         echo "publish_directory: ${outdir}"
         0028-plot_predicted_sex.py \
             --h5_anndata ${file__anndata} \
@@ -186,11 +178,8 @@ process plot_qc {
         if (facet_columns != "") {
             cmd__facet_columns = "--facet_columns ${facet_columns}"
         }
-        process_info = ""
-        process_info = "${process_info}, ${task.cpus} (cpus)"
-        process_info = "${process_info}, ${task.memory} (memory)"
         """
-            echo "plot_qc: ${process_info}"
+        
             echo "publish_directory: ${outdir}"
             plot_qc_umi_nfeature_mt.py \
                 --h5_anndata ${file__anndata} \
@@ -262,11 +251,7 @@ process plot_distributions {
             cmd__anndataobs = "${cmd__anndataobs} ${cmd__facet_columns}"
             cmd__anndataobs_ecdf = "${cmd__anndataobs} --ecdf"
         }
-        process_info = ""
-        process_info = "${process_info}, ${task.cpus} (cpus)"
-        process_info = "${process_info}, ${task.memory} (memory)"
         """
-        echo "plot_distributions: ${process_info}"
         echo "publish_directory: ${outdir}"
         ${cmd__anndataobs}
         ${cmd__anndataobs_ecdf}

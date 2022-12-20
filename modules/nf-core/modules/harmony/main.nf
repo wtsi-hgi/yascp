@@ -39,7 +39,7 @@ process HARMONY{
                     } else if(filename.endsWith("${param_details}.tsv.gz")) {
                         null
                     } else {
-                        filename.replaceAll("${runid}-", "")
+                        filename.replaceAll("-", "")
                     }
                 },
                 mode: "${params.copy_mode}",
@@ -59,7 +59,7 @@ process HARMONY{
         path(file__anndata, emit: anndata)
         path(file__metadata, emit: metadata)
         path(file__pcs, emit: pcs)
-        path("${runid}-reduced_dims.tsv.gz", emit: reduced_dims)
+        path("reduced_dims.tsv.gz", emit: reduced_dims)
         // NOTE: passing the param details as an unpublished file is messy,
         // but I could not get collect of ${param_details} and file to work.
         path(
@@ -69,13 +69,13 @@ process HARMONY{
         // val(n_pcs, emit: n_pcs)
         // tuple(
         //     val(outdir),
-        //     path("${runid}-reduced_dims.tsv.gz"),
+        //     path("reduced_dims.tsv.gz"),
         //     val(n_pcs),
         //     emit: results
         // )
 
     script:
-        runid = random_hex(16)
+        
         param_details = "${params__pcs}-harmony"
         param_details = "${param_details}.n_pcs=${n_pcs}"
         param_details = "${param_details}.variables=${variables_and_thetas.variable}"
@@ -83,9 +83,7 @@ process HARMONY{
         outdir = "${outdir}.thetas=${variables_and_thetas.theta}"
         theta_str = "${variables_and_thetas.theta}".replaceAll("\\.", "pt")
         param_details = "${param_details}.thetas=${theta_str}"
-        process_info = "${runid} (runid)"
-        process_info = "${process_info}, ${task.cpus} (cpus)"
-        process_info = "${process_info}, ${task.memory} (memory)"
+
         """
             0045-harmony_process_pcs.py \
                 --pca_file ${file__pcs} \
@@ -93,8 +91,8 @@ process HARMONY{
                 --metadata_columns ${variables_and_thetas.variable} \
                 --theta ${variables_and_thetas.theta} \
                 --n_pcs ${n_pcs} \
-                --out_file ${runid}-reduced_dims
-            cp ${runid}-reduced_dims.tsv.gz \
+                --out_file $reduced_dims
+            cp reduced_dims.tsv.gz \
             reduced_dims-${param_details}.tsv.gz
         """
         // NOTE: below code for harmony in R
@@ -104,5 +102,5 @@ process HARMONY{
         //     --metadata_columns ${variables_and_thetas.variable} \
         //     --theta ${variables_and_thetas.theta} \
         //     --n_pcs ${n_pcs} \
-        //     --out_file ${runid}-reduced_dims
+        //     --out_file reduced_dims
 }

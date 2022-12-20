@@ -39,7 +39,7 @@ process merge_samples_from_h5ad {
     label 'process_medium_memory'
 
     publishDir  path: "${outdir}/merged_h5ad",
-                saveAs: {filename -> filename.replaceAll("${runid}-", "pre_QC_")},
+                saveAs: {filename -> filename.replaceAll("-", "pre_QC_")},
                 mode: "${params.copy_mode}",
                 overwrite: "true"
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
@@ -63,16 +63,15 @@ process merge_samples_from_h5ad {
     // NOTE: use path here and not file see:
     //       https://github.com/nextflow-io/nextflow/issues/1414
     output:
-        path("${runid}-adata.h5ad", emit: anndata)
+        path("pre_QC_adata.h5ad", emit: anndata)
         path(
-            "${runid}-adata-cell_filtered_per_experiment.tsv.gz",
+            "pre_QC_adata-cell_filtered_per_experiment.tsv.gz",
             emit: cells_filtered
         )
         path("plots/*.png") optional true
         path("plots/*.pdf") optional true
 
     script:
-        runid = random_hex(16)
         outdir = "${outdir_prev}"
         // String filename = './parameters.yml'
         // yaml.dump(file_params , new FileWriter(filename))
@@ -101,9 +100,6 @@ process merge_samples_from_h5ad {
             cmd__cellmetadata = "--cell_metadata_file ${file_cellmetadata}"
         }
         files__h5ad = file_h5ad.join(',')
-        process_info = "${runid} (runid)"
-        process_info = "${process_info}, ${task.cpus} (cpus)"
-        process_info = "${process_info}, ${task.memory} (memory)"
         """
         echo "merge_samples: ${process_info}"
         echo "publish_directory: ${outdir}"
@@ -118,7 +114,7 @@ process merge_samples_from_h5ad {
             --sample_metadata_columns_delete "sample_status,study,study_id" \
             --metadata_key ${metadata_key} \
             --number_cpu ${task.cpus} \
-            --output_file ${runid}-adata \
+            --output_file pre_QC_adata \
             --anndata_compression_opts ${anndata_compression_opts} \
             ${cmd__params} \
             ${cmd__cellmetadata} ${extra_metadata}
@@ -139,7 +135,7 @@ process merge_samples {
     label 'process_medium'
     label 'process_high_memory'
     publishDir  path: "${outdir}/merged_h5ad",
-                saveAs: {filename -> filename.replaceAll("${runid}-", "pre_QC_")},
+                saveAs: {filename -> filename.replaceAll("-", "pre_QC_")},
                 mode: "${params.copy_mode}",
                 overwrite: "true"
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
@@ -165,16 +161,16 @@ process merge_samples {
     // NOTE: use path here and not file see:
     //       https://github.com/nextflow-io/nextflow/issues/1414
     output:
-        path("${runid}-adata.h5ad", emit: anndata)
+        path("adata.h5ad", emit: anndata)
         path(
-            "${runid}-adata-cell_filtered_per_experiment.tsv.gz",
+            "adata-cell_filtered_per_experiment.tsv.gz",
             emit: cells_filtered
         )
         path("plots/*.png") optional true
         path("plots/*.pdf") optional true
 
     script:
-        runid = random_hex(16)
+
         outdir = "${outdir_prev}"
         // String filename = './parameters.yml'
         // yaml.dump(file_params , new FileWriter(filename))
@@ -190,9 +186,7 @@ process merge_samples {
         files__barcodes = file_10x_barcodes.join(',')
         files__features = file_10x_features.join(',')
         files__matrix = file_10x_matrix.join(',')
-        process_info = "${runid} (runid)"
-        process_info = "${process_info}, ${task.cpus} (cpus)"
-        process_info = "${process_info}, ${task.memory} (memory)"
+
         """
         echo "merge_samples: ${process_info}"
         echo "publish_directory: ${outdir}"
@@ -209,7 +203,7 @@ process merge_samples {
             --sample_metadata_columns_delete "sample_status,study,study_id" \
             --metadata_key ${metadata_key} \
             --number_cpu ${task.cpus} \
-            --output_file ${runid}-adata \
+            --output_file adata \
             --anndata_compression_opts ${anndata_compression_opts} \
             ${cmd__params} \
             ${cmd__cellmetadata}

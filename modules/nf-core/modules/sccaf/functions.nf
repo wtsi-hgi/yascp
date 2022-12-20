@@ -32,7 +32,6 @@ process sccaf_assess_clustering {
 
   script:
     outdir = "${outdir_prev}/sccaf/clustering_assessment"
-    process_info = "${task.cpus} (cpus), ${task.memory} (memory)"
     outfil_prfx = "${file__external_clustering_tsv}".minus(".tsv.gz").plus("_assess")
     outfile_roc_pdf = outfil_prfx.plus("_clust_roc.pdf")
     outfile_prc_pdf = outfil_prfx.plus("_clust_prc.pdf")
@@ -84,7 +83,6 @@ process sccaf_optimize_clustering {
   script:
     outdir = "${outdir_prev}/sccaf/clustering_optimization"
     outdir_rel = "optim_out"
-    process_info = "${task.cpus} (cpus), ${task.memory} (memory)"
     outfil_prfx = "${file__external_clustering_tsv}".minus(".tsv.gz").plus("_optim_")
     outfile = outfil_prfx.plus("clustopt.h5ad")
     """

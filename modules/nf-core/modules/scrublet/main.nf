@@ -32,7 +32,7 @@ process SCRUBLET {
                     if (filename.endsWith("multiplet_calls_published.txt")) {
                         null
                     } else {
-                        filename.replaceAll("${runid}-", "")
+                        filename.replaceAll("-", "")
                     }
                 },
                 mode: "${params.copy_mode}",
@@ -53,18 +53,18 @@ process SCRUBLET {
 
     output:
         val(outdir, emit: outdir)
-        tuple val(experiment_id), path("${runid}-${outfile}-scrublet.tsv.gz"), emit: scrublet_paths
+        tuple val(experiment_id), path("${outfile}-scrublet.tsv.gz"), emit: scrublet_paths
         val(experiment_id, emit: experiment_id)
-        path("${runid}-${outfile}-scrublet.tsv.gz", emit: multiplet_calls)
+        path("${outfile}-scrublet.tsv.gz", emit: multiplet_calls)
         path(
-            "${runid}-${outfile}-multiplet_calls_published.txt",
+            "${outfile}-multiplet_calls_published.txt",
             emit: multiplet_calls_published
         )
         path("plots/*.pdf") optional true
         path("plots/*.png") optional true
 
     script:
-        runid = random_hex(16)
+        
         outdir = "${outdir_prev}/multiplet"
         outdir = "${outdir}.method=scrublet"
         outfile = "${experiment_id}"
@@ -74,9 +74,7 @@ process SCRUBLET {
         if (scale_log10 == "True") {
             cmd__scale_log10 = "--scale_log10"
         }
-        process_info = "${runid} (runid)"
-        process_info = "${process_info}, ${task.cpus} (cpus)"
-        process_info = "${process_info}, ${task.memory} (memory)"
+
         """
 
         rm -fr plots
@@ -90,9 +88,9 @@ process SCRUBLET {
             --n_simulated_multiplet ${n_simulated_multiplet} \
             --multiplet_threshold_method ${multiplet_threshold_method} \
             ${cmd__scale_log10} \
-            --output_file ${runid}-${outfile}
+            --output_file ${outfile}
         echo -e "${experiment_id}\t${outdir}/${outfile}-scrublet.tsv.gz" > \
-            ${runid}-${outfile}-multiplet_calls_published.txt
+            ${outfile}-multiplet_calls_published.txt
         mkdir plots
         mv *pdf plots/ 2>/dev/null || true
         mv *png plots/ 2>/dev/null || true

@@ -22,7 +22,7 @@ process NORMALISE_AND_PCA {
     
 
     publishDir  path: "${outdir}",
-                saveAs: {filename -> filename.replaceAll("${runid}-", "")},
+                saveAs: {filename -> filename.replaceAll("-", "")},
                 mode: "${params.copy_mode}",
                 overwrite: "true"
 
@@ -40,27 +40,21 @@ process NORMALISE_AND_PCA {
         val(outdir, emit: outdir)
         
         val("${outdir}", emit: outdir3)
-        path("${runid}-adata-normalized_pca.h5ad", emit: anndata)
-        path("${runid}-adata-metadata.tsv.gz", emit: metadata)
-        path("${runid}-adata-pcs.tsv.gz", emit: pcs)
+        path("adata-normalized_pca.h5ad", emit: anndata)
+        path("adata-metadata.tsv.gz", emit: metadata)
+        path("adata-pcs.tsv.gz", emit: pcs)
         
         path(
-            "${runid}-adata-normalized_pca-counts.h5ad",
+            "adata-normalized_pca-counts.h5ad",
             emit: anndata_filtered_counts
         )
         val("${param_details}", emit: param_details)
         path("plots/*.pdf")
         path("plots/*.png") optional true
-        // tuple(
-        //     val(outdir),
-        //     path("${runid}-adata-normalized_pca.h5ad"),
-        //     path("${runid}-adata-metadata.tsv.gz"),
-        //     path("${runid}-adata-pcs.tsv.gz"),
-        //     emit: results
-        // )
+
 
     script:
-        runid = random_hex(16)
+        
         analysis_mode = "${analysis_mode}"
         if (analysis_mode == "subclustering"){
             layer = "${layer}"
@@ -96,17 +90,14 @@ process NORMALISE_AND_PCA {
         if (file__genes_score.name != "no_file__genes_score") {
             cmd__genes_score = "--score_genes ${file__genes_score}"
         }
-        // Basic details on the run.
-        process_info = "${runid} (runid)"
-        process_info = "${process_info}, ${task.cpus} (cpus)"
-        process_info = "${process_info}, ${task.memory} (memory)"
+
 
         """
         rm -fr plots
         0035-scanpy_normalize_pca.py \
             --h5_anndata ${file__anndata} \
             --overwrite_x_with_layer ${layer} \
-            --output_file ${runid}-adata \
+            --output_file adata \
             --number_cpu ${task.cpus} \
             ${cmd__vars_to_regress} \
             ${cmd__genes_exclude_hvg} \
@@ -130,7 +121,7 @@ process NORMALISE_AND_PCA {
         // if [ \$val -eq 0 ]; then cmd__score_genes=""; fi
         // 0035-scanpy_normalize_pca.py \
         //     --h5_anndata ${file__anndata} \
-        //     --output_file ${runid}-adata \
+        //     --output_file adata \
         //     --number_cpu ${task.cpus} \
         //     ${cmd__vars_to_regress} \
         //     \${cmd__vg_exclude} \
