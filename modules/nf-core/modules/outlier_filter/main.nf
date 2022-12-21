@@ -41,7 +41,7 @@ process OUTLIER_FILTER {
     output:
         path("outlier_filtered_adata.h5ad", emit: anndata)
         path(
-            "adata-cell_filtered_per_experiment.tsv.gz",
+            "outlier_filtered_adata-cell_filtered_per_experiment.tsv.gz",
             emit: cells_filtered
         )
         path("plots/*.png") optional true
@@ -65,8 +65,10 @@ process OUTLIER_FILTER {
             --outliers_fraction ${outliers_fraction} \
             --max_samples ${max_samples} \
             --output_file ${outfile} \
-            --anndata_compression_opts ${anndata_compression_opts}
+            --anndata_compression_opts ${anndata_compression_opts} \
+            --filter_strategy ${params.outlier_filtering_strategys}
         mkdir plots
+        ln ${outfile}-cell_filtered_per_experiment__cell_passes_qc.tsv.gz outlier_filtered_adata-cell_filtered_per_experiment.tsv.gz
         mv *pdf plots/ 2>/dev/null || true
         mv *png plots/ 2>/dev/null || true
         """

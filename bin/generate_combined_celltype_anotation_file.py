@@ -99,8 +99,8 @@ def main():
     all_alternitive = options.all_alternitive.split('::')
     Data_All_alt = combine_reports(all_alternitive,'')
 
-    Data_All = pd.concat([Data_All,Data_All_Azimuth,Data_All_alt],axis=1)
-    Data_All = pd.concat([Data_All,Data_All_celltypist],axis=1)
+    Data_All = pd.concat([Data_All,Data_All_Azimuth,Data_All_celltypist,Data_All_alt],axis=1)
+    
     Donor_Exp = Data_All.index.str.split('-').str[-1]
     Donor = Donor_Exp.str.split('__').str[-1]
     Exp = Donor_Exp.str.split('__').str[0]
@@ -124,8 +124,9 @@ def main():
         for donor in set(Exp_Data['Donor']):
             dict_donor_cells = {}
             for col in Exp_Data.columns:
-                if not 'score' in col and not 'probability' in col and col !='Exp' and col !='Donor':
-                    # print(col)
+                if not 'score' in col and not 'probability' in col and not 'majority_voting' in col and not 'ver_clustering' in col and col !='Exp' and col !='Donor':
+                    print(col)
+                    # col='Celltypist:over_clustering'
                     # col='Azimuth:predicted.celltype.l2'
                     counts = Exp_Data[col].value_counts()
                     counts.index = counts.index+' - '+col

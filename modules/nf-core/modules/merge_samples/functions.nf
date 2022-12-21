@@ -54,7 +54,7 @@ process merge_samples_from_h5ad {
         val(outdir_prev)
         path(file_paths_h5ad)
         path(file_metadata)
-        val(file_params)
+        val(hard_filter_file_params)
         val(file_cellmetadata)
         val(metadata_key)
         file(file_h5ad)
@@ -92,8 +92,8 @@ process merge_samples_from_h5ad {
 
 
         cmd__params = ""
-        if (file_params != "no_file__file_sample_qc") {
-            cmd__params = "--params_yaml ${file_params}"
+        if (hard_filter_file_params != "no_file__file_sample_qc") {
+            cmd__params = "--params_yaml ${hard_filter_file_params}"
         }
         cmd__cellmetadata = ""
         if (file_cellmetadata != "no_file__file_cellmetadata") {
@@ -101,7 +101,6 @@ process merge_samples_from_h5ad {
         }
         files__h5ad = file_h5ad.join(',')
         """
-        echo "merge_samples: ${process_info}"
         echo "publish_directory: ${outdir}"
         rm -fr plots
         nf_helper__prep_h5addata_file.py \
@@ -150,7 +149,7 @@ process merge_samples {
         val(outdir_prev)
         path(file_paths_10x)
         path(file_metadata)
-        val(file_params)
+        val(hard_filter_file_params)
         val(file_cellmetadata)
         val(metadata_key)
         file(file_10x_barcodes)
@@ -176,8 +175,8 @@ process merge_samples {
         // yaml.dump(file_params , new FileWriter(filename))
         // Customize command for optional files.
         cmd__params = ""
-        if (file_params != "no_file__file_sample_qc") {
-            cmd__params = "--params_yaml ${file_params}"
+        if (hard_filter_file_params != "no_file__file_sample_qc") {
+            cmd__params = "--params_yaml ${hard_filter_file_params}"
         }
         cmd__cellmetadata = ""
         if (file_cellmetadata != "no_file__file_cellmetadata") {
@@ -188,7 +187,6 @@ process merge_samples {
         files__matrix = file_10x_matrix.join(',')
 
         """
-        echo "merge_samples: ${process_info}"
         echo "publish_directory: ${outdir}"
         rm -fr plots
         nf_helper__prep_tenxdata_file.py \

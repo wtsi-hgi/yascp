@@ -34,6 +34,80 @@ random.seed(seed_value)
 np.random.seed(seed_value)
 
 
+# Fit the model
+def perform_adaptiveQC_Filtering(clf,adata,method,metadata_columns):
+    # We return labels of the Treue/False of failing QC
+    if method != 'LocalOutlierFactor':
+        clf = clf.fit(adata.obs[metadata_columns].values)
+
+    if method == 'LocalOutlierFactor':
+        # use fit_predict to compute the predicted labels of the training
+        # samples (when LOF is used for outlier detection, the estimator has
+        # no predict, decision_function and score_samples methods).
+        f = clf.fit_predict(
+            adata.obs[metadata_columns].values
+        ) == 1
+    else:
+        f = clf.predict(
+            adata.obs[metadata_columns].values
+        ) == 1
+               
+    return f
+def generate_plots(adata,cell_qc_column,metadata_columns,metadata_columns_original,of):
+    # Plot the identified outliers
+    
+   
+    # print("Making plot")
+
+    sns_plot = sns.PairGrid(
+        adata.obs[metadata_columns],
+        hue=cell_qc_column,
+        height=2.5,
+        diag_sharey=False
+    )
+    sns_plot.map_upper(
+        sns.scatterplot,
+        marker='+',
+        alpha=0.05,
+        s=8,
+        edgecolor=None
+    )
+    sns_plot.add_legend()
+    for lh in sns_plot._legend.legendHandles:
+        lh.set_alpha(1)
+        lh._sizes = [50]
+    sns_plot.map_diag(sns.kdeplot)
+    sns_plot.map_lower(
+        sns.kdeplot,
+        levels=3
+    )
+    sns_plot.savefig(f'{of}-outlier_cells__{cell_qc_column}.png')
+
+    # Plot the cell density
+    # print("Making density plot")
+    sns_plot = sns.PairGrid(
+        adata.obs[metadata_columns_original],
+        height=2.5,
+        diag_sharey=False
+    )
+    sns_plot.map_upper(
+        sns.kdeplot,
+        cmap="viridis",
+        shade=True
+    )
+    sns_plot.add_legend()
+    for lh in sns_plot._legend.legendHandles:
+        lh.set_alpha(1)
+        lh._sizes = [50]
+    sns_plot.map_diag(sns.kdeplot)
+    sns_plot.map_lower(
+        sns.kdeplot,
+        cmap="viridis",
+        shade=True
+    )
+    sns_plot.savefig(f'{of}-cell_desity__{cell_qc_column}.png')
+    
+            
 def main():
     """Run CLI."""
     parser = argparse.ArgumentParser(
@@ -127,6 +201,14 @@ def main():
         help='Basename of output files. \
             (default: %(default)s)'
     )
+    parser.add_argument(
+        '-fs', '--filter_strategy',
+        action='store',
+        dest='outlier_filtering_strategys',
+        default='all_together',
+        help='By default we filter the outliers for all the cells provided together, \
+            but we may want to run it per celltype'
+    )
 
     parser.add_argument(
         '--anndata_compression_opts',
@@ -150,7 +232,7 @@ def main():
     adata = sc.read_h5ad(filename=options.h5)
     adata.obs['cell_id'] = adata.obs.index
     adata_original = adata.copy()
-
+    # Here we add an adaptive QC per Column
     # Drop out previous QCed cells
     cell_qc_column = options.cell_qc_column
     if cell_qc_column in adata.obs.columns:
@@ -218,144 +300,113 @@ def main():
     else:
         raise ValueError('ERROR: invalid method.')
 
-    # Fit the model
-    if method != 'LocalOutlierFactor':
-        clf = clf.fit(adata.obs[metadata_columns].values)
+    metadata_columns_original = metadata_columns.copy()
+    # We perform the adaptive qc either for all data together or per user defined column of unique values.
+    outlier_filtering_strategys = options.outlier_filtering_strategys
+    for outlier_filtering_strategy in outlier_filtering_strategys.split(';'):
+        
+        if (outlier_filtering_strategy == 'all_together'):
+            cell_qc_column = options.cell_qc_column
+            metadata_columns.append(cell_qc_column)
+            fail_pass = perform_adaptiveQC_Filtering(clf,adata,method,metadata_columns)
+            adata.obs[cell_qc_column] = fail_pass
+        else:
+            cell_qc_column = f'{cell_qc_column}-per:{outlier_filtering_strategy}'
+            metadata_columns.append(cell_qc_column)
+            adata.obs[cell_qc_column] = True
+            try:
+                os.mkdir('per_celltype_outliers')
+            except:
+                _='exists already'
+            for subset_id_for_ad_qc in set(adata.obs[outlier_filtering_strategy]):
+                subset_ad = adata[adata.obs[outlier_filtering_strategy]==subset_id_for_ad_qc]
+                    
+                if(len(subset_ad)>100):
+                    # We only perform adaptive qc when there is at least 100 cells, otherwise we assume that all pass
+                    fail_pass = perform_adaptiveQC_Filtering(clf,subset_ad,method,metadata_columns)
+                    adata.obs.loc[subset_ad.obs.index,cell_qc_column]=fail_pass
+                    subset_ad.obs.loc[subset_ad.obs.index,cell_qc_column]=fail_pass
+                else:
+                    print(f'For a category {subset_id_for_ad_qc} we have only {len(adata)} cells and as its not sufficient ammount to estimate distributions we assuma all pass QC')
+                subset_ad.uns['cell_outlier_estimator'] = method
+                of = f'per_celltype_outliers/{subset_id_for_ad_qc}---{options.of}'
+                generate_plots(subset_ad,cell_qc_column,metadata_columns,metadata_columns_original,of)
+        adata.uns['cell_outlier_estimator'] = method  
+           
+        # Update the original data to flag those cells that passed the outlier
+        adata_original.obs[cell_qc_column] = False
+        adata_original.obs.loc[
+            adata.obs['cell_id'][adata.obs[cell_qc_column]],
+            cell_qc_column
+        ] = True
+        adata_original.obs[['cell_id', cell_qc_column]].to_csv(
+            f'{options.of}-outliers_filtered__{cell_qc_column}.tsv.gz',
+            sep='\t',
+            compression=compression_opts,
+            index=False,
+            header=True
+        )
 
-    if method == 'LocalOutlierFactor':
-        # use fit_predict to compute the predicted labels of the training
-        # samples (when LOF is used for outlier detection, the estimator has
-        # no predict, decision_function and score_samples methods).
-        adata.obs[cell_qc_column] = clf.fit_predict(
-            adata.obs[metadata_columns].values
-        ) == 1
-    else:
-        adata.obs[cell_qc_column] = clf.predict(
-            adata.obs[metadata_columns].values
-        ) == 1
-    adata.uns['cell_outlier_estimator'] = method
 
-    # Update the original data to flag those cells that passed the outlier
-    adata_original.obs[cell_qc_column] = False
-    adata_original.obs.loc[
-        adata.obs['cell_id'][adata.obs[cell_qc_column]],
-        cell_qc_column
-    ] = True
-    adata_original.obs[['cell_id', cell_qc_column]].to_csv(
-        '{}-outliers_filtered.tsv.gz'.format(options.of),
-        sep='\t',
-        compression=compression_opts,
-        index=False,
-        header=True
-    )
-    del adata_original.obs['cell_id']
 
-    # Calculate cell_filtered_per_experiment
-    filter_columns = [
-        'experiment_id',
-        'filter_type',
-        'n_cells_left_in_adata'
-    ]
-    if options.cell_filtered_per_experiment == 'None':
-        df_cell_filt_per_exp = adata.obs['experiment_id'].value_counts()
-        df_cell_filt_per_exp = df_cell_filt_per_exp.rename_axis(
+        # Calculate cell_filtered_per_experiment
+        filter_columns = [
+            'experiment_id',
+            'filter_type',
+            'n_cells_left_in_adata'
+        ]
+        if options.cell_filtered_per_experiment == 'None':
+            df_cell_filt_per_exp = adata.obs['experiment_id'].value_counts()
+            df_cell_filt_per_exp = df_cell_filt_per_exp.rename_axis(
+                'experiment_id'
+            ).reset_index(name='n_cells_left_in_adata')
+            df_cell_filt_per_exp['filter_type'] = 'before_filters'
+            df_cell_filt_per_exp = df_cell_filt_per_exp[filter_columns]
+        else:
+            # Load the samples filtered per experiment file:
+            df_cell_filt_per_exp = pd.read_csv(
+                options.cell_filtered_per_experiment,
+                sep="\t"
+            )
+            filt = df_cell_filt_per_exp['filter_type'] != 'after_filters'
+            df_cell_filt_per_exp = df_cell_filt_per_exp.loc[filt, :]
+            
+        # Now calculate the n cells left after all filters
+        adata_after_filters = adata.obs.loc[adata.obs[cell_qc_column], :]
+        df_cells_filtered = adata_after_filters['experiment_id'].value_counts()
+        df_cells_filtered = df_cells_filtered.rename_axis(
             'experiment_id'
         ).reset_index(name='n_cells_left_in_adata')
-        df_cell_filt_per_exp['filter_type'] = 'before_filters'
-        df_cell_filt_per_exp = df_cell_filt_per_exp[filter_columns]
-    else:
-        # Load the samples filtered per experiment file:
-        df_cell_filt_per_exp = pd.read_csv(
-            options.cell_filtered_per_experiment,
-            sep="\t"
+        df_cells_filtered['filter_type'] = '{} {} outlier_{}'.format(
+            'filter__all_samples',
+            'after_outlier_filter',
+            method
         )
-        filt = df_cell_filt_per_exp['filter_type'] != 'after_filters'
-        df_cell_filt_per_exp = df_cell_filt_per_exp.loc[filt, :]
-    # Now calculate the n cells left after all filters
-    adata_after_filters = adata.obs.loc[adata.obs[cell_qc_column], :]
-    df_cells_filtered = adata_after_filters['experiment_id'].value_counts()
-    df_cells_filtered = df_cells_filtered.rename_axis(
-        'experiment_id'
-    ).reset_index(name='n_cells_left_in_adata')
-    df_cells_filtered['filter_type'] = '{} {} outlier_{}'.format(
-        'filter__all_samples',
-        'after_outlier_filter',
-        method
-    )
-    df_cells_filtered = df_cells_filtered[filter_columns]
-    df_cell_filt_per_exp = df_cell_filt_per_exp.append(
-        df_cells_filtered,
-        ignore_index=True
-    )
-    df_cells_filtered['filter_type'] = 'after_filters'
-    df_cell_filt_per_exp = df_cell_filt_per_exp.append(
-        df_cells_filtered,
-        ignore_index=True
-    )
-    # Save the final dataframe
-    df_cell_filt_per_exp.to_csv(
-        '{}-cell_filtered_per_experiment.tsv.gz'.format(options.of),
-        sep='\t',
-        compression=compression_opts,
-        index=False,
-        header=True
-    )
+        df_cells_filtered = df_cells_filtered[filter_columns]
+        df_cell_filt_per_exp = df_cell_filt_per_exp.append(
+            df_cells_filtered,
+            ignore_index=True
+        )
+        df_cells_filtered['filter_type'] = 'after_filters'
+        df_cell_filt_per_exp = df_cell_filt_per_exp.append(
+            df_cells_filtered,
+            ignore_index=True
+        )
+        # Save the final dataframe
+        df_cell_filt_per_exp.to_csv(
+            f'{options.of}-cell_filtered_per_experiment__{cell_qc_column}.tsv.gz',
+            sep='\t',
+            compression=compression_opts,
+            index=False,
+            header=True
+        )
+        
+        generate_plots(adata,cell_qc_column,metadata_columns,metadata_columns_original,options.of)
 
-    # Plot the identified outliers
-    metadata_columns_original = metadata_columns.copy()
-    metadata_columns.append(cell_qc_column)
-    # print("Making plot")
-
-    sns_plot = sns.PairGrid(
-        adata.obs[metadata_columns],
-        hue=cell_qc_column,
-        height=2.5,
-        diag_sharey=False
-    )
-    sns_plot.map_upper(
-        sns.scatterplot,
-        marker='+',
-        alpha=0.05,
-        s=8,
-        edgecolor=None
-    )
-    sns_plot.add_legend()
-    for lh in sns_plot._legend.legendHandles:
-        lh.set_alpha(1)
-        lh._sizes = [50]
-    sns_plot.map_diag(sns.kdeplot)
-    sns_plot.map_lower(
-        sns.kdeplot,
-        levels=3
-    )
-    sns_plot.savefig('{}-outlier_cells.png'.format(options.of))
-
-    # Plot the cell density
-    # print("Making density plot")
-    sns_plot = sns.PairGrid(
-        adata.obs[metadata_columns_original],
-        height=2.5,
-        diag_sharey=False
-    )
-    sns_plot.map_upper(
-        sns.kdeplot,
-        cmap="viridis",
-        shade=True
-    )
-    sns_plot.add_legend()
-    for lh in sns_plot._legend.legendHandles:
-        lh.set_alpha(1)
-        lh._sizes = [50]
-    sns_plot.map_diag(sns.kdeplot)
-    sns_plot.map_lower(
-        sns.kdeplot,
-        cmap="viridis",
-        shade=True
-    )
-    sns_plot.savefig('{}-cell_desity.png'.format(options.of))
 
     # Save the updated adata matrix
     # print("Saving data")
+    del adata_original.obs['cell_id']
     adata_original.write(
         '{}.h5ad'.format(options.of),
         compression='gzip',

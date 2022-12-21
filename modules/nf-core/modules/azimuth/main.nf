@@ -38,7 +38,7 @@ process AZIMUTH{
     process_info = "${task.cpus} (cpus), ${task.memory} (memory)"
     outdir = "${outdir_prev}/azimuth"
     // output file prefix: strip random hex number form beginning of file name
-    outfil_prfx = "${file_h5ad_batch}".minus(".h5ad").split("-").drop(1).join("-")
+    outfil_prfx = "${file_h5ad_batch}".minus(".h5ad")
     //outfil_prfx = "${file_h5ad_batch}".minus(".h5ad")
     celltype_table = "${outfil_prfx}_predicted_celltype_l2.tsv.gz"
     """
