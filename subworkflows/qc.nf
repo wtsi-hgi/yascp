@@ -12,6 +12,8 @@ include {ADD_EXTRA_METADATA_TO_H5AD} from "$projectDir/modules/nf-core/modules/a
 include {LISI} from "$projectDir/modules/nf-core/modules/lisi/main"
 include {UMAP; UMAP as UMAP_HARMONY; UMAP as UMAP_BBKNN;} from "$projectDir/modules/nf-core/modules/umap/main"
 include {CLUSTERING; CLUSTERING as CLUSTERING_HARMONY; CLUSTERING as CLUSTERING_BBKNN;} from "$projectDir/modules/nf-core/modules/clustering/main"
+include {CELL_HARD_FILTERS} from "$projectDir/modules/nf-core/modules/cell_hard_filters/main"
+
 
 params.output_dir = "nf-qc_cluster"
     
@@ -29,7 +31,8 @@ workflow qc {
         //     log.info '''--- No extra metadata to add to h5ad ---'''
         // }
         file__anndata_merged.map{val1 -> tuple('full', val1)}.set{out1}
-        // KERAS_CELLTYPE(out1)
+
+        CELL_HARD_FILTERS(file__anndata_merged,params.hard_filters_file)
         //FILTERING OUTLIER CELLS
         if (params.sample_qc.cell_filters.filter_outliers.run_process) {
             log.info """---Running automatic outlier cell filtering.----"""
@@ -47,6 +50,7 @@ workflow qc {
             file__cells_filtered = OUTLIER_FILTER.out.cells_filtered
         }
 
+        
 
         NORMALISE_AND_PCA(params.output_dir+'/clustering',
             file__anndata_merged,

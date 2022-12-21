@@ -1,6 +1,5 @@
 include { merge_samples_from_h5ad; merge_samples;prep_merge_samples;prep_merge_samples_from_h5ad } from './functions'
 
-params.file_sample_qc       = "no_file__file_sample_qc"
 params.file_cellmetadata    = "no_file__file_cellmetadata"
 params.metadata_key_column = [
     value: "experiment_id"
@@ -22,11 +21,14 @@ workflow MERGE_SAMPLES{
                 .map{row -> tuple(row.experiment_id, file(row.h5ad_filepath))}.set{channel__file_paths_10x_paths}
         
             prep_merge_samples_from_h5ad(channel__file_paths_10x_paths)
+            
+            // This is currently not finished -- currently hard filters happen in the merging part next. We may want to keep this seperate so we can filter the stuff out after celltype assignments.
+            // CELL_HARD_FILTERS(prep_merge_samples_from_h5ad.out.h5ad,params.hard_filters_file) //ad with all cells goes in and adata with removed cells comes out.
             merge_samples_from_h5ad(
                     params.output_dir,
                     channel__file_paths_10x,
                     file_metadata,
-                    params.file_sample_qc,
+                    params.hard_filters_file,
                     params.file_cellmetadata,
                     params.metadata_key_column.value,
                     prep_merge_samples_from_h5ad.out.h5ad.collect(),
@@ -46,7 +48,7 @@ workflow MERGE_SAMPLES{
                 params.output_dir,
                 params.input_data_table,
                 file_metadata,
-                params.file_sample_qc,
+                params.hard_filters_file,
                 params.file_cellmetadata,
                 params.metadata_key_column.value,
                 prep_merge_samples.out.barcodes.collect(),
