@@ -91,7 +91,7 @@ workflow SCDECON {
             }else if (params.input == 'existing_cellbender'){
                 // Here we are using the existing cellbender from a different run, Nothe that the structure of the cellbender folder should be same as produced by this pipeline.
                 log.info ' ---- using existing cellbender output for deconvolution---'
-                capture_cellbender_files(params.cellbender_location,"${params.output_dir}/nf-preprocessing")
+                capture_cellbender_files(params.cellbender_location,"${params.output_dir}/nf-preprocessing",params.input_data_table)
                 capture_cellbender_files.out.alt_input.flatten().map{sample -> tuple("${sample}".replaceFirst(/.*\/captured\//,"").replaceFirst(/\/.*/,""),sample)}.set{alt_input}
                 // remove the unncessary inputs.
 

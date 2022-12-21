@@ -24,15 +24,15 @@ process OUTLIER_FILTER {
     }
 
     publishDir  path: "${outdir}",
-                saveAs: {filename ->
-                    if (filename.equalsIgnoreCase("outlier_filtered_adata.h5ad")) {
-                        filename.replaceAll("outlier_filtered_adata.h5ad", "/merged_h5ad/outlier_filtered_adata.h5ad")
-                    } else if(filename.equalsIgnoreCase("adata-cell_filtered_per_experiment.tsv.gz")) {
-                        filename.replaceAll("adata-cell_filtered_per_experiment.tsv.gz", "/merged_h5ad/adata-cell_filtered_per_experiment.tsv.gz")
-                    } else {
-                        "/plots/${filename}"
-                    }
-                },
+                // saveAs: {filename ->
+                //     if (filename.equalsIgnoreCase("outlier_filtered_adata.h5ad")) {
+                //         filename.replaceAll("outlier_filtered_adata.h5ad", "/merged_h5ad/outlier_filtered_adata.h5ad")
+                //     } else if(filename.equalsIgnoreCase("adata-cell_filtered_per_experiment.tsv.gz")) {
+                //         filename.replaceAll("adata-cell_filtered_per_experiment.tsv.gz", "/merged_h5ad/adata-cell_filtered_per_experiment.tsv.gz")
+                //     } else {
+                //         "/plots/${filename}"
+                //     }
+                // },
                 mode: "${params.copy_mode}",
                 overwrite: "true"
 
@@ -47,14 +47,14 @@ process OUTLIER_FILTER {
         val(anndata_compression_opts)
 
     output:
-        path("outlier_filtered_adata.h5ad", emit: anndata)
+        path("merged_h5ad/outlier_filtered_adata.h5ad", emit: anndata)
         path(
-            "outlier_filtered_adata-cell_filtered_per_experiment.tsv.gz",
+            "merged_h5ad/outlier_filtered_adata-cell_filtered_per_experiment.tsv.gz",
             emit: cells_filtered
         )
-        path("plots/*.png") optional true
-        path("plots/*.pdf") optional true
-        path("per_celltype_outliers") optional true
+        path("plots/*")
+        path("merged_h5ad/*")
+
 
     script:
         
@@ -62,23 +62,27 @@ process OUTLIER_FILTER {
         // Append run_id to output file.
         outfile = "outlier_filtered_adata"
         """
-        echo "publish_directory: ${outdir}"
-        rm -fr plots
-        0026-filter_outlier_cells.py \
-            --h5_anndata ${file__anndata} \
-            --cell_filtered_per_experiment_file ${file__cells_filtered} \
-            --outliers_fraction 0 \
-            --metadata_columns ${metadata_columns} \
-            --cell_qc_column cell_passes_qc \
-            --method ${method} \
-            --outliers_fraction ${outliers_fraction} \
-            --max_samples ${max_samples} \
-            --output_file ${outfile} \
-            --anndata_compression_opts ${anndata_compression_opts} \
-            --filter_strategy ${params.outlier_filtering_strategys}
-        mkdir plots
-        ln ${outfile}-cell_filtered_per_experiment__cell_passes_qc.tsv.gz outlier_filtered_adata-cell_filtered_per_experiment.tsv.gz
-        mv *pdf plots/ 2>/dev/null || true
-        mv *png plots/ 2>/dev/null || true
+            echo "publish_directory: ${outdir}"
+            rm -fr plots
+            0026-filter_outlier_cells.py \
+                --h5_anndata ${file__anndata} \
+                --cell_filtered_per_experiment_file ${file__cells_filtered} \
+                --outliers_fraction 0 \
+                --metadata_columns ${metadata_columns} \
+                --cell_qc_column cell_passes_qc \
+                --method ${method} \
+                --outliers_fraction ${outliers_fraction} \
+                --max_samples ${max_samples} \
+                --output_file ${outfile} \
+                --anndata_compression_opts ${anndata_compression_opts} \
+                --filter_strategy '${params.outlier_filtering_strategys}'
+            mkdir plots
+            ln ${outfile}-cell_filtered_per_experiment__cell_passes_qc.tsv.gz outlier_filtered_adata-cell_filtered_per_experiment.tsv.gz
+            mv *pdf plots/ 2>/dev/null || true
+            mv *png plots/ 2>/dev/null || true
+            mv per_celltype_outliers plots/ 2>/dev/null || true
+            mkdir merged_h5ad
+            mv outlier_filtered_adata.h5ad merged_h5ad/ 2>/dev/null || true
+            mv outlier_filtered_adata-cell_filtered_per_experiment.tsv.gz merged_h5ad/ 2>/dev/null || true
         """
 }

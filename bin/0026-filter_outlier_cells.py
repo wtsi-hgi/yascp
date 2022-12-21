@@ -304,7 +304,7 @@ def main():
     # We perform the adaptive qc either for all data together or per user defined column of unique values.
     outlier_filtering_strategys = options.outlier_filtering_strategys
     for outlier_filtering_strategy in outlier_filtering_strategys.split(';'):
-        
+        metadata_columns = metadata_columns_original.copy()
         if (outlier_filtering_strategy == 'all_together'):
             cell_qc_column = options.cell_qc_column
             metadata_columns.append(cell_qc_column)
@@ -327,7 +327,7 @@ def main():
                     adata.obs.loc[subset_ad.obs.index,cell_qc_column]=fail_pass
                     subset_ad.obs.loc[subset_ad.obs.index,cell_qc_column]=fail_pass
                 else:
-                    print(f'For a category {subset_id_for_ad_qc} we have only {len(adata)} cells and as its not sufficient ammount to estimate distributions we assuma all pass QC')
+                    print(f'For a category {subset_id_for_ad_qc} we have only {len(subset_ad)} cells and as its not sufficient ammount to estimate distributions we assuma all pass QC')
                 subset_ad.uns['cell_outlier_estimator'] = method
                 of = f'per_celltype_outliers/{subset_id_for_ad_qc}---{options.of}'
                 generate_plots(subset_ad,cell_qc_column,metadata_columns,metadata_columns_original,of)
