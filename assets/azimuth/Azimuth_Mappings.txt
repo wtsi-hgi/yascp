@@ -1,0 +1,32 @@
+L2	L0	L1
+Treg	T	CD4T
+CD4 Naive	T	CD4T
+CD4 TCM	T	CD4T
+CD4 TEM	T	CD4T
+CD4 CTL	T	CD4T
+CD4 Proliferating	T	CD4T
+CD8 Naive	T	CD8T
+CD8 TCM	T	CD8T
+CD8 TEM	T	CD8T
+CD8 Proliferating	T	CD8T
+MAIT	T	T_other
+dnT	T	T_other
+gdT	T	T_other
+ILC	T	T_other
+NK	T	NK
+NK Proliferating	T	NK
+NK_CD56bright	T	NK
+CD14 Mono	Mono	Mono
+CD16 Mono	Mono	Mono
+cDC1	DC	DC
+cDC2	DC	DC
+pDC	DC	DC
+ASDC	DC	DC
+B naive	B	B
+B intermediate	B	B
+B memory	B	B
+Plasmablast	B	B
+HSPC	HSPC	HSPC
+Platelet	Platelet	Platelet
+Eryth	Eryth	Eryth
+Doublet	Doublet	Doublet

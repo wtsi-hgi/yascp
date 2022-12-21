@@ -46,3 +46,36 @@ process AZIMUTH{
         gzip -c predicted_celltype_l2.tsv > ${celltype_table}
     """
 }
+
+process REMAP_AZIMUTH{
+    // This process remaps Azimuth L2 to L1 and L0
+    tag "${samplename}"    
+    label 'process_low'
+   
+    if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
+        container "/software/hgi/containers/wtsihgi_nf_scrna_qc_6bb6af5-2021-12-23-3270149cf265.sif"
+        //// container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/seurat_azimuth_pbmc_1.0.img"
+    } else {
+        container "wtsihgi/nf_scrna_qc_azimuth:d54db9b"
+    }
+
+    publishDir  path: "${params.outdir}/celltype/azimuth/",
+            mode: "${params.copy_mode}",
+            overwrite: "true"
+    stageInMode 'copy'  
+
+    input:
+        path(azimuth_file)
+        path(mapping_file)
+
+    output:
+        path(celltype_table, emit:predicted_celltype_labels)
+
+    script:
+        celltype_table = "remapped__${azimuth_file}"
+        """
+            remap_azimuth_l2.py -of ${celltype_table} -m ${mapping_file} -az ${azimuth_file}
+        """
+
+
+}

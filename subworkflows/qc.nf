@@ -90,6 +90,8 @@ workflow qc {
                     SUBSET_PCS.out.anndata,
                     n_pcs)
 
+        file__anndata_merged = NORMALISE_AND_PCA.out.anndata
+        
         LI4 = PLOT_STATS.out.LI
 
         if (params.cluster.known_markers.run_process) {

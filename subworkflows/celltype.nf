@@ -1,5 +1,5 @@
 
-include {AZIMUTH} from "$projectDir/modules/nf-core/modules/azimuth/main"
+include {AZIMUTH;REMAP_AZIMUTH} from "$projectDir/modules/nf-core/modules/azimuth/main"
 include {CELLTYPIST} from "$projectDir/modules/nf-core/modules/celltypist/main"
 include {SPLIT_BATCH_H5AD} from "$projectDir/modules/nf-core/modules/split_batch_h5ad/main"
 include {KERAS_CELLTYPE} from "$projectDir/modules/nf-core/modules/keras_celltype/main"
@@ -39,7 +39,8 @@ workflow celltype{
 
         if (params.celltype_assignment.run_azimuth){
             AZIMUTH(params.output_dir,ch_batch_files)
-            az_out = AZIMUTH.out.predicted_celltype_labels.collect()
+            REMAP_AZIMUTH(AZIMUTH.out.predicted_celltype_labels,params.mapping_file)
+            az_out = REMAP_AZIMUTH.out.predicted_celltype_labels.collect()
         }else{
             az_out = Channel.of()
         }

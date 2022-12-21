@@ -91,7 +91,7 @@ process HARMONY{
                 --metadata_columns ${variables_and_thetas.variable} \
                 --theta ${variables_and_thetas.theta} \
                 --n_pcs ${n_pcs} \
-                --out_file $reduced_dims
+                --out_file reduced_dims
             cp reduced_dims.tsv.gz \
             reduced_dims-${param_details}.tsv.gz
         """
