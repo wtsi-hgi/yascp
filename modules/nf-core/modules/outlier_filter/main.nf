@@ -23,8 +23,16 @@ process OUTLIER_FILTER {
         container "wtsihgi/nf_scrna_qc:6bb6af5"
     }
 
-    publishDir  path: "${outdir}/merged_h5ad",
-                saveAs: {filename -> filename.replaceAll("-", "outlier_filtered_")},
+    publishDir  path: "${outdir}",
+                saveAs: {filename ->
+                    if (filename.equalsIgnoreCase("outlier_filtered_adata.h5ad")) {
+                        filename.replaceAll("outlier_filtered_adata.h5ad", "/merged_h5ad/outlier_filtered_adata.h5ad")
+                    } else if(filename.equalsIgnoreCase("adata-cell_filtered_per_experiment.tsv.gz")) {
+                        filename.replaceAll("adata-cell_filtered_per_experiment.tsv.gz", "/merged_h5ad/adata-cell_filtered_per_experiment.tsv.gz")
+                    } else {
+                        "/plots/${filename}"
+                    }
+                },
                 mode: "${params.copy_mode}",
                 overwrite: "true"
 
@@ -46,6 +54,7 @@ process OUTLIER_FILTER {
         )
         path("plots/*.png") optional true
         path("plots/*.pdf") optional true
+        path("per_celltype_outliers") optional true
 
     script:
         
