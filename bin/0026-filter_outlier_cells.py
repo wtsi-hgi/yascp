@@ -322,6 +322,7 @@ def main():
                 outlier_strategy_cols = set(adata.obs[outlier_filtering_strategy]
             except:
                 print('user provided col doesnt exist')
+                continue
             for subset_id_for_ad_qc in outlier_strategy_cols):
                 subset_ad = adata[adata.obs[outlier_filtering_strategy]==subset_id_for_ad_qc]
                     
