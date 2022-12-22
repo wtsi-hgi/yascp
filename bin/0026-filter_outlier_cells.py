@@ -318,7 +318,11 @@ def main():
                 os.mkdir('per_celltype_outliers')
             except:
                 _='exists already'
-            for subset_id_for_ad_qc in set(adata.obs[outlier_filtering_strategy]):
+            try:
+                outlier_strategy_cols = set(adata.obs[outlier_filtering_strategy]
+            except:
+                print('user provided col doesnt exist')
+            for subset_id_for_ad_qc in outlier_strategy_cols):
                 subset_ad = adata[adata.obs[outlier_filtering_strategy]==subset_id_for_ad_qc]
                     
                 if(len(subset_ad)>100):
