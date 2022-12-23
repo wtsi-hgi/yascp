@@ -207,8 +207,10 @@ workflow SCDECON {
             // if we are not running qc step we need to account for an dummy channel. 
             process_finish_check_channel = Channel.of([1, 'dummy'])
         }
-
-        eQTL(file__anndata_merged,main_deconvolution.out.assignments_all_pools)
+        if (params.genotype_input.run_with_genotype_input){
+            eQTL(file__anndata_merged,main_deconvolution.out.assignments_all_pools)
+        }
+        
 
     }else{
         // since for the downstreem preocess we do a bam split, and this is generated as part of a main_deconvolution step, we have to generate this input artificially here based on the results directory and fech location.

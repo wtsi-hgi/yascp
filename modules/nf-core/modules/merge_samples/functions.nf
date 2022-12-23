@@ -54,7 +54,6 @@ process merge_samples_from_h5ad {
         val(outdir_prev)
         path(file_paths_h5ad)
         path(file_metadata)
-        val(hard_filter_file_params)
         val(file_cellmetadata)
         val(metadata_key)
         file(file_h5ad)
@@ -92,9 +91,6 @@ process merge_samples_from_h5ad {
 
 
         cmd__params = ""
-        if (hard_filter_file_params != "no_file__file_sample_qc") {
-            cmd__params = "--params_yaml ${hard_filter_file_params}"
-        }
         cmd__cellmetadata = ""
         if (file_cellmetadata != "no_file__file_cellmetadata") {
             cmd__cellmetadata = "--cell_metadata_file ${file_cellmetadata}"
@@ -149,7 +145,6 @@ process merge_samples {
         val(outdir_prev)
         path(file_paths_10x)
         path(file_metadata)
-        val(hard_filter_file_params)
         val(file_cellmetadata)
         val(metadata_key)
         file(file_10x_barcodes)
@@ -175,9 +170,6 @@ process merge_samples {
         // yaml.dump(file_params , new FileWriter(filename))
         // Customize command for optional files.
         cmd__params = ""
-        if (hard_filter_file_params != "no_file__file_sample_qc") {
-            cmd__params = "--params_yaml ${hard_filter_file_params}"
-        }
         cmd__cellmetadata = ""
         if (file_cellmetadata != "no_file__file_cellmetadata") {
             cmd__cellmetadata = "--cell_metadata_file ${file_cellmetadata}"
