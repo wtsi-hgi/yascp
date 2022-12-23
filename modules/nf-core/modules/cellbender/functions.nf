@@ -362,6 +362,7 @@ process cellbender__remove_background {
     outfile = "cellbender"
     
     """
+    echo ${experiment_id}
     # LD_PRELOAD to fix mkl/anaconda python error
     # cf. https://stackoverflow.com/questions/36659453/intel-mkl-fatal-error-cannot-load-libmkl-avx2-so-or-libmkl-def-so
     export LD_PRELOAD=/opt/conda/envs/conda_cellbender/lib/libmkl_core.so:/opt/conda/envs/conda_cellbender/lib/libmkl_sequential.so
@@ -465,6 +466,7 @@ process capture_cellbender_files{
   input:
     path(cellbender_location)
     val(outdir)
+    path(input_file)
   output:
     path("tmp1234/cellbender/*")
     path("captured/*/cellbender-FPR_${params.cellbender_resolution_to_use}*"),emit:alt_input
@@ -472,13 +474,18 @@ process capture_cellbender_files{
   script:
   """
   
-  
     mkdir tmp1234
     mkdir tmp1234/cellbender
     cd tmp1234/cellbender
     for d in ../../${cellbender_location}/* ; do
         echo \$d
-        ln -s \$d .
+        basename1=\$(basename \$d)
+        if grep -q \$basename1 ../../${input_file}
+        then
+          ln -s \$d .
+        else
+            f='no'
+        fi        
     done
     cd ../..
     capture_res_files_cb.py
