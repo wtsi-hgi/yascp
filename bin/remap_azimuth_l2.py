@@ -47,10 +47,13 @@ options = parser.parse_args()
 All_Data = pd.read_csv(options.az_file,compression='gzip',sep='\t')
 Mappings = pd.read_csv(options.mapping,sep='\t',index_col=0)
 
-D1 =All_Data.reset_index()
+D1 =All_Data
+D1['idx1']=D1.index
 D1 = All_Data.set_index('predicted.celltype.l2')
 for col in Mappings.columns:
     D1[f'{col}_predicted.celltype.l2']=''
     D1[f'{col}_predicted.celltype.l2']=Mappings[col]
+D1 =D1.reset_index()
+D1 = D1.set_index('idx1')
 D1.to_csv(options.of,compression='gzip',sep='\t')    
 print('Done')

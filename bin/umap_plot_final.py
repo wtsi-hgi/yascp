@@ -67,8 +67,11 @@ def save_plot(
     n_params = len(dict__umap_dim_and_params[
         list(dict__umap_dim_and_params.keys())[0]
     ])
+    fig_size = 0.125*n_params
+    if fig_size>2^16:
+        fig_size=2^16-1
     fig, grid = panel_grid(
-        hspace=0.125*n_params,
+        hspace=fig_size,
         wspace=None,
         ncols=4,
         num_panels=len(dict__umap_dim_and_params)
