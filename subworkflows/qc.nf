@@ -33,7 +33,10 @@ workflow qc {
         file__anndata_merged.map{val1 -> tuple('full', val1)}.set{out1}
 
         CELL_HARD_FILTERS(file__anndata_merged,params.hard_filters_file)
-        file__anndata_merged = CELL_HARD_FILTERS.out.anndata
+        if(params.hard_filters_file != "no_file__file_sample_qc"){
+            file__anndata_merged = CELL_HARD_FILTERS.out.anndata
+        }
+        
         //FILTERING OUTLIER CELLS
         if (params.sample_qc.cell_filters.filter_outliers.run_process) {
             log.info """---Running automatic outlier cell filtering.----"""

@@ -235,8 +235,9 @@ def gather_azimuth_annotation(expid, datadir_azimuth, index_label = None):
 def load_scrublet_assignments(expid, datadir_scrublet):
     filpath = None
     fnam = '{}{}'.format(expid, SCRUBLET_ASSIGNMENTS_FNSUFFIX)
+    fnam2 = '{}{}'.format(expid, SCRUBLET_ASSIGNMENTS_FNSUFFIX.replace('-',''))
     for fn in os.listdir(datadir_scrublet):
-        if fn == fnam:
+        if fn == fnam or fn == fnam2:
             filpath = os.path.join(datadir_scrublet, fn)
             break
  
@@ -508,6 +509,7 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
             columns_output = {**columns_output,  **COLUMNS_SCRUBLET}
         except:
             print('Scrubblet was not performed for this pool - potential reason is that there are not enough cells for assignment')
+            scb = None
     else:
         scb = None
         
@@ -997,17 +999,17 @@ if __name__ == '__main__':
 
 
     for expid in df_raw.index:
-        try:
-            nf, data_tranche, data_donor, azt = gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = oufh, lane_id=count,Resolution=Resolution)
-            # add the stuff to the adata.
-            azt=azt.set_index('mangled_cell_id')
-            All_probs_and_celltypes=pd.concat([All_probs_and_celltypes,azt])
-            data_tranche_all.append(data_tranche)
-            data_donor_all= data_donor_all+data_donor
-            count += 1
-            fctr += nf
-        except:
-            print(f"pool {expid} was ignored as it did not contain deconvoluted donors.")
+        # try:
+        nf, data_tranche, data_donor, azt = gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = oufh, lane_id=count,Resolution=Resolution)
+        # add the stuff to the adata.
+        azt=azt.set_index('mangled_cell_id')
+        All_probs_and_celltypes=pd.concat([All_probs_and_celltypes,azt])
+        data_tranche_all.append(data_tranche)
+        data_donor_all= data_donor_all+data_donor
+        count += 1
+        fctr += nf
+        # except:
+        #     print(f"pool {expid} was ignored as it did not contain deconvoluted donors.")
     
     Donor_Report = pd.DataFrame(data_donor_all)
     Tranche_Report = pd.DataFrame(data_tranche_all)
