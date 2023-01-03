@@ -212,13 +212,23 @@ def gather_azimuth_annotation(expid, datadir_azimuth, index_label = None):
         fnsfx = '_{}{}'.format(expid, AZIMUTH_ASSIGNMENTS_FNSUFFIX)
         for fn in os.listdir(datadir_azimuth):
             if fn.endswith(fnsfx):
-                filpath = os.path.join(datadir_azimuth, fn)
-                break
-            
+                if fn.startswith('remapped'):
+                    filpath = os.path.join(datadir_azimuth, fn)
+                    break
+    if not filpath:
+        expid ='full'
+        fnsfx = '_{}{}'.format(expid, AZIMUTH_ASSIGNMENTS_FNSUFFIX)
+        for fn in os.listdir(datadir_azimuth):
+            if fn.endswith(fnsfx):
+                print(fn)
+                if not fn.startswith('remapped'):
+                    filpath = os.path.join(datadir_azimuth, fn)
+                    break   
+                         
     if not filpath:
         sys.exit("ERROR: could not find filename suffix '{}' in direcotry {}\n"
             .format(fnsfx, datadir_azimuth))
-    azt = pandas.read_table(filpath)
+    azt = pandas.read_table(filpath,index_col=0)
     if (expid=='full'):
         expid=expid2
         azt = azt[azt.index.str.contains(expid2)]

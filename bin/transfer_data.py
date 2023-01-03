@@ -182,17 +182,14 @@ def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res
             copy(file1, f'{name_dir}/Cell-type assignment')
 
 
-    folder1 = f'{directory}/plots'
+    folder1 = f'{directory}/plots/per_celltype_outliers'
     if os.path.isdir(folder1):
+        print('yes')
         try:
-            os.mkdir(f'{name_dir}/Cell-type assignment')
+            os.mkdir(f'{name_dir}/QC metrics')
         except:
             print('dire exists')
-        # copyfile(fil1, f'{name_dir}/QC metrics/plot_ecdf-x_log10.var=total_counts.color=experiment_id-adata.png')
-        files = glob.glob(f'{folder1}/*[!.gz]')
-        for file1 in files:
-            # print(file1)
-            copy(file1, f'{name_dir}/Cell-type assignment')
+        os.system(f'ln -s ./{folder1} {name_dir}/QC metrics')
 
 
     folder1 = f'{directory}/plots'
@@ -201,18 +198,25 @@ def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res
             os.mkdir(f'{name_dir}/QC metrics')
         except:
             print('dire exists')
-        try:
-            copyfile(f'{folder1}/adata-cell_desity.png', f'{name_dir}/QC metrics/adata-cell_desity.png')
-        except:
-            copyfile(f'{directory}/merged_h5ad/plots/outlier_filtered_adata-cell_desity.png', f'{name_dir}/QC metrics/adata-cell_desity.png')
+            
+        density_files = glob.glob(f'{folder1}/*cell_desity*')
+        density_files2 = glob.glob(f'{folder1}/merged_h5ad/plots/*cell_desity*')
+        density_files.extend(density_files2)
+        for dens_file in density_files:
+            nam1 = dens_file.split('/')[-1]
+            copyfile(f'{dens_file}', f'{name_dir}/QC metrics/{nam1}')
+
+        density_files = glob.glob(f'{folder1}/*adata-outlier_cells*')
+        density_files2 = glob.glob(f'{folder1}/merged_h5ad/plots/*adata-outlier_cells*')
+        density_files.extend(density_files2)
+        for dens_file in density_files:
+            nam1 = dens_file.split('/')[-1]
+            copyfile(f'{dens_file}', f'{name_dir}/QC metrics/{nam1}')
+        
         
         copyfile(f'{folder1}/adata-cell_filtered_per_experiment-n_cells_before_after.png', f'{name_dir}/QC metrics/adata-cell_filtered_per_experiment-n_cells_before_after.png')
         copyfile(f'{folder1}/scatterplot-sex_sample_swap_check.png', f'{name_dir}/QC metrics/scatterplot-sex_sample_swap_check.png')
-        try:
-            copyfile(f'{folder1}/adata-outlier_cells.png', f'{name_dir}/QC metrics/adata-outlier_cells.png')
-        except:
-            copyfile(f'{directory}/merged_h5ad/plots/outlier_filtered_adata-outlier_cells.png', f'{name_dir}/QC metrics/adata-outlier_cells.png')
-        
+
         fil1 = glob.glob(f'{folder1}/plot_ecdf-x_log10*total_counts*')[0]
         copyfile(fil1, f'{name_dir}/QC metrics/plot_ecdf-x_log10.var=total_counts.color=experiment_id-adata.png')
 
