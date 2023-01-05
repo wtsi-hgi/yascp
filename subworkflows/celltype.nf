@@ -49,7 +49,8 @@ workflow celltype{
             Channel.fromList(params.celltypist.models)
                 .set{ch_celltypist_models}
             CELLTYPIST(az_ch_experiment_filth5.combine(ch_celltypist_models))
-            ct_out = CELLTYPIST.out.sample_predicted_labels_csv.collect()
+            ct_out = CELLTYPIST.out.predicted_labels.collect()
+
         }else{
             ct_out = Channel.of()
         }

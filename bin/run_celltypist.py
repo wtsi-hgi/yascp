@@ -169,7 +169,15 @@ def run_celltypist(samplename, filtered_matrix_h5, celltypist_model,
 
     # Export the three results to csv tables.
     logging.info("... predictions.to_table in folder " + output_dir)
+    
+    adata = predictions.to_adata()
+
+    
     predictions.to_table(folder = output_dir, prefix = samplename + '___'+celltypist_model1+'___')
+    Data = adata.obs
+    Data= Data.drop('cell_barcode',axis=1)
+    Data=Data.add_prefix(f'{celltypist_model1}:')
+    Data.to_csv(f'{output_dir}/{samplename}___{celltypist_model1}___predicted_labels.csv')
     ###predictions.to_table(folder = os.getcwd())
     logging.info("... predictions.to_plots")
 

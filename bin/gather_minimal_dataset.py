@@ -47,7 +47,8 @@ SCRUBLET_ASSIGNMENTS_FNSUFFIX = '-scrublet.tsv.gz'
 COLUMNS_AZIMUTH = {
     'predicted.celltype.l2': 'azimuth.celltyp.l2',
     'predicted.celltype.l2.score': 'azimuth.pred.score.l2',
-    'mapping.score': 'azimuth.map.score'
+    'mapping.score': 'azimuth.map.score',
+    
     }
 COLUMNS_DECONV = {
     'donor_id': 'vireo.donor.id',
@@ -56,10 +57,13 @@ COLUMNS_DECONV = {
     }
 COLUMNS_QC = {
     'cell_passes_qc': 'qc.filter.pass',
+    'cell_passes_qc-per:Azimuth:L0_predicted.celltype.l2':'qc.filter.pass.AZ:L0'
     'total_counts': 'qc.umi.count.total',
     'total_counts_gene_group__mito_transcript': 'qc.umi.count.mt',
     'pct_counts_gene_group__mito_transcript': 'qc.umi.perc.mt',
-    'n_genes_by_counts': 'qc.genes.detected.count'
+    'n_genes_by_counts': 'qc.genes.detected.count',
+    'Azimuth:L0_predicted.celltype.l2':'azimuth.celltyp.l0',
+    'Azimuth:L1_predicted.celltype.l2':'azimuth.celltyp.l1'
     }
 COLUMNS_CELLBENDER = {'cellbender_latent_probability': 'cellbender.latent.probability'}
 COLUMNS_DATASET = {
@@ -212,13 +216,23 @@ def gather_azimuth_annotation(expid, datadir_azimuth, index_label = None):
         fnsfx = '_{}{}'.format(expid, AZIMUTH_ASSIGNMENTS_FNSUFFIX)
         for fn in os.listdir(datadir_azimuth):
             if fn.endswith(fnsfx):
-                filpath = os.path.join(datadir_azimuth, fn)
-                break
-            
+                if fn.startswith('remapped'):
+                    filpath = os.path.join(datadir_azimuth, fn)
+                    break
+    if not filpath:
+        expid ='full'
+        fnsfx = '_{}{}'.format(expid, AZIMUTH_ASSIGNMENTS_FNSUFFIX)
+        for fn in os.listdir(datadir_azimuth):
+            if fn.endswith(fnsfx):
+                print(fn)
+                if not fn.startswith('remapped'):
+                    filpath = os.path.join(datadir_azimuth, fn)
+                    break   
+                         
     if not filpath:
         sys.exit("ERROR: could not find filename suffix '{}' in direcotry {}\n"
             .format(fnsfx, datadir_azimuth))
-    azt = pandas.read_table(filpath)
+    azt = pandas.read_table(filpath,index_col=0)
     if (expid=='full'):
         expid=expid2
         azt = azt[azt.index.str.contains(expid2)]
@@ -235,8 +249,9 @@ def gather_azimuth_annotation(expid, datadir_azimuth, index_label = None):
 def load_scrublet_assignments(expid, datadir_scrublet):
     filpath = None
     fnam = '{}{}'.format(expid, SCRUBLET_ASSIGNMENTS_FNSUFFIX)
+    fnam2 = '{}{}'.format(expid, SCRUBLET_ASSIGNMENTS_FNSUFFIX.replace('-',''))
     for fn in os.listdir(datadir_scrublet):
-        if fn == fnam:
+        if fn == fnam or fn == fnam2:
             filpath = os.path.join(datadir_scrublet, fn)
             break
  
@@ -508,6 +523,7 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
             columns_output = {**columns_output,  **COLUMNS_SCRUBLET}
         except:
             print('Scrubblet was not performed for this pool - potential reason is that there are not enough cells for assignment')
+            scb = None
     else:
         scb = None
         
@@ -997,17 +1013,17 @@ if __name__ == '__main__':
 
 
     for expid in df_raw.index:
-        try:
-            nf, data_tranche, data_donor, azt = gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = oufh, lane_id=count,Resolution=Resolution)
-            # add the stuff to the adata.
-            azt=azt.set_index('mangled_cell_id')
-            All_probs_and_celltypes=pd.concat([All_probs_and_celltypes,azt])
-            data_tranche_all.append(data_tranche)
-            data_donor_all= data_donor_all+data_donor
-            count += 1
-            fctr += nf
-        except:
-            print(f"pool {expid} was ignored as it did not contain deconvoluted donors.")
+        # try:
+        nf, data_tranche, data_donor, azt = gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = oufh, lane_id=count,Resolution=Resolution)
+        # add the stuff to the adata.
+        azt=azt.set_index('mangled_cell_id')
+        All_probs_and_celltypes=pd.concat([All_probs_and_celltypes,azt])
+        data_tranche_all.append(data_tranche)
+        data_donor_all= data_donor_all+data_donor
+        count += 1
+        fctr += nf
+        # except:
+        #     print(f"pool {expid} was ignored as it did not contain deconvoluted donors.")
     
     Donor_Report = pd.DataFrame(data_donor_all)
     Tranche_Report = pd.DataFrame(data_tranche_all)

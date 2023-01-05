@@ -207,9 +207,9 @@ workflow SCDECON {
             // if we are not running qc step we need to account for an dummy channel. 
             process_finish_check_channel = Channel.of([1, 'dummy'])
         }
-        if (params.genotype_input.run_with_genotype_input){
-            eQTL(file__anndata_merged,main_deconvolution.out.assignments_all_pools)
-        }
+        // if (params.genotype_input.run_with_genotype_input){
+        //     eQTL(file__anndata_merged,main_deconvolution.out.assignments_all_pools)
+        // }
         
 
     }else{

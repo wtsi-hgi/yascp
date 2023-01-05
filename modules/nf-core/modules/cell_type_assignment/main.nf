@@ -15,10 +15,7 @@ workflow CELL_TYPE_ASSIGNEMT{
     main:
         // if (params.split_ad_per_bach){
         log.info '---Splitting the assignment for each batch---'
-
-        file__anndata_merged.map{val1 -> tuple('full_ct', val1)}.set{out1}
-        // KERAS_CELLTYPE(out1)   
-
+        file__anndata_merged3 = file__anndata_merged
         SPLIT_BATCH_H5AD(file__anndata_merged,params.split_ad_per_bach)
         // SPLIT_BATCH_H5AD.out.sample_file.view()
         // Here we may want to not split it and just pass in an entire h5ad file for annotations.

@@ -20,6 +20,7 @@ process CELLTYPIST {
 
     output: 
       tuple val(sample), path("outputs/*_predicted_labels.csv"), emit: sample_predicted_labels_csv
+      path("outputs/*_predicted_labels.csv"), emit: predicted_labels
       tuple val(sample), path("outputs/*_probability_matrix.csv"), emit: sample_probability_matrix_csv
       tuple val(sample), path("outputs/*_decision_matrix.csv"), emit: sample_decision_matrix_csv
       tuple val(sample), path("outputs/*_*.pdf"), emit: sample_plots_pdf
