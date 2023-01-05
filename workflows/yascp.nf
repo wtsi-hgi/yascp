@@ -187,6 +187,7 @@ workflow SCDECON {
         }
         
         if (params.celltype_assignment.run_celltype_assignment){
+            file__anndata_merged.view()
             celltype(file__anndata_merged,file__cells_filtered)
             file__anndata_merged=celltype.out.file__anndata_merged2
         }

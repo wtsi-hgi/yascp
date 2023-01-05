@@ -58,6 +58,7 @@ workflow celltype{
         CELLTYPE_FILE_MERGE(az_out,ct_out,all_extra_fields,file__anndata_merged)
         
         file__anndata_merged2=CELLTYPE_FILE_MERGE.out.file__anndata_merged2
+        file__anndata_merged2.view()
 
     emit:
         file__anndata_merged2
