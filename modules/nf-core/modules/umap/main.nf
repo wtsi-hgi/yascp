@@ -19,6 +19,7 @@ workflow UMAP {
         umap_spread
         colors_quantitative
         colors_categorical
+        method
     main:
         umap_calculate(
             outdir,
@@ -30,7 +31,8 @@ workflow UMAP {
             n_neighbors,
             umap_init,
             umap_min_dist,
-            umap_spread
+            umap_spread,
+            method
         )
         umap_calculate.out.adata_out.collect().set{all_umaps}
         umap_calculate.out.outdir_anndata.groupTuple()

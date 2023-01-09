@@ -34,6 +34,7 @@ process umap_calculate {
         each umap_init
         each umap_min_dist
         each umap_spread
+        val(method)
 
     output:
         val(outdir, emit: outdir)
@@ -50,11 +51,12 @@ process umap_calculate {
         path("${outfile}.h5ad",emit:adata_out)
 
     script:
+        runid = random_hex(16)
         in_file_id = file__reduced_dims.toString().tokenize('-').get(0)
         // For output file, use anndata name. First need to drop the runid
         // from the file__anndata job.
         outfile = "${file__anndata}".minus(".h5ad")
-        outfile = "${outfile}-umap_${n_neighbors}_${umap_spread}_${umap_init}_${umap_min_dist}"
+        outfile = "${runid}-${outfile}_${method}_umap_${n_neighbors}_${umap_spread}_${umap_init}_${umap_min_dist}"
         // Check to see if we should use PCs in the reduced dims slot.
         // Important for BBKNN where reduced_dims == UMAPs not adjusted PCs.
         cmd__tsv_pcs = "--tsv_pcs ${file__reduced_dims}"
@@ -63,6 +65,7 @@ process umap_calculate {
         }
 
         """
+            echo ${in_file_id}
             umap_calculate.py \
                 --h5_anndata ${file__anndata} \
                 ${cmd__tsv_pcs} \

@@ -57,7 +57,7 @@ COLUMNS_DECONV = {
     }
 COLUMNS_QC = {
     'cell_passes_qc': 'qc.filter.pass',
-    'cell_passes_qc-per:Azimuth:L0_predicted.celltype.l2':'qc.filter.pass.AZ:L0'
+    'cell_passes_qc-per:Azimuth:L0_predicted.celltype.l2':'qc.filter.pass.AZ:L0',
     'total_counts': 'qc.umi.count.total',
     'total_counts_gene_group__mito_transcript': 'qc.umi.count.mt',
     'pct_counts_gene_group__mito_transcript': 'qc.umi.perc.mt',

@@ -47,7 +47,7 @@ def main():
         '-name', '--experiment_name',
         action='store',
         dest='experiment_name',
-        default='all_cells_samples',
+        default='all_samples',
         help='experiment name to determine whether this sample has to be treated differently'
     )
 
@@ -608,6 +608,7 @@ def main():
     adata.obs['cell_passes_hard_filters'] = True
     filters_all_samples = []
     filters_experiment = []
+    options.experiment_name = 'all_samples'
     if 'cell_filters' not in params_dict:
         warnings.warn('Found no cell_filters in params_dict.')
     else:
