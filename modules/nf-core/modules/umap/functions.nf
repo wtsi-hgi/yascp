@@ -105,8 +105,8 @@ process generate_final_UMAPS{
         umap_plot_final.py \
             --h5_anndata ${file__anndata} \
             --number_cpu 1 \
-            --colors_quantitative n_cells,total_counts,pct_counts_gene_group__mito_transcript,prob_doublet,pct_counts_gene_group__ribo_rna,Azimuth:predicted.celltype.l2.score,Azimuth:mapping.score \
-            --colors_categorical experiment_id,Azimuth:predicted.celltype.l2,Celltypist:Immune_All_Low,Celltypist:Immune_All_High,donor_id  \
+            --colors_quantitative ${params.final_umap_quantitative} \
+            --colors_categorical ${params.final_umap_categorical} \
             --drop_legend_n 40 \
             --output_file UMAP
     """

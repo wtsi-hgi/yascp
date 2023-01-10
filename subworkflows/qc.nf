@@ -21,6 +21,7 @@ workflow qc {
     take:
         file__anndata_merged
         file__cells_filtered
+        assignments_all_pools
     main:
         log.info "--- Running QC metrics --- "
         // if(params.extra_metadata!=''){
@@ -37,6 +38,15 @@ workflow qc {
             file__anndata_merged = CELL_HARD_FILTERS.out.anndata
         }
         
+        // Next we define an input channel to outlier filtering strategy in case if params.skip_preprocessing.gt_match_based_adaptive_qc_exclusion_pattern !=''
+        // i.e - if we want to exclude a particular cohort that has been matched by gt match from the adaptive qc we feed this in the outlier_filter()
+        if(params.skip_preprocessing.gt_match_based_adaptive_qc_exclusion_pattern !=''){
+            gt_outlier_input = assignments_all_pools
+        }else{
+            gt_outlier_input = Channel.from("$projectDir/assets/fake_file.fq")
+        }
+
+
         //FILTERING OUTLIER CELLS
         if (params.sample_qc.cell_filters.filter_outliers.run_process) {
             log.info """---Running automatic outlier cell filtering.----"""
@@ -48,7 +58,9 @@ workflow qc {
                 params.sample_qc.cell_filters.filter_outliers.method,
                 params.sample_qc.cell_filters.filter_outliers.outliers_fraction,
                 params.sample_qc.cell_filters.filter_outliers.max_samples,
-                params.anndata_compression_opts
+                params.anndata_compression_opts,
+                gt_outlier_input,
+                params.skip_preprocessing.gt_match_based_adaptive_qc_exclusion_pattern
             )
             file__anndata_merged = OUTLIER_FILTER.out.anndata
             file__cells_filtered = OUTLIER_FILTER.out.cells_filtered
