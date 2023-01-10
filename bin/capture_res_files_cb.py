@@ -12,10 +12,10 @@ from os.path import exists
 
 PREFIX1=f"{os.getcwd()}/"
 os.mkdir(f"{PREFIX1}captured")
-all_vcfs = glob.glob(f'{PREFIX1}tmp1234/cellbender/*/cellbender-FPR_0pt1*')
-all_vcfs2 = glob.glob(f'{PREFIX1}tmp1234/cellbender/*/*/cellbender-FPR_0pt1*')
+all_vcfs = glob.glob(f'{PREFIX1}tmp1234/cellbender/*/*FPR_0pt1*/matrix.mtx.gz')
+all_vcfs2 = glob.glob(f'{PREFIX1}tmp1234/cellbender/*/*/*FPR_0pt1*/matrix.mtx.gz')
 for vcf1 in all_vcfs2:
-    # print(vcf1)
+    vcf1='/'.join(vcf1.split('/')[:-1])
     name = vcf1.split('/')[-3]
     ln2 = f'{PREFIX1}captured/{name}'
     if (exists(ln2)):
@@ -27,7 +27,7 @@ for vcf1 in all_vcfs2:
         os.system(f'ln -s {vcf1} {ln2}')
         
 for vcf1 in all_vcfs:
-    # print(vcf1)
+    vcf1='/'.join(vcf1.split('/')[:-1])
     name = vcf1.split('/')[-2]
     ln2 = f'{PREFIX1}captured/{name}'
     if (exists(ln2)):

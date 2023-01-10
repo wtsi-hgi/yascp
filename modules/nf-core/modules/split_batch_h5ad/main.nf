@@ -20,6 +20,8 @@ process SPLIT_BATCH_H5AD {
         path("AZ_Samples.tsv", emit:az_sample_file)
         path(outfile, emit: file_batch_list)
         path(file__anndata,emit:adata)
+        path("${outfil_prfx}_*.h5ad", emit:keras_outfile)
+        
 
     script:
         outfil_prfx = "${file__anndata}".minus(".h5ad")

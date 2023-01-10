@@ -45,6 +45,8 @@ process OUTLIER_FILTER {
         val(outliers_fraction)
         val(max_samples)
         val(anndata_compression_opts)
+        path(gt_outlier_input)
+        val(gt_match_based_adaptive_qc_exclusion_pattern)
 
     output:
         path("merged_h5ad/outlier_filtered_adata.h5ad", emit: anndata)
@@ -57,7 +59,9 @@ process OUTLIER_FILTER {
 
 
     script:
-        
+        if(gt_match_based_adaptive_qc_exclusion_pattern!=''){
+            filter_strategy_exclusion = "--patterns_exclude '${gt_match_based_adaptive_qc_exclusion_pattern}' --gt_match_file ${gt_outlier_input}"
+        }
         outdir = "${outdir_prev}"
         // Append run_id to output file.
         outfile = "outlier_filtered_adata"
@@ -75,7 +79,9 @@ process OUTLIER_FILTER {
                 --max_samples ${max_samples} \
                 --output_file ${outfile} \
                 --anndata_compression_opts ${anndata_compression_opts} \
-                --filter_strategy '${params.outlier_filtering_strategys}'
+                --filter_strategy '${params.outlier_filtering_strategys}' \
+                ${filter_strategy_exclusion}
+                
             mkdir plots
             ln ${outfile}-cell_filtered_per_experiment__cell_passes_qc.tsv.gz outlier_filtered_adata-cell_filtered_per_experiment.tsv.gz
             mv *pdf plots/ 2>/dev/null || true

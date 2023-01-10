@@ -60,7 +60,7 @@ workflow SCDECON {
 
     // ###################################
     // ################################### Readme
-    // Step1. CELLBENDER
+    // AMBIENT RNA REMOVAL USING CELLBENDER
     // There are 3 modes of running YASCP pipeline:
     // (option 1) users can run it from 10x data and use cellbender -  params.input == 'cellbender'
     // (option 2) users can run it from existing cellbender if the analysis has already been performed -  params.input == 'existing_cellbender' : note a specific folder structure is required
@@ -94,7 +94,6 @@ workflow SCDECON {
                 capture_cellbender_files(params.cellbender_location,"${params.output_dir}/nf-preprocessing",params.input_data_table)
                 capture_cellbender_files.out.alt_input.flatten().map{sample -> tuple("${sample}".replaceFirst(/.*\/captured\//,"").replaceFirst(/\/.*/,""),sample)}.set{alt_input}
                 // remove the unncessary inputs.
-
                 // Run only the files that are not processed. 
 
                 prepare_inputs.out.ch_experimentid_paths10x_raw.join(alt_input, remainder: true).set{post_ch_experimentid_paths10x_raw}
@@ -108,23 +107,12 @@ workflow SCDECON {
                     ch_experimentid_paths10x_filtered_2,prepare_inputs.out.channel__metadata)
                 alt_input1 = ambient_RNA.out.cellbender_path
                 alt_input2 = alt_input3.concat(alt_input1)
-                
-            //    alt_input1.count().view()
-            //    alt_input3.count().view()
-            //    alt_input2.count().view()
-               
-                // ambient_RNA.out.cellbender_path.subscribe { println "value cellbender_path: $it" }
-                // alt_input2.subscribe { println "value alt_input2: $it" }
 
                 DECONV_INPUTS(alt_input2,prepare_inputs)
                
                 channel__file_paths_10x = DECONV_INPUTS.out.channel__file_paths_10x
                 ch_experiment_bam_bai_barcodes= DECONV_INPUTS.out.ch_experiment_bam_bai_barcodes
                 ch_experiment_filth5= DECONV_INPUTS.out.ch_experiment_filth5
-
-                // ch_experiment_filth5.count().view()
-                // channel__file_paths_10x.count().view()
-                // ch_experiment_bam_bai_barcodes.count().view()
 
             }
             else if (params.input == 'cellranger'){
@@ -154,6 +142,7 @@ workflow SCDECON {
                     channel__file_paths_10x)
                 ch_poolid_csv_donor_assignments = main_deconvolution.out.ch_poolid_csv_donor_assignments
                 bam_split_channel = main_deconvolution.out.sample_possorted_bam_vireo_donor_ids
+                assignments_all_pools = main_deconvolution.out.assignments_all_pools
                 if (!params.skip_merge){
                     MERGE_SAMPLES(main_deconvolution.out.out_h5ad,main_deconvolution.out.vireo_out_sample__exp_summary_tsv,'h5ad')
                 }
@@ -162,6 +151,7 @@ workflow SCDECON {
                 if (!params.skip_merge){
                     MERGE_SAMPLES(channel__file_paths_10x,channel__metadata,'barcodes')
                 }
+                assignments_all_pools = Channel.from("$projectDir/assets/fake_file.fq")
             }
             // TODO: Here add a fundtion to take an extra h5ad and merge it together with the current run. This will be required for the downstream analysis when we want to integrate multiple datasets
             if (!params.skip_merge){
@@ -172,6 +162,13 @@ workflow SCDECON {
             // This option skips all the deconvolution and and takes a preprocessed yascp h5ad file to run the downstream clustering and celltype annotation.
             log.info '''----Skipping Preprocessing since we already have prepeared h5ad input file----'''
             file__anndata_merged = Channel.from(params.skip_preprocessing.file__anndata_merged)
+
+            if (params.skip_preprocessing.file__anndata_merged !=''){
+                assignments_all_pools = Channel.from(params.skip_preprocessing.gt_match_file)
+            }else{
+                assignments_all_pools = Channel.from("$projectDir/assets/fake_file.fq")
+            }
+
             if (params.skip_preprocessing.file__cells_filtered ==''){
                 log.info '''--- No cells filtered input ----'''
                 dummy_filtered_channel(file__anndata_merged,params.skip_preprocessing.id_in)
@@ -185,32 +182,49 @@ workflow SCDECON {
                 
             // /lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/qc/Cardinal_45673_Aug_28_2022/results/gtmatch/CRD_CMB13098028/CRD_CMB13098028_gt_donor_assignments.csv
         }
-        
+
+        // ###################################
+        // ################################### Readme
+        // CELLTYPE ASSIGNMENT
+        // After background removal and demultiplexing we perform qc metrics and clustering of the processed cells.
+        // This step of the pipeline also performs celltype assignments and removes cells that fail adaptive filtering.
+        // ###################################
+        // ###################################
+
         if (params.celltype_assignment.run_celltype_assignment){
-            file__anndata_merged.view()
             celltype(file__anndata_merged,file__cells_filtered)
             file__anndata_merged=celltype.out.file__anndata_merged2
+            
         }
 
         // ###################################
         // ################################### Readme
-        // Step3. QC METRICS, CELLTYPE ASSIGNMENT and CLUSTERIN
+        // QC METRICS, CLUSTERING
         // After background removal and demultiplexing we perform qc metrics and clustering of the processed cells.
         // This step of the pipeline also performs celltype assignments and removes cells that fail adaptive filtering.
         // ###################################
         // ###################################
 
         if (!params.skip_qc){
-            qc(file__anndata_merged,file__cells_filtered) //This runs the Clusterring and qc assessments of the datasets.
+            qc(file__anndata_merged,file__cells_filtered,assignments_all_pools) //This runs the Clusterring and qc assessments of the datasets.
             process_finish_check_channel = qc.out.LI
             file__anndata_merged = qc.out.file__anndata_merged
         }else{
             // if we are not running qc step we need to account for an dummy channel. 
             process_finish_check_channel = Channel.of([1, 'dummy'])
         }
-        // if (params.genotype_input.run_with_genotype_input){
-        //     eQTL(file__anndata_merged,main_deconvolution.out.assignments_all_pools)
-        // }
+
+        // ###################################
+        // ################################### Readme
+        // PSEUDOBULK AGGREGATION AND PREP STEP FOR eQTL MAPPING
+        // Once we have a QC'd data we can use this to perform a pseudobulk aggregation of data that can be used as an input in eQTL pipeline: https://github.com/wtsi-hgi//eqtl 
+        // ###################################
+        // ###################################
+
+
+        if (params.genotype_input.run_with_genotype_input){
+            eQTL(file__anndata_merged,assignments_all_pools)
+        }
         
 
     }else{
@@ -226,6 +240,14 @@ workflow SCDECON {
     // // // Performing eQTL mapping.
 
     //This part gathers the plots for the reporting in a Summary folder. If run through gitlab CI it will triger the data transfer to web.
+
+    // ###################################
+    // ################################### Readme
+    // DATA HANDOVER, REPORTS, DATA ENCRYPTION, DONOR H5AD, BAM SPLIT
+    // 
+    // ###################################
+    // ###################################
+
 
     if (!params.skip_handover){
         data_handover(params.output_dir,

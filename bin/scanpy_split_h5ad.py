@@ -35,6 +35,32 @@ def write_h5_out_for_ct(ad,oufn_list_AZ,oufnam,oufn_list,samples,samples_AZ,bl,c
     # disable
     adb_AZ.obs = pandas.DataFrame(adb_AZ.obs.index, index = adb_AZ.obs.index, columns = ["cell_barcode"])
 
+    adb.layers['counts'] = adb.X.copy()
+
+    # Total-count normalize (library-size correct) the data matrix X to
+    # counts per million, so that counts become comparable among cells.
+    scanpy.pp.normalize_total(
+        adb,
+        target_sum=1e4,
+        exclude_highly_expressed=False,
+        key_added='normalization_factor',  # add to adata.obs
+        inplace=True
+    )
+    # Logarithmize the data: X = log(X + 1) where log = natural logorithm.
+    # Numpy has a nice function to undo this np.expm1(adata.X).
+    scanpy.pp.log1p(adb)
+    # Delete automatically added uns - UPDATE: bad idea to delete as this slot
+    # is used in _highly_variable_genes_single_batch.
+    # del adata.uns['log1p']
+    # Add record of this operation.
+    # adata.layers['log1p_cpm'] = adata.X.copy()
+    # adata.uns['log1p_cpm'] = {'transformation': 'ln(CPM+1)'}
+    adb.layers['log1p_cp10k'] = adb.X.copy()
+    adb.uns['log1p_cp10k'] = {'transformation': 'ln(CP10k+1)'}
+
+    # Reset X to counts
+    adb.X = adb.layers['counts'].copy()  
+
     try:
         vdf = adb_AZ.var[["feature_types", "genome"]]
     except:

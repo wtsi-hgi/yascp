@@ -55,7 +55,7 @@ workflow celltype{
             ct_out = Channel.of()
         }
         
-        CELLTYPE_FILE_MERGE(az_out,ct_out,all_extra_fields,file__anndata_merged)
+        CELLTYPE_FILE_MERGE(az_out,ct_out,all_extra_fields,SPLIT_BATCH_H5AD.out.keras_outfile)
         
         file__anndata_merged2=CELLTYPE_FILE_MERGE.out.file__anndata_merged2
         file__anndata_merged2.view()

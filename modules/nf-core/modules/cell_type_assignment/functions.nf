@@ -19,16 +19,17 @@ process CELLTYPE_FILE_MERGE{
         path "donor_celltype_report.tsv"
 
     input:
-        file(azimuth_files)
-        file(celltypist_paths)
-        file(all_other_paths)
+        path(azimuth_files)
+        path(celltypist_paths)
+        path(all_other_paths)
         path(file__anndata_input)
     script:
         all_azimuth_files = azimuth_files.join("::")
         all_celltypist_files = celltypist_paths.join("::")
         all_other_paths_comb = all_other_paths.join("::")
+        all_adatas = file__anndata_input.join("::")
         """
-            generate_combined_celltype_anotation_file.py --all_azimuth_files ${all_azimuth_files} --all_celltypist_files ${all_celltypist_files} --all_other_paths ${all_other_paths_comb} --adata ${file__anndata_input}
+            generate_combined_celltype_anotation_file.py --all_azimuth_files ${all_azimuth_files} --all_celltypist_files ${all_celltypist_files} --all_other_paths ${all_other_paths_comb} --adata '${all_adatas}'
         """
 
 }

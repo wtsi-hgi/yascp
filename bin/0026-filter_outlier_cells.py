@@ -130,7 +130,25 @@ def main():
         required=True,
         help='H5 AnnData file.'
     )
-
+    
+    parser.add_argument(
+        '-gt', '--gt_match_file',
+        action='store',
+        dest='gt_match_file',
+        default=None,
+        required=False,
+        help='H5 AnnData file.'
+    )    
+    
+    parser.add_argument(
+        '-pt', '--patterns_exclude',
+        action='store',
+        dest='patterns_exclude',
+        default=None,
+        required=False,
+        help='H5 AnnData file.'
+    )    
+    
     parser.add_argument(
         '--outliers_fraction',
         action='store',
@@ -303,6 +321,32 @@ def main():
     metadata_columns_original = metadata_columns.copy()
     # We perform the adaptive qc either for all data together or per user defined column of unique values.
     outlier_filtering_strategys = options.outlier_filtering_strategys
+    # We load the GT match file and determine the celline match that needs to be subjected to adaptive qc independently
+    if(options.patterns_exclude):
+        ######## The folowing bit of code takes the GT match outputs and utilises this to run adaptive qc on cellines independently - only if the celline is expected.
+        if(options.gt_match_file!='fake_file.fq'):
+            GT_match_file = pd.read_csv(options.gt_match_file,sep='\t')
+            GT_patterns = options.patterns_exclude.split(';')
+            for outlier_filtering_strategy in outlier_filtering_strategys.split(';'):
+                strategy = outlier_filtering_strategy
+                if strategy!='all_together':
+                    for pattern in GT_patterns:
+                        Matches = GT_match_file[GT_match_file['donor_gt'].str.contains(pattern)]
+                        if len(Matches)>0:
+                            for i,match in Matches.iterrows():
+                                donor=match['donor_query']
+                                pool=match['pool']
+                                expected = match['Match Expected']
+                                if expected:
+                                    filter_query = f"convoluted_samplename=='{pool}' and Donor=='{donor}'"
+                                    idx1 = adata.obs.query(filter_query).index
+                                    try:
+                                        adata.obs[strategy] = adata.obs[strategy].cat.add_categories(pattern)
+                                    except:
+                                        _='category exists already'
+                                    adata.obs.loc[idx1,strategy]=pattern
+        ########                 
+    
     for outlier_filtering_strategy in outlier_filtering_strategys.split(';'):
         metadata_columns = metadata_columns_original.copy()
         if (outlier_filtering_strategy == 'all_together'):

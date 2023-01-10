@@ -109,8 +109,17 @@ def main():
     Data_All['Exp'] =Exp
     Data_All.to_csv('All_Celltype_Assignments.csv',sep='\t')
 
-    adata = options.andata
-    ad = scanpy.read(adata)
+    adatas = options.andata.split('::')
+    adatasets = []
+    adatasets__experiment_ids = []
+    adatas[5]
+    for ad1 in adatas:
+        print(ad1)
+        adata1 = scanpy.read_h5ad(adatas[5])
+        if adata1.n_obs > 0:
+            adatasets.append(adata1)
+    ad = adatasets[0].concatenate(*adatasets[1:])
+    # ad = scanpy.read(adata)
     for col in Data_All.columns:
         ad.obs[col]=Data_All[col]
 

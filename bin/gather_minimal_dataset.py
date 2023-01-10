@@ -273,12 +273,7 @@ def fetch_qc_obs_from_anndata(adqc, expid, cell_bender_path = None,Resolution='0
     #df.insert(0, 'barcode', df.index.values)
     df_pre = pandas.concat([df,ad.obs], axis = 1)
     df_pre['mengled_index'] = df_pre.index
-    df = df_pre[['barcode', 'donor',
-        'n_genes_by_counts', 'log1p_n_genes_by_counts',
-        'total_counts', 'log1p_total_counts',
-        'total_counts_gene_group__mito_transcript', 'pct_counts_gene_group__mito_transcript',
-        'cell_passes_qc','mengled_index'
-    ]].set_index("barcode", drop = True)
+    df = df_pre.set_index("barcode", drop = True)
 
     if cell_bender_path is not None:
         # cellbender removes the barcodes - 

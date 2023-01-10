@@ -130,7 +130,8 @@ workflow qc {
                 params.umap.umap_min_dist.value,
                 params.umap.umap_spread.value,
                 params.umap.colors_quantitative.value,
-                params.umap.colors_categorical.value
+                params.umap.colors_categorical.value,
+                'harmony'
             )
 
             cluster_harmony__outdir = UMAP_HARMONY.out.outdir
@@ -195,7 +196,8 @@ workflow qc {
                 params.umap.umap_min_dist.value,
                 params.umap.umap_spread.value,
                 params.umap.colors_quantitative.value,
-                params.umap.colors_categorical.value
+                params.umap.colors_categorical.value,
+                'bbknn'
             )
 
             cluster_bbknn__outdir = UMAP_BBKNN.out.outdir

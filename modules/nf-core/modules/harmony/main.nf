@@ -39,7 +39,7 @@ process HARMONY{
                     } else if(filename.endsWith("${param_details}.tsv.gz")) {
                         null
                     } else {
-                        filename.replaceAll("-", "")
+                        filename.replaceAll("${runid}-", "")
                     }
                 },
                 mode: "${params.copy_mode}",
@@ -59,7 +59,7 @@ process HARMONY{
         path(file__anndata, emit: anndata)
         path(file__metadata, emit: metadata)
         path(file__pcs, emit: pcs)
-        path("reduced_dims.tsv.gz", emit: reduced_dims)
+        path("${runid}-reduced_dims.tsv.gz", emit: reduced_dims)
         // NOTE: passing the param details as an unpublished file is messy,
         // but I could not get collect of ${param_details} and file to work.
         path(
@@ -75,7 +75,7 @@ process HARMONY{
         // )
 
     script:
-        
+        runid = "${params__pcs}_${n_pcs}_${variables_and_thetas.variable}"
         param_details = "${params__pcs}-harmony"
         param_details = "${param_details}.n_pcs=${n_pcs}"
         param_details = "${param_details}.variables=${variables_and_thetas.variable}"
@@ -91,8 +91,8 @@ process HARMONY{
                 --metadata_columns ${variables_and_thetas.variable} \
                 --theta ${variables_and_thetas.theta} \
                 --n_pcs ${n_pcs} \
-                --out_file reduced_dims
-            cp reduced_dims.tsv.gz \
+                --out_file ${runid}-reduced_dims
+            cp ${runid}-reduced_dims.tsv.gz \
             reduced_dims-${param_details}.tsv.gz
         """
         // NOTE: below code for harmony in R
