@@ -114,8 +114,7 @@ def main():
     adatasets__experiment_ids = []
     adatas[5]
     for ad1 in adatas:
-        print(ad1)
-        adata1 = scanpy.read_h5ad(adatas[5])
+        adata1 = scanpy.read_h5ad(ad1)
         if adata1.n_obs > 0:
             adatasets.append(adata1)
     ad = adatasets[0].concatenate(*adatasets[1:])
