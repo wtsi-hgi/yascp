@@ -61,6 +61,8 @@ process OUTLIER_FILTER {
     script:
         if(gt_match_based_adaptive_qc_exclusion_pattern!=''){
             filter_strategy_exclusion = "--patterns_exclude '${gt_match_based_adaptive_qc_exclusion_pattern}' --gt_match_file ${gt_outlier_input}"
+        }else{
+            filter_strategy_exclusion = ""
         }
         outdir = "${outdir_prev}"
         // Append run_id to output file.
