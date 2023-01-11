@@ -60,6 +60,7 @@ def write_h5_out_for_ct(ad,oufn_list_AZ,oufnam,oufn_list,samples,samples_AZ,bl,c
 
     # Reset X to counts
     adb.X = adb.layers['counts'].copy()  
+    del adb.layers["counts"] #Since counts are set as an X we dont need it as part of the andata - this saves space.
 
     try:
         vdf = adb_AZ.var[["feature_types", "genome"]]

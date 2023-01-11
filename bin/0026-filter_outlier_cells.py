@@ -346,6 +346,8 @@ def main():
                                         _='category exists already'
                                     adata.obs.loc[idx1,strategy]=pattern
         ########                 
+    # all_index = pd.DataFrame(adata.obs.index,columns=['col'])
+    # all_together = all_indexes.str[0]+'-'+all_indexes.str[1]+'-'+all_indexes.str[2]
     
     for outlier_filtering_strategy in outlier_filtering_strategys.split(';'):
         metadata_columns = metadata_columns_original.copy()
