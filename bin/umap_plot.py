@@ -108,6 +108,9 @@ def save_plot(
                 color_palette = colors_large_palette
             if drop_legend >= 0 and n_categories >= drop_legend:
                 legend_loc = None
+        else:
+            # Make sure that the numeric value is actually numeric
+            adata.obs[color_var] = adata.obs[color_var].astype('double')
 
         # For some reason, there is an error if return_fig = False, but
         # not when show = False.
@@ -237,7 +240,16 @@ def main():
 
     # Load the AnnData file.
     adata = sc.read_h5ad(filename=options.h5)
-
+    try:
+        del adata.layers['counts']
+    except:
+        _='doesnt exist'
+    try:
+        del adata.layers['log1p_cp10k']
+    except:
+        _='doesnt exist'
+        
+    
     # Get the out file base.
     out_file_base = options.of
     if out_file_base == '':
