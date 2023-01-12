@@ -67,11 +67,18 @@ def save_plot(
     n_params = len(dict__umap_dim_and_params[
         list(dict__umap_dim_and_params.keys())[0]
     ])
-    fig_size = 0.125*n_params
-    if fig_size>2^16:
-        fig_size=2^16-1
+    # fig_size = 0.125*n_params
+    # if fig_size>2^16-10:
+    #     fig_size=2^15
+    # fig, grid = panel_grid(
+    #     hspace=fig_size,
+    #     wspace=None,
+    #     ncols=4,
+    #     num_panels=len(dict__umap_dim_and_params)
+    # )
+    # i__ax = 0
     fig, grid = panel_grid(
-        hspace=fig_size,
+        hspace=0.125*n_params,
         wspace=None,
         ncols=4,
         num_panels=len(dict__umap_dim_and_params)
@@ -125,11 +132,16 @@ def save_plot(
                 color_palette = colors_large_palette
             if drop_legend >= 0 and n_categories >= drop_legend:
                 legend_loc = None
+        else:
+            # Make sure that the numeric value is actually numeric
+            adata.obs[color_var] = adata.obs[color_var].astype('double')
 
-        # For some reason, there is an error if return_fig = False, but
+        # For some reason, there ics an error if return_fig = False, but
         # not when show = False.
         # sc.pl.embedding(
         #     basis='X_umap',
+        # Azimuth:predicted.celltype.l2.score
+        
         if color_var != 'embedding_density':
             sc.pl.umap(
                 adata=adata,
@@ -262,7 +274,15 @@ def main():
     adata = sc.read_h5ad(filename=options.h5)
     # adata_QC = sc.read_h5ad(filename=options.h5_QC)
     # adata_QC = sc.read_h5ad(filename='/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/qc/Franke_with_genotypes/work/c5/2ead02a35b945b2fded83b6402ffee/adata_celltypes.h5ad')
-    
+    try:
+        del adata.layers['counts']
+    except:
+        _='doesnt exist'
+ 
+    try:
+        del adata.layers['log1p_cp10k']
+    except:
+        _='doesnt exist'
     
     # adata.obs['predicted.celltype.l2']=adata_QC.obs['predicted.celltype.l2']
     # adata.obs['predicted.celltype.l2.score']=adata_QC.obs['predicted.celltype.l2.score']
@@ -318,23 +338,29 @@ def main():
 
     
     for color_var in colors_quantitative:
-        save_plot(
-            adata=adata,
-            dict__umap_dim_and_params=dict__umap_dim_and_params,
-            out_file_base=out_file_base,
-            color_var=color_var,
-            colors_quantitative=True,
-            drop_legend=options.drop_legend
-        )
+        try:
+            save_plot(
+                adata=adata,
+                dict__umap_dim_and_params=dict__umap_dim_and_params,
+                out_file_base=out_file_base,
+                color_var=color_var,
+                colors_quantitative=True,
+                drop_legend=options.drop_legend
+            )
+        except:
+            print(f'{color_var} -- cant be plotted')
     for color_var in colors_categorical:
-        save_plot(
-            adata=adata,
-            dict__umap_dim_and_params=dict__umap_dim_and_params,
-            out_file_base=out_file_base,
-            color_var=color_var,
-            colors_quantitative=False,
-            drop_legend=options.drop_legend
-        )
+        try:
+            save_plot(
+                adata=adata,
+                dict__umap_dim_and_params=dict__umap_dim_and_params,
+                out_file_base=out_file_base,
+                color_var=color_var,
+                colors_quantitative=False,
+                drop_legend=options.drop_legend
+            )
+        except:
+            print(f'{color_var} -- cant be plotted')
 
     # adata.write(
     #     '{}.h5ad'.format('test'),
