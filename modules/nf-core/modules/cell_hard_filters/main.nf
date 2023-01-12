@@ -14,6 +14,7 @@ process CELL_HARD_FILTERS{
     input:
         path(file_paths_h5ad)
         val(hard_filter_file_params)
+        val(drop)
 
     // NOTE: use path here and not file see:
     //       https://github.com/nextflow-io/nextflow/issues/1414
@@ -29,7 +30,8 @@ process CELL_HARD_FILTERS{
             --number_cpu ${task.cpus} \
             --output_file hard_filters_adata \
             --h5addata_file ${file_paths_h5ad} \
-            --anndata_compression_opts ${params.anndata_compression_opts}
+            --anndata_compression_opts ${params.anndata_compression_opts} \
+            --drop ${drop}
         """
 
 }

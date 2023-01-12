@@ -91,7 +91,17 @@ def main():
         default='experiment_id',
         help='Key to link metadata to h5addata_file experiment_id column.\
             (default: %(default)s)'
+    )
+    
+    parser.add_argument(
+        '-drop', '--drop',
+        action='store',
+        dest='drop',
+        default=False,
+        help='Key to link metadata to h5addata_file experiment_id column.\
+            (default: %(default)s)'
     )    
+    
     
     options = parser.parse_args()
     sc.settings.figdir = os.getcwd()  # figure output directory to match base.
@@ -646,6 +656,7 @@ def main():
     # Now apply the filters - first apply the filters for all samples.
     n_cells_start = adata.n_obs
     filter_i = 0
+    adata.obs.loc[:, 'cell_passes_hard_filters'] = True
     if len(filters_all_samples) > 0:
         # Run each filter iteratively.
         for filter_query in filters_all_samples:
@@ -676,10 +687,13 @@ def main():
     # Now apply per sample filters.
     if len(filters_experiment) > 0:
         # Run each filter iteratively.
+        
         for filter_query in filters_experiment:
             if filter_query != '':
                 cells_to_remove = adata.obs.query(filter_query).index
+                
                 adata.obs.loc[cells_to_remove, 'cell_passes_hard_filters'] = False
+
                 n_cells_dict[options.experiment_name][
                     'filter__sample_specific after_filter_{} {}'.format(
                         filter_i,
@@ -687,7 +701,10 @@ def main():
                     )
                 ] = adata.obs['cell_passes_hard_filters'].sum()
                 filter_i += 1
-
+    if options.drop:
+        # we either drop of flag the hard filters files
+        adata = adata[adata.obs['cell_passes_hard_filters']==True]
+    
     # Apply cell downsampling if needed.
     if params_dict['downsample_cells_fraction']['value'] != '':
         n_cells_start = adata.n_obs
