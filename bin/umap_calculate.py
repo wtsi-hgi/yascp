@@ -185,7 +185,15 @@ def main():
 
     # Load the AnnData file.
     adata = sc.read_h5ad(filename=options.h5)
-
+    try:
+        del adata.layers['counts']
+    except:
+        _='doesnt exist'
+ 
+    try:
+        del adata.layers['log1p_cp10k']
+    except:
+        _='doesnt exist'
     # Load the PCs.
     # NOTE: In the BKNN instnace, we could totally ignore this, since the
     #       neighbors graph is already calculated.
