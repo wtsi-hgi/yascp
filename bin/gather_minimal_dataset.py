@@ -361,6 +361,7 @@ def gather_donor(donor_id, ad, ad_lane_raw, azimuth_annot, qc_obs, columns_outpu
     if donor_id != "unassigned" and donor_id != "doublet":
         # add annotation from QC
         df = pandas.concat([ad.obs, azimuth_annot.loc[azimuth_annot.donor == donor_id]], axis = 1, join = 'outer')
+        df =df.loc[:,~df.columns.duplicated()]
         df = df[['experiment_id'] + list(COLUMNS_DECONV.keys()) + list(COLUMNS_AZIMUTH.keys())]
         try:
             df = get_lane_and_runid_from_experiment_id(df, insert_pos = 1)
@@ -368,7 +369,6 @@ def gather_donor(donor_id, ad, ad_lane_raw, azimuth_annot, qc_obs, columns_outpu
             # here we do not know the lane ID.
             df['chromium_lane']=lane_id
             df['chromium_run_id']=df['experiment_id'][0]
-
 
 
         dfqc = qc_obs[qc_obs.donor == donor_id]
@@ -380,12 +380,10 @@ def gather_donor(donor_id, ad, ad_lane_raw, azimuth_annot, qc_obs, columns_outpu
         colnams = list(columns_output.keys())
         colnams_overlap = set(colnams).intersection(set(dt.columns))
         ad.obs = dt[colnams_overlap].rename(columns = columns_output)
-        dt = pandas.concat([df, dfqc], axis = 1, join = 'outer')[colnams]
+        dt = pandas.concat([df, dfqc], axis = 1, join = 'outer')[colnams_overlap]
         dt.rename(columns = columns_output, inplace = True)
-        dfqc['chromium_channel']
-        
 
-            # Stats
+        # Stats
         print('Performing the stats analysis')
         experiment_id = list(set(df.experiment_id))[0]
         try:
@@ -445,7 +443,8 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
     df_total_counts_cellranger_raw = df_total_counts
     df_total_counts_cellranger_raw['dataset']='Cellranger Raw'
 
-    if df_cellbender is not None:
+    if df_cellbender is not None and (len(df_cellbender)!=0):
+        
         try:
             # depends whether the absolute or relative path was recorded.
             cell_bender_path = f"{df_cellbender.loc[expid, 'data_path_10x_format']}"
@@ -539,11 +538,20 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
     ############################################################
     # Loading deconvoluted data including unassigned and doublets
     ###########################################
-    datadir_deconv=f'{args.results_dir}/deconvolution/split_donor_h5ad'
-    donor_table = os.path.join(datadir_deconv, expid, "{}.donors.h5ad.tsv".format(expid))
-    
-    df_donors = pandas.read_table(donor_table, header=None, names=("experiment_id", "donor_id", "file_path_h5ad"))
     obsqc,all_QC_lane = fetch_qc_obs_from_anndata(adqc, expid, cell_bender_path = cell_bender_path,Resolution=Resolution)
+    
+    try:        
+        datadir_deconv=f'{args.results_dir}/deconvolution/split_donor_h5ad'
+        donor_table = os.path.join(datadir_deconv, expid, "{}.donors.h5ad.tsv".format(expid))
+        df_donors = pandas.read_table(donor_table, header=None, names=("experiment_id", "donor_id", "file_path_h5ad"))
+    except:
+        donor_table={}
+        for d1 in set(obsqc['donor']):
+            donor_table['experiment_id']=expid
+            donor_table['donor_id']=d1
+            donor_table['file_path_h5ad']='all_QC_lane'
+        df_donors=pd.DataFrame([donor_table])
+    
 
     if scb is not None:
         obsqc = pandas.concat([obsqc,scb], axis = 1, join = 'outer')
@@ -688,15 +696,23 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
     for i in df_donors.index:
         # feeds in the individual assignments here.
         Donor_Stats=[]
-        row = df_donors.loc[3]
+        row = df_donors.loc[i]
         path1 = row['file_path_h5ad']
-        path1 = re.sub('.*/results/', 'results/', path1)
+        if(path1=='all_QC_lane'):
+            Deconvoluted_Donor_Data = all_QC_lane[all_QC_lane.obs['donor_id']==row['donor_id']]
+            Donor_barcodes = Deconvoluted_Donor_Data.obs.index.str.split('-').str[:2]
+            Donor_barcodes = Donor_barcodes.str[0]+'-'+Donor_barcodes.str[1]
+            Deconvoluted_Donor_Data.obs.index = Donor_barcodes
+        else:
+            path1 = re.sub('.*/results/', 'results/', path1)
+            Deconvoluted_Donor_Data = anndata.read_h5ad(path1)
+            Donor_barcodes = Deconvoluted_Donor_Data.obs.index
         # print(path1)
         #################
         #Deconvolution data
         #################
-        Deconvoluted_Donor_Data = anndata.read_h5ad(path1)
-        Donor_barcodes = Deconvoluted_Donor_Data.obs.index
+        
+        
         
         # issue with the all_QC_lane is that they are filtered and the unassigned cells are removed - ve can merge them back together and 
         if (row["donor_id"] == 'unassigned'):
