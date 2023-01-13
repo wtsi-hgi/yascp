@@ -63,7 +63,17 @@ COLUMNS_QC = {
     'pct_counts_gene_group__mito_transcript': 'qc.umi.perc.mt',
     'n_genes_by_counts': 'qc.genes.detected.count',
     'Azimuth:L0_predicted.celltype.l2':'azimuth.celltyp.l0',
-    'Azimuth:L1_predicted.celltype.l2':'azimuth.celltyp.l1'
+    'Azimuth:L1_predicted.celltype.l2':'azimuth.celltyp.l1',
+    'total_counts_gene_group__mito_transcript':'total_counts_gene_group__mito_transcript',
+    'pct_counts_gene_group__mito_transcript':'pct_counts_gene_group__mito_transcript',
+    'total_counts_gene_group__mito_protein':'total_counts_gene_group__mito_protein',
+    'pct_counts_gene_group__mito_protein':'pct_counts_gene_group__mito_protein',
+    'Celltypist:Immune_All_High:predicted_labels':'celltypist.celltyp.Immune_All_High',
+    'Celltypist:Immune_All_Low:predicted_labels':'celltypist.celltyp.Immune_All_Low',
+    'cellbender_latent_probability':'cellbender.latent.probability',
+    'scrublet__multiplet_scores':'scrublet__multiplet_scores',
+    'scrublet__predicted_multiplet':'scrublet__predicted_multiplet',
+    'scrublet__multiplet_zscores':'scrublet__multiplet_zscores'
     }
 COLUMNS_CELLBENDER = {'cellbender_latent_probability': 'cellbender.latent.probability'}
 COLUMNS_DATASET = {
@@ -368,10 +378,12 @@ def gather_donor(donor_id, ad, ad_lane_raw, azimuth_annot, qc_obs, columns_outpu
                 .format(oufnam, ad.obs.shape[0], df.shape[0]))
 
         colnams = list(columns_output.keys())
-        ad.obs = dt[colnams].rename(columns = columns_output)
+        colnams_overlap = set(colnams).intersection(set(dt.columns))
+        ad.obs = dt[colnams_overlap].rename(columns = columns_output)
         dt = pandas.concat([df, dfqc], axis = 1, join = 'outer')[colnams]
         dt.rename(columns = columns_output, inplace = True)
-
+        dfqc['chromium_channel']
+        
 
             # Stats
         print('Performing the stats analysis')
@@ -393,9 +405,10 @@ def gather_donor(donor_id, ad, ad_lane_raw, azimuth_annot, qc_obs, columns_outpu
     ad.obs.index.name = 'barcode'
     dt.to_csv(os.path.join(outdir, oufnam + '.tsv'), sep = "\t", na_rep = "N/A")
     sys.stderr.write("writing file {} ...\n".format(oufnam))
+    ad.obs = ad.obs.loc[:,~ad.obs.columns.duplicated()]
     if write_h5:
         path1=os.path.join(outdir, oufnam + '.h5ad')
-        ad.write(path1)
+        ad.write('test.h5ad',compression='gzip')
 
     return {
         'Experiment ID':experiment_id,
@@ -675,7 +688,7 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
     for i in df_donors.index:
         # feeds in the individual assignments here.
         Donor_Stats=[]
-        row = df_donors.loc[i]
+        row = df_donors.loc[3]
         path1 = row['file_path_h5ad']
         path1 = re.sub('.*/results/', 'results/', path1)
         # print(path1)
@@ -695,6 +708,7 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
             s = data['donor_id']
             s=s.reset_index()
             s = s.set_index('donor_id')
+            s.columns=['index']
             try:
                 Mengled_barcodes_donor = list(s.loc[row["donor_id"]]['index'])
             except:
