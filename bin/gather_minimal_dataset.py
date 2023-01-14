@@ -538,6 +538,7 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
     ############################################################
     # Loading deconvoluted data including unassigned and doublets
     ###########################################
+    print(expid)
     obsqc,all_QC_lane = fetch_qc_obs_from_anndata(adqc, expid, cell_bender_path = cell_bender_path,Resolution=Resolution)
     
     try:        

@@ -25,6 +25,7 @@ process CELL_HARD_FILTERS{
 
     script:
         """
+        
         cell_hard_filters.py --params_yaml ${hard_filter_file_params} \
             --metadata_key ${params.metadata_key_column.value} \
             --number_cpu ${task.cpus} \
