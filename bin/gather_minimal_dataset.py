@@ -406,7 +406,7 @@ def gather_donor(donor_id, ad, ad_lane_raw, azimuth_annot, qc_obs, columns_outpu
     ad.obs = ad.obs.loc[:,~ad.obs.columns.duplicated()]
     if write_h5:
         path1=os.path.join(outdir, oufnam + '.h5ad')
-        ad.write('test.h5ad',compression='gzip')
+        ad.write(path1,compression='gzip')
 
     return {
         'Experiment ID':experiment_id,
