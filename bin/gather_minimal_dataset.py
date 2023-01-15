@@ -275,9 +275,6 @@ def load_scrublet_assignments(expid, datadir_scrublet):
 def fetch_qc_obs_from_anndata(adqc, expid, cell_bender_path = None,Resolution='0pt5'):
 
     s = adqc.obs['convoluted_samplename'] == expid
-    if s.shape[0] < 1:
-        sys.exit("ERROR: No QC data found for experiment_id = '{:s}'"
-            .format(expid))
     ad = adqc[s]
     df = get_df_from_mangled_index(ad.obs, expid)
     #df.insert(0, 'barcode', df.index.values)
@@ -539,6 +536,7 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
     # Loading deconvoluted data including unassigned and doublets
     ###########################################
     print(expid)
+
     obsqc,all_QC_lane = fetch_qc_obs_from_anndata(adqc, expid, cell_bender_path = cell_bender_path,Resolution=Resolution)
     
     try:        
@@ -1040,6 +1038,11 @@ if __name__ == '__main__':
 
     for expid in df_raw.index:
         # try:
+        # expid ='OTARscRNA12924807'
+        s = adqc.obs['convoluted_samplename'] == expid
+        ad = adqc[s]
+        if ad.n_obs == 0:
+            continue #Here no cells has passed the qc thresholds.
         nf, data_tranche, data_donor, azt = gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = oufh, lane_id=count,Resolution=Resolution)
         # add the stuff to the adata.
         azt=azt.set_index('mangled_cell_id')
