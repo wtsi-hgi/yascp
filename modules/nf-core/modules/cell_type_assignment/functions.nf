@@ -26,10 +26,16 @@ process CELLTYPE_FILE_MERGE{
     script:
         all_azimuth_files = azimuth_files.join("::")
         all_celltypist_files = celltypist_paths.join("::")
-        all_other_paths_comb = all_other_paths.join("::")
+        if ("${all_other_paths}"!='fake_file.fq'){
+            all_other_paths_comb = all_other_paths.join("::")
+            other_paths ="--all_other_paths ${all_other_paths_comb}"
+        }else{
+            other_paths = ""
+        }
+        
         all_adatas = file__anndata_input.join("::")
         """
-            generate_combined_celltype_anotation_file.py --all_azimuth_files ${all_azimuth_files} --all_celltypist_files ${all_celltypist_files} --all_other_paths ${all_other_paths_comb} --adata '${all_adatas}'
+            generate_combined_celltype_anotation_file.py --all_azimuth_files ${all_azimuth_files} --all_celltypist_files ${all_celltypist_files} ${other_paths} --adata '${all_adatas}'
         """
 
 }

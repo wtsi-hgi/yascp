@@ -72,4 +72,5 @@ workflow match_genotypes {
     pool_id_donor_assignments_csv = MATCH_GT_VIREO.out.pool_id_donor_assignments_csv
     donor_match_table = MATCH_GT_VIREO.out.donor_match_table
     out_finish_val = ou3
+    donor_match_table_enhanced = outfile_for_final_gt
 }

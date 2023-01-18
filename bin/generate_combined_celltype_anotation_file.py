@@ -62,7 +62,8 @@ def main():
         '-af', '--all_other_paths',
         action='store',
         dest='all_alternitive',
-        required=True,
+        required=False,
+        default=None,
         help='List of csv-delimited files of celltypes assigned by azimuth.'
     )
 
@@ -95,9 +96,12 @@ def main():
     celltypist_files2 = pd.DataFrame(celltypist_files,columns=['col1'])
     celltypist_files3 =list(celltypist_files2[~celltypist_files2['col1'].str.contains('input')]['col1'])
     Data_All_celltypist = combine_reports(celltypist_files3,'Celltypist:')
-        
-    all_alternitive = options.all_alternitive.split('::')
-    Data_All_alt = combine_reports(all_alternitive,'')
+    
+    if (options.all_alternitive):
+        all_alternitive = options.all_alternitive.split('::')
+        Data_All_alt = combine_reports(all_alternitive,'')
+    else:
+        Data_All_alt=pd.DataFrame()
 
     Data_All = pd.concat([Data_All,Data_All_Azimuth,Data_All_celltypist,Data_All_alt],axis=1)
     

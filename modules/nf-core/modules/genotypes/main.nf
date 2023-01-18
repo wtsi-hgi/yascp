@@ -173,11 +173,10 @@ process ENHANCE_STATS_GT_MATCH{
   label 'process_medium'
 
   input:
-    tuple val(samplename), path(gt_donors), path(vireo_sample_summary),path(vireo___exp_sample_summary),path(vireo__donor_ids),path(vcf_file),path(donor_gt_csi)
-    path(gt_match_results)
+    tuple val(samplename), path(enhancement_file)
   output:
 
-    path("GT_replace_${samplename}_assignments.tsv"), emit: assignments
+    path("GT_replace_${enhancement_file}"), emit: assignments
     
   script:
     if(params.genotype_phenotype_mapping_file==''){
@@ -190,7 +189,7 @@ process ENHANCE_STATS_GT_MATCH{
     }
 
     """
-      enhance_stats.py -id ${samplename} ${in} --input_file "${params.input_data_table}" -m ${params.genotype_input.vireo_with_gt}
+      enhance_stats.py -id ${samplename} -dm ${enhancement_file} ${in} --input_file "${params.input_data_table}" -m ${params.genotype_input.vireo_with_gt}
     """
 }
 
@@ -380,7 +379,7 @@ process ENHANCE_STATS_FILE{
 
   output:
     
-    tuple val(pool_id),path("PiHAT_Stats_File*"), emit: stats_table_PiHat_enhanced optional true
+    tuple val(pool_id),path("PiHAT_Stats_File_${pool_id}.csv"), emit: stats_table_PiHat_enhanced
     path ('Max_PiHAT_For_Expected*'), emit: max_PiHAT_For_Expected optional true
     path('Done.tmp'), emit: done_validation
   script:

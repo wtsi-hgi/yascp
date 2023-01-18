@@ -88,7 +88,7 @@ process OUTLIER_FILTER {
             ln ${outfile}-cell_filtered_per_experiment__cell_passes_qc.tsv.gz outlier_filtered_adata-cell_filtered_per_experiment.tsv.gz
             mv *pdf plots/ 2>/dev/null || true
             mv *png plots/ 2>/dev/null || true
-            mv per_celltype_outliers plots/ 2>/dev/null || true
+            mv per_celltype_outliers* plots/ 2>/dev/null || true
             mkdir merged_h5ad
             mv outlier_filtered_adata.h5ad merged_h5ad/ 2>/dev/null || true
             mv outlier_filtered_adata-cell_filtered_per_experiment.tsv.gz merged_h5ad/ 2>/dev/null || true

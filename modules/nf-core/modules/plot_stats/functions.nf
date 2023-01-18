@@ -195,7 +195,7 @@ process plot_qc {
                 ${cmd__facet_columns}
             0027-calculate_mads.py \
                 --h5_anndata ${file__anndata} \
-                --qc_key 'pct_counts_gene_group__mito_transcript,pct_counts_gene_group__mito_protein,pct_counts_gene_group__ribo_protein,pct_counts_gene_group__ribo_rna,total_counts,n_genes_by_counts' \
+                --qc_key ${params.mads_categories} \
                 --output_file mads
         """
 }

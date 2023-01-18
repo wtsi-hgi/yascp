@@ -45,6 +45,106 @@ include { prepare_inputs } from "$projectDir/subworkflows/prepare_inputs"
 include {MULTIPLET} from "$projectDir/modules/nf-core/modules/multiplet/main"
 include { SPLIT_DONOR_H5AD } from "$projectDir/modules/nf-core/modules/split_donor_h5ad/main"
 include {REPLACE_GT_DONOR_ID2 } from "$projectDir/modules/nf-core/modules/genotypes/main"
+include {CAPTURE_VIREO } from "$projectDir/modules/nf-core/modules/vireo/main"
+include {VIREO_GT_FIX_HEADER; VIREO_ADD_SAMPLE_PREFIX; MERGE_GENOTYPES_IN_ONE_VCF as MERGE_GENOTYPES_IN_ONE_VCF_INFERED; MERGE_GENOTYPES_IN_ONE_VCF as MERGE_GENOTYPES_IN_ONE_VCF_SUBSET} from "$projectDir/modules/nf-core/modules/genotypes/main"
+include {ENHANCE_STATS_GT_MATCH } from "$projectDir/modules/nf-core/modules/genotypes/main"
+include {collect_file} from "$projectDir/modules/nf-core/modules/collect_file/main"
+
+
+workflow FREEZE1_GENERATION{
+    GENOTYPE_UPDATE()
+    YASCP (GENOTYPE_UPDATE.out.assignments_all_pools)
+
+}
+
+workflow GENOTYPE_UPDATE{
+    // For Freeze1 we take the existing datasets and cp -as results folder so we can start from a breakpoint in pipeline
+    // We rerun the GT match for all tranches as this has changed significantly since the beggining.
+
+    myFileChannel = Channel.fromPath( "${params.outdir}/deconvolution/vireo/*/GT_donors.vireo.vcf.gz" )
+    myFileChannel.map{row -> tuple(row[-2], row)}.set{vireo_out_sample_donor_vcf}
+
+    if (params.genotype_input.run_with_genotype_input) {
+            // We have to produce a single vcf file for each individual pool.
+            // Therefore we create 2 channels:
+            // 1) All the expected vcf ids listed in the donor table
+            Channel.fromPath(params.input_data_table,      
+            followLinks: true,
+            checkIfExists: true
+            ).splitCsv(header: true, sep: '\t').map { row -> tuple(row.experiment_id, row.donor_vcf_ids) }
+            .set { donors_in_pools }
+            
+            // 2) All the vcfs provided to us. 
+            Channel.fromPath(
+            params.genotype_input.tsv_donor_panel_vcfs,
+            followLinks: true,
+            checkIfExists: true
+            ).splitCsv(header: true, sep: '\t')
+            .map { row -> tuple(row.label, file(row.vcf_file_path), file("${row.vcf_file_path}.csi")) }
+            .set { ch_ref_vcf }
+
+            // This will subsequently result in a joint vcf file for all the cohorts listed for each of the pools that can be used in VIREO and/or GT matching algorythm.
+            SUBSET_WORKF(ch_ref_vcf,donors_in_pools,'AllExpectedGT')
+            merged_expected_genotypes = SUBSET_WORKF.out.merged_expected_genotypes
+            MERGE_GENOTYPES_IN_ONE_VCF_SUBSET(SUBSET_WORKF.out.study_merged_vcf.collect(),'subset')
+
+        }else{
+            ch_ref_vcf = Channel.of()
+    }
+
+    // tuple val(pool_id), path("${vireo_fixed_vcf}"), path("${vireo_fixed_vcf}.tbi"), emit: gt_pool
+    CAPTURE_VIREO(params.existing_vireo)
+    CAPTURE_VIREO.out.vireo_loc.splitCsv(header: false, sep: ' ')
+        .map{row->tuple(row[0], "${row[1]}", "${row[2]}")}
+        .set{gt_pool}
+    gt_pool
+        .combine(ch_ref_vcf)
+        .set { gt_math_pool_against_panel_input }
+
+    match_genotypes(vireo_out_sample_donor_vcf,merged_expected_genotypes,gt_pool,gt_math_pool_against_panel_input)
+    ENHANCE_STATS_GT_MATCH(match_genotypes.out.donor_match_table_enhanced)
+    collect_file(ENHANCE_STATS_GT_MATCH.out.assignments.collect(),"assignments_all_pools.tsv",params.outdir+'/deconvolution/vireo_gt_fix',1,'')
+    assignments_all_pools = collect_file.out.output_collection
+    // We start the pipeline from the pre_qc breakpoint.
+    emit:
+        assignments_all_pools
+}
+
+workflow REPORT_UPDATE{
+    // We use this entry point to update the reports upon running some individual processes that have already completed.
+    input_channel = Channel.fromPath(params.input_data_table, followLinks: true, checkIfExists: true)
+    CREATE_ARTIFICIAL_BAM_CHANNEL(input_channel)
+    bam_split_channel = CREATE_ARTIFICIAL_BAM_CHANNEL.out.ch_experiment_bam_bai_barcodes
+    ch_poolid_csv_donor_assignments = CREATE_ARTIFICIAL_BAM_CHANNEL.out.ch_poolid_csv_donor_assignments
+    
+    // // 1) The pihat values were impemented posthoc, hence we are runing this on each of the independent tranches. 
+    // myFileChannel = Channel.fromPath( "${params.outdir}/deconvolution/vireo/*/GT_donors.vireo.vcf.gz" )
+    // myFileChannel.map{row -> tuple(row[-2], row)}.set{vireo_out_sample_donor_vcf}
+    // match_genotypes(vireo_out_sample_donor_vcf)
+    // match_genotypes.out.out_finish_val.set{o1}
+    // // updating the Metadata if something new has been fetched,
+    // // UKBB is sending us samples once a week and sometimes the sample mappings may be present at a later date, hence we update previously run samples accordingly.
+    Channel.from([["${params.RUN}","${params.output_dir}"]]).set{update_input_channel}
+    // // We sometimes aslo chnge apporach in the data fetch and we need to add in some extra metadata
+    metadata_posthoc(update_input_channel)
+    metadata_posthoc.out.dummy_out.set{o3}
+    // replace_donors_posthoc(update_input_channel)
+    // replace_donors_posthoc.out.dummy_out.set{o2}
+    // o1.mix(o2).last().set{o3}
+    // o3 = Channel.of('dummys')
+    // Once everything is updated we need to make sure that the dataon the website and in the cardinal analysis foder is accurate and up to date, hence we rerun the data_handover scripts.
+    // data_handover(params.output_dir,
+    //             process_finish_check_channel,
+    //             ch_poolid_csv_donor_assignments,
+    //             bam_split_channel) 
+    data_handover(params.output_dir,
+                o3,
+                ch_poolid_csv_donor_assignments,
+                bam_split_channel) 
+    // SUMMARY_STATISTICS_PLOTS(params.output_dir,o3,params.input_data_table)
+    // TRANSFER(SUMMARY_STATISTICS_PLOTS.out.summary_plots,params.rsync_to_web_file,params.output_dir)
+}
+
 
 workflow NF_CORE_TEST {
   //println "**** running NF_CORE_TEST::TEST_MATCH_GENOTYPES"
@@ -185,71 +285,23 @@ workflow NF_CORE_TEST {
 
 }
 
-
-workflow REPORT_UPDATE{
-    // We use this entry point to update the reports upon running some individual processes that have already completed.
-    input_channel = Channel.fromPath(params.input_data_table, followLinks: true, checkIfExists: true)
-    CREATE_ARTIFICIAL_BAM_CHANNEL(input_channel)
-    bam_split_channel = CREATE_ARTIFICIAL_BAM_CHANNEL.out.ch_experiment_bam_bai_barcodes
-    ch_poolid_csv_donor_assignments = CREATE_ARTIFICIAL_BAM_CHANNEL.out.ch_poolid_csv_donor_assignments
-    
-
-    // // 1) The pihat values were impemented posthoc, hence we are runing this on each of the independent tranches. 
-    // myFileChannel = Channel.fromPath( "${params.outdir}/deconvolution/vireo/*/GT_donors.vireo.vcf.gz" )
-    // myFileChannel.map{row -> tuple(row[-2], row)}.set{vireo_out_sample_donor_vcf}
-    // match_genotypes(vireo_out_sample_donor_vcf)
-    // match_genotypes.out.out_finish_val.set{o1}
-    // // updating the Metadata if something new has been fetched,
-    // // UKBB is sending us samples once a week and sometimes the sample mappings may be present at a later date, hence we update previously run samples accordingly.
-    Channel.from([["${params.RUN}","${params.output_dir}"]]).set{update_input_channel}
-    // // We sometimes aslo chnge apporach in the data fetch and we need to add in some extra metadata
-    metadata_posthoc(update_input_channel)
-    metadata_posthoc.out.dummy_out.set{o3}
-    // replace_donors_posthoc(update_input_channel)
-    // replace_donors_posthoc.out.dummy_out.set{o2}
-    // o1.mix(o2).last().set{o3}
-    // o3 = Channel.of('dummys')
-    // Once everything is updated we need to make sure that the dataon the website and in the cardinal analysis foder is accurate and up to date, hence we rerun the data_handover scripts.
-    // data_handover(params.output_dir,
-    //             process_finish_check_channel,
-    //             ch_poolid_csv_donor_assignments,
-    //             bam_split_channel) 
-    data_handover(params.output_dir,
-                o3,
-                ch_poolid_csv_donor_assignments,
-                bam_split_channel) 
-    // SUMMARY_STATISTICS_PLOTS(params.output_dir,o3,params.input_data_table)
-    // TRANSFER(SUMMARY_STATISTICS_PLOTS.out.summary_plots,params.rsync_to_web_file,params.output_dir)
-}
-
-
 /*
 ========================================================================================
     NAMED WORKFLOW FOR PIPELINE
 ========================================================================================
 */
 
-include { SCDECON } from './workflows/yascp'
+include { YASCP } from './workflows/yascp'
 
-//
-// WORKFLOW: Run main nf-core/yascp analysis pipeline
-//
-workflow NFCORE_SCDECON {
-    SCDECON ()
+////// WORKFLOW: Run main nf-core/yascp analysis pipeline
+workflow MAIN {
+    YASCP ('default')
 }
 
-/*
-========================================================================================
-    RUN ALL WORKFLOWS
-========================================================================================
-*/
-
-//
-// WORKFLOW: Execute a single named workflow for the pipeline
-// See: https://github.com/nf-core/rnaseq/issues/619
 //
 workflow {
-    NFCORE_SCDECON ()
+    // This is the default entry point, we have others to update ceirtain parts of the results.
+    MAIN ()
 }
 
 /*

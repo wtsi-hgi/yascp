@@ -14,6 +14,7 @@ import gzip
 import pandas
 import scanpy
 import anndata
+import numpy as np
 ## split h5ad file by chromium channel
 
 # for testing use
@@ -31,6 +32,7 @@ def write_h5_out_for_ct(ad,oufn_list_AZ,oufnam,oufn_list,samples,samples_AZ,bl,c
     # assumes that cells failing qc already were stripped out
     # ad.obs = ad.obs[['convoluted_samplename', 'cell_passes_qc']]
     # ad.var = ad.var[['feature_types', 'genome', 'gene_symbols']]
+    adb.obs['log10_ngenes_by_count'] = np.log10(adb.obs['n_genes_by_counts']) / np.log10(adb.obs['total_counts'])
     adb_AZ = adb.copy()
     # disable
     adb_AZ.obs = pandas.DataFrame(adb_AZ.obs.index, index = adb_AZ.obs.index, columns = ["cell_barcode"])

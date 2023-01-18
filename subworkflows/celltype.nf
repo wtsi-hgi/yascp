@@ -33,7 +33,7 @@ workflow celltype{
             KERAS_CELLTYPE(ch_experiment_filth5) 
             all_extra_fields = KERAS_CELLTYPE.out.predicted_celltype_labels.collect()
         }else{
-            all_extra_fields = Channel.of()
+            all_extra_fields = Channel.from("$projectDir/assets/fake_file.fq")
         }
         
 
@@ -42,17 +42,17 @@ workflow celltype{
             REMAP_AZIMUTH(AZIMUTH.out.predicted_celltype_labels,params.mapping_file)
             az_out = REMAP_AZIMUTH.out.predicted_celltype_labels.collect()
         }else{
-            az_out = Channel.of()
+            az_out = Channel.from("$projectDir/assets/fake_file.fq")
         }
 
-        if (params.celltype_assignment.run_azimuth){
+        if (params.celltype_assignment.run_celltypist){
             Channel.fromList(params.celltypist.models)
                 .set{ch_celltypist_models}
             CELLTYPIST(az_ch_experiment_filth5.combine(ch_celltypist_models))
             ct_out = CELLTYPIST.out.predicted_labels.collect()
 
         }else{
-            ct_out = Channel.of()
+            ct_out = Channel.from("$projectDir/assets/fake_file.fq")
         }
         
         CELLTYPE_FILE_MERGE(az_out,ct_out,all_extra_fields,SPLIT_BATCH_H5AD.out.keras_outfile)

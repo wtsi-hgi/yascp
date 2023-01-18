@@ -81,7 +81,6 @@ workflow qc {
             NORMALISE_AND_PCA.out.anndata,
             params.reduced_dims.n_dims.add_n_to_estimate
         )
-        LI = ''
 
         if (params.reduced_dims.n_dims.auto_estimate) {
             log.info "n_pcs = automatically estimated."
@@ -178,11 +177,12 @@ workflow qc {
             )
             
             lisi_input2 = HARMONY.out.reduced_dims_params.collect()
-            LI1 = CLUSTERING_HARMONY.out.dummy_output
+            LI14 = CLUSTERING_HARMONY.out.dummy_output.collect()
+            LI1 = LI14.mix(cluster_harmony__pcs)
                 
         }else{
             lisi_input2 = Channel.of([1, 'dummy'])
-            LI1 = Channel.of([1, 'dummy'])
+            LI1 = Channel.of([1, 'dummy_harmony'])
         }
 
         if (params.bbknn.run_process) {
@@ -243,11 +243,11 @@ workflow qc {
             )
             
             lisi_input3 = BBKNN.out.reduced_dims_params.collect()
-            LI2 = CLUSTERING_BBKNN.out.dummy_output
+            LI2 = CLUSTERING_BBKNN.out.dummy_output.collect()
                 
         }else{
             lisi_input3 = Channel.of([1, 'dummy'])
-            LI2 = Channel.of([1, 'dummy'])
+            LI2 = Channel.of([1, 'dummy_bbknn'])
         }
 
         if (params.lisi.run_process) {
@@ -262,13 +262,13 @@ workflow qc {
                 lisi_input_second.collect()
             )
             
-            LI3 = LISI.out.outdir
+            LI3 = LISI.out.outdir.collect()
         }else{
-            LI3 = Channel.of([1, 'dummy'])
+            LI3 = Channel.of([1, 'dummy_lisi'])
         }
-        LI=LI1.mix(LI2)
-        LI=LI.mix(LI3)
-        LI=LI.mix(LI4)
+        LI5=LI1.join(LI2)
+        LI6=LI5.join(LI3)
+        LI=LI6.join(LI4)
     emit:
         LI
         file__anndata_merged

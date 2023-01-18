@@ -1,3 +1,23 @@
+process CAPTURE_VIREO{
+  label 'process_tiny'
+  input:
+    path(vireo_location)
+   
+  output:
+    // tuple val(pool_id), path("${vireo_fixed_vcf}"), path("${vireo_fixed_vcf}.tbi"), emit: gt_pool
+    path("output_vireo.csv"),emit:vireo_loc
+  script:
+  """
+    for OUTPUT in \$(ls -d ${vireo_location}/*/)
+    do
+    samplename1=\$(echo \$OUTPUT | sed 's/${vireo_location}\\///g')
+    samplename1=\${samplename1:0:-1}
+    echo "\$samplename1 \$PWD/${vireo_location}/\$samplename1/\${samplename1}_headfix_vireo.vcf.gz \$PWD/${vireo_location}/\$samplename1/\${samplename1}_headfix_vireo.vcf.gz.tbi" >> output_vireo.csv
+    done
+  """    
+}
+
+
 
 process VIREO {
     tag "${samplename}"

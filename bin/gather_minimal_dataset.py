@@ -73,7 +73,8 @@ COLUMNS_QC = {
     'cellbender_latent_probability':'cellbender.latent.probability',
     'scrublet__multiplet_scores':'scrublet__multiplet_scores',
     'scrublet__predicted_multiplet':'scrublet__predicted_multiplet',
-    'scrublet__multiplet_zscores':'scrublet__multiplet_zscores'
+    'scrublet__multiplet_zscores':'scrublet__multiplet_zscores',
+    'log10_ngenes_by_count':'log10_ngenes_by_count'
     }
 COLUMNS_CELLBENDER = {'cellbender_latent_probability': 'cellbender.latent.probability'}
 COLUMNS_DATASET = {
