@@ -105,8 +105,8 @@ process generate_final_UMAPS{
         umap_plot_final.py \
             --h5_anndata ${file__anndata} \
             --number_cpu 1 \
-            --colors_quantitative ${params.umap.colors_quantitative} \
-            --colors_categorical ${params.umap.colors_categorical} \
+            --colors_quantitative ${params.umap.colors_quantitative.value} \
+            --colors_categorical ${params.umap.colors_categorical.value} \
             --drop_legend_n 40 \
             --output_file UMAP
     """
