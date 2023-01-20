@@ -56,8 +56,12 @@ COLUMNS_DECONV = {
     'prob_doublet': 'vireo.prob.doublet'
     }
 COLUMNS_QC = {
+    'cell_passes_hard_filters': 'cell_passes_hard_filters',
     'cell_passes_qc': 'qc.filter.pass',
+    'cell_passes_qc-per:all_together::exclude':'qc.filter.pass.spikein_exclude',
+    'cell_passes_qc-per:all_together::exclude:score':'qc.filter.pass.spikein_exclude:score',
     'cell_passes_qc-per:Azimuth:L0_predicted.celltype.l2':'qc.filter.pass.AZ:L0',
+    'cell_passes_qc-per:Azimuth:L0_predicted.celltype.l2:score':'qc.filter.pass.AZ:L0:score',
     'total_counts': 'qc.umi.count.total',
     'total_counts_gene_group__mito_transcript': 'qc.umi.count.mt',
     'pct_counts_gene_group__mito_transcript': 'qc.umi.perc.mt',
@@ -74,7 +78,11 @@ COLUMNS_QC = {
     'scrublet__multiplet_scores':'scrublet__multiplet_scores',
     'scrublet__predicted_multiplet':'scrublet__predicted_multiplet',
     'scrublet__multiplet_zscores':'scrublet__multiplet_zscores',
-    'log10_ngenes_by_count':'log10_ngenes_by_count'
+    'log10_ngenes_by_count':'log10_ngenes_by_count',
+    'pct_counts_in_top_50_genes':'pct_counts_in_top_50_genes',
+    'pct_counts_in_top_100_genes':'pct_counts_in_top_100_genes',
+    'pct_counts_in_top_200_genes','pct_counts_in_top_200_genes',
+    'pct_counts_in_top_500_genes':'pct_counts_in_top_500_genes'
     }
 COLUMNS_CELLBENDER = {'cellbender_latent_probability': 'cellbender.latent.probability'}
 COLUMNS_DATASET = {
@@ -371,9 +379,6 @@ def gather_donor(donor_id, ad, ad_lane_raw, azimuth_annot, qc_obs, columns_outpu
 
         dfqc = qc_obs[qc_obs.donor == donor_id]
         dt = pandas.concat([df,dfqc], axis = 1, join = 'inner')
-        if dt.shape[0] != ad.obs.shape[0]:
-            sys.exit("ERROR: Number of cells in file {:s} changed from {:d} to {:d}\n"
-                .format(oufnam, ad.obs.shape[0], df.shape[0]))
 
         colnams = list(columns_output.keys())
         colnams_overlap = set(colnams).intersection(set(dt.columns))
@@ -540,18 +545,23 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
 
     obsqc,all_QC_lane = fetch_qc_obs_from_anndata(adqc, expid, cell_bender_path = cell_bender_path,Resolution=Resolution)
     
-    try:        
-        datadir_deconv=f'{args.results_dir}/deconvolution/split_donor_h5ad'
-        donor_table = os.path.join(datadir_deconv, expid, "{}.donors.h5ad.tsv".format(expid))
-        df_donors = pandas.read_table(donor_table, header=None, names=("experiment_id", "donor_id", "file_path_h5ad"))
-    except:
+    # try:        
+    #     datadir_deconv=f'{args.results_dir}/deconvolution/split_donor_h5ad'
+    #     donor_table = os.path.join(datadir_deconv, expid, "{}.donors.h5ad.tsv".format(expid))
+    #     df_donors = pandas.read_table(donor_table, header=None, names=("experiment_id", "donor_id", "file_path_h5ad"))
+    # except:
+    donor_tables=pd.DataFrame([])
+    for d1 in set(obsqc['donor']):
         donor_table={}
-        for d1 in set(obsqc['donor']):
-            donor_table['experiment_id']=expid
-            donor_table['donor_id']=d1
-            donor_table['file_path_h5ad']='all_QC_lane'
+        donor_table['experiment_id']=expid
+        donor_table['donor_id']=d1
+        donor_table['file_path_h5ad']='all_QC_lane'
         df_donors=pd.DataFrame([donor_table])
-    
+        try:
+            donor_tables=pd.concat([donor_tables,df_donors])
+        except:
+            donor_tables=donor_table
+    df_donors = donor_tables
 
     if scb is not None:
         obsqc = pandas.concat([obsqc,scb], axis = 1, join = 'outer')
@@ -603,7 +613,8 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
     # Deconvoluted_Donor_Data_sheet = df_donors
     # All_AnnData_QC_lane = adqc
     # Adata_counts = adqc.to_df()
-    
+    def isNaN(num):
+        return num!= num
     Donors = list(df_donors.donor_id)
 
     try:

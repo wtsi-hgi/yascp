@@ -369,17 +369,19 @@ def main():
         metadata_columns = metadata_columns_original.copy()
         if (outlier_filtering_strategy == 'all_together'):
             cell_qc_column = options.cell_qc_column
+            cell_qc_column_score = f"{cell_qc_column}:score"
             adata.obs[cell_qc_column] = True
-            adata.obs[f"{cell_qc_column}:score"] = None
+            adata.obs[cell_qc_column_score] = None
             metadata_columns.append(cell_qc_column)
             prediction_score, fail_pass = perform_adaptiveQC_Filtering(clf,adata,method,metadata_columns)
             adata.obs[cell_qc_column] = fail_pass
-            adata.obs[f"{cell_qc_column}:score"] = prediction_score
+            adata.obs[cell_qc_column_score] = prediction_score
         else:
             cell_qc_column = f'{cell_qc_column}-per:{outlier_filtering_strategy}'
+            cell_qc_column_score = f"{cell_qc_column}:score"
             metadata_columns.append(cell_qc_column)
             adata.obs[cell_qc_column] = True
-            adata.obs[f"{cell_qc_column}:score"] = None
+            adata.obs[cell_qc_column_score] = None
             try:
                 os.mkdir(f'per_celltype_outliers__{outlier_filtering_strategy}')
             except:
@@ -391,15 +393,15 @@ def main():
                 continue
             for subset_id_for_ad_qc in outlier_strategy_cols:
                 subset_ad = adata[adata.obs[outlier_filtering_strategy]==subset_id_for_ad_qc]
-                    
+                print(f'filtering:{subset_id_for_ad_qc} {outlier_filtering_strategy}')    
                 if(len(subset_ad)>100):
                     # We only perform adaptive qc when there is at least 100 cells, otherwise we assume that all pass
                     prediction_score, fail_pass = perform_adaptiveQC_Filtering(clf,subset_ad,method,metadata_columns)
                     adata.obs.loc[subset_ad.obs.index,cell_qc_column]=fail_pass
                     subset_ad.obs.loc[subset_ad.obs.index,cell_qc_column]=fail_pass
                     
-                    adata.obs.loc[subset_ad.obs.index,f"{cell_qc_column}:score"]=prediction_score
-                    subset_ad.obs.loc[subset_ad.obs.index,f"{cell_qc_column}:score"]=prediction_score
+                    adata.obs.loc[subset_ad.obs.index,cell_qc_column_score]=prediction_score
+                    subset_ad.obs.loc[subset_ad.obs.index,cell_qc_column_score]=prediction_score
                     
                 else:
                     print(f'For a category {subset_id_for_ad_qc} we have only {len(subset_ad)} cells and as its not sufficient ammount to estimate distributions we assuma all pass QC')
@@ -410,10 +412,13 @@ def main():
            
         # Update the original data to flag those cells that passed the outlier
         adata_original.obs[cell_qc_column] = False
+        adata_original.obs[cell_qc_column_score]=None
         adata_original.obs.loc[
             adata.obs['cell_id'][adata.obs[cell_qc_column]],
             cell_qc_column
         ] = True
+        adata_original.obs[cell_qc_column_score]=adata.obs[cell_qc_column_score]
+
         adata_original.obs[['cell_id', cell_qc_column]].to_csv(
             f'{options.of}-outliers_filtered__{cell_qc_column}.tsv.gz',
             sep='\t',

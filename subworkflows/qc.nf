@@ -266,9 +266,9 @@ workflow qc {
         }else{
             LI3 = Channel.of([1, 'dummy_lisi'])
         }
-        LI5=LI1.join(LI2)
-        LI6=LI5.join(LI3)
-        LI=LI6.join(LI4)
+        LI5=LI1.combine(LI2)
+        LI6=LI5.combine(LI3)
+        LI=LI6.combine(LI4)
     emit:
         LI
         file__anndata_merged
