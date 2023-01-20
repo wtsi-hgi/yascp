@@ -81,7 +81,7 @@ COLUMNS_QC = {
     'log10_ngenes_by_count':'log10_ngenes_by_count',
     'pct_counts_in_top_50_genes':'pct_counts_in_top_50_genes',
     'pct_counts_in_top_100_genes':'pct_counts_in_top_100_genes',
-    'pct_counts_in_top_200_genes','pct_counts_in_top_200_genes',
+    'pct_counts_in_top_200_genes':'pct_counts_in_top_200_genes',
     'pct_counts_in_top_500_genes':'pct_counts_in_top_500_genes'
     }
 COLUMNS_CELLBENDER = {'cellbender_latent_probability': 'cellbender.latent.probability'}
@@ -544,7 +544,7 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
     print(expid)
 
     obsqc,all_QC_lane = fetch_qc_obs_from_anndata(adqc, expid, cell_bender_path = cell_bender_path,Resolution=Resolution)
-    
+    adqc.obs['experiment_id'] = adqc.obs['experiment_id'].str.split("__").str[0]
     # try:        
     #     datadir_deconv=f'{args.results_dir}/deconvolution/split_donor_h5ad'
     #     donor_table = os.path.join(datadir_deconv, expid, "{}.donors.h5ad.tsv".format(expid))
@@ -562,7 +562,7 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
         except:
             donor_tables=donor_table
     df_donors = donor_tables
-
+    df_donors = df_donors.reset_index(drop=True)
     if scb is not None:
         obsqc = pandas.concat([obsqc,scb], axis = 1, join = 'outer')
     
@@ -703,11 +703,13 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
         Tranche_Pass_Fail='FAIL'
         Tranche_Failure_Reason +='Mean reads per cell for all cells in pool <=25000; '
         
-
+    
     for i in df_donors.index:
+        print(i)
         # feeds in the individual assignments here.
         Donor_Stats=[]
         row = df_donors.loc[i]
+        print(row)
         path1 = row['file_path_h5ad']
         if(path1=='all_QC_lane'):
             Deconvoluted_Donor_Data = all_QC_lane[all_QC_lane.obs['donor_id']==row['donor_id']]

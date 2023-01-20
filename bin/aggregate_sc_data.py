@@ -73,7 +73,7 @@ def main():
     # methods='dMean,dSum'
     methods = methods.split(",")
     # h5ad = '/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/qc/Franke_with_genotypes_nfCore/results/celltype/adata.h5ad'
-    # agg_column = 'Azimuth:predicted.celltype.l2'
+    agg_column = 'Azimuth:predicted.celltype.l2'
     # n_individ=10
     # n_cells=10
     h5ad = options.h5ad
@@ -81,12 +81,12 @@ def main():
     agg_columns = agg_columns.split(",")
     n_individ = int(options.n_individ)
     n_cells = int(options.n_cells)
-    if options.genotype_phenotype:
-        genotype_phenotype = options.genotype_phenotype
-        genotype_phenotype = pd.read_csv(genotype_phenotype,sep='\t')
-    else:
-        genotype_phenotype = pd.DataFrame()
-        print('here we estimate the genotype phenotype interaction file from the genotype, since the IDs are the same. ')
+    # if options.genotype_phenotype:
+    #     genotype_phenotype = options.genotype_phenotype
+    #     genotype_phenotype = pd.read_csv(genotype_phenotype,sep='\t')
+    # else:
+    genotype_phenotype = pd.DataFrame()
+        # print('here we estimate the genotype phenotype interaction file from the genotype, since the IDs are the same. ')
 
     adata = sc.read_h5ad(filename=h5ad)
     adata.obs['adata_phenotype_id'] = adata.obs.donor_id.astype('str')+'_'+adata.obs.convoluted_samplename.astype('str')
