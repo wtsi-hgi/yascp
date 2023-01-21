@@ -544,7 +544,7 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
     print(expid)
 
     obsqc,all_QC_lane = fetch_qc_obs_from_anndata(adqc, expid, cell_bender_path = cell_bender_path,Resolution=Resolution)
-    adqc.obs['experiment_id'] = adqc.obs['experiment_id'].str.split("__").str[0]
+    
     # try:        
     #     datadir_deconv=f'{args.results_dir}/deconvolution/split_donor_h5ad'
     #     donor_table = os.path.join(datadir_deconv, expid, "{}.donors.h5ad.tsv".format(expid))
@@ -986,6 +986,7 @@ if __name__ == '__main__':
         adqc = anndata.read_h5ad(f'{args.results_dir}/merged_h5ad/outlier_filtered_adata.h5ad')
     except:
         adqc = anndata.read_h5ad(f'{args.results_dir}/adata.h5ad')
+    adqc.obs['experiment_id'] = adqc.obs['experiment_id'].str.split("__").str[0]
     fctr = 0
     data_tranche_all=[]
     data_donor_all=[]
