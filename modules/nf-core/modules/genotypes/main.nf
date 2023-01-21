@@ -234,7 +234,7 @@ process GT_MATCH_POOL_AGAINST_PANEL
       container "mercury/wtsihgi-nf_yascp_htstools-1.1"
   }
 
-  label 'process_long'
+  label 'process_medium'
   //when: params.vireo.run_gtmatch_aposteriori
 
   input:

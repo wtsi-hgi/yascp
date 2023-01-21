@@ -17,7 +17,7 @@ process collect_file{
     file1 = files_to_concentrate[0]
     files= files_to_concentrate.join(" ")
     if (seed!='' ){
-        seed_inset = "echo ${seed} > ${name}"
+        seed_inset = "-seed ${seed}"
     }else{
         seed_inset = ""
     }
@@ -31,12 +31,6 @@ process collect_file{
     header_insert
 
     """
-        ${seed_inset }
-        ${header_insert}
-        for OUTPUT in ${files}
-        do
-            echo ${files_to_concentrate}
-            tail -n +${header_size+1} -q \$OUTPUT >> ${name}
-        done
+        combine.py -d '${files}' -o assignments_all_pools.tsv ${seed_inset}
     """    
 }
