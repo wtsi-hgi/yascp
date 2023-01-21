@@ -6,8 +6,8 @@ process capture_cellsnp_files{
     path(cellsnp_location)
    
   output:
-    path("output_cellsnp.csv"),emit:cellsnp_loc
-    path(cellsnp_location)
+    path("output_cellsnp.csv"),emit:cellsnp_loc optional true
+    path(cellsnp_location) optional true
   script:
   """
     echo '${params.cellsnp_recapture}'
