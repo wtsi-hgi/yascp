@@ -17,7 +17,7 @@ process collect_file{
     file1 = files_to_concentrate[0]
     files= files_to_concentrate.join(" ")
     if (seed!='' ){
-        seed_inset = "-seed ${seed}"
+        seed_inset = "-seed '${seed}'"
     }else{
         seed_inset = ""
     }

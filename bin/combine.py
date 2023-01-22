@@ -13,13 +13,12 @@ def main(files,outfile,seed):
     dataframe=pd.DataFrame()
     for file in files.split(" "):
         if seed:
-            cols = seed.split(',')
+            cols = seed.split('\t')
             Data= pd.read_csv(file,sep='\t',header=None, names = cols)
         else:
             Data= pd.read_csv(file,sep='\t')
         dataframe = pd.concat([dataframe,Data], sort=False)
     cols = dataframe.columns
-    print(cols)
     dataframe.to_csv(outfile,sep='\t',index=False,columns=dataframe.columns)
 
 if __name__ == '__main__':
