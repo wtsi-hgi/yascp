@@ -99,20 +99,29 @@ def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res
             metadata.set_index('Sample_id',drop=True,inplace=True)
             metadata_table=pd.concat([metadata_table,metadata])
         except:
-            copyfile(f'{results_dir}/handover/{name_dir}/Fetch Pipeline/html_{folder}.html', f'{name_dir}/Fetch Pipeline/html_{folder}.html')
+            try:
+                copyfile(f'{results_dir}/handover/{name_dir}/Fetch Pipeline/html_{folder}.html', f'{name_dir}/Fetch Pipeline/html_{folder}.html')
+            except:
+                copyfile(f'/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/qc/{name}/results_rsync2/results/handover/{name_dir}/Fetch Pipeline/html_{folder}.html', f'{name_dir}/Fetch Pipeline/html_{folder}.html')
+            
             try:
                 metadata_table = pd.read_csv(f'{results_dir}/handover/{name_dir}/Fetch Pipeline/CSV/Submission_Data_Pilot_UKB.file_metadata.tsv',sep='\t')
                 metadata_table.set_index('Sample_id',drop=True,inplace=True)
             except:
-                metadata_table = pd.read_csv(f'{results_dir}/handover/{name_dir}/Fetch Pipeline/Submission_Data_Pilot_UKB.file_metadata.tsv',sep=',')
-                metadata_table.set_index('Sample_id',drop=True,inplace=True)
-
+                try:
+                    metadata_tablemetadata_table = pd.read_csv(f'{results_dir}/handover/{name_dir}/Fetch Pipeline/Submission_Data_Pilot_UKB.file_metadata.tsv',sep=',')
+                    metadata_table.set_index('Sample_id',drop=True,inplace=True)
+                except:
+                    metadata_table = pd.DataFrame()
     try:
         os.mkdir(f'{name_dir}/Fetch Pipeline/CSV')
     except:
         print('exists')
-    metadata_table.to_csv(f'{name_dir}/Fetch Pipeline/CSV/Submission_Data_Pilot_UKB.file_metadata.tsv',sep='\t')
-
+    if (len(metadata_table)>0):
+        metadata_table.to_csv(f'{name_dir}/Fetch Pipeline/CSV/Submission_Data_Pilot_UKB.file_metadata.tsv',sep='\t')
+    else:
+        copyfile(f'/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/qc/{name}/results_rsync2/results/handover/Summary_plots/{name}/Fetch Pipeline/CSV/Submission_Data_Pilot_UKB.file_metadata.tsv', f'{name_dir}/Fetch Pipeline/CSV/Submission_Data_Pilot_UKB.file_metadata.tsv')
+            
 
     try:
         os.mkdir(f'{name_dir}/Fetch Pipeline/Input')
