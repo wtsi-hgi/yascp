@@ -31,6 +31,6 @@ process collect_file{
     header_insert
 
     """
-        combine.py -d '${files}' -o assignments_all_pools.tsv ${seed_inset}
+        combine.py -d '${files}' -o ${name} ${seed_inset}
     """    
 }
