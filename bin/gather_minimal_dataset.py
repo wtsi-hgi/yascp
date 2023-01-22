@@ -434,8 +434,14 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
     columns_output = {**COLUMNS_DATASET, **COLUMNS_DECONV, **COLUMNS_QC}
     #Unfiltered
     compression_opts = 'gzip'
-    adata_cellranger_raw = scanpy.read_10x_mtx(f"{df_raw.loc[expid, 'data_path_10x_format']}/raw_feature_bc_matrix")
-    adata_cellranger_filtered = scanpy.read_10x_mtx(f"{df_raw.loc[expid, 'data_path_10x_format']}/filtered_feature_bc_matrix")
+    try:
+        adata_cellranger_raw = scanpy.read_10x_mtx(f"{df_raw.loc[expid, 'data_path_10x_format']}/raw_feature_bc_matrix")
+    except:
+        adata_cellranger_raw = scanpy.read_10x_h5(f"/lustre/scratch123/hgi/projects/cardinal_analysis/qc/{args.experiment_name}/Donor_Quantification/{expid}/Cellranger_raw_feature_bc_matrix__{expid}.h5")
+    try:
+        adata_cellranger_filtered = scanpy.read_10x_mtx(f"{df_raw.loc[expid, 'data_path_10x_format']}/filtered_feature_bc_matrix")
+    except:
+        adata_cellranger_filtered = scanpy.read_10x_h5(f"/lustre/scratch123/hgi/projects/cardinal_analysis/qc/{args.experiment_name}/Donor_Quantification/{expid}/Cellranger_filtered_feature_bc_matrix__{expid}.h5")
     
     zero_count_cells_cellranger_raw = adata_cellranger_raw.obs_names[np.where(adata_cellranger_raw.X.sum(axis=1) == 0)[0]]
     ad_lane_raw = adata_cellranger_raw[adata_cellranger_raw.obs_names.difference(zero_count_cells_cellranger_raw, sort=False)]
@@ -473,14 +479,22 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
     if write_h5:
         try:
             # os.system(f"ls -s {df_raw.loc[expid, 'data_path_10x_format']}/raw_feature_bc_matrix.h5 ./{outdir}/{expid}_2Cellranger_raw_feature_bc_matrix.h5")
-            os.symlink(f"{df_raw.loc[expid, 'data_path_10x_format']}/raw_feature_bc_matrix.h5", f"./{outdir}/Cellranger_raw_feature_bc_matrix__{expid}.h5")
+            try:
+                os.symlink(f"{df_raw.loc[expid, 'data_path_10x_format']}/raw_feature_bc_matrix.h5", f"./{outdir}/Cellranger_raw_feature_bc_matrix__{expid}.h5")
+            except:
+                os.symlink(f"/lustre/scratch123/hgi/projects/cardinal_analysis/qc/{args.experiment_name}/Donor_Quantification/{expid}/Cellranger_raw_feature_bc_matrix__{expid}.h5", f"./{outdir}/Cellranger_raw_feature_bc_matrix__{expid}.h5")
+            
             # Deconvoluted_Donor_Data = anndata.read_h5ad(path1)
         except:
             print('cant link cellranger file')
 
         try:
             # os.system(f"ls -s {df_raw.loc[expid, 'data_path_10x_format']}/filtered_feature_bc_matrix.h5 {outdir}/{expid}_Cellranger_filtered_feature_bc_matrix.h5")
-            os.symlink(f"{df_raw.loc[expid, 'data_path_10x_format']}/filtered_feature_bc_matrix.h5",f"{outdir}/Cellranger_filtered_feature_bc_matrix__{expid}.h5")
+            try:
+                os.symlink(f"{df_raw.loc[expid, 'data_path_10x_format']}/filtered_feature_bc_matrix.h5",f"{outdir}/Cellranger_filtered_feature_bc_matrix__{expid}.h5")
+            except:
+                os.symlink(f"/lustre/scratch123/hgi/projects/cardinal_analysis/qc/{args.experiment_name}/Donor_Quantification/{expid}/Cellranger_filtered_feature_bc_matrix__{expid}.h5",f"{outdir}/Cellranger_filtered_feature_bc_matrix__{expid}.h5")
+            
         except:
             print('cant link cellranger file')
 
@@ -502,8 +516,11 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
     #############
     #Cellranger Metrics Datasheet
     #############
-    metrics = pd.read_csv(df_raw.loc[expid, 'data_path_10x_format']+'/metrics_summary.csv')
-    
+    try:
+        metrics = pd.read_csv(df_raw.loc[expid, 'data_path_10x_format']+'/metrics_summary.csv')
+    except:
+        metrics = pd.read_csv(f'/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/qc/{args.experiment_name}/results_rsync2/results/handover/Summary_plots/{args.experiment_name}/Fetch Pipeline/CSV/Submission_Data_Pilot_UKB.file_metadata.tsv',sep='\t')
+        metrics = metrics[metrics['Sample_id']==expid]
     #############
     #Azimuth cell-type assignments
     #############
