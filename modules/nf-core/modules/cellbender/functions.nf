@@ -468,8 +468,8 @@ process capture_cellbender_files{
     val(outdir)
     path(input_file)
   output:
-    path("tmp1234/cellbender/*")
-    path("captured/*/*FPR_${params.cellbender_resolution_to_use}*"),emit:alt_input
+    path("tmp1234/cellbender/*") optional true
+    path("captured/*/*FPR_${params.cellbender_resolution_to_use}*"),emit:alt_input optional true
     
   script:
   """
