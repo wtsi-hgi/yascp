@@ -701,7 +701,7 @@ def main():
                     )
                 ] = adata.obs['cell_passes_hard_filters'].sum()
                 filter_i += 1
-    if options.drop :
+    if options.drop != 'false':
         print('yes, dropping hard qc fails')
         # we either drop of flag the hard filters files
         adata = adata[adata.obs['cell_passes_hard_filters']==True]

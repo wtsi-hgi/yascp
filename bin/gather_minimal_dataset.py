@@ -436,13 +436,36 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
     compression_opts = 'gzip'
     try:
         adata_cellranger_raw = scanpy.read_10x_mtx(f"{df_raw.loc[expid, 'data_path_10x_format']}/raw_feature_bc_matrix")
+        try:
+            if write_h5:
+                os.symlink(f"{df_raw.loc[expid, 'data_path_10x_format']}/raw_feature_bc_matrix.h5", f"./{outdir}/Cellranger_raw_feature_bc_matrix__{expid}.h5")
+        except:
+            print('File already linked')
+    
     except:
         adata_cellranger_raw = scanpy.read_10x_h5(f"/lustre/scratch123/hgi/projects/cardinal_analysis/qc/{args.experiment_name}/Donor_Quantification/{expid}/Cellranger_raw_feature_bc_matrix__{expid}.h5")
+        try:
+            if write_h5:
+                os.symlink(f"/lustre/scratch123/hgi/projects/cardinal_analysis/qc/{args.experiment_name}/Donor_Quantification/{expid}/Cellranger_raw_feature_bc_matrix__{expid}.h5", f"./{outdir}/Cellranger_raw_feature_bc_matrix__{expid}.h5")
+        except:
+            print('File already linked')
+     
     try:
         adata_cellranger_filtered = scanpy.read_10x_mtx(f"{df_raw.loc[expid, 'data_path_10x_format']}/filtered_feature_bc_matrix")
+        try:
+            if write_h5:
+                os.symlink(f"{df_raw.loc[expid, 'data_path_10x_format']}/filtered_feature_bc_matrix.h5",f"{outdir}/Cellranger_filtered_feature_bc_matrix__{expid}.h5")  
+        except:
+            print('File already linked')
+    
     except:
         adata_cellranger_filtered = scanpy.read_10x_h5(f"/lustre/scratch123/hgi/projects/cardinal_analysis/qc/{args.experiment_name}/Donor_Quantification/{expid}/Cellranger_filtered_feature_bc_matrix__{expid}.h5")
-    
+        try:
+            if write_h5:
+                os.symlink(f"/lustre/scratch123/hgi/projects/cardinal_analysis/qc/{args.experiment_name}/Donor_Quantification/{expid}/Cellranger_filtered_feature_bc_matrix__{expid}.h5",f"{outdir}/Cellranger_filtered_feature_bc_matrix__{expid}.h5")  
+        except:
+            print('File already linked')
+               
     zero_count_cells_cellranger_raw = adata_cellranger_raw.obs_names[np.where(adata_cellranger_raw.X.sum(axis=1) == 0)[0]]
     ad_lane_raw = adata_cellranger_raw[adata_cellranger_raw.obs_names.difference(zero_count_cells_cellranger_raw, sort=False)]
     scanpy.pp.calculate_qc_metrics(adata_cellranger_raw, inplace=True)
@@ -451,13 +474,13 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
     df_total_counts['barcodes'] = df_total_counts.index
     df_total_counts_cellranger_raw = df_total_counts
     df_total_counts_cellranger_raw['dataset']='Cellranger Raw'
-
+    wd = os.getcwd()
     if df_cellbender is not None and (len(df_cellbender)!=0):
         
         try:
             # depends whether the absolute or relative path was recorded.
             cell_bender_path = f"{df_cellbender.loc[expid, 'data_path_10x_format']}"
-            cell_bender_path = './'+'/'.join(cell_bender_path.split('/')[-6:])
+            cell_bender_path = f'{wd}/'+'/'.join(cell_bender_path.split('/')[-6:])
         except:
             cell_bender_path = f"{args.results_dir}/{df_cellbender.loc[expid, 'data_path_10x_format']}"
         cellbender_h5 = f"{cell_bender_path}/../cellbender_FPR_{Resolution}_filtered.h5"
@@ -475,30 +498,7 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
         df_cellbender=None
         cell_bender_path=None
 
-    # os.
-    if write_h5:
-        try:
-            # os.system(f"ls -s {df_raw.loc[expid, 'data_path_10x_format']}/raw_feature_bc_matrix.h5 ./{outdir}/{expid}_2Cellranger_raw_feature_bc_matrix.h5")
-            try:
-                os.symlink(f"{df_raw.loc[expid, 'data_path_10x_format']}/raw_feature_bc_matrix.h5", f"./{outdir}/Cellranger_raw_feature_bc_matrix__{expid}.h5")
-            except:
-                os.symlink(f"/lustre/scratch123/hgi/projects/cardinal_analysis/qc/{args.experiment_name}/Donor_Quantification/{expid}/Cellranger_raw_feature_bc_matrix__{expid}.h5", f"./{outdir}/Cellranger_raw_feature_bc_matrix__{expid}.h5")
-            
-            # Deconvoluted_Donor_Data = anndata.read_h5ad(path1)
-        except:
-            print('cant link cellranger file')
-
-        try:
-            # os.system(f"ls -s {df_raw.loc[expid, 'data_path_10x_format']}/filtered_feature_bc_matrix.h5 {outdir}/{expid}_Cellranger_filtered_feature_bc_matrix.h5")
-            try:
-                os.symlink(f"{df_raw.loc[expid, 'data_path_10x_format']}/filtered_feature_bc_matrix.h5",f"{outdir}/Cellranger_filtered_feature_bc_matrix__{expid}.h5")
-            except:
-                os.symlink(f"/lustre/scratch123/hgi/projects/cardinal_analysis/qc/{args.experiment_name}/Donor_Quantification/{expid}/Cellranger_filtered_feature_bc_matrix__{expid}.h5",f"{outdir}/Cellranger_filtered_feature_bc_matrix__{expid}.h5")
-            
-        except:
-            print('cant link cellranger file')
-
-
+ 
     zero_count_cells = ad_lane_filtered.obs_names[np.where(ad_lane_filtered.X.sum(axis=1) == 0)[0]]
     ad_lane_filtered = ad_lane_filtered[ad_lane_filtered.obs_names.difference(zero_count_cells, sort=False)]
 
