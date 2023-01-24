@@ -243,27 +243,27 @@ workflow  main_deconvolution {
         SPLIT_DONOR_H5AD(split_channel5)
 
         // collect file paths to h5ad files in tsv tables:
-        header_seed="experiment_id\tdonor\th5ad_filepath\n"
+        header_seed="experiment_id\tdonor\th5ad_filepath"
         collect_file2(SPLIT_DONOR_H5AD.out.donors_h5ad_tsv.collect(),"donors_h5ad.tsv",params.outdir+'/deconvolution/filepaths',0,header_seed)
 
-        header_seed="experiment_id\th5ad_filepath\n"
+        header_seed="experiment_id\th5ad_filepath"
         collect_file3(SPLIT_DONOR_H5AD.out.exp__donors_h5ad_tsv.collect(),"exp__donors_h5ad.tsv",params.outdir+'/deconvolution/filepaths',0,header_seed)
 
-        header_seed="experiment_id\tdonor\th5ad_filepath\n"
+        header_seed="experiment_id\tdonor\th5ad_filepath"
         collect_file4(SPLIT_DONOR_H5AD.out.donors_h5ad_assigned_tsv.collect(),"donors_h5ad_assigned.tsv",params.outdir+'/deconvolution/filepaths',0,header_seed)
 
-        header_seed="experiment_id\th5ad_filepath\n"
+        header_seed="experiment_id\th5ad_filepath"
         out_h5ad = collect_file5(SPLIT_DONOR_H5AD.out.exp__donors_h5ad_assigned_tsv.collect(),"exp__donors_h5ad_assigned.tsv",params.outdir+'/deconvolution/filepaths',0,header_seed)
 
         header_seed="experiment_id\th5ad_filepath"
         collect_file6(SPLIT_DONOR_H5AD.out.h5ad_tsv.collect(),"cellranger_as_h5ad.tsv",params.outdir+'/deconvolution/filepaths',0,header_seed)
 
-        header_seed="experiment_id\tdonor\tn_cells\n"
-        ch_vireo_donor_n_cells_tsv = collect_file7(vireo_out_sample_summary_tsv.collect(),"vireo_donor_n_cells.tsv",params.outdir+'/deconvolution/filepaths',0,header_seed)
+        header_seed="experiment_id\tdonor\tn_cells"
+        ch_vireo_donor_n_cells_tsv = collect_file7(REPLACE_GT_DONOR_ID2.out.sample_summary_tsv.collect(),"vireo_donor_n_cells.tsv",params.outdir+'/deconvolution/filepaths',0,header_seed)
 
         // paste experiment_id and donor ID columns with __ separator
-        header_seed="experiment_id\tn_cells\n"
-        vireo_out_sample__exp_summary_tsv = collect_file8(SPLIT_DONOR_H5AD.out.donor_n_cells,"vireo_exp__donor_n_cells.tsv",params.outdir+'/deconvolution/filepaths',0,header_seed)
+        header_seed="experiment_id\tn_cells"
+        vireo_out_sample__exp_summary_tsv = collect_file8(SPLIT_DONOR_H5AD.out.donor_n_cells.collect(),"vireo_exp__donor_n_cells.tsv",params.outdir+'/deconvolution/filepaths',0,header_seed)
 
         if (params.genotype_input.run_with_genotype_input & params.genotype_input.posterior_assignment) {
             if (params.extra_sample_metadata!='' & params.add_donor_metadata){

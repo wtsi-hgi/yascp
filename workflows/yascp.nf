@@ -142,6 +142,8 @@ workflow YASCP {
                     bam_split_channel = main_deconvolution.out.sample_possorted_bam_vireo_donor_ids
                     assignments_all_pools = main_deconvolution.out.assignments_all_pools
                     if (!params.skip_merge){
+                        main_deconvolution.out.out_h5ad.subscribe { println "value: $it" }
+                        main_deconvolution.out.vireo_out_sample__exp_summary_tsv.subscribe { println "value2: $it" }
                         MERGE_SAMPLES(main_deconvolution.out.out_h5ad,main_deconvolution.out.vireo_out_sample__exp_summary_tsv,'h5ad')
                     }
                 }else{
