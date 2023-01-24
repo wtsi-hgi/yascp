@@ -33,7 +33,7 @@ process SPLIT_DONOR_H5AD {
       path("${sample}.donors.h5ad.assigned.tsv"), emit: donors_h5ad_assigned_tsv 
       path("${sample}__donors.h5ad.assigned.tsv"), emit: exp__donors_h5ad_assigned_tsv 
       path("${sample}.h5ad.tsv"), emit: h5ad_tsv
-      path("exp__donor_n_cells.tsv"), emit: donor_n_cells
+      path("${sample}_exp__donor_n_cells.tsv"), emit: donor_n_cells
      
     
     script:
@@ -75,5 +75,6 @@ process SPLIT_DONOR_H5AD {
     cat ${sample}.donors.h5ad.tsv | grep -v unassigned | grep -v doublet > ${sample}.donors.h5ad.assigned.tsv
 
     cat ${sample}__donors.h5ad.tsv | grep -v unassigned | grep -v doublet > ${sample}__donors.h5ad.assigned.tsv
+    mv exp__donor_n_cells.tsv ${sample}_exp__donor_n_cells.tsv
     """
 }
