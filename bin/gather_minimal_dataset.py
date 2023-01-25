@@ -58,6 +58,7 @@ COLUMNS_DECONV = {
 COLUMNS_QC = {
     'cell_passes_hard_filters': 'cell_passes_hard_filters',
     'cell_passes_qc': 'qc.filter.pass',
+    'cell_passes_qc:score':'qc.filter.pass:score',
     'cell_passes_qc-per:all_together::exclude':'qc.filter.pass.spikein_exclude',
     'cell_passes_qc-per:all_together::exclude:score':'qc.filter.pass.spikein_exclude:score',
     'cell_passes_qc-per:Azimuth:L0_predicted.celltype.l2':'qc.filter.pass.AZ:L0',
@@ -82,7 +83,8 @@ COLUMNS_QC = {
     'pct_counts_in_top_50_genes':'pct_counts_in_top_50_genes',
     'pct_counts_in_top_100_genes':'pct_counts_in_top_100_genes',
     'pct_counts_in_top_200_genes':'pct_counts_in_top_200_genes',
-    'pct_counts_in_top_500_genes':'pct_counts_in_top_500_genes'
+    'pct_counts_in_top_500_genes':'pct_counts_in_top_500_genes',
+    
     }
 COLUMNS_CELLBENDER = {'cellbender_latent_probability': 'cellbender.latent.probability'}
 COLUMNS_DATASET = {
