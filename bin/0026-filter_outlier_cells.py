@@ -254,20 +254,19 @@ def main():
     # Load the AnnData file.
     adata = sc.read_h5ad(filename=options.h5)
     adata.obs['cell_id'] = adata.obs.index
-    adata_original = adata.copy()
+    
     # Here we add an adaptive QC per Column
     # Drop out previous QCed cells
     cell_qc_column = options.cell_qc_column
-    if cell_qc_column in adata.obs.columns:
-        n_cells_original = adata.shape[0]
-        adata = adata[adata.obs[cell_qc_column], :]
-        print('Filtered out {} previously flagged cells using {}'.format(
-            n_cells_original - adata.shape[0],
-            cell_qc_column
-        ))
-    else:
-        adata.obs[cell_qc_column] = True
-
+    # if cell_qc_column in adata.obs.columns:
+    #     n_cells_original = adata.shape[0]
+    #     adata = adata[adata.obs[cell_qc_column], :]
+    #     print('Filtered out {} previously flagged cells using {}'.format(
+    #         n_cells_original - adata.shape[0],
+    #         cell_qc_column
+    #     ))
+    # else:
+    #     adata.obs[cell_qc_column] = True
     # Get ballpark number of outliers
     outliers_fraction = options.outliers_fraction
     n_cells = adata.shape[0]
@@ -364,7 +363,7 @@ def main():
         ########                 
     # all_index = pd.DataFrame(adata.obs.index,columns=['col'])
     # all_together = all_indexes.str[0]+'-'+all_indexes.str[1]+'-'+all_indexes.str[2]
-    
+    adata_original = adata.copy()
     for outlier_filtering_strategy in outlier_filtering_strategys:
         metadata_columns = metadata_columns_original.copy()
         if (outlier_filtering_strategy == 'all_together'):
