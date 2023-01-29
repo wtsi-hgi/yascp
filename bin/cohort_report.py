@@ -104,6 +104,10 @@ if (os.path.exists(f"{path}/deconvolution/vireo_gt_fix")):
                     SITE = Extra_Metadata_Donor1['SITE'].values[0]
                     Amount = Extra_Metadata_Donor1['Amount'].values[0]
                     RECIEVED = Extra_Metadata_Donor1['RECIEVED'].values[0]
+                    try:
+                        STATE = Extra_Metadata_Donor1['State'].values[0]
+                    except:
+                        STATE = 'NA'
                 except:
                     live_cell_count = 'NA'
                     viability ='NA'
@@ -116,6 +120,12 @@ if (os.path.exists(f"{path}/deconvolution/vireo_gt_fix")):
                 except:
                     print('exists')
                     Matched_Donor_report['lab_live_cell_count'] =  live_cell_count
+
+                try:
+                    Matched_Donor_report.insert(8, 'Sequencing time',STATE)
+                except:
+                    print('exists')
+                    Matched_Donor_report['Sequencing time'] =  STATE
 
                 try:
                     Matched_Donor_report.insert(8, 'viability', viability)
@@ -180,7 +190,7 @@ if (os.path.exists(f"{path}/deconvolution/vireo_gt_fix")):
                 Donor_Report2.insert(12, "lab_live_cell_count",'NONE') 
                 Donor_Report2.insert(12, "viability",'NONE') 
                 Donor_Report2.insert(5, "Match Expected",'False') 
-                
+                Donor_Report2.insert(5, "Sequencing time",'False') 
             except: 
                 
                 print('exists')
@@ -189,6 +199,7 @@ if (os.path.exists(f"{path}/deconvolution/vireo_gt_fix")):
             Donor_Report2.loc[Total_Report2.index,'lab_live_cell_count']=Total_Report2.loc[Total_Report2.index,'lab_live_cell_count']
             Donor_Report2.loc[Total_Report2.index,'viability']=Total_Report2.loc[Total_Report2.index,'viability']
             Donor_Report2.loc[Total_Report2.index,'Match Expected']=Total_Report2.loc[Total_Report2.index,'Match Expected']
+            Donor_Report2.loc[Total_Report2.index,'Sequencing time']=Total_Report2.loc[Total_Report2.index,'Sequencing time']
             Donor_Report2 = Donor_Report2.reset_index().set_index('Pool ID')
 
             GT_MATCH2 = GT_MATCH.set_index('pool')
