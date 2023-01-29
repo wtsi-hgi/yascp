@@ -92,11 +92,11 @@ for ix in GT_Assignments.index:
                 replacements = gp_ma.loc[replacement.split('_')[0]]
                 replacement = 'No_mapping___'+replacement
                 # replacement = replacement.values[0]
-                for rep1 in replacements.iloc[:,0]:
+                # for rep1 in replacements.iloc[:,0]:
                     
-                    if len(D2[D2.col1.str.contains(rep1)])>0:
-                        GT_Assignments.loc[ix,'Match Expected']='True'
-                        replacement = rep1
+                #     if len(D2[D2.col1.str.contains(rep1)])>0:
+                #         GT_Assignments.loc[ix,'Match Expected']='True'
+                #         replacement = rep1
             except:
                 replacement = 'No_mapping___'+replacement
     else:
