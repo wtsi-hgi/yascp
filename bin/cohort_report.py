@@ -87,7 +87,8 @@ if (os.path.exists(f"{path}/deconvolution/vireo_gt_fix")):
             
             Extra_Metadata_Donor1 = Extra_Metadata_Donors[Extra_Metadata_Donors['experiment_id'].str.contains(f"{row1['pool']}")]
             Extra_Metadata_Donor1 = Extra_Metadata_Donor1[Extra_Metadata_Donor1['experiment_id'].str.contains(f"{gt_match}")]
-            
+            if(len(Extra_Metadata_Donor1)>1):
+                print('More than 1 match')
 
             try:
                 Matched_Donor_report.insert(2, "Vacutainer ID", gt_match)
@@ -99,13 +100,13 @@ if (os.path.exists(f"{path}/deconvolution/vireo_gt_fix")):
                 Matched_Donor_report['Date of sample sequencing'] = Tranch_stats['Date of sample sequencing'].values[0]
                 cohort = row1['final_panel']
                 try:
-                    live_cell_count = Extra_Metadata_Donor1['live_cell_count'].values[0]
-                    viability =Extra_Metadata_Donor1['viability'].values[0]
-                    SITE = Extra_Metadata_Donor1['SITE'].values[0]
-                    Amount = Extra_Metadata_Donor1['Amount'].values[0]
-                    RECIEVED = Extra_Metadata_Donor1['RECIEVED'].values[0]
+                    live_cell_count = " or ".join(Extra_Metadata_Donor1['live_cell_count'])
+                    viability =" or ".join(Extra_Metadata_Donor1['viability'])
+                    SITE = " or ".join(Extra_Metadata_Donor1['SITE'])
+                    Amount = " or ".join(Extra_Metadata_Donor1['Amount'])
+                    RECIEVED = " or ".join(Extra_Metadata_Donor1['RECIEVED'])
                     try:
-                        STATE = Extra_Metadata_Donor1['State'].values[0]
+                        STATE = " or ".join(Extra_Metadata_Donor1['State'])
                     except:
                         STATE = 'NA'
                 except:
