@@ -67,7 +67,8 @@ for ix in GT_Assignments.index:
     print(ix)
     #Here should add a a filter to estimate whether it is a good match.
     replacement = GT_Assignments.loc[ix,'donor_gt']
-
+    # if (replacement=='15001506223417_203765330119_R02C02'):
+    #     print('check')
     expected = 'NA'
     poor_replacement =''
     if ix in Unassigned:
@@ -90,8 +91,7 @@ for ix in GT_Assignments.index:
                 # replacement='15001608190388_204238910153_R09C02'
                 
                 replacements = gp_ma.loc[replacement.split('_')[0]]
-                replacement = 'No_mapping___'+replacement
-                # replacement = replacement.values[0]
+                replacement = replacements.values[0]
                 # for rep1 in replacements.iloc[:,0]:
                     
                 #     if len(D2[D2.col1.str.contains(rep1)])>0:
