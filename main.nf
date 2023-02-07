@@ -49,7 +49,7 @@ include {CAPTURE_VIREO } from "$projectDir/modules/nf-core/modules/vireo/main"
 include {VIREO_GT_FIX_HEADER; VIREO_ADD_SAMPLE_PREFIX; MERGE_GENOTYPES_IN_ONE_VCF as MERGE_GENOTYPES_IN_ONE_VCF_INFERED; MERGE_GENOTYPES_IN_ONE_VCF as MERGE_GENOTYPES_IN_ONE_VCF_SUBSET} from "$projectDir/modules/nf-core/modules/genotypes/main"
 include {ENHANCE_STATS_GT_MATCH } from "$projectDir/modules/nf-core/modules/genotypes/main"
 include {collect_file} from "$projectDir/modules/nf-core/modules/collect_file/main"
-
+include { CELLSNP;capture_cellsnp_files } from "$projectDir/modules/nf-core/modules/cellsnp/main"
 
 workflow FREEZE1_GENERATION{
     GENOTYPE_UPDATE()
@@ -93,6 +93,35 @@ workflow GENOTYPE_UPDATE{
     }
 
     // tuple val(pool_id), path("${vireo_fixed_vcf}"), path("${vireo_fixed_vcf}.tbi"), emit: gt_pool
+    // RERUN CellSNP
+    input_channel = Channel.fromPath(params.input_data_table, followLinks: true, checkIfExists: true)
+    CREATE_ARTIFICIAL_BAM_CHANNEL(input_channel)
+    ch_experiment_bam_bai_barcodes = CREATE_ARTIFICIAL_BAM_CHANNEL.out.ch_experiment_bam_bai_barcodes
+    ch_experiment_bam_bai_barcodes.view()
+    channel_input_data_table = Channel.fromPath(params.input_data_table, followLinks: true, checkIfExists: true)
+    channel_input_data_table
+        .splitCsv(header: true, sep: params.input_tables_column_delimiter)
+        .map{row->tuple(row.experiment_id, row.n_pooled)}
+        .set{ch_experiment_npooled}    
+    ch_experiment_bam_bai_barcodes.combine(ch_experiment_npooled, by: 0).set{cellsnp_with_npooled}
+    // val(samplename), path(bam_file), path(bai_file), path(barcodes_tsv_gz),val(n_pooled)
+    // [CRD_CMB13086620, /lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/fetch/Cardinal_45596_Aug_22_2022/nf_irods_to_lustre/pipelines/../../results/iget_study_cellranger/6776/CRD_CMB13086620/cellranger_CRD_CMB13086620/raw_feature_bc_matrix/../possorted_genome_bam.bam, /lustre/scratch123/hgi/mdt1/projects/ukbb_scrna/pipelines/Pilot_UKB/qc/Cardinal_45596_Aug_22_2022/results_ct_adaptiveqc/results/deconvolution/vireo/CRD_CMB13086620/donor_ids.tsv, 12]
+    if (params.existing_cellsnp != ''){
+        log.info('Capturing some of the existing CELLSNP files')
+        capture_cellsnp_files(params.existing_cellsnp)
+        capture_cellsnp_files.out.cellsnp_loc.splitCsv(header: false, sep: ' ')
+            .map{row->tuple(row[0], "${row[1]}")}
+            .set{cellsnp_output_dir1}
+        cellsnp_output_dir1.join(cellsnp_with_npooled, remainder: true).set{filter_channel}
+        filter_channel.filter{ it[1] == null }.map{row -> tuple(row[0], row[2],row[3],row[4],row[5])}.set{cellsnp_with_npooled}
+        cellsnp_with_npooled.view()
+    }else{
+        cellsnp_output_dir1 = Channel.of()
+    }
+    CELLSNP(cellsnp_with_npooled,
+        Channel.fromPath(params.cellsnp.vcf_candidate_snps).collect())
+
+        
     CAPTURE_VIREO(params.existing_vireo)
     CAPTURE_VIREO.out.vireo_loc.splitCsv(header: false, sep: ' ')
         .map{row->tuple(row[0], "${row[1]}", "${row[2]}")}
@@ -114,7 +143,7 @@ workflow REPORT_UPDATE{
     // We use this entry point to update the reports upon running some individual processes that have already completed.
     input_channel = Channel.fromPath(params.input_data_table, followLinks: true, checkIfExists: true)
     CREATE_ARTIFICIAL_BAM_CHANNEL(input_channel)
-    bam_split_channel = CREATE_ARTIFICIAL_BAM_CHANNEL.out.ch_experiment_bam_bai_barcodes
+    bam_split_channel = CREATE_ARTIFICIAL_BAM_CHANNEL.out.bam_split_channel
     ch_poolid_csv_donor_assignments = CREATE_ARTIFICIAL_BAM_CHANNEL.out.ch_poolid_csv_donor_assignments
     
     // // 1) The pihat values were impemented posthoc, hence we are runing this on each of the independent tranches. 
