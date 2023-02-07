@@ -46,7 +46,9 @@ workflow qc {
             gt_outlier_input = Channel.from("$projectDir/assets/fake_file.fq")
         }
 
-
+        file__anndata_merged.subscribe { println "value1: $it" }
+        file__cells_filtered.subscribe { println "value2: $it" }
+        gt_outlier_input.subscribe { println "value3: $it" }
         //FILTERING OUTLIER CELLS
         if (params.sample_qc.cell_filters.filter_outliers.run_process) {
             log.info """---Running automatic outlier cell filtering.----"""
