@@ -51,7 +51,10 @@ class AssignmentTables:
             self.parse_assignment(fn)
         spike_in_panel = self.identify_cell_line_panel()
         if VERBOSE:
-            sys.stderr.write("# cell line panel is '{:s}'\n".format(spike_in_panel))
+            try:
+                sys.stderr.write("# cell line panel is '{:s}'\n".format(spike_in_panel))
+            except:
+                _ = 'spikeins_dont exist'
         return ctr
 
     def identify_cell_line_panel(self):
