@@ -1,9 +1,0 @@
-experiment_id	n_pooled	donor_vcf_ids
-franke_Pilot_3_lane_1	6	"s1,s2,s3,s4,s5,s6"
-franke_Pilot_3_lane_2	5	"s7,s8,s9,s10,s11"
-franke_Pilot_3_lane_3	5	"s12,s13,s14,s15,s16"
-franke_Pilot_3_lane_4	6	"s17,s18,s19,s20,s21,s22"
-franke_Pilot_3_lane_5	6	"s23,s24,s25,s26,s27,s28"
-franke_Pilot_3_lane_6	6	"s29,s30,s31,s32,s33,s34"
-franke_Pilot_3_lane_7	6	"s35,s36,s37,s38,s39,s40"
-franke_Pilot_3_lane_8	5	"s41,s42,s43,s44,s45"

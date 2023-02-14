@@ -16,7 +16,7 @@
 
 ## Introduction
 - ![#f03c15](https://via.placeholder.com/15/f03c15/000000?text=+) `Pipeline is currently under develpment.`
-This is a merged pipeline wrapped in an nfCore template for transferability between institutes and HPC setups, based on our deconvolution (https://github.com/wtsi-hgi/nf_scrna_deconvolution.git ), cellbender (https://github.com/wtsi-hgi/nf_cellbender ) and qc (https://github.com/wtsi-hgi/nf_qc_cluster/tree/main ) pipelines. Input requires a tsv seperated file with paths to the 10x runs and if running in an genotype  additional input is required to be provided in an input.nf file pointing to the vcf location. This pipeline is designed to be used for multiple large scale single cell experiments ongoing in sanger. It is intended to add this pipeline to the nf-core framework in the future. 
+This is a large scale single-cell pipeline developed initially for processing Cardinal project samples. The pipeline has been inspired by initial deconvolution (https://github.com/wtsi-hgi/nf_scrna_deconvolution.git ), cellbender (https://github.com/wtsi-hgi/nf_cellbender ) and qc (https://github.com/wtsi-hgi/nf_qc_cluster/tree/main ) pipelines. Input requires a tsv seperated file with paths to the Cellranger 6.11 outputs (Input from fastq files will be added) and if running in an genotype  additional input is required to be provided in an input.nf file pointing to the vcf location. This pipeline is designed to be used for multiple large scale single cell experiments ongoing in sanger. It is intended to add this pipeline to the nf-core framework in the future. 
 
 <!-- TODO nf-core: Write a 1-2 sentence summary of what data the pipeline is for and what it does -->
 **nf-core/yascp** is a bioinformatics best-practice analysis pipeline for deconvolution of a single cell datasets.
@@ -45,6 +45,8 @@ On release, automated continuous integration tests run the pipeline on a full-si
 10. Sccaf
 11. Lisi
 12. Isolation Forest
+13. Hard filters
+14. Genotype deconvolution and GT match against multiple panels.
 
 
 ## Quick Start
@@ -56,9 +58,7 @@ Easyest to do is using a conda enviroment.
     ```
 
 2. Install any of [`Docker`](https://docs.docker.com/engine/installation/), [`Singularity`](https://www.sylabs.io/guides/3.0/user-guide/), [`Podman`](https://podman.io/), [`Shifter`](https://nersc.gitlab.io/development/shifter/how-to-use/) or [`Charliecloud`](https://hpc.github.io/charliecloud/) for full pipeline reproducibility _(please only use [`Conda`](https://conda.io/miniconda.html) as a last resort; see [docs](https://nf-co.re/usage/configuration#basic-configuration-profiles))_
-    ```console
-    conda install singularity
-    ```
+
 3. Download/clone the pipeline and test it on a minimal dataset with a single command:
 
     NOTE - the test dataset is in preparation for the pipeline to be run - please contact HGI if want to test.
@@ -104,8 +104,8 @@ params{
 }
 ```
 
-1. input = default 'cellbender' which indicates cellbender will be run. Other options - [cellranger|existing_cellbender]
-1. if running [existing_cellbender] - specify location to the results directory containing [cellbender_location='/full/path/to/results/nf-preprocessing/cellbender']
+1. input = default 'existing_cellbender' which indicates cellbender will be run on all the samples besides the ones that are captured by [cellbender_location='/full/path/to/results/nf-preprocessing/cellbender']. Other options - [cellranger] - which avoids ambient RNA removal and proceeds with deconvolution based on cellranger.
+1. if you are providing a path to cellbender_location ='??' - specify location to the results directory containing [cellbender_location='/full/path/to/results/nf-preprocessing/cellbender']
 This should contain: 
 ```console
     Sample1
@@ -163,10 +163,10 @@ The nf-core/yascp pipeline comes with documentation about the pipeline [usage](h
 
 ## Credits
 
-nf-core/yascp was originally written by HGI Sanger (Leland Taylor, Matiss Ozols, Guillaume Noell, Hannes Ponstingl, Vivek Iyer, Monika Krzak, Henry Taylor, Tobi Alegbe, Moritz Przybilla ).
+Yascp was originally written by Matiss Ozols as part of the Cardinal project with contributions from Leland Taylor, Guillaume Noell, Hannes Ponstingl, Vivek Iyer,  Henry Taylor, Tobi Alegbe.
 
 We thank the following people for their extensive assistance in the development of this pipeline:
-
+Monika Krzak
 <!-- TODO nf-core: If applicable, make list of people who have also contributed -->
 
 ## Contributions and Support
@@ -177,16 +177,17 @@ For further information or help, don't hesitate to get in touch on the [Slack `#
 
 ## Citations
 
+<!-- Currently pipeline has not been published but please acknowlage the use of this pipeline in your work -->
+
+
 <!-- TODO nf-core: Add citation for pipeline after first release. Uncomment lines below and update Zenodo doi and badge at the top of this file. -->
 <!-- If you use  nf-core/yascp for your analysis, please cite it using the following doi: [10.5281/zenodo.XXXXXX](https://doi.org/10.5281/zenodo.XXXXXX) -->
-
 <!-- TODO nf-core: Add bibliography of tools and data used in your pipeline -->
+
 An extensive list of references for the tools used by the pipeline can be found in the [`CITATIONS.md`](CITATIONS.md) file.
 
 You can cite the `nf-core` publication as follows:
 
 > **The nf-core framework for community-curated bioinformatics pipelines.**
->
 > Philip Ewels, Alexander Peltzer, Sven Fillinger, Harshil Patel, Johannes Alneberg, Andreas Wilm, Maxime Ulysse Garcia, Paolo Di Tommaso & Sven Nahnsen.
->
 > _Nat Biotechnol._ 2020 Feb 13. doi: [10.1038/s41587-020-0439-x](https://dx.doi.org/10.1038/s41587-020-0439-x).

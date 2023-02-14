@@ -1,0 +1,1 @@
+Here we store al the Dockerimages used in the pipeline.
