@@ -36,13 +36,7 @@ workflow {
   Below we have other workflow that are a versions of the Yascp to avoid ceirtain modules and update/validate the datasets
 ========================================================================================
 */
-//include { TEST_MATCH_GENOTYPES } from './tests/test_genotypes'
-//include { TEST_GT_ASSIGN } from './tests/test_gt_assign'
-//include { TEST_GTCHECK } from './tests/test_gtcheck'
-//include { TEST_MATCH_GT_VIREO } from './tests/test_genotypes'
-//include { TEST_SPLIT_BAM_PER_DONOR } from './tests/test_bam_per_donor'
-//include { TEST_ENCRYPT_DIR} from './tests/test_encryption'
-include { TEST_SUBSET_GENOTYPES } from "$projectDir/tests/test_subset_genotypes"
+
 include { match_genotypes } from "$projectDir/subworkflows/match_genotypes"
 include { metadata_posthoc;replace_donors_posthoc } from "$projectDir/modules/local/report_update/main"
 include {data_handover} from "$projectDir/subworkflows/data_handover"

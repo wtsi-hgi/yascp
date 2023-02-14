@@ -87,7 +87,7 @@ workflow YASCP {
                     channel__file_paths_10x=prepare_inputs.out.channel__file_paths_10x
                 }
                 else{
-                    log.info '--- input mode is not selected - please choose --- (existing_cellbender | cellbender | cellranger)'
+                    log.info '--- input mode is not selected - please choose --- (existing_cellbender cellranger)'
                 }
                 // ###################################
                 // ################################### Readme
