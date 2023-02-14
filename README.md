@@ -1,4 +1,4 @@
-# ![nf-core/yascp](docs/images/nf-core-yascp_logo.png)
+# ![nf-core/yascp](docs/images/YASCP_Logo.png)
 
 [![GitHub Actions CI Status](https://github.com/nf-core/yascp/workflows/nf-core%20CI/badge.svg)](https://github.com/nf-core/yascp/actions?query=workflow%3A%22nf-core+CI%22)
 [![GitHub Actions Linting Status](https://github.com/nf-core/yascp/workflows/nf-core%20linting/badge.svg)](https://github.com/nf-core/yascp/actions?query=workflow%3A%22nf-core+linting%22)
@@ -26,8 +26,6 @@ The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool
 <!-- TODO nf-core: Add full-sized test dataset and amend the paragraph below if applicable -->
 On release, automated continuous integration tests run the pipeline on a full-sized dataset on the AWS cloud infrastructure. This ensures that the pipeline runs on AWS, has sensible resource allocation defaults set to run on real-world datasets, and permits the persistent storage of results to benchmark between pipeline releases and other analysis sources. The results obtained from the full-sized test can be viewed on the [nf-core website](https://nf-co.re/yascp/results).
 
-<!-- ![Image](https://github.com/wtsi-hgi/yascp/tree/main/assets/YASCP_Logo.png?raw=true)  -->
-# ![nf-core/yascp](docs/images/YASCP_Logo.png)
 
 ## Pipeline summary
 
