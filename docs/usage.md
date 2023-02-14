@@ -63,11 +63,13 @@ data_path_10x_format - path to a 10x folder containing bam, bai, metrics_summary
         ./matrix.mtx.gz
         ./features.tsv.gz
         ./barcodes.tsv.gz
-    .filtered_feature_bc_matrix
+    ./filtered_feature_bc_matrix
         ./matrix.mtx.gz
         ./features.tsv.gz
         ./barcodes.tsv.gz
     ./metrics_summary.csv
+    ./web_summary.html
+    ./molecule_info.h5
 ```
 You could also provide path to this file by providing a flag:
 ```console
@@ -77,7 +79,14 @@ You could also provide path to this file by providing a flag:
 ## Genotypesheet input (optional)
 An [example genotypesheet](../sample_input/vcf_inputs.tsv) has been provided with the pipeline.
 Genotypesheet can be provided to pipeline to perform a beter sample deconvolution, detect wheather the sample you are expecting is really the sample (through the GT match).
+Pipeline will figure out which cohort the deconvoluted sample comes from (if any). In the folowing exapme we have 3 cohorts: Cohort1 has genotypes for each of the chromosomes - this is ok as pipeline will use all chromosome files to figure out whether the sample is part of this. Other 2 cohorts has a merged vcf file for all the chromosomes. This is alos ok as it will figure out whether the sample bellongs to this cohort in one go. After looking at all these cohort pipeline will asign only 1 donor corresponding to which one is the most likely real match
 
+| label   | vcf_file_path    |
+|-----------------|----------|
+| Cohort1 |   /ful/path/to/vcf_bcf/file/in/hg38/format/without/chr/prefix/chr1.vcf.gz      |
+| Cohort1 |   /ful/path/to/vcf_bcf/file/in/hg38/format/without/chr/prefix/chr2.vcf.gz      |
+| Cohort2 |   /ful/path/to/vcf_bcf/file/in/hg38/format/without/chr/prefix/full_cohort2_for_all_chr.vcf.gz      |
+| Cohort3 |   /ful/path/to/vcf_bcf/file/in/hg38/format/without/chr/prefix/full_cohort2_for_all_chr.vcf.gz      |
 
 ## Extra pool metadata sheet (optional)
 
