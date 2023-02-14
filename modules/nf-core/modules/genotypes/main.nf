@@ -121,6 +121,7 @@ process VIREO_GT_FIX_HEADER
     bcftools +fixref pre_${vireo_fixed_vcf} -Oz -o ${vireo_fixed_vcf} -- -d -f ${params.reference_assembly_fasta_dir}/genome.fa -m flip
     tabix -p vcf ${vireo_fixed_vcf}
 
+
   """
 }
 process REPLACE_GT_DONOR_ID2{
