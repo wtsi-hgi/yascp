@@ -38,7 +38,8 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 <details markdown="1">
 <summary>Output files:</summary>
 
-*   Cellbender output structure: ![Cellbender module output structure](../assets/images/cellbender_output_structure.png)
+*   Cellbender output structure:
+    * ![Cellbender module output structure](../assets/images/cellbender_output_structure.png)
 </details>
 
 [Cellbender](https://github.com/broadinstitute/CellBender).
@@ -49,7 +50,8 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 <details markdown="1">
 <summary>Output files:</summary>
 
-* Cellsnp output structure: ![Cellsnp output structure](../assets/images/cellsnp.png)
+* Cellsnp output structure:
+    * ![Cellsnp output structure](../assets/images/cellsnp.png)
 </details>
 
 [Cellsnp](https://github.com/single-cell-genetics/cellSNP).
