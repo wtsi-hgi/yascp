@@ -4,27 +4,38 @@
     nf-core/yascp
 ========================================================================================
     Github : https://github.com/nf-core/yascp
-    Website: https://nf-co.re/yascp
     Slack  : https://nfcore.slack.com/channels/yascp
 ----------------------------------------------------------------------------------------
 */
 
-
 nextflow.enable.dsl = 2
+include { YASCP } from './workflows/yascp'
 
+////// WORKFLOW: Run main nf-core/yascp analysis pipeline
+// This is the default entry point, we have others to update ceirtain parts of the results.
+workflow MAIN {
+    YASCP ('default')
+}
+
+workflow {
+    MAIN ()
+}
+
+// END OF MAIN ENTRANCE IN WORKFLOWS
+
+
+
+
+
+
+
+
+////// You do not need to concern about the workflows bellow as these are Cardinal Specific and used for development
 /*
 ========================================================================================
-    VALIDATE & PRINT PARAMETER SUMMARY
+  Below we have other workflow that are a versions of the Yascp to avoid ceirtain modules and update/validate the datasets
 ========================================================================================
 */
-
-
-/*
-========================================================================================
-  NAMED WORKFLOWS FOR TESTS
-========================================================================================
-*/
-
 //include { TEST_MATCH_GENOTYPES } from './tests/test_genotypes'
 //include { TEST_GT_ASSIGN } from './tests/test_gt_assign'
 //include { TEST_GTCHECK } from './tests/test_gtcheck'
@@ -60,7 +71,6 @@ workflow FREEZE1_GENERATION{
 workflow GENOTYPE_UPDATE{
     // For Freeze1 we take the existing datasets and cp -as results folder so we can start from a breakpoint in pipeline
     // We rerun the GT match for all tranches as this has changed significantly since the beggining.
-
     myFileChannel = Channel.fromPath( "${params.outdir}/deconvolution/vireo/*/GT_donors.vireo.vcf.gz" )
     myFileChannel.map{row -> tuple(row[-2], row)}.set{vireo_out_sample_donor_vcf}
 
@@ -91,7 +101,6 @@ workflow GENOTYPE_UPDATE{
         }else{
             ch_ref_vcf = Channel.of()
     }
-
     // tuple val(pool_id), path("${vireo_fixed_vcf}"), path("${vireo_fixed_vcf}.tbi"), emit: gt_pool
     // RERUN CellSNP
     input_channel = Channel.fromPath(params.input_data_table, followLinks: true, checkIfExists: true)
@@ -121,7 +130,6 @@ workflow GENOTYPE_UPDATE{
     CELLSNP(cellsnp_with_npooled,
         Channel.fromPath(params.cellsnp.vcf_candidate_snps).collect())
 
-        
     CAPTURE_VIREO(params.existing_vireo)
     CAPTURE_VIREO.out.vireo_loc.splitCsv(header: false, sep: ' ')
         .map{row->tuple(row[0], "${row[1]}", "${row[2]}")}
@@ -175,20 +183,20 @@ workflow REPORT_UPDATE{
 }
 
 
-workflow NF_CORE_TEST {
-  //println "**** running NF_CORE_TEST::TEST_MATCH_GENOTYPES"
+workflow TEST {
+  //println "**** running TEST::TEST_MATCH_GENOTYPES"
   //TEST_MATCH_GENOTYPES()
-  //println "**** running NF_CORE_TEST::TEST_GT_ASSIGN"
+  //println "**** running TEST::TEST_GT_ASSIGN"
   //TEST_GT_ASSIGN()
-  //println "**** running NF_CORE_TEST::TEST_GTCHECK"
+  //println "**** running TEST::TEST_GTCHECK"
   //TEST_GTCHECK()
-  //println "**** running NF_CORE_TEST::TEST_MATCH_GT_VIREO"
+  //println "**** running TEST::TEST_MATCH_GT_VIREO"
   //TEST_MATCH_GT_VIREO()
-  //println "**** running NF_CORE_TEST::TEST_SPLIT_BAM_PER_DONOR"
+  //println "**** running TEST::TEST_SPLIT_BAM_PER_DONOR"
   //TEST_SPLIT_BAM_PER_DONOR()
-  //println "**** running NF_CORE_TEST::TEST_ENCRYPT_DIR"
+  //println "**** running TEST::TEST_ENCRYPT_DIR"
   //TEST_ENCRYPT_DIR()
-    println "**** running NF_CORE_TEST::TEST_SUBSET_GENOTYPES"
+    println "**** running TEST::TEST_SUBSET_GENOTYPES"
     //   TEST_SUBSET_GENOTYPES()
     input_channel = Channel.fromPath(params.input_data_table, followLinks: true, checkIfExists: true)
     
@@ -314,27 +322,3 @@ workflow NF_CORE_TEST {
 
 }
 
-/*
-========================================================================================
-    NAMED WORKFLOW FOR PIPELINE
-========================================================================================
-*/
-
-include { YASCP } from './workflows/yascp'
-
-////// WORKFLOW: Run main nf-core/yascp analysis pipeline
-workflow MAIN {
-    YASCP ('default')
-}
-
-//
-workflow {
-    // This is the default entry point, we have others to update ceirtain parts of the results.
-    MAIN ()
-}
-
-/*
-========================================================================================
-    THE END
-========================================================================================
-*/

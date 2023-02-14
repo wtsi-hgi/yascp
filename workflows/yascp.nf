@@ -1,28 +1,8 @@
 /*
 ========================================================================================
-    VALIDATE INPUTS
-========================================================================================
-*/
-
-def summary_params = NfcoreSchema.paramsSummaryMap(workflow, params)
-
-/*
-========================================================================================
-    CONFIG FILES
-========================================================================================
-*/
-
-ch_multiqc_config        = file("$projectDir/assets/multiqc_config.yaml", checkIfExists: true)
-ch_multiqc_custom_config = params.multiqc_config ? Channel.fromPath(params.multiqc_config) : Channel.empty()
-
-/*
-========================================================================================
     IMPORT LOCAL MODULES/SUBWORKFLOWS
 ========================================================================================
 */
-
-def modules = params.modules.clone()
-
 include { GET_SOFTWARE_VERSIONS } from "$projectDir/modules/local/get_software_versions" addParams( options: [publish_files : ['tsv':'']] )
 include { main_deconvolution } from "$projectDir/subworkflows/main_deconvolution"
 include {ambient_RNA} from "$projectDir/subworkflows/ambient_RNA"
@@ -40,22 +20,9 @@ include {capture_cellbender_files} from "$projectDir/modules/nf-core/modules/cel
 
 /*
 ========================================================================================
-    IMPORT NF-CORE MODULES/SUBWORKFLOWS
-========================================================================================
-*/
-
-def multiqc_options   = modules['multiqc']
-multiqc_options.args += params.multiqc_title ? Utils.joinModuleArgs(["--title \"$params.multiqc_title\""]) : ''
-
-/*
-========================================================================================
     RUN MAIN WORKFLOW
 ========================================================================================
 */
-
-// Info required for completion email and summary
-def multiqc_report = []
-
 workflow YASCP {
     take:
         mode
@@ -68,10 +35,9 @@ workflow YASCP {
         // ###################################
         // ################################### Readme
         // AMBIENT RNA REMOVAL USING CELLBENDER
-        // There are 3 modes of running YASCP pipeline:
-        // (option 1) users can run it from 10x data and use cellbender -  params.input == 'cellbender'
-        // (option 2) users can run it from existing cellbender if the analysis has already been performed -  params.input == 'existing_cellbender' : note a specific folder structure is required
-        // (option 3) users can run it from cellranger - skipping the cellbender. params.input == 'cellranger'
+        // There are 2 modes of running YASCP pipeline:
+        // (option 1) users can run it from existing cellbender if the analysis has already been performed by providing a parth to existing cellbender files : note a specific folder structure is required
+        // (option 2) users can run it from cellranger - skipping the cellbender. params.input == 'cellranger'
         // ###################################
         // ###################################
         ch_poolid_csv_donor_assignments = Channel.empty()
@@ -261,19 +227,6 @@ workflow YASCP {
         }
                         
                         
-}
-
-/*
-========================================================================================
-    COMPLETION EMAIL AND SUMMARY
-========================================================================================
-*/
-
-workflow.onComplete {
-    if (params.email || params.email_on_fail) {
-        NfcoreTemplate.email(workflow, params, summary_params, projectDir, log, multiqc_report)
-    }
-    NfcoreTemplate.summary(workflow, params, log)
 }
 
 /*
