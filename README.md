@@ -1,4 +1,4 @@
-<p align="center" width="80%">
+<p align="center" width="300">
   <img src="https://github.com/wtsi-hgi/yascp/blob/main/docs/images/YASCP_Logo.png" />
 </p>
 
