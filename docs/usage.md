@@ -31,7 +31,7 @@ params{
 ```
 
 This file will be provided when pipeline is executed:
-    ```console
+    ```
     nextflow run /path/to/cloned/nfCore_scRNA -profile sanger -resume -c input.nf
     ```
 
@@ -48,12 +48,12 @@ As per above main file required is a paths to 10x files in a format:
 You will need to create a samplesheet with information about the samples you would like to analyse before running the pipeline. Use this parameter to specify its location. It has to be a tab-separated file with 3 columns, and a header row as shown in the examples below.
 
 Where:
-experiment_id - is the name of the sample
-n_pooled - indicates how many donors are pooled in the 10x run (if only 1 then scrubblet will be used to remove doublets)
-donor_vcf_ids - if using genotyes, here an id of individuals can be added to subset vcfs used to deconvolute samples (need to be as listed in vcf file provided)
+* **experiment_id** - is the name of the sample
+* **n_pooled** - indicates how many donors are pooled in the 10x run (if only 1 then scrubblet will be used to remove doublets)
+* **donor_vcf_ids** - if using genotyes, here an id of individuals can be added to subset vcfs used to deconvolute samples (need to be as listed in vcf file provided)
 data_path_10x_format - path to a 10x folder containing bam, bai, metrics_summary.csv files and raw_barcodes folder
 
-path/to/10x_folder should contain the folowing files:
+**path/to/10x_folder** should contain the folowing files:
 
 ```console
 10x_folder/
