@@ -1,4 +1,6 @@
-# ![nf-core/yascp](docs/images/YASCP_Logo.png)
+<p align="center">
+  <img src="https://github.com/nf-core/yascp/docs/images/YASCP_Logo.png" />
+</p>
 
 [![GitHub Actions CI Status](https://github.com/nf-core/yascp/workflows/nf-core%20CI/badge.svg)](https://github.com/nf-core/yascp/actions?query=workflow%3A%22nf-core+CI%22)
 [![GitHub Actions Linting Status](https://github.com/nf-core/yascp/workflows/nf-core%20linting/badge.svg)](https://github.com/nf-core/yascp/actions?query=workflow%3A%22nf-core+linting%22)
