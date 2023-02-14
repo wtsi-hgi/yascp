@@ -1,5 +1,5 @@
-<p align="center" width="300">
-  <img src="https://github.com/wtsi-hgi/yascp/blob/main/docs/images/YASCP_Logo.png" width="300"/>
+<p align="center">
+  <img src="https://github.com/wtsi-hgi/yascp/blob/main/docs/images/YASCP_Logo.png" width="100%"/>
 </p>
 
 [![GitHub Actions CI Status](https://github.com/nf-core/yascp/workflows/nf-core%20CI/badge.svg)](https://github.com/nf-core/yascp/actions?query=workflow%3A%22nf-core+CI%22)
