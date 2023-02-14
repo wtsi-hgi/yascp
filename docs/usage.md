@@ -3,28 +3,10 @@
 
 <!-- TODO nf-core: Add documentation about anything specific to running your pipeline. For general topics, please point to (and add to) the main nf-core website. -->
 
-## Samplesheet input
+## Input declaration config file
+An [example samplesheet](../sample_input/inputs.nf) has been provided with the pipeline.
 
-You will need to create a samplesheet with information about the samples you would like to analyse before running the pipeline. Use this parameter to specify its location. It has to be a tab-separated file with 3 columns, and a header row as shown in the examples below.
-
-```console
---input_data_table '[path to samplesheet file]'
-```
-
-### Multiple runs of the same sample
-
-
-4. Prepeare input.nf file with an associated input.tsv as in the sample_input folder and Start running your own analysis!
-
-    <!-- TODO nf-core: Update the example "typical command" below used to run the pipeline -->
-
-    ```console
-    nextflow run /path/to/cloned/nfCore_scRNA -profile sanger -resume -c input.nf
-    ```
-
-input.nf sample is located in ./sample_input/input.nf
-
-Which points to multiple files as input, but the main is a pointer to input file in input_data_table
+Since we have multiple inputs in pipeline we point to each of them in a sample config file. There are multiple required/optional inputs that are described bellow.
 
 ```console
 params{
@@ -48,25 +30,14 @@ params{
 }
 ```
 
-1. input = default 'existing_cellbender' which indicates cellbender will be run on all the samples besides the ones that are captured by [cellbender_location='/full/path/to/results/nf-preprocessing/cellbender']. Other options - [cellranger] - which avoids ambient RNA removal and proceeds with deconvolution based on cellranger.
-1. if you are providing a path to cellbender_location ='??' - specify location to the results directory containing [cellbender_location='/full/path/to/results/nf-preprocessing/cellbender']
-This should contain: 
-```console
-    Sample1
-    Sample2
-    Sample3
-    qc_cluster_input_files
-        file_paths_10x-*FPR_0pt1
-        file_paths_10x-*FPR_0pt05
-        file_paths_10x-*FPR_0pt01
-```
-2. full_vcf_file = points to vcf file to be used.
-4. subset_genotypes = indicates to subset genotypes for an input to be used in Vireo.
-5. run_celltype_assignment = runs celltypist and Azimuth if PBMC data is used.
-6. file__anndata_merged = if all preprocession has already been doe can input a marged h5ad which will skio all the cellbender and deconvolution.
-7. extra_metadata = any extra metadata to be added for samples.
-8. input_data_table = is a file pointing to the 10x files as per:
-Main file required is a paths to 10x files in a format:
+This file will be provided when pipeline is executed:
+    ```console
+    nextflow run /path/to/cloned/nfCore_scRNA -profile sanger -resume -c input.nf
+    ```
+
+## Samplesheet input
+An [example samplesheet](../sample_input/input_table.tsv) has been provided with the pipeline.
+As per above main file required is a paths to 10x files in a format:
 
 
 | experiment_id   | n_pooled | donor_vcf_ids    |  data_path_10x_format   |
@@ -74,13 +45,13 @@ Main file required is a paths to 10x files in a format:
 | 5892STDY8039553 |   1      | "id3"            | path/to/10x_folder      |
 | 6123STDY11066014|   2      | "id1,id2"        | path/to/10x_folder      |
 
+You will need to create a samplesheet with information about the samples you would like to analyse before running the pipeline. Use this parameter to specify its location. It has to be a tab-separated file with 3 columns, and a header row as shown in the examples below.
 
-where:
+Where:
 experiment_id - is the name of the sample
 n_pooled - indicates how many donors are pooled in the 10x run (if only 1 then scrubblet will be used to remove doublets)
 donor_vcf_ids - if using genotyes, here an id of individuals can be added to subset vcfs used to deconvolute samples (need to be as listed in vcf file provided)
 data_path_10x_format - path to a 10x folder containing bam, bai, metrics_summary.csv files and raw_barcodes folder
-
 
 path/to/10x_folder should contain the folowing files:
 
@@ -98,9 +69,41 @@ path/to/10x_folder should contain the folowing files:
         ./barcodes.tsv.gz
     ./metrics_summary.csv
 ```
+You could also provide path to this file by providing a flag:
+```console
+--input_data_table '[path to samplesheet file]'
+```
 
-                                    |
-An [example samplesheet](../sample_input/input_table.tsv) has been provided with the pipeline.
+## Genotypesheet input (optional)
+An [example genotypesheet](../sample_input/vcf_inputs.tsv) has been provided with the pipeline.
+Genotypesheet can be provided to pipeline to perform a beter sample deconvolution, detect wheather the sample you are expecting is really the sample (through the GT match).
+
+
+## Extra pool metadata sheet (optional)
+
+## Extra donor within pool metadata sheet (optional)
+
+## Genotype to phenotype bridging file (optional)
+
+
+1. input = default 'existing_cellbender' which indicates cellbender will be run on all the samples besides the ones that are captured by [cellbender_location='/full/path/to/results/nf-preprocessing/cellbender']. Other options - [cellranger] - which avoids ambient RNA removal and proceeds with deconvolution based on cellranger. If you are providing a path to cellbender_location ='??' - specify location to the results directory containing [cellbender_location='/full/path/to/results/nf-preprocessing/cellbender']
+This should contain: 
+```console
+    Sample1
+    Sample2
+    Sample3
+    qc_cluster_input_files
+        file_paths_10x-*FPR_0pt1
+        file_paths_10x-*FPR_0pt05
+        file_paths_10x-*FPR_0pt01
+```
+2. full_vcf_file = points to vcf file to be used.
+4. subset_genotypes = indicates to subset genotypes for an input to be used in Vireo.
+5. run_celltype_assignment = runs celltypist and Azimuth if PBMC data is used.
+6. file__anndata_merged = if all preprocession has already been doe can input a marged h5ad which will skio all the cellbender and deconvolution.
+7. extra_metadata = any extra metadata to be added for samples.
+8. input_data_table = is a file pointing to the 10x files as per:
+
 
 ## Running the pipeline
 

@@ -1,6 +1,7 @@
 # nf-core/yascp: Documentation
 
-The nf-core/yascp documentation is split into the following pages:
+The nf-core/yascp documentation is split into the following pages so that users can familiarise themselves with how to run the pipeline:
+Pipeline is quite versitile with a lot of moving piecies and can be configured in many ways dependant of research question however the default run should provide a good start.
 
 * [Usage](usage.md)
     * An overview of how the pipeline works, how to run it and a description of all of the different command-line flags.
