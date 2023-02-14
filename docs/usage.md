@@ -13,14 +13,92 @@ You will need to create a samplesheet with information about the samples you wou
 
 ### Multiple runs of the same sample
 
-The `sample` identifiers have to be the same when you have re-sequenced the same sample more than once e.g. to increase sequencing depth. The pipeline will concatenate the raw reads before performing any downstream analysis. Below is an example for the same sample sequenced across 3 lanes:
+
+4. Prepeare input.nf file with an associated input.tsv as in the sample_input folder and Start running your own analysis!
+
+    <!-- TODO nf-core: Update the example "typical command" below used to run the pipeline -->
+
+    ```console
+    nextflow run /path/to/cloned/nfCore_scRNA -profile sanger -resume -c input.nf
+    ```
+
+input.nf sample is located in ./sample_input/input.nf
+
+Which points to multiple files as input, but the main is a pointer to input file in input_data_table
 
 ```console
+params{
+    input = 'cellbender' //[cellranger|existing_cellbender]
+    qc_cluster_input_files' //if cellbender is run already then can skip this by selecting existing_cellbender and input 
+    cellbender_resolution_to_use='0pt1' //this is the default resolution, if not specifies [0pt01,0pt05] - these resolutions come from cellbender definition file - https://github.com/wtsi-hgi/yascp/blob/870165fe883658c19d339c26b08c729f45911f0a/conf/cellbender.config#L109
+    extra_metadata = ''
+    skip_preprocessing{
+        value=false //this is only activated to skip all the filtering - ie cellbender and restart with qc analysis once the parametes are changed
+        file__anndata_merged = ''
+        file__cells_filtered = ''
+    }
+    
+    run_celltype_assignment=true
+    input_data_table = 'full/path/to/inputs.tsv' 
+    run_with_genotype_input=true
+	genotype_input {
+        subset_genotypes = false
+        full_vcf_file = 'lifted.vcf.gz'
+    }
+}
+```
+
+1. input = default 'existing_cellbender' which indicates cellbender will be run on all the samples besides the ones that are captured by [cellbender_location='/full/path/to/results/nf-preprocessing/cellbender']. Other options - [cellranger] - which avoids ambient RNA removal and proceeds with deconvolution based on cellranger.
+1. if you are providing a path to cellbender_location ='??' - specify location to the results directory containing [cellbender_location='/full/path/to/results/nf-preprocessing/cellbender']
+This should contain: 
+```console
+    Sample1
+    Sample2
+    Sample3
+    qc_cluster_input_files
+        file_paths_10x-*FPR_0pt1
+        file_paths_10x-*FPR_0pt05
+        file_paths_10x-*FPR_0pt01
+```
+2. full_vcf_file = points to vcf file to be used.
+4. subset_genotypes = indicates to subset genotypes for an input to be used in Vireo.
+5. run_celltype_assignment = runs celltypist and Azimuth if PBMC data is used.
+6. file__anndata_merged = if all preprocession has already been doe can input a marged h5ad which will skio all the cellbender and deconvolution.
+7. extra_metadata = any extra metadata to be added for samples.
+8. input_data_table = is a file pointing to the 10x files as per:
+Main file required is a paths to 10x files in a format:
+
+
 | experiment_id   | n_pooled | donor_vcf_ids    |  data_path_10x_format   |
 |-----------------|----------|------------------|-------------------------|
 | 5892STDY8039553 |   1      | "id3"            | path/to/10x_folder      |
 | 6123STDY11066014|   2      | "id1,id2"        | path/to/10x_folder      |
+
+
+where:
+experiment_id - is the name of the sample
+n_pooled - indicates how many donors are pooled in the 10x run (if only 1 then scrubblet will be used to remove doublets)
+donor_vcf_ids - if using genotyes, here an id of individuals can be added to subset vcfs used to deconvolute samples (need to be as listed in vcf file provided)
+data_path_10x_format - path to a 10x folder containing bam, bai, metrics_summary.csv files and raw_barcodes folder
+
+
+path/to/10x_folder should contain the folowing files:
+
+```console
+10x_folder/
+    ./possorted_genome_bam.bai
+    ./possorted_genome_bam.bam
+    ./raw_feature_bc_matrix
+        ./matrix.mtx.gz
+        ./features.tsv.gz
+        ./barcodes.tsv.gz
+    .filtered_feature_bc_matrix
+        ./matrix.mtx.gz
+        ./features.tsv.gz
+        ./barcodes.tsv.gz
+    ./metrics_summary.csv
 ```
+
                                     |
 An [example samplesheet](../sample_input/input_table.tsv) has been provided with the pipeline.
 

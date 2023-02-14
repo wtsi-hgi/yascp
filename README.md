@@ -16,22 +16,20 @@
 [![Follow on Twitter](http://img.shields.io/badge/twitter-%40nf__core-1DA1F2?labelColor=000000&logo=twitter)](https://twitter.com/nf_core)
 [![Watch on YouTube](http://img.shields.io/badge/youtube-nf--core-FF0000?labelColor=000000&logo=youtube)](https://www.youtube.com/c/nf-core)
 
-## Introduction
 - ![#f03c15](https://via.placeholder.com/15/f03c15/000000?text=+) `Pipeline is currently under develpment.`
-This is a large scale single-cell pipeline developed initially for processing Cardinal project samples. The pipeline has been inspired by initial deconvolution (https://github.com/wtsi-hgi/nf_scrna_deconvolution.git ), cellbender (https://github.com/wtsi-hgi/nf_cellbender ) and qc (https://github.com/wtsi-hgi/nf_qc_cluster/tree/main ) pipelines. Input requires a tsv seperated file with paths to the Cellranger 6.11 outputs (Input from fastq files will be added) and if running in an genotype  additional input is required to be provided in an input.nf file pointing to the vcf location. This pipeline is designed to be used for multiple large scale single cell experiments ongoing in sanger. It is intended to add this pipeline to the nf-core framework in the future. 
 
-<!-- TODO nf-core: Write a 1-2 sentence summary of what data the pipeline is for and what it does -->
-**nf-core/yascp** is a bioinformatics best-practice analysis pipeline for deconvolution of a single cell datasets.
+
+## Introduction
+
+**nf-core/yascp** is a bioinformatics best-practice analysis pipeline for deconvolution, qc, clustering of a single cell datasets.
+This is a large scale single-cell pipeline developed initially for processing Cardinal project samples, however it is applicable to any other scRNA analysis. The pipeline has been inspired by deconvolution (https://github.com/wtsi-hgi/nf_scrna_deconvolution.git ), cellbender (https://github.com/wtsi-hgi/nf_cellbender ) and qc (https://github.com/wtsi-hgi/nf_qc_cluster/tree/main ) pipelines. Input requires a tsv seperated file with paths to the Cellranger 6.11 outputs (however we will shortly add a Cellranger module to make this pipeline more transferable) and if running in an genotype  additional input is required to be provided in an input.nf file pointing to the vcf location. This pipeline is designed to be used for multiple large scale single cell experiments.
 
 The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool to run tasks across multiple compute infrastructures in a very portable manner. It uses Docker/Singularity containers making installation trivial and results highly reproducible. The [Nextflow DSL2](https://www.nextflow.io/docs/latest/dsl2.html) implementation of this pipeline uses one container per process which makes it much easier to maintain and update software dependencies. Where possible, these processes have been submitted to and installed from [nf-core/modules](https://github.com/nf-core/modules) in order to make them available to all nf-core pipelines, and to everyone within the Nextflow community!
 
 <!-- TODO nf-core: Add full-sized test dataset and amend the paragraph below if applicable -->
-On release, automated continuous integration tests run the pipeline on a full-sized dataset on the AWS cloud infrastructure. This ensures that the pipeline runs on AWS, has sensible resource allocation defaults set to run on real-world datasets, and permits the persistent storage of results to benchmark between pipeline releases and other analysis sources. The results obtained from the full-sized test can be viewed on the [nf-core website](https://nf-co.re/yascp/results).
-
+<!-- On release, automated continuous integration tests run the pipeline on a full-sized dataset on the AWS cloud infrastructure. This ensures that the pipeline runs on AWS, has sensible resource allocation defaults set to run on real-world datasets, and permits the persistent storage of results to benchmark between pipeline releases and other analysis sources. The results obtained from the full-sized test can be viewed on the [nf-core website](https://nf-co.re/yascp/results). -->
 
 ## Pipeline summary
-
-<!-- TODO nf-core: Fill in short bullet-pointed list of the default steps in the pipeline -->
 
 1. Cellbender
 2. CellSNP
@@ -68,93 +66,10 @@ Easyest to do is using a conda enviroment.
 
     > * Please check [nf-core/configs](https://github.com/nf-core/configs#documentation) to see if a custom config file to run nf-core pipelines already exists for your Institute. If so, you can simply use `-profile <institute>` in your command. This will enable either `docker` or `singularity` and set the appropriate execution settings for your local compute environment.
     > * If you are using `singularity` then the pipeline will auto-detect this and attempt to download the Singularity images directly as opposed to performing a conversion from Docker images. If you are persistently observing issues downloading Singularity images directly due to timeout or network issues then please use the `--singularity_pull_docker_container` parameter to pull and convert the Docker image instead. Alternatively, it is highly recommended to use the [`nf-core download`](https://nf-co.re/tools/#downloading-pipelines-for-offline-use) command to pre-download all of the required containers before running the pipeline and to set the [`NXF_SINGULARITY_CACHEDIR` or `singularity.cacheDir`](https://www.nextflow.io/docs/latest/singularity.html?#singularity-docker-hub) Nextflow options to be able to store and re-use the images from a central location for future pipeline runs.
-    > * If you are using `conda`, it is highly recommended to use the [`NXF_CONDA_CACHEDIR` or `conda.cacheDir`](https://www.nextflow.io/docs/latest/conda.html) settings to store the environments in a central location for future pipeline runs.
 
-4. Prepeare input.nf file with an associated input.tsv as in the sample_input folder and Start running your own analysis!
+## Documentation: Prepearing your own data and interpreting the results
 
-    <!-- TODO nf-core: Update the example "typical command" below used to run the pipeline -->
-
-    ```console
-    nextflow run /path/to/cloned/nfCore_scRNA -profile sanger -resume -c input.nf
-    ```
-
-input.nf sample is located in ./sample_input/input.nf
-
-Which points to multiple files as input, but the main is a pointer to input file in input_data_table
-
-```console
-params{
-    input = 'cellbender' //[cellranger|existing_cellbender]
-    qc_cluster_input_files' //if cellbender is run already then can skip this by selecting existing_cellbender and input 
-    cellbender_resolution_to_use='0pt1' //this is the default resolution, if not specifies [0pt01,0pt05] - these resolutions come from cellbender definition file - https://github.com/wtsi-hgi/yascp/blob/870165fe883658c19d339c26b08c729f45911f0a/conf/cellbender.config#L109
-    extra_metadata = ''
-    skip_preprocessing{
-        value=false //this is only activated to skip all the filtering - ie cellbender and restart with qc analysis once the parametes are changed
-        file__anndata_merged = ''
-        file__cells_filtered = ''
-    }
-    
-    run_celltype_assignment=true
-    input_data_table = 'full/path/to/inputs.tsv' 
-    run_with_genotype_input=true
-	genotype_input {
-        subset_genotypes = false
-        full_vcf_file = 'lifted.vcf.gz'
-    }
-}
-```
-
-1. input = default 'existing_cellbender' which indicates cellbender will be run on all the samples besides the ones that are captured by [cellbender_location='/full/path/to/results/nf-preprocessing/cellbender']. Other options - [cellranger] - which avoids ambient RNA removal and proceeds with deconvolution based on cellranger.
-1. if you are providing a path to cellbender_location ='??' - specify location to the results directory containing [cellbender_location='/full/path/to/results/nf-preprocessing/cellbender']
-This should contain: 
-```console
-    Sample1
-    Sample2
-    Sample3
-    qc_cluster_input_files
-        file_paths_10x-*FPR_0pt1
-        file_paths_10x-*FPR_0pt05
-        file_paths_10x-*FPR_0pt01
-```
-2. full_vcf_file = points to vcf file to be used.
-4. subset_genotypes = indicates to subset genotypes for an input to be used in Vireo.
-5. run_celltype_assignment = runs celltypist and Azimuth if PBMC data is used.
-6. file__anndata_merged = if all preprocession has already been doe can input a marged h5ad which will skio all the cellbender and deconvolution.
-7. extra_metadata = any extra metadata to be added for samples.
-8. input_data_table = is a file pointing to the 10x files as per:
-Main file required is a paths to 10x files in a format:
-
-
-| experiment_id   | n_pooled | donor_vcf_ids    |  data_path_10x_format   |
-|-----------------|----------|------------------|-------------------------|
-| 5892STDY8039553 |   1      | "id3"            | path/to/10x_folder      |
-| 6123STDY11066014|   2      | "id1,id2"        | path/to/10x_folder      |
-
-
-where:
-experiment_id - is the name of the sample
-n_pooled - indicates how many donors are pooled in the 10x run (if only 1 then scrubblet will be used to remove doublets)
-donor_vcf_ids - if using genotyes, here an id of individuals can be added to subset vcfs used to deconvolute samples (need to be as listed in vcf file provided)
-data_path_10x_format - path to a 10x folder containing bam, bai, metrics_summary.csv files and raw_barcodes folder
-
-
-path/to/10x_folder should contain the folowing files:
-
-```console
-10x_folder/
-    ./possorted_genome_bam.bai
-    ./possorted_genome_bam.bam
-    ./raw_feature_bc_matrix
-        ./matrix.mtx.gz
-        ./features.tsv.gz
-        ./barcodes.tsv.gz
-    .filtered_feature_bc_matrix
-        ./matrix.mtx.gz
-        ./features.tsv.gz
-        ./barcodes.tsv.gz
-    ./metrics_summary.csv
-```
-
+The nf-core/yascp pipeline comes with documentation about the pipeline [usage](https://nf-co.re/yascp/usage), [parameters](https://nf-co.re/yascp/parameters) and [output](https://nf-co.re/yascp/output). To understand how to prepeare your own data and how to interpret the results please refear to documents [HERE](https://github.com/wtsi-hgi/yascp/tree/main/docs)
 
 
 ## Documentation
