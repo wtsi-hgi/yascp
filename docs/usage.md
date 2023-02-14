@@ -85,8 +85,10 @@ Pipeline will figure out which cohort the deconvoluted sample comes from (if any
 |-----------------|----------|
 | Cohort1 |   /ful/path/to/vcf_bcf/file/in/hg38/format/without/chr/prefix/chr1.vcf.gz      |
 | Cohort1 |   /ful/path/to/vcf_bcf/file/in/hg38/format/without/chr/prefix/chr2.vcf.gz      |
+| .... |   ....      |
 | Cohort2 |   /ful/path/to/vcf_bcf/file/in/hg38/format/without/chr/prefix/full_cohort2_for_all_chr.vcf.gz      |
 | Cohort3 |   /ful/path/to/vcf_bcf/file/in/hg38/format/without/chr/prefix/full_cohort2_for_all_chr.vcf.gz      |
+
 
 ## Extra pool metadata sheet (optional)
 An [example pool metadata](../sample_input/extra_metadata.tsv) has been provided with the pipeline.
@@ -103,7 +105,7 @@ Sometimes IDs that we expect in our [input files](../sample_input/genotype_pheno
 |-----------------|----------|
 | 682_683 |   pheno_682_683      |
 | 684_684 |   pheno_682_683      |
-
+| .... |   ....      |
 
 
 ## Some tricks to avoid reruning pipeline over and over if you already have some partial data
