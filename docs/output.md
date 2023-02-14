@@ -43,7 +43,7 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 </details>
 
 [Cellbender](https://github.com/broadinstitute/CellBender).
-![Cellbender module output structure](images/cellbender_output_structure.png)
+![Cellbender module output structure](../assests/cellbender_output_structure.png)
 
 
 ### Cellsnp
@@ -53,6 +53,6 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 </details>
 
 [Cellsnp](https://github.com/single-cell-genetics/cellSNP).
-![Cellbender module output structure](images/cellsnp.png)
+![Cellbender module output structure](../assests/images/cellsnp.png)
 
 [Nextflow](https://www.nextflow.io/docs/latest/tracing.html) provides excellent functionality for generating various reports relevant to the running and execution of the pipeline. This will allow you to troubleshoot errors with the running of the pipeline, and also provide you with other information such as launch commands, run times and resource usage.

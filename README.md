@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://github.com/wtsi-hgi/yascp/blob/main/docs/images/YASCP_Logo.png" width="80%"/>
+  <img src="https://github.com/wtsi-hgi/yascp/blob/main/assets/images/YASCP_Logo.png" width="80%"/>
 </p>
 
 [![GitHub Actions CI Status](https://github.com/nf-core/yascp/workflows/nf-core%20CI/badge.svg)](https://github.com/nf-core/yascp/actions?query=workflow%3A%22nf-core+CI%22)
@@ -46,6 +46,9 @@ The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool
 13. Hard filters
 14. Genotype deconvolution and GT match against multiple panels.
 
+<p align="center">
+  <img src="https://github.com/wtsi-hgi/yascp/blob/main/assets/images/yascp_workflow.png" width="90%"/>
+</p>
 
 ## Quick Start
 Easyest to do is using a conda enviroment.
