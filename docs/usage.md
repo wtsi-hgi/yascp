@@ -89,11 +89,24 @@ Pipeline will figure out which cohort the deconvoluted sample comes from (if any
 | Cohort3 |   /ful/path/to/vcf_bcf/file/in/hg38/format/without/chr/prefix/full_cohort2_for_all_chr.vcf.gz      |
 
 ## Extra pool metadata sheet (optional)
+An [example pool metadata](../sample_input/extra_metadata.tsv) has been provided with the pipeline.
 
 ## Extra donor within pool metadata sheet (optional)
+An [example metadata for donors in pool](../sample_input/extra_metadata_donors.tsv) has been provided with the pipeline.
 
 ## Genotype to phenotype bridging file (optional)
+An [genotype to phenotype bridging file](../sample_input/genotype_phenotype_bridge.tsv) has been provided with the pipeline.
 
+Sometimes IDs that we expect in our [input files](../sample_input/genotype_phenotype_bridge.tsv) donor_vcf_ids may corespond to phenotype IDs instead of genotype ids. Since pipeline performs the checks of whether the donor that we get is the one we expect acording to this field (very important step for Cardinal project) we want to map the genotype ids to phenotype ids. This will be handled by the pipeline.
+
+| oragene_id   | s00046_id    |
+|-----------------|----------|
+| 682_683 |   pheno_682_683      |
+| 684_684 |   pheno_682_683      |
+
+
+
+## Some tricks to avoid reruning pipeline over and over if you already have some partial data
 
 1. input = default 'existing_cellbender' which indicates cellbender will be run on all the samples besides the ones that are captured by [cellbender_location='/full/path/to/results/nf-preprocessing/cellbender']. Other options - [cellranger] - which avoids ambient RNA removal and proceeds with deconvolution based on cellranger. If you are providing a path to cellbender_location ='??' - specify location to the results directory containing [cellbender_location='/full/path/to/results/nf-preprocessing/cellbender']
 This should contain: 
@@ -106,12 +119,15 @@ This should contain:
         file_paths_10x-*FPR_0pt05
         file_paths_10x-*FPR_0pt01
 ```
-2. full_vcf_file = points to vcf file to be used.
+
+2. existing_cellsnp = '' - If you point to the path of partial cellsnp files these will be captured in pipeline and utilised in downstram processes, and only cellsnp of the files that dont have the runs performed on cellsnp will proceed.
+
+<!-- 2. full_vcf_file = points to vcf file to be used.
 4. subset_genotypes = indicates to subset genotypes for an input to be used in Vireo.
 5. run_celltype_assignment = runs celltypist and Azimuth if PBMC data is used.
 6. file__anndata_merged = if all preprocession has already been doe can input a marged h5ad which will skio all the cellbender and deconvolution.
 7. extra_metadata = any extra metadata to be added for samples.
-8. input_data_table = is a file pointing to the 10x files as per:
+8. input_data_table = is a file pointing to the 10x files as per: -->
 
 
 ## Running the pipeline
