@@ -7,7 +7,7 @@ params {
 	genotype_input {
         run_with_genotype_input=true //if false do not need the genotype_input parameters.
         subset_genotypes = false
-        full_vcf_file = 'lifted.vcf.gz' //vcf file in hg38 format without chr prefix
+        full_vcf_file = 'sample_vcf_file.vcf.gz' //vcf file in hg38 format without chr prefix
         posterior_assignment = false //this allows running vireo and assign donors posthoc.
     }
 }

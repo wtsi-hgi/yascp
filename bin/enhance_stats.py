@@ -45,7 +45,10 @@ input_table_file =input_table_file.set_index('experiment_id')
 
 
 Unassigned= []
-All_expected_ids = input_table_file.loc[args.donor_id,'donor_vcf_ids'].replace('\'','').split(',')
+try:
+    All_expected_ids = input_table_file.loc[args.donor_id,'donor_vcf_ids'].replace('\'','').split(',')
+except:
+    All_expected_ids =[]
 Good_ids=[]
 Emergency_ids=[]
 
