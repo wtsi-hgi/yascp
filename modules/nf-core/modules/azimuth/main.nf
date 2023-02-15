@@ -3,7 +3,7 @@ process AZIMUTH{
     label 'process_high_memory'
    
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "/software/hgi/containers/wtsihgi_nf_scrna_qc_azimuth_d54db9b-2021-12-13-8dd0b7fce918.sif"
+        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/wtsihgi_nf_scrna_qc_azimuth_d54db9b-2021-12-13-8dd0b7fce918.sif"
         //// container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/seurat_azimuth_pbmc_1.0.img"
         
     } else {
@@ -53,7 +53,7 @@ process REMAP_AZIMUTH{
     label 'process_low'
    
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "/software/hgi/containers/wtsihgi_nf_scrna_qc_6bb6af5-2021-12-23-3270149cf265.sif"
+        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/wtsihgi_nf_scrna_qc_6bb6af5-2021-12-23-3270149cf265.sif"
         //// container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/seurat_azimuth_pbmc_1.0.img"
     } else {
         container "wtsihgi/nf_scrna_qc_azimuth:d54db9b"

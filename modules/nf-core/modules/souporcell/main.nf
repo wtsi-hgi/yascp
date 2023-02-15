@@ -13,12 +13,12 @@ process SOUPORCELL {
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
 	//  currently, this container isn't dockerhub
 	//    cf. https://github.com/wtsi-hgi/mercury_scrna_deconvolution_container/tree/main/souporcell_task
-        container "/software/hgi/containers/shub_wheaton5_souporcell_latest.img"
+        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/shub_wheaton5_souporcell_latest.img"
     } else {
         log.info 'wrong container, please change this'
 	//  currently, this container isn't dockerhub
 	//    cf. https://github.com/wtsi-hgi/mercury_scrna_deconvolution_container/tree/main/souporcell_task
-        container "/software/hgi/containers/shub_wheaton5_souporcell_latest.img"
+        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/shub_wheaton5_souporcell_latest.img"
     }
 
     when: 

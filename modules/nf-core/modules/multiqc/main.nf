@@ -12,7 +12,7 @@ process MULTIQC {
 
     conda (params.enable_conda ? "bioconda::multiqc=1.10.1" : null)
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "/software/hgi/containers/wtsihgi_nf_scrna_qc_6bb6af5-2021-12-23-3270149cf265.sif"
+        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/wtsihgi_nf_scrna_qc_6bb6af5-2021-12-23-3270149cf265.sif"
         //// container "https://depot.galaxyproject.org/singularity/multiqc:1.10.1--py_0"
     } else {
         // container "quay.io/biocontainers/multiqc:1.10.1--py_0"

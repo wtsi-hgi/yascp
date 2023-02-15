@@ -6,7 +6,7 @@ process SUMMARY_STATISTICS_PLOTS {
             overwrite: "true"
 
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "/software/hgi/containers/mercury_scrna_deconvolution_62bd56a-2021-12-15-4d1ec9312485.sif"
+        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_62bd56a-2021-12-15-4d1ec9312485.sif"
     } else {
         container "mercury/scrna_deconvolution:62bd56a"
     }

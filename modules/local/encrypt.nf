@@ -3,7 +3,7 @@ process ENCRYPT_DIR
   label 'process_tiny'
 
   if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-    container "/software/hgi/containers/wtsihgi-nf_ega_cryptor-1.0.sif"
+    container "https://yascp.cog.sanger.ac.uk/public/singularity_images/wtsihgi-nf_ega_cryptor-1.0.sif"
   } else {
     container "mercury/wtsihgi-nf_ega_cryptor-1.0"
   }
@@ -33,7 +33,7 @@ process ENCRYPT_TARGET
   label 'process_long'
 
   if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-    container "/software/hgi/containers/wtsihgi-nf_ega_cryptor-1.0.sif"
+    container "https://yascp.cog.sanger.ac.uk/public/singularity_images/wtsihgi-nf_ega_cryptor-1.0.sif"
   } else {
     container "mercury/wtsihgi-nf_ega_cryptor-1.0"
   }
