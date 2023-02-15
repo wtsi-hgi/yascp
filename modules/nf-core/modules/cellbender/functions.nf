@@ -462,11 +462,9 @@ process capture_cellbender_files{
     overwrite: "true"
 
   label 'process_tiny'
-  when:
-    cellbender_location!=''
   // cache false
   input:
-    val(cellbender_location) //cant use path here - needs a full path
+    path(cellbender_location) //cant use path here - needs a full path
     val(outdir)
     path(input_file)
   output:
@@ -475,7 +473,6 @@ process capture_cellbender_files{
     
   script:
   """
-  
     mkdir tmp1234
     mkdir tmp1234/cellbender
     cd tmp1234/cellbender

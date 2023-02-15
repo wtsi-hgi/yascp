@@ -196,7 +196,11 @@ workflow TEST {
     
     prepare_inputs(input_channel)
 
-    capture_cellbender_files(params.cellbender_location,"${params.output_dir}/nf-preprocessing")
+    if(params.cellbender_location==''){
+        cellbender_location = "${params.output_dir}/dummy"
+    }
+
+    capture_cellbender_files(cellbender_location,"${params.output_dir}/nf-preprocessing")
     DECONV_INPUTS(capture_cellbender_files.out.celbender_path,prepare_inputs)
     channel__file_paths_10x = DECONV_INPUTS.out.channel__file_paths_10x
     ch_experiment_filth5= DECONV_INPUTS.out.ch_experiment_filth5
