@@ -23,6 +23,15 @@ include {capture_cellbender_files} from "$projectDir/modules/nf-core/modules/cel
     RUN MAIN WORKFLOW
 ========================================================================================
 */
+
+// This is the main workflow which consists of:
+//  1) Ambient RNA removal using cellbender - this is a lenghty process as GPU is required. ../subworkflows/ambient_RNA.nf
+//  2) Deconvolution and GT match (if genotypes provided) ../subworkflows/main_deconvolution.nf
+//  3) Celltype assignment  ../subworkflows/celltype.nf
+//  4) eQTL preparations  ../subworkflows/eQTL.nf
+//  5) Data handover preparation  ../subworkflows/data_handover.nf
+
+
 workflow YASCP {
     take:
         mode
@@ -117,7 +126,7 @@ workflow YASCP {
                     }
                     assignments_all_pools = Channel.from("$projectDir/assets/fake_file.fq")
                 }
-                // TODO: Here add a fundtion to take an extra h5ad and merge it together with the current run. This will be required for the downstream analysis when we want to integrate multiple datasets
+                // TODO: Here add a fundtion to take an extra h5ad and merge it together with the current run. This will be required for the downstream analysis when we want to integrate multiple datasets and account for the batches in these
                 if (!params.skip_merge){
                     file__anndata_merged = MERGE_SAMPLES.out.file__anndata_merged
                     file__cells_filtered = MERGE_SAMPLES.out.file__cells_filtered
@@ -129,7 +138,7 @@ workflow YASCP {
 
 
                 if("${mode}"!='default'){
-                    // here we have rerun GT matching upstream - done for freeze1
+                    // Here we have rerun GT matching upstream - done for freeze1
                     assignments_all_pools = mode
                 }else{
                     if (params.skip_preprocessing.file__anndata_merged !=''){
@@ -149,8 +158,7 @@ workflow YASCP {
                 CREATE_ARTIFICIAL_BAM_CHANNEL(input_channel)
                 bam_split_channel = CREATE_ARTIFICIAL_BAM_CHANNEL.out.ch_experiment_bam_bai_barcodes
                 ch_poolid_csv_donor_assignments = CREATE_ARTIFICIAL_BAM_CHANNEL.out.ch_poolid_csv_donor_assignments
-                    
-                // /lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/qc/Cardinal_45673_Aug_28_2022/results/gtmatch/CRD_CMB13098028/CRD_CMB13098028_gt_donor_assignments.csv
+
             }
 
             // ###################################
@@ -191,7 +199,6 @@ workflow YASCP {
             // ###################################
             // ###################################
 
-
             if (params.genotype_input.run_with_genotype_input){
                 eQTL(file__anndata_merged,assignments_all_pools)
             }
@@ -217,7 +224,6 @@ workflow YASCP {
         // 
         // ###################################
         // ###################################
-
 
         if (!params.skip_handover){
             data_handover(params.output_dir,

@@ -12,7 +12,8 @@ nextflow.enable.dsl = 2
 include { YASCP } from './workflows/yascp'
 
 ////// WORKFLOW: Run main nf-core/yascp analysis pipeline
-// This is the default entry point, we have others to update ceirtain parts of the results.
+// This is the default entry point, we have others to update ceirtain parts of the results. 
+// Please go to ./workflows/yascp to see the main Yascp workflow.
 workflow MAIN {
     YASCP ('default')
 }
