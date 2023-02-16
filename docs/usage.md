@@ -111,8 +111,8 @@ Users may want to provide extra metadata for each of the pools that can be used 
 ## Extra donor within pool metadata sheet (optional)
 An [example metadata for donors in pool](../sample_input/extra_metadata_donors.tsv) has been provided with the pipeline.
 
-If users have used genotypes in pipeline then upon deconvolution and gt match we will be able to tell which donor is which. In this case if users have any extra information for each of the donors within pool then this extra metadata information can also be provided in same format as above. To make sure that the correct metadata gets attached to the correct donor the experiment_id should contain experiment_id**__**donor_genotype_id  
-(Note: if you provided bridging file this should be )experiment_id**__**phenotype_id 
+If users have used genotypes in pipeline then upon deconvolution and gt match we will be able to tell which donor is which. In this case if users have any extra information for each of the donors within pool then this extra metadata information can also be provided in same format as above. To make sure that the correct metadata gets attached to the correct donor the experiment_id should contain experiment_id__donor_genotype_id  
+(Note: if you provided bridging file this should be )experiment_id__phenotype_id 
 
 | experiment_id   | Sex | Age | Condition    | ...   |
 |-----------------|----------|------------------|-------------------------|-----|
