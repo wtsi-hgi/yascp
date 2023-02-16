@@ -50,8 +50,8 @@ As per above main file required is a paths to 10x files in a format:
 
 | experiment_id   | n_pooled | donor_vcf_ids    |  data_path_10x_format   |
 |-----------------|----------|------------------|-------------------------|
-| 5892STDY8039553 |   1      | "id3"            | path/to/10x_folder      |
-| 6123STDY11066014|   2      | "id1,id2"        | path/to/10x_folder      |
+| Pool1 |   1      | "id3"            | path/to/10x_folder      |
+| Pool2|   2      | "id1,id2"        | path/to/10x_folder      |
 
 You will need to create a samplesheet with information about the samples you would like to analyse before running the pipeline. Use this parameter to specify its location. It has to be a tab-separated file with 3 columns, and a header row as shown in the examples below.
 
@@ -100,6 +100,13 @@ Pipeline will figure out which cohort the deconvoluted sample comes from (if any
 
 ## Extra pool metadata sheet (optional)
 An [example pool metadata](../sample_input/extra_metadata.tsv) has been provided with the pipeline.
+
+Users may want to provide extra metadata for each of the pools that can be used in clustering, regression or for plotting purposes.
+
+| experiment_id   | Experimental design | Library prep date | Stimulation time    | ...   |
+|-----------------|----------|------------------|-------------------------|
+| Pool1 |   1      |   20/01/2023          | 24h      |  |
+| Pool2|   2      | 21/01/2023        | 48h      |  |
 
 ## Extra donor within pool metadata sheet (optional)
 An [example metadata for donors in pool](../sample_input/extra_metadata_donors.tsv) has been provided with the pipeline.
