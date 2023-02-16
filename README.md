@@ -47,8 +47,12 @@ The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool
 14. Genotype deconvolution and GT match against multiple panels.
 
 <p align="center">
-  <img src="https://github.com/wtsi-hgi/yascp/blob/main/assets/images/yascp_workflow.png" width="90%"/>
+  <img src="https://github.com/wtsi-hgi/yascp/blob/main/assets/images/yascp_workflow.png" width="98%"/>
 </p>
+
+## Documentation: Prepearing your own data and interpreting the results
+
+The nf-core/yascp pipeline comes with documentation about the pipeline [usage](https://nf-co.re/yascp/usage), [parameters](https://nf-co.re/yascp/parameters) and [output](https://nf-co.re/yascp/output). To understand how to prepeare your own data and how to interpret the results please refear to documents [HERE](https://github.com/wtsi-hgi/yascp/tree/main/docs)
 
 ## Quick Start
 Easyest to do is using a conda enviroment.
@@ -70,9 +74,7 @@ Easyest to do is using a conda enviroment.
     > * Please check [nf-core/configs](https://github.com/nf-core/configs#documentation) to see if a custom config file to run nf-core pipelines already exists for your Institute. If so, you can simply use `-profile <institute>` in your command. This will enable either `docker` or `singularity` and set the appropriate execution settings for your local compute environment.
     > * If you are using `singularity` then the pipeline will auto-detect this and attempt to download the Singularity images directly as opposed to performing a conversion from Docker images. If you are persistently observing issues downloading Singularity images directly due to timeout or network issues then please use the `--singularity_pull_docker_container` parameter to pull and convert the Docker image instead. Alternatively, it is highly recommended to use the [`nf-core download`](https://nf-co.re/tools/#downloading-pipelines-for-offline-use) command to pre-download all of the required containers before running the pipeline and to set the [`NXF_SINGULARITY_CACHEDIR` or `singularity.cacheDir`](https://www.nextflow.io/docs/latest/singularity.html?#singularity-docker-hub) Nextflow options to be able to store and re-use the images from a central location for future pipeline runs.
 
-## Documentation: Prepearing your own data and interpreting the results
 
-The nf-core/yascp pipeline comes with documentation about the pipeline [usage](https://nf-co.re/yascp/usage), [parameters](https://nf-co.re/yascp/parameters) and [output](https://nf-co.re/yascp/output). To understand how to prepeare your own data and how to interpret the results please refear to documents [HERE](https://github.com/wtsi-hgi/yascp/tree/main/docs)
 
 ## Credits
 
