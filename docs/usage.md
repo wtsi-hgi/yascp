@@ -9,25 +9,33 @@ An [example samplesheet](../sample_input/inputs.nf) has been provided with the p
 Since we have multiple inputs in pipeline we point to each of them in a sample config file. There are multiple required/optional inputs that are described bellow.
 
 ```console
-params{
-    input = 'cellbender' //[cellranger|existing_cellbender]
-    qc_cluster_input_files' //if cellbender is run already then can skip this by selecting existing_cellbender and input 
-    cellbender_resolution_to_use='0pt1' //this is the default resolution, if not specifies [0pt01,0pt05] - these resolutions come from cellbender definition file - https://github.com/wtsi-hgi/yascp/blob/870165fe883658c19d339c26b08c729f45911f0a/conf/cellbender.config#L109
-    extra_metadata = ''
-    skip_preprocessing{
-        value=false //this is only activated to skip all the filtering - ie cellbender and restart with qc analysis once the parametes are changed
-        file__anndata_merged = ''
-        file__cells_filtered = ''
-    }
-    
-    run_celltype_assignment=true
-    input_data_table = 'full/path/to/inputs.tsv' 
-    run_with_genotype_input=true
+params {
+    extra_metadata = '/path/to/extra_metadata.tsv'   //Sometimes users may want to merge extra known metadata for a pool in the h5ad files prior to qc
+    extra_sample_metadata ="/path/to/donor_extra_metadata.tsv"  //Sometimes users may want to merge extra known metadata for a donor within pool prior to qc
+    input_data_table = '/lustre/scratch123/hgi/teams/hgi/mo11/tmp_projects/OneK1k/onek1k_test_dataset/input.tsv' //Required!! This points to all the cellranger files and pool definition files.
+    split_ad_per_bach=true //if not splitting the celltype assignment will be run on full tranche
+    cellbender_location='' //!!!!! if cellbender is run already then can skip this by selecting  input = 'existing_cellbender' instead input = 'cellbender'
+    existing_vireo=''
+    existing_cellsnp="" // if we have run cellsnp before we can skip this process by letting yascp capture the files
 	genotype_input {
+        run_with_genotype_input=true //if false do not need the genotype_input parameters.
+        vireo_with_gt=false // Vireo is capable in runing both with genotypes and without. Here we define in which mode we want to run it.
+        posterior_assignment = false //if this is set to true, we will perform the genotype donor matching after the deconvolution is performed.
         subset_genotypes = false
-        full_vcf_file = 'lifted.vcf.gz'
+        tsv_donor_panel_vcfs = "/path/to/reference/panel/vcf_inputs.tsv" //this is a panel of vcf files that we want to compar the genotypes with
     }
+    reference_assembly_fasta_dir_bam_split = "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/genotypes/10x_reference_assembly_prefix"
+    reference_assembly_fasta_dir = "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/genotypes/10x_reference_assembly_prefix"
+    skip_preprocessing{
+        value=false
+        file__anndata_merged = '' 
+        file__cells_filtered = ''
+        gt_match_based_adaptive_qc_exclusion_pattern = 'U937;THP1' //We run the adaptive QC on these patterns independently regardless on assigned celltype.    }
+    }
+
 }
+
+
 ```
 
 This file will be provided when pipeline is executed:

@@ -15,6 +15,7 @@ include { YASCP } from './workflows/yascp'
 // This is the default entry point, we have others to update ceirtain parts of the results. 
 // Please go to ./workflows/yascp to see the main Yascp workflow.
 workflow MAIN {
+    
     YASCP ('default')
 }
 
@@ -23,8 +24,6 @@ workflow {
 }
 
 // END OF MAIN ENTRANCE IN WORKFLOWS
-
-
 
 
 
