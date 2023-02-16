@@ -104,7 +104,7 @@ An [example pool metadata](../sample_input/extra_metadata.tsv) has been provided
 Users may want to provide extra metadata for each of the pools that can be used in clustering, regression or for plotting purposes.
 
 | experiment_id   | Experimental design | Library prep date | Stimulation time    | ...   |
-|-----------------|----------|------------------|-------------------------|
+|-----------------|----------|------------------|-------------------------|-----|
 | Pool1 |   1      |   20/01/2023          | 24h      |  |
 | Pool2|   2      | 21/01/2023        | 48h      |  |
 
