@@ -96,6 +96,13 @@ process VIREO_GT_FIX_HEADER
   script:
   sorted_vcf = "${pool_id}_vireo_srt.vcf.gz"
   vireo_fixed_vcf = "${pool_id}_headfix_vireo.vcf.gz"
+
+  if (params.reference_assembly_fasta_dir='"https://yascp.cog.sanger.ac.uk/public/10x_reference_assembly"'){
+      genome = "${params.outdir}/recourses/10x_reference_assembly/genome.fa"
+  }else{
+      genome = "${params.reference_assembly_fasta_dir}/genome.fa"
+  }
+
   """
     # fix header of vireo VCF
     bcftools view -h ${vireo_gt_vcf} > init_head.txt
@@ -118,7 +125,7 @@ process VIREO_GT_FIX_HEADER
     bcftools reheader -h header.txt ${sorted_vcf} | \
     bcftools view -Oz -o pre_${vireo_fixed_vcf}
     tabix -p vcf pre_${vireo_fixed_vcf}
-    bcftools +fixref pre_${vireo_fixed_vcf} -Oz -o ${vireo_fixed_vcf} -- -d -f ${params.reference_assembly_fasta_dir}/genome.fa -m flip
+    bcftools +fixref pre_${vireo_fixed_vcf} -Oz -o ${vireo_fixed_vcf} -- -d -f ${genome} -m flip
     tabix -p vcf ${vireo_fixed_vcf}
 
 

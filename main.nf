@@ -10,12 +10,12 @@
 
 nextflow.enable.dsl = 2
 include { YASCP } from './workflows/yascp'
-
+include { RETRIEVE_RECOURSES } from './subworkflows/local/retrieve_recourses'
 ////// WORKFLOW: Run main nf-core/yascp analysis pipeline
 // This is the default entry point, we have others to update ceirtain parts of the results. 
 // Please go to ./workflows/yascp to see the main Yascp workflow.
 workflow MAIN {
-    
+    RETRIEVE_RECOURSES()
     YASCP ('default')
 }
 
