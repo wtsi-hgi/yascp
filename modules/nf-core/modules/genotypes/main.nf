@@ -396,8 +396,15 @@ process ENHANCE_STATS_FILE{
     }else{
       md_inp = "-md ${params.extra_sample_metadata}"
     }
+
+    if (params.genotype_phenotype_mapping_file==''){
+      mapping=""
+    }else{
+      mapping="-m ${params.genotype_phenotype_mapping_file} "
+    }
+
     """
-      add_PiHat_to_GT_match.py -mt ${stats_table} -ph ${ibd_table} -c ${condition} -e ${expected_ids} -m ${params.genotype_phenotype_mapping_file} -id ${pool_id} -wpi ${withinn_pool_ibd} ${md_inp} || echo 'we dont have expected samples in this cohort' && ln -s stats_Pool2_gt_donor_assignments.csv PiHAT_Stats_File_${pool_id}.csv
+      add_PiHat_to_GT_match.py -mt ${stats_table} -ph ${ibd_table} ${mapping} -c ${condition} -e ${expected_ids} -id ${pool_id} -wpi ${withinn_pool_ibd} ${md_inp} || echo 'we dont have expected samples in this cohort' && ln -s stats_Pool2_gt_donor_assignments.csv PiHAT_Stats_File_${pool_id}.csv
       echo 'Done' > Done.tmp
     """
 
