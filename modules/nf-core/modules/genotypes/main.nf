@@ -404,7 +404,7 @@ process ENHANCE_STATS_FILE{
     }
 
     """
-      add_PiHat_to_GT_match.py -mt ${stats_table} -ph ${ibd_table} ${mapping} -c ${condition} -e ${expected_ids} -id ${pool_id} -wpi ${withinn_pool_ibd} ${md_inp} || echo 'we dont have expected samples in this cohort' && ln -s stats_Pool2_gt_donor_assignments.csv PiHAT_Stats_File_${pool_id}.csv
+      add_PiHat_to_GT_match.py -mt ${stats_table} -ph ${ibd_table} ${mapping} -c ${condition} -e ${expected_ids} -id ${pool_id} -wpi ${withinn_pool_ibd} ${md_inp} || echo 'we dont have expected samples in this cohort'
       echo 'Done' > Done.tmp
     """
 
