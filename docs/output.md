@@ -36,7 +36,7 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 ### Cellbender
 
 <details markdown="1">
-<summary>Output file structure (**nf-preprocessing/cellbender**):</summary>
+<summary>Output file structure ( __nf-preprocessing/cellbender__ ):</summary>
 
 *   Cellbender output structure:
     * ![Cellbender module output structure](../assets/images/cellbender_output_structure.png)
