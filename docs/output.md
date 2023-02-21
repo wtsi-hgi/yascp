@@ -42,8 +42,9 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
     * ![Cellbender module output structure](../assets/images/cellbender_output_structure.png)
 </details>
 
-[Cellbender](https://github.com/broadinstitute/CellBender).
+[Cellbender](https://github.com/broadinstitute/CellBender) - cellbender removes the ambient RNA from the counts matrices. [Cellbender help pages](http://www.bioinformatics.babraham.ac.uk/projects/fastqc/Help/).
 
+![MultiQC - FastQC sequence counts plot](../assets/images/cellbender_output_structure.png)
 
 ### Cellsnp
 

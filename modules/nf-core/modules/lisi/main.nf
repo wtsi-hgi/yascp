@@ -62,9 +62,6 @@ process LISI{
             .replaceAll(".tsv.gz", "")
 
         """
-        echo "lisi: ${process_info}"
-        echo "publish_directory: ${outdir}"
-        sleep 5m
         rm -fr plots
         0047-lisi.py \
             --reduced_dims_tsv ${file__reduced_dims} \

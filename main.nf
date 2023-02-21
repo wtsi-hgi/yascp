@@ -42,7 +42,7 @@ include { metadata_posthoc;replace_donors_posthoc } from "$projectDir/modules/lo
 include {data_handover} from "$projectDir/subworkflows/data_handover"
 include { CREATE_ARTIFICIAL_BAM_CHANNEL } from "$projectDir/modules/local/create_artificial_bam_channel/main"
 include { TRANSFER;SUMMARY_STATISTICS_PLOTS } from "$projectDir/modules/nf-core/modules/summary_statistics_plots/main"
-include {SUBSET_WORKF} from "$projectDir/modules/nf-core/modules/subset_genotype/main"
+include {SUBSET_WORKF; JOIN_STUDIES_MERGE} from "$projectDir/modules/nf-core/modules/subset_genotype/main"
 include {VIREO} from "$projectDir/modules/nf-core/modules/vireo/main"
 include {capture_cellbender_files} from "$projectDir/modules/nf-core/modules/cellbender/functions"
 include { DECONV_INPUTS } from "$projectDir/subworkflows/prepare_inputs/deconvolution_inputs"
@@ -56,10 +56,17 @@ include {ENHANCE_STATS_GT_MATCH } from "$projectDir/modules/nf-core/modules/geno
 include {collect_file} from "$projectDir/modules/nf-core/modules/collect_file/main"
 include { CELLSNP;capture_cellsnp_files } from "$projectDir/modules/nf-core/modules/cellsnp/main"
 
+
+
 workflow FREEZE1_GENERATION{
     GENOTYPE_UPDATE()
     YASCP (GENOTYPE_UPDATE.out.assignments_all_pools)
 
+}
+
+
+workflow TEST_CATCHE_ISSUES{
+    GENOTYPE_UPDATE()
 }
 
 workflow GENOTYPE_UPDATE{

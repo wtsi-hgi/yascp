@@ -275,6 +275,7 @@ workflow SUBSET_WORKF{
       // Now we combine all the chromosomes together.
       JOIN_CHROMOSOMES(chromosome_vcfs_per_studypool)
       JOIN_CHROMOSOMES.out.joined_chromosomes_per_studytrance.groupTuple().set{study_vcfs_per_pool}
+      study_vcfs_per_pool.subscribe {println "study_vcfs_per_pool:= ${it}\n"}
       // Merge all the pools.
       JOIN_STUDIES_MERGE(study_vcfs_per_pool,'Study_Merge',mode)
       JOIN_STUDIES_MERGE.out.merged_expected_genotypes.set{merged_expected_genotypes}
