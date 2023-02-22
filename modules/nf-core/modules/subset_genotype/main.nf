@@ -214,7 +214,7 @@ process JOIN_CHROMOSOMES{
 
 process JOIN_STUDIES_MERGE{
     tag "${samplename}"
-    label 'process_small'
+    label 'process_medium_memory'
     publishDir "${params.outdir}/subset_genotypes/Genotype_${samplename}", mode: "${params.copy_mode}"
 
 
