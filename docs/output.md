@@ -34,16 +34,22 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 * [Sccaf](#Sccaf) - 
 
 ### Cellbender
-
+[Cellbender](https://github.com/broadinstitute/CellBender) - cellbender removes the ambient RNA from the counts matrices. [Cellbender help pages](http://www.bioinformatics.babraham.ac.uk/projects/fastqc/Help/).
 <details markdown="1">
-<summary>Output file structure ( __nf-preprocessing/cellbender__ ):</summary>
+<summary>Output file structure ( nf-preprocessing/cellbender ):</summary>
 
-*   Cellbender output structure:
+*   Here we have multiple different plots and output files, however the most important ones are the matrix and h5ad files after the ambient rna removal: such as cellbenderFPR_0pt1filtered_10x_mtx/ cellbender_FPR_0.1_filtered.h5
     * ![Cellbender module output structure](../assets/images/cellbender_output_structure.png)
 </details>
+<details markdown="1">
+<summary>Cellbender output plots:</summary>
 
-[Cellbender](https://github.com/broadinstitute/CellBender) - cellbender removes the ambient RNA from the counts matrices. [Cellbender help pages](http://www.bioinformatics.babraham.ac.uk/projects/fastqc/Help/).
+*   Cellbender output plots:
+    * ![Cellbender UMAP plot](../assets/images/cb_umap.png)
+</details>
 
+
+   
 
 ### Cellsnp
 

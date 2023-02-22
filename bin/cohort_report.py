@@ -2,6 +2,7 @@
 import argparse
 import pandas as pd
 import os
+import glob
 
 parser = argparse.ArgumentParser(
     description="""
@@ -37,14 +38,21 @@ if (os.path.exists(f"{path}/deconvolution/vireo_gt_fix")):
     except:
         prefix='.'
         project_name = os.listdir(f"{prefix}/Summary_plots")[0]
+        don_file = glob.glob(f"{path}/handover/Donor_Quantification_summary/*_Donor_Report.tsv")[0]
+        tranch_file = glob.glob(f"{path}/handover/Donor_Quantification_summary/*_Tranche_Report.tsv")[0]
         GT_MATCH = pd.read_csv(f"{path}/deconvolution/vireo_gt_fix/assignments_all_pools.tsv",sep='\t')
-        Donor_Report = pd.read_csv(f"{path}/handover/Donor_Quantification_summary/{project_name}_Donor_Report.tsv",sep='\t')
-        Tranch_Report = pd.read_csv(f"{path}/handover/Donor_Quantification_summary/{project_name}_Tranche_Report.tsv",sep='\t')
+        Donor_Report = pd.read_csv(f"{don_file}",sep='\t')
+        Tranch_Report = pd.read_csv(f"{tranch_file}",sep='\t')
         try:
             Extra_Metadata_Donors = pd.read_csv(f"{prefix}/Summary_plots/{project_name}/Summary/Extra_Metadata_Donors.tsv",sep='\t')
         except:
-            prefix=f'{path}/handover/'
-            Extra_Metadata_Donors = pd.read_csv(f"{prefix}/Summary_plots/{project_name}/Summary/Extra_Metadata_Donors.tsv",sep='\t')
+            try:
+                prefix=f'{path}/handover/'
+                Extra_Metadata_Donors = pd.read_csv(f"{prefix}/Summary_plots/{project_name}/Summary/Extra_Metadata_Donors.tsv",sep='\t')
+            except:
+                _='No extra metadata provided'
+                prefix='.'
+                Extra_Metadata_Donors = pd.DataFrame(columns=['experiment_id'])
         Pipeline_inputs = pd.read_csv(f"{prefix}/Summary_plots/{project_name}/Fetch Pipeline/Input/input_table.tsv",sep='\t')
     # Split Donor Report by cohort
 
@@ -242,6 +250,7 @@ if (os.path.exists(f"{path}/deconvolution/vireo_gt_fix")):
                 
                 Total_Report_samples = Total_Report[Total_Report['Pool ID']==id1]
                 Donor_Report2_samples = Pipeline_inputs[Pipeline_inputs['experiment_id']==id1]
+                Donor_Report2_samples['donor_vcf_ids']=Donor_Report2_samples['donor_vcf_ids'].fillna('')
                 DF1 = pd.DataFrame(Donor_Report2_samples.iloc[0]['donor_vcf_ids'].replace('\'','').split(','),columns=['col1'])
                 DF1['col1']= DF1['col1'].str.replace(r'U937_.*', 'U937', regex=True).astype('str')
                 DF1['col1']= DF1['col1'].str.replace(r'THP1_.*', 'THP1', regex=True).astype('str')
