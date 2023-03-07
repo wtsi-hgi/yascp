@@ -1,0 +1,28 @@
+name: conda_deconvolution
+channels:
+  - defaults
+  - conda-forge
+  - bioconda
+  - anaconda
+  - r
+dependencies:
+  - celltypist=0.1.4
+  - scipy>=1.4.0
+  - seaborn
+  - scikit-learn
+  - statsmodels
+  - numba
+  - pytables
+  - python-igraph
+  - leidenalg
+  - scanpy
+  - matplotlib
+  - plotnine
+  - seaborn
+  - pandas
+  - click
+  - cellsnp-lite
+  - tabix
+  - bcftools
+  - samtools
+  - r-tidyverse
