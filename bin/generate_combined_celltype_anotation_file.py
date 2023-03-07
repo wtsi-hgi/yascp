@@ -22,7 +22,7 @@ def combine_reports(all_alternitive,mode):
         Dataset=Dataset.add_prefix(mode)
         all_indexes = set(Dataset.index)
         all_indexes_full = all_indexes_full.union(all_indexes)
-    Data_All_alt=pd.DataFrame(index=all_indexes_full)    
+    Data_All_alt=pd.DataFrame(index=list(set(all_indexes_full)))    
     for d1 in all_alternitive:
         Dataset = pd.read_csv(d1,sep='\t',index_col=0)
         if(len(Dataset.columns)==0):
@@ -33,7 +33,7 @@ def combine_reports(all_alternitive,mode):
                 _ = Data_All_alt[col1]
             except:
                 Data_All_alt[col1]=''
-        Data_All_alt.loc[Dataset.index]=Dataset
+            Data_All_alt.loc[Dataset.index,col1] = Dataset[col1]
     return Data_All_alt
 
 def main():
