@@ -13,7 +13,20 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 #### Alignment step
 * [Cellranger](#Cellranger) - Curently users have to run Cellranger (6.11) upstream of pipeline, but an option to run it will be added shortly
 #### Ambient RNA removal
-* [Ambient RNA Removal using Cellbender](#Cellbender) - Reads the Cellranger outputs and removes the ambient RNA
+* [Ambient RNA Removal using Cellbender](#Cellbender) - Reads the Cellranger outputs and removes the ambient RNA using [Cellbender](https://github.com/broadinstitute/CellBender)
+<details markdown="1">
+<summary>Output file structure ( nf-preprocessing/cellbender ):</summary>
+
+*   Here we have multiple different plots and output files, however the most important ones are the matrix and h5ad files after the ambient rna removal: such as cellbenderFPR_0pt1filtered_10x_mtx/ cellbender_FPR_0.1_filtered.h5
+    * ![Cellbender module output structure](../assets/images/cellbender_output_structure.png)
+</details>
+<details markdown="1">
+<summary>Cellbender output plots:</summary>
+
+*   Cellbender output plots:
+    * ![Cellbender UMAP plot](../assets/images/cb_umap.png)
+</details>
+
 #### Genotype processing and Donor deconvolutions (if more than 1 donor is in the pool) and Multiplet/Unassigned cell removal
 * [Genotype processing](#Genotype_processing) - If users provide the genotypes this step slices and dices the genotypes to prepeare these for the CellSNP/Vireo deconvolutions and GT matches
 * [Donor Deconvolution using CellSnp/Vireo](#CellSnp/Vireo) - Utilises the prepeared genotypes in donor deconvolutions
@@ -32,6 +45,9 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 #### Cluster assesments
 * [Lisi](#Lisi) - 
 * [Sccaf](#Sccaf) - 
+
+
+
 
 ### Cellbender
 [Cellbender](https://github.com/broadinstitute/CellBender) - cellbender removes the ambient RNA from the counts matrices. [Cellbender help pages](http://www.bioinformatics.babraham.ac.uk/projects/fastqc/Help/).

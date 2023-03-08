@@ -18,7 +18,7 @@ process NORMALISE_AND_PCA {
     } else {
         container "mercury/nf_qc_scrna:v1"
     }
-    
+
 
     publishDir  path: "${outdir}",
                 saveAs: {filename -> filename.replaceAll("-", "")},
