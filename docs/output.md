@@ -148,7 +148,7 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 *   Harmony is performed with different clustering resolutions and each of the clusters assesed ussing sccaf:
     * ![Clustering Harmony structure](../assets/images/harmony_structure.png)
 </details>
-
+<details markdown="1">
 <summary>Harmony sample UMAPS Coloured:</summary>
 
 *   Resolution 0.1: Harmony is performed with different clustering resolutions and each of the clusters assesed ussing sccaf:
