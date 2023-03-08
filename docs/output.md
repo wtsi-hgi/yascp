@@ -81,12 +81,14 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 <details markdown="1">
 <summary>Combined celltypes file:</summary>
 
-* A combined Celltypes file is produced by pipeline where all different references are combined in one spreadsheet.:
+
+#### [Keras celltype transfer](#Keras) - This is utilising pretrained reference panels for celltype assignment - curently only works in Sanger.
+
+#### Combined File - A combined Celltypes file is produced by pipeline where all different references are combined in one spreadsheet.:
 
     * ![Celltypist output structure](../assets/images/Combined_celltypes.png)
 </details>
 
-#### [Keras celltype transfer](#Keras) - This is utilising pretrained reference panels for celltype assignment - curently only works in Sanger.
 ## Donor and Cell QC
 * [Isolation Forest](#Isolation_Forest) - 
 * [Hard filters](#Hard_filters) -
