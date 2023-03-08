@@ -10,14 +10,13 @@ USER micromamba
 #     rm -rf /var/lib/apt/lists/*
 ENV MAMBA_ROOT_PREFIX="/opt/conda"
 WORKDIR "$MAMBA_ROOT_PREFIX"
+RUN pip install celltypist==1.3.0
 
-# USER container_user
-RUN chown -R ${NB_USER}:${NB_USER} ${HOME}
-USER ${NB_USER}
-SHELL ["conda", "run", "-n", "cenv", "/bin/bash", "-c"]
+# SHELL ["micromamba", "run", "-n", "conda_deconvolution", "/bin/bash", "-c"]
 
 # RUN which pip
-RUN pip install celltypist==1.3.0
+# RUN which pip
+
 ############################ Setup: R packages #################################
 USER micromamba
 WORKDIR /tmp
