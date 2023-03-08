@@ -90,8 +90,25 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 </details>
 
 ## Donor and Cell QC
-####  [Isolation Forest](#Isolation_Forest) - 
-####  [Hard filters](#Hard_filters) -
+### We perform different types of QC, Adaptive Isolation Forests, Adaptive Isolation Forests per celltype, Hard Filters tresholds.
+<details markdown="1">
+<summary>Data QC output folder structure:</summary>
+
+*   QC output Folder structure:
+    * ![Clustering BBKNN structure](../assets/images/QC_structure.png)
+</details>
+
+####  [Isolation Forest](#Isolation_Forest)
+<details markdown="1">
+<summary>We parfor Isolation forests in different resolutions - All data together, Per Celltype adaptive qc:</summary>
+
+*   All together Isolation Forests:
+    * ![Adaptive structure](../assets/images/adaptive_qc_alltogether.png)
+*   Per Celltype Isolation Forests:
+    * ![Adaptive structure](../assets/images/adaptive_qc_celltype.png)
+</details>
+
+####  [Hard filters](#Hard_filters): We also perform hard filters if user has specified that this is something thats required.
 
 ## Integration and clustering
 ### By default multiple different clustering resolutions will be run for both BBKNN and Harmony resulting in a subfolder structure. Pipeline automatically estimates the best number of PCs to use for clustering using knee and elbow plots that can be found in plots section.
