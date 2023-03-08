@@ -23,6 +23,7 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 
 <details markdown="1">
 <summary>Cellbender output plots:</summary>
+
 *   Cellbender output plots:
     * ![Cellbender UMAP plot](../assets/images/cb_umap.png)
 </details>
@@ -33,19 +34,23 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 
 <details markdown="1">
 <summary>Cellsnp Output files:</summary>
+
 * Cellsnp profiles each of the droplets for the variants in them, which is later utilised by vireo to assign the particular cell to the donor cluster:
     * ![Cellsnp output structure](../assets/images/cellsnp.png)
 </details>
 
 <details markdown="1">
 <summary>Vireo Output files:</summary>
+
 * Vireo takes the cellsnp variant pileups and assigns donors the particular cell to the donor cluster:
     * ![Vireo output structure](../assets/images/Vireo_outputs.png)
 </details>
 
 <details markdown="1">
 <summary>Scrublet Output files:</summary>
+
 * By default we always run Scrublet - if we have no donors pooled in the run (i.e if we have only 1 donor), then the doublets will be removed by scrublet instead of vireo:
+
     * ![Scrublet output structure](../assets/images/Scrublet.png)
 </details>
 
