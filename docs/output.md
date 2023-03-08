@@ -11,7 +11,7 @@ This document describes the output produced by the pipeline.
 The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes data using the following steps:
 
 ## Alignment step
-* [Cellranger](#Cellranger) - Curently users have to run Cellranger (6.11) upstream of pipeline, but an option to run it will be added shortly
+#### [Cellranger](#Cellranger) - Curently users have to run Cellranger (6.11) upstream of pipeline, but an option to run it will be added shortly
 ## Ambient RNA removal
 #### [Ambient RNA Removal using Cellbender](#Cellbender) - Reads the Cellranger outputs and removes the ambient RNA using [Cellbender](https://github.com/broadinstitute/CellBender)
 
@@ -56,7 +56,27 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 </details>
 
 #### [Donor Deconvolution using Souporcell](#Souporcell) - Souporcell option both removes the ambioent RNA and deconvolutes the donors [currently however this option is broken and will be fixed soon]
-#### [GT match](#GT_match) - This step utilises the prepeared genotypes and the infered genotypes by Vireo and picks out the donor that corresponds to the right reads.
+
+#### [GT match](#GT_match) - This step utilises the prepeared genotypes and the infered genotypes by Vireo and picks out the donor that corresponds to the right reads. 
+
+<details markdown="1">
+<summary>GT input files:</summary>
+
+* Users can provide multipple different cohort VCFs and that are split per chromosomes or one big vcf/bcf file.:
+    * ![GT input structure](../assets/images/gt_input_vcfs.png)
+</details>
+
+<details markdown="1">
+<summary>GT match results structure:</summary>
+
+* GT match produces multiple metrics that assesses whether donor is the one we expect and what is the relatedness within pool.
+    * ![GT input structure](../assets/images/gt_structure.png)
+
+* Results indicate which donor from Vireo deconvolutions is which:
+    * ![GT input structure](../assets/images/GT_Results.png)
+</details>
+
+
 ## Celltype identification
 #### [Azimuth](#Azimuth) - Uses Azimuth PBMC l2 reference (pipeline will be adjusted later to be more general for other tissue types) to assign the celltypes. Downstream it maps the l2 to l1 and l3 as per https://github.com/wtsi-hgi/yascp/blob/main/assets/azimuth/Azimuth_Mappings.txt 
 
