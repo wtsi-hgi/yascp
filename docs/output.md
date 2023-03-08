@@ -59,7 +59,33 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 * [GT match](#GT_match) - This step utilises the prepeared genotypes and the infered genotypes by Vireo and picks out the donor that corresponds to the right reads.
 #### Celltype identification
 * [Azimuth](#Azimuth) - Uses Azimuth PBMC l2 reference (pipeline will be adjusted later to be more general for other tissue types) to assign the celltypes. Downstream it maps the l2 to l1 and l3 as per https://github.com/wtsi-hgi/yascp/blob/main/assets/azimuth/Azimuth_Mappings.txt 
+
+<details markdown="1">
+<summary>Azimuth Output files:</summary>
+
+* By default we run azimuth l2 celltype assignment:
+
+    * ![Scrublet output structure](../assets/images/Azimuth.png)
+</details>
+
 * [Celltypist](#Celltypist) - Performs cellype assignment using celltypist Imule Low and Imune High profiles (this will be adjusted to use more references)
+
+<details markdown="1">
+<summary>Celltypist Output files:</summary>
+
+* By default we run Imune High, Imune Low and Imune PBMC reference celltype assignment:
+
+    * ![Celltypist output structure](../assets/images/Celltypist.png)
+</details>
+
+<details markdown="1">
+<summary>Combined celltypes file:</summary>
+
+* A combined Celltypes file is produced by pipeline where all different references are combined in one spreadsheet.:
+
+    * ![Celltypist output structure](../assets/images/Combined_celltypes.png)
+</details>
+
 * [Keras celltype transfer](#Keras) - This is utilising pretrained reference panels for celltype assignment - curently only works in Sanger.
 #### Donor and Cell QC
 * [Isolation Forest](#Isolation_Forest) - 
