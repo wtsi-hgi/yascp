@@ -14,22 +14,41 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 * [Cellranger](#Cellranger) - Curently users have to run Cellranger (6.11) upstream of pipeline, but an option to run it will be added shortly
 #### Ambient RNA removal
 * [Ambient RNA Removal using Cellbender](#Cellbender) - Reads the Cellranger outputs and removes the ambient RNA using [Cellbender](https://github.com/broadinstitute/CellBender)
+
 <details markdown="1">
 <summary>Output file structure ( nf-preprocessing/cellbender ):</summary>
-
 *   Here we have multiple different plots and output files, however the most important ones are the matrix and h5ad files after the ambient rna removal: such as cellbenderFPR_0pt1filtered_10x_mtx/ cellbender_FPR_0.1_filtered.h5
     * ![Cellbender module output structure](../assets/images/cellbender_output_structure.png)
 </details>
+
 <details markdown="1">
 <summary>Cellbender output plots:</summary>
-
 *   Cellbender output plots:
     * ![Cellbender UMAP plot](../assets/images/cb_umap.png)
 </details>
 
 #### Genotype processing and Donor deconvolutions (if more than 1 donor is in the pool) and Multiplet/Unassigned cell removal
 * [Genotype processing](#Genotype_processing) - If users provide the genotypes this step slices and dices the genotypes to prepeare these for the CellSNP/Vireo deconvolutions and GT matches
-* [Donor Deconvolution using CellSnp/Vireo](#CellSnp/Vireo) - Utilises the prepeared genotypes in donor deconvolutions
+* [Donor Deconvolution using CellSnp/Vireo](#CellSnp/Vireo) - We run cellsnp and vireo to deconvolute donors if the input file has indicated that there are more than 1 donors in the pool.
+
+<details markdown="1">
+<summary>Cellsnp Output files:</summary>
+* Cellsnp profiles each of the droplets for the variants in them, which is later utilised by vireo to assign the particular cell to the donor cluster:
+    * ![Cellsnp output structure](../assets/images/cellsnp.png)
+</details>
+
+<details markdown="1">
+<summary>Vireo Output files:</summary>
+* Vireo takes the cellsnp variant pileups and assigns donors the particular cell to the donor cluster:
+    * ![Vireo output structure](../assets/images/Vireo_outputs.png)
+</details>
+
+<details markdown="1">
+<summary>Scrublet Output files:</summary>
+* By default we always run Scrublet - if we have no donors pooled in the run (i.e if we have only 1 donor), then the doublets will be removed by scrublet instead of vireo:
+    * ![Scrublet output structure](../assets/images/Scrublet.png)
+</details>
+
 * [Donor Deconvolution using Souporcell](#Souporcell) - Souporcell option both removes the ambioent RNA and deconvolutes the donors [currently however this option is broken and will be fixed soon]
 * [GT match](#GT_match) - This step utilises the prepeared genotypes and the infered genotypes by Vireo and picks out the donor that corresponds to the right reads.
 #### Celltype identification
@@ -47,34 +66,11 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 * [Sccaf](#Sccaf) - 
 
 
-
-
-### Cellbender
-[Cellbender](https://github.com/broadinstitute/CellBender) - cellbender removes the ambient RNA from the counts matrices. [Cellbender help pages](http://www.bioinformatics.babraham.ac.uk/projects/fastqc/Help/).
-<details markdown="1">
-<summary>Output file structure ( nf-preprocessing/cellbender ):</summary>
-
-*   Here we have multiple different plots and output files, however the most important ones are the matrix and h5ad files after the ambient rna removal: such as cellbenderFPR_0pt1filtered_10x_mtx/ cellbender_FPR_0.1_filtered.h5
-    * ![Cellbender module output structure](../assets/images/cellbender_output_structure.png)
-</details>
-<details markdown="1">
-<summary>Cellbender output plots:</summary>
-
-*   Cellbender output plots:
-    * ![Cellbender UMAP plot](../assets/images/cb_umap.png)
-</details>
-
-
    
 
 ### Cellsnp
 
-<details markdown="1">
-<summary>Output files:</summary>
 
-* Cellsnp output structure:
-    * ![Cellsnp output structure](../assets/images/cellsnp.png)
-</details>
 
 [Cellsnp](https://github.com/single-cell-genetics/cellSNP).
 
