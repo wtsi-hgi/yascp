@@ -132,11 +132,18 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 <details markdown="1">
 <summary>Sccaf file structure ( clustering ):</summary>
 
-*   As described above clustering is assesed using scaff:
-    * ![Clustering BBKNN structure](../assets/images/scaff_structure.png)
+*   As described above clustering is assesed using scaff: directory structure:
+    * ![Clustering BBKNN structure](../assets/images/sccaf_structure.png)
 
-*   As described above clustering is assesed using scaff:
+*   Precission recall curves:
     * ![Clustering BBKNN structure](../assets/images/scaff_prec_recal.png)
+
+*   ROC:
+    * ![Clustering BBKNN structure](../assets/images/sccaff_roc.png)
+
+*   Accuracy:
+    * ![Clustering BBKNN structure](../assets/images/sccaff_accuracy.png)
+
 </details>
 
 
