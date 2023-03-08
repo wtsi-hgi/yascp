@@ -176,7 +176,7 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 *   PCA is performed on the integrated data:
     * ![Clustering Harmony structure](../assets/images/pca_plots.png)
 </details>
-
+<details markdown="1">
 <summary>PCA file structure ( clustering ):</summary>
 
 *   Gene Loadings for each of the PCA is evaluated:
