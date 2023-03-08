@@ -186,8 +186,7 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 
 
 ## Cluster assesments
-#### [Lisi](#Lisi) - 
-#### [Sccaf](#Sccaf) - 
+#### [Sccaf](#Sccaf) We perform Sccaf to asses the clustering accuracies, these are useful metrics in picking the best resolution for clustrering.
 <details markdown="1">
 <summary>Sccaf file structure ( clustering ):</summary>
 
@@ -205,6 +204,7 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 
 </details>
 
+#### [Lisi](#Lisi) We also have a capability in running LISI cluster assesments, however curently this option does not run by default as it is memory demanding and requires some further optimisations
 
 
 [Nextflow](https://www.nextflow.io/docs/latest/tracing.html) provides excellent functionality for generating various reports relevant to the running and execution of the pipeline. This will allow you to troubleshoot errors with the running of the pipeline, and also provide you with other information such as launch commands, run times and resource usage.
