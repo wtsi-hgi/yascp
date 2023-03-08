@@ -17,6 +17,7 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 
 <details markdown="1">
 <summary>Output file structure ( nf-preprocessing/cellbender ):</summary>
+
 *   Here we have multiple different plots and output files, however the most important ones are the matrix and h5ad files after the ambient rna removal: such as cellbenderFPR_0pt1filtered_10x_mtx/ cellbender_FPR_0.1_filtered.h5
     * ![Cellbender module output structure](../assets/images/cellbender_output_structure.png)
 </details>
