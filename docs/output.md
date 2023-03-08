@@ -129,7 +129,15 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 ## Cluster assesments
 #### [Lisi](#Lisi) - 
 #### [Sccaf](#Sccaf) - 
+<details markdown="1">
+<summary>Sccaf file structure ( clustering ):</summary>
 
+*   As described above clustering is assesed using scaff:
+    * ![Clustering BBKNN structure](../assets/images/scaff_structure.png)
+
+*   As described above clustering is assesed using scaff:
+    * ![Clustering BBKNN structure](../assets/images/scaff_prec_recal.png)
+</details>
 
 
 
