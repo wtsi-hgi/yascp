@@ -140,8 +140,50 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
     * ![Clustering BBKNN structure](../assets/images/BBKNN_mito.png)
 </details>
 
-#### [Harmony](#BBKNN) - 
-#### [PCA](#BBKNN) - 
+#### [Harmony](#Harmony) - 
+
+<details markdown="1">
+<summary>Harmony file structure ( clustering ):</summary>
+
+*   Harmony is performed with different clustering resolutions and each of the clusters assesed ussing sccaf:
+    * ![Clustering Harmony structure](../assets/images/harmony_structure.png)
+</details>
+
+<summary>Harmony sample UMAPS Coloured:</summary>
+
+*   Resolution 0.1: Harmony is performed with different clustering resolutions and each of the clusters assesed ussing sccaf:
+    * ![Clustering Harmony structure](../assets/images/harmony_cluster1.png)
+*   Resolution 5: Harmony is performed with different clustering resolutions and each of the clusters assesed ussing sccaf:
+    * ![Clustering Harmony structure](../assets/images/harmony_cluster2.png)
+*   Mitochondial transcripts: Coloured UMAP: We also color each of the bespoke clusters with different metrics:
+    * ![Clustering Harmony structure](../assets/images/harmony_mito.png)
+</details>
+
+<details markdown="1">
+<summary>Harmony cluster evaluations and cluster markers:</summary>
+
+*   Histograms: Multiple useful prolts are produced to look at the clusterings:
+    * ![Harmony Histogram](../assets/images/harmony_histo.png)
+*   Dotplots: Multiple useful prolts are produced to look at the clusterings:
+    * ![Harmony Dotplot](../assets/images/harmony_dotplot)
+</details>
+
+#### [PCA](#BBKNN) 
+
+<details markdown="1">
+<summary>PCA file structure ( clustering ):</summary>
+
+*   PCA is performed on the integrated data:
+    * ![Clustering Harmony structure](../assets/images/pca_plots.png)
+</details>
+
+<summary>PCA file structure ( clustering ):</summary>
+
+*   Gene Loadings for each of the PCA is evaluated:
+    * ![PCA gene loadings](../assets/images/PCA_Gene_loadings.png)
+</details>
+
+
 
 ## Cluster assesments
 #### [Lisi](#Lisi) - 
