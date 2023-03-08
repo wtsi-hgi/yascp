@@ -68,7 +68,7 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
     * ![Scrublet output structure](../assets/images/Azimuth.png)
 </details>
 
-* [Celltypist](#Celltypist) - Performs cellype assignment using celltypist Imule Low and Imune High profiles (this will be adjusted to use more references)
+### [Celltypist](#Celltypist) - Performs cellype assignment using celltypist Imule Low and Imune High profiles (this will be adjusted to use more references)
 
 <details markdown="1">
 <summary>Celltypist Output files:</summary>
