@@ -90,23 +90,28 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 </details>
 
 ## Donor and Cell QC
-* [Isolation Forest](#Isolation_Forest) - 
-* [Hard filters](#Hard_filters) -
-## Batch corrections and clustering
-* [BBKNN](#BBKNN) - 
-* [Harmony](#BBKNN) - 
+####  [Isolation Forest](#Isolation_Forest) - 
+####  [Hard filters](#Hard_filters) -
+
+## Integration and clustering
+
+<details markdown="1">
+<summary>Output file structure ( clustering ):</summary>
+
+*   Clustering combines all different integration methodologies utilised and in addition different plots in a structure represented in this layout:
+    * ![Clustering module output structure](../assets/images/Clustering.png)
+</details>
+
+
+#### [BBKNN](#BBKNN) - 
+#### [Harmony](#BBKNN) - 
+#### [PCA](#BBKNN) - 
+
 ## Cluster assesments
-* [Lisi](#Lisi) - 
-* [Sccaf](#Sccaf) - 
+#### [Lisi](#Lisi) - 
+#### [Sccaf](#Sccaf) - 
 
 
-   
-
-### Cellsnp
-
-
-
-[Cellsnp](https://github.com/single-cell-genetics/cellSNP).
 
 
 [Nextflow](https://www.nextflow.io/docs/latest/tracing.html) provides excellent functionality for generating various reports relevant to the running and execution of the pipeline. This will allow you to troubleshoot errors with the running of the pipeline, and also provide you with other information such as launch commands, run times and resource usage.
