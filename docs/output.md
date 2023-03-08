@@ -104,6 +104,25 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 
 
 #### [BBKNN](#BBKNN) - 
+
+<details markdown="1">
+<summary>BBKNN file structure ( clustering ):</summary>
+
+*   BBKNN is performed with different clustering resolutions and each of the clusters assesed ussing sccaf:
+    * ![Clustering BBKNN structure](../assets/images/bbknn_structure.png)
+</details>
+
+<details markdown="1">
+<summary>BBKNN sample UMAPS Coloured:</summary>
+
+*   Resolution 0.1: BBKNN is performed with different clustering resolutions and each of the clusters assesed ussing sccaf:
+    * ![Clustering BBKNN structure](../assets/images/bbknn_cluster1.png)
+*   Resolution 5: BBKNN is performed with different clustering resolutions and each of the clusters assesed ussing sccaf:
+    * ![Clustering BBKNN structure](../assets/images/bbknn_cluster2.png)
+*   Mitochondial transcripts: Coloured UMAP: We also color each of the bespoke clusters with different metrics:
+    * ![Clustering BBKNN structure](../assets/images/BBKNN_mito.png)
+</details>
+
 #### [Harmony](#BBKNN) - 
 #### [PCA](#BBKNN) - 
 
