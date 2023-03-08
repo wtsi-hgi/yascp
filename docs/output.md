@@ -6,11 +6,11 @@ This document describes the output produced by the pipeline.
 
 <!-- TODO nf-core: Write this documentation describing your workflow's output -->
 
-## Pipeline overview
+# Pipeline overview
 
 The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes data using the following steps:
 
-#### Alignment step
+## Alignment step
 * [Cellranger](#Cellranger) - Curently users have to run Cellranger (6.11) upstream of pipeline, but an option to run it will be added shortly
 #### Ambient RNA removal
 * [Ambient RNA Removal using Cellbender](#Cellbender) - Reads the Cellranger outputs and removes the ambient RNA using [Cellbender](https://github.com/broadinstitute/CellBender)
@@ -29,7 +29,7 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
     * ![Cellbender UMAP plot](../assets/images/cb_umap.png)
 </details>
 
-#### Genotype processing and Donor deconvolutions (if more than 1 donor is in the pool) and Multiplet/Unassigned cell removal
+## Genotype processing and Donor deconvolutions (if more than 1 donor is in the pool) and Multiplet/Unassigned cell removal
 * [Genotype processing](#Genotype_processing) - If users provide the genotypes this step slices and dices the genotypes to prepeare these for the CellSNP/Vireo deconvolutions and GT matches
 * [Donor Deconvolution using CellSnp/Vireo](#CellSnp/Vireo) - We run cellsnp and vireo to deconvolute donors if the input file has indicated that there are more than 1 donors in the pool.
 
@@ -57,7 +57,7 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 
 * [Donor Deconvolution using Souporcell](#Souporcell) - Souporcell option both removes the ambioent RNA and deconvolutes the donors [currently however this option is broken and will be fixed soon]
 * [GT match](#GT_match) - This step utilises the prepeared genotypes and the infered genotypes by Vireo and picks out the donor that corresponds to the right reads.
-#### Celltype identification
+## Celltype identification
 * [Azimuth](#Azimuth) - Uses Azimuth PBMC l2 reference (pipeline will be adjusted later to be more general for other tissue types) to assign the celltypes. Downstream it maps the l2 to l1 and l3 as per https://github.com/wtsi-hgi/yascp/blob/main/assets/azimuth/Azimuth_Mappings.txt 
 
 <details markdown="1">
@@ -87,13 +87,13 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 </details>
 
 * [Keras celltype transfer](#Keras) - This is utilising pretrained reference panels for celltype assignment - curently only works in Sanger.
-#### Donor and Cell QC
+## Donor and Cell QC
 * [Isolation Forest](#Isolation_Forest) - 
 * [Hard filters](#Hard_filters) -
-#### Batch corrections and clustering
+## Batch corrections and clustering
 * [BBKNN](#BBKNN) - 
 * [Harmony](#BBKNN) - 
-#### Cluster assesments
+## Cluster assesments
 * [Lisi](#Lisi) - 
 * [Sccaf](#Sccaf) - 
 
