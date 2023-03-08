@@ -154,7 +154,7 @@ def run_celltypist(samplename, filtered_matrix_h5, celltypist_model,
     # predictions = celltypist.annotate(adata_2000, model = model, majority_voting = True)   
     # Alternatively, just specify the model name (recommended as this ensures the model is intact every time it is loaded).
     logging.info("... running celltypist.annotate(adata, model = model, majority_voting = True)")
-    predictions = celltypist.annotate(adata, model = model, majority_voting = True)
+    predictions = celltypist.annotate(adata, model = model, majority_voting = True, transpose_input = True)
     
     # By default (majority_voting = False), CellTypist will infer the identity of
     # each query cell independently. This leads to raw predicted cell type labels,
