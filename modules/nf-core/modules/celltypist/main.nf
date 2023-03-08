@@ -1,15 +1,15 @@
 
 process CELLTYPIST {
     tag "${samplename}"
-    label 'process_high_memory'
+    label 'process_medium_memory'
     publishDir "${params.outdir}/celltype/celltypist/${model}/${sample}/", mode: "${params.celltypist.copy_mode}", overwrite: true,
 	  saveAs: {filename -> filename.replaceFirst("outputs/","").replaceFirst("figures/","") }
     
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_62bd56a-2021-12-15-4d1ec9312485.sif"
+        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/nf_scrna_deconv_v2.img"
         //// container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_latest.img"
     } else {
-        container "mercury/scrna_deconvolution:62bd56a"
+        container "mercury/scrna_deconvolution:v2"
     }
 
     when: 

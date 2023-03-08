@@ -169,10 +169,15 @@ process SUBSET_GENOTYPE2 {
       tuple val("${cohort}___${samplename}"), path("${samplename}_${donor_vcf}_subset.vcf.gz"),path("${samplename}_${donor_vcf}_subset.vcf.gz.csi"), emit: subset_vcf_file optional true
 
     script:
-    
+      if (params.genotype_phenotype_mapping_file!=''){
+        g_p_map = " -b ${params.genotype_phenotype_mapping_file}"
+      }else{
+        g_p_map = " "
+      }
+
     """
         bcftools query -l ${donor_vcf} > samples.tsv
-        extract_overlaps.py -vs samples.tsv -b ${params.genotype_phenotype_mapping_file} -s ${sample_subset_file} -o sample_file.tsv || touch sample_file.tsv && echo 'no input, as a result of samples missing from the file'
+        extract_overlaps.py -vs samples.tsv ${g_p_map} -s ${sample_subset_file} -o sample_file.tsv || touch sample_file.tsv && echo 'no input, as a result of samples missing from the file'
         bcftools view ${donor_vcf} -S sample_file.tsv -Oz -o ${samplename}_${donor_vcf}_subset.vcf.gz && bcftools index ${samplename}_${donor_vcf}_subset.vcf.gz || echo 'no input, as a result of samples missing from the file'
         
     """

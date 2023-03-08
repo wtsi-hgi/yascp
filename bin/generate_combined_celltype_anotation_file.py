@@ -111,7 +111,7 @@ def main():
 
     Data_All['Donor'] =Donor
     Data_All['Exp'] =Exp
-    Data_All.to_csv('All_Celltype_Assignments.csv',sep='\t')
+    Data_All.to_csv('All_Celltype_Assignments2.csv',sep='\t')
 
     adatas = options.andata.split('::')
     adatasets = []
@@ -170,8 +170,8 @@ def main():
     pd_donor_celltype_report = pd.DataFrame(donor_celltype_report).T
     pd_donor_celltype_report =pd_donor_celltype_report.fillna(0)
 
-    pd_donor_celltype_report.to_csv('donor_celltype_report.tsv',sep='\t')
-    pd_tranche_exp_report.to_csv('tranche_celltype_report.tsv',sep='\t')
+    pd_donor_celltype_report.to_csv('donor_celltype_report2.tsv',sep='\t')
+    pd_tranche_exp_report.to_csv('tranche_celltype_report2.tsv',sep='\t')
     
     # Generate Experiment report of counts
     ad.write(
