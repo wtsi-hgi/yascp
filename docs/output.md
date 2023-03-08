@@ -94,7 +94,7 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 ####  [Hard filters](#Hard_filters) -
 
 ## Integration and clustering
-
+### By default multiple different clustering resolutions will be run for both BBKNN and Harmony resulting in a subfolder structure. Pipeline automatically estimates the best number of PCs to use for clustering using knee and elbow plots that can be found in plots section.
 <details markdown="1">
 <summary>Output file structure ( clustering ):</summary>
 
