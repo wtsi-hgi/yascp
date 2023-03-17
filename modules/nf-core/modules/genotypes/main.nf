@@ -97,7 +97,7 @@ process VIREO_GT_FIX_HEADER
   sorted_vcf = "${pool_id}_vireo_srt.vcf.gz"
   vireo_fixed_vcf = "${pool_id}_headfix_vireo.vcf.gz"
 
-  if (params.reference_assembly_fasta_dir='"https://yascp.cog.sanger.ac.uk/public/10x_reference_assembly"'){
+  if (params.reference_assembly_fasta_dir='https://yascp.cog.sanger.ac.uk/public/10x_reference_assembly'){
       genome = "${params.outdir}/recourses/10x_reference_assembly/genome.fa"
   }else{
       genome = "${params.reference_assembly_fasta_dir}/genome.fa"
