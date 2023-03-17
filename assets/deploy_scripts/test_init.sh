@@ -1,0 +1,1 @@
+nohup nextflow run yascp -profile sanger,test_full --nf_ci_loc $PWD -resume > nextflow.nohup.log
