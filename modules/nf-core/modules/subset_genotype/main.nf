@@ -1,3 +1,6 @@
+include { RETRIEVE_RECOURSES } from './subworkflows/local/retrieve_recourses'
+
+
 process VACUTAINER_TO_DONOR_ID {
   tag "${study_label}.${pool_id}"
   label 'process_tiny'

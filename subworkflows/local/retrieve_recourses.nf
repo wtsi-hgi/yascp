@@ -2,18 +2,66 @@ process RETRIEVE_RECOURSES{
   label 'process_tiny'
     // In nf there is a function collectFile - however if you provide a symlinked file directory tusing nf function will overwrite the source instead of replacing the file
     // This snipped is a replication of the function but as a nf module and hence the problem is avoided.
-  publishDir "${params.outdir}",  mode: "${params.copy_mode}", overwrite: true  
+  publishDir "${params.outdir}/recourses",  mode: "${params.copy_mode}", overwrite: true  
   output:
-    path("recourses"),emit:recourses
+    path("10x_reference_assembly"),emit:recourses, optional: true
+    // path("full_test_dataset"),emit:recourses, optional: true
+    path("Done.tmp"),emit:done
   script:
-    if (params.reference_assembly_fasta_dir='"https://yascp.cog.sanger.ac.uk/public/10x_reference_assembly"'){
-        get_genome = 'mkdir recourses/10x_reference_assembly && wget https://yascp.cog.sanger.ac.uk/public/10x_reference_assembly/genome.fa && wget https://yascp.cog.sanger.ac.uk/public/10x_reference_assembly/genome.fa.fai && mv genome.fa recourses/10x_reference_assembly/genome.fa && mv genome.fa.fai recourses/10x_reference_assembly/genome.fa.fai'
+    if (params.reference_assembly_fasta_dir='https://yascp.cog.sanger.ac.uk/public/10x_reference_assembly'){
+        get_genome = 'mkdir 10x_reference_assembly && wget https://yascp.cog.sanger.ac.uk/public/10x_reference_assembly/genome.fa && wget https://yascp.cog.sanger.ac.uk/public/10x_reference_assembly/genome.fa.fai && mv genome.fa 10x_reference_assembly/genome.fa && mv genome.fa.fai 10x_reference_assembly/genome.fa.fai'
     }else{
         get_genome = ""
     }
 
+    // if (params.profile='test_full'){
+    //     get_full_test_data = 'mkdir full_test_dataset && cd full_test_dataset && wget https://yascp.cog.sanger.ac.uk/public/test_datasets/full_test_dataset/smaller_dataset.tar.gz && tar -xf smaller_dataset.tar.gz && rm smaller_dataset.tar.gz'
+    // }else{
+    //     get_full_test_data = ""
+    // }
+
+
     """
-        mkdir recourses
+        cwd1=\$PWD    
         $get_genome
+        cd \$cwd1
+        touch Done > Done.tmp
+    """    
+}
+
+process RETRIEVE_RECOURSES_TEST_DATASET{
+  label 'process_tiny'
+    // In nf there is a function collectFile - however if you provide a symlinked file directory tusing nf function will overwrite the source instead of replacing the file
+    // This snipped is a replication of the function but as a nf module and hence the problem is avoided.
+  publishDir "${params.outdir}/recourses",  mode: "${params.copy_mode}", overwrite: true  
+  output:
+    path("full_test_dataset"),emit:recourses, optional: true
+    path("input.tsv"),emit:input_channel
+    path("vcf_inputs.tsv"),emit:vcf_inputs
+    path("Done.tmp"),emit:done
+  script:
+    // if (params.reference_assembly_fasta_dir='https://yascp.cog.sanger.ac.uk/public/10x_reference_assembly'){
+    //     get_genome = 'mkdir 10x_reference_assembly && wget https://yascp.cog.sanger.ac.uk/public/10x_reference_assembly/genome.fa && wget https://yascp.cog.sanger.ac.uk/public/10x_reference_assembly/genome.fa.fai && mv genome.fa 10x_reference_assembly/genome.fa && mv genome.fa.fai 10x_reference_assembly/genome.fa.fai'
+    // }else{
+    //     get_genome = ""
+    // }
+
+    if (params.profile='test_full'){
+        get_full_test_data = 'mkdir full_test_dataset && cd full_test_dataset && wget https://yascp.cog.sanger.ac.uk/public/test_datasets/full_test_dataset/smaller_dataset.tar.gz && tar -xf smaller_dataset.tar.gz && rm smaller_dataset.tar.gz'
+        
+    }else{
+        get_full_test_data = ""
+    }
+
+
+    """
+        cwd1=\$PWD    
+        $get_full_test_data
+        cd \$cwd1
+        wget ${params.genotype_input.tsv_donor_panel_vcfs}
+        wget ${params.input_data_table}
+        sed -i 's#/path/to/replace/pointing/to/downloaded/files#${params.outdir}#' ${params.genotype_input.tsv_donor_panel_vcfs}
+        sed -i 's#/path/to/replace/pointing/to/downloaded/files#${params.outdir}#' ${params.input_data_table}
+        touch Done > Done.tmp
     """    
 }

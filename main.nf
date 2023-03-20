@@ -10,13 +10,31 @@
 
 nextflow.enable.dsl = 2
 include { YASCP } from './workflows/yascp'
-include { RETRIEVE_RECOURSES } from './subworkflows/local/retrieve_recourses'
+include { RETRIEVE_RECOURSES;RETRIEVE_RECOURSES_TEST_DATASET } from './subworkflows/local/retrieve_recourses'
 ////// WORKFLOW: Run main nf-core/yascp analysis pipeline
 // This is the default entry point, we have others to update ceirtain parts of the results. 
 // Please go to ./workflows/yascp to see the main Yascp workflow.
 workflow MAIN {
-    RETRIEVE_RECOURSES()
-    YASCP ('default')
+
+    if (params.profile=='test_full'){
+        RETRIEVE_RECOURSES_TEST_DATASET()
+        input_channel2 = RETRIEVE_RECOURSES_TEST_DATASET.out.input_channel
+    }else{
+        input_channel2 = Channel.fromPath(params.input_data_table, followLinks: true, checkIfExists: true)
+    }
+    RETRIEVE_RECOURSES() 
+    YASCP ('default',input_channel2)
+    
+    // if("${RETRIEVE_RECOURSES.out.done.collect()}"=="Done.tmp"){
+    //     log.info('match')
+        
+    // }else{
+    //     log.info('no match')
+    //     log.info("${RETRIEVE_RECOURSES.out.done.collect()}")
+    // }
+    
+    
+    // YASCP ('default')
 }
 
 workflow {
