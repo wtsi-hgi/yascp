@@ -208,13 +208,21 @@ process JOIN_CHROMOSOMES{
       tuple val(s2), path("${samplename}.bcf.gz"),path("${samplename}.bcf.gz.csi"), emit: joined_chromosomes_per_studytrance
 
     script:
+
+      if (params.reference_assembly_fasta_dir='https://yascp.cog.sanger.ac.uk/public/10x_reference_assembly'){
+          genome = "${params.outdir}/recourses/10x_reference_assembly/genome.fa"
+      }else{
+          genome = "${params.reference_assembly_fasta_dir}/genome.fa"
+      }
+
       s1 = samplename.split('___')[0]
       s2 = samplename.split('___')[1]
       """
+
         fofn_input_subset.sh "${study_vcf_files}"
         bcftools concat --threads ${task.threads} -f ./fofn_vcfs.txt -Ob -o pre_${samplename}.bcf.gz
         bcftools index pre_${samplename}.bcf.gz
-        bcftools +fixref pre_${samplename}.bcf.gz -Ob -o ${samplename}.bcf.gz -- -d -f ${params.reference_assembly_fasta_dir}/genome.fa -m flip
+        bcftools +fixref pre_${samplename}.bcf.gz -Ob -o ${samplename}.bcf.gz -- -d -f ${genome} -m flip
         bcftools index ${samplename}.bcf.gz
       """
 }
