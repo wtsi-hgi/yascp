@@ -1,4 +1,3 @@
-include { RETRIEVE_RECOURSES } from './subworkflows/local/retrieve_recourses'
 
 
 process VACUTAINER_TO_DONOR_ID {
@@ -202,18 +201,13 @@ process JOIN_CHROMOSOMES{
 
     input:
       tuple val(samplename), path(study_vcf_files),path(study_vcf_csi_files)
+      path(genome)
 
 
     output:
       tuple val(s2), path("${samplename}.bcf.gz"),path("${samplename}.bcf.gz.csi"), emit: joined_chromosomes_per_studytrance
 
     script:
-
-      if (params.reference_assembly_fasta_dir='https://yascp.cog.sanger.ac.uk/public/10x_reference_assembly'){
-          genome = "${params.outdir}/recourses/10x_reference_assembly/genome.fa"
-      }else{
-          genome = "${params.reference_assembly_fasta_dir}/genome.fa"
-      }
 
       s1 = samplename.split('___')[0]
       s2 = samplename.split('___')[1]
@@ -222,7 +216,7 @@ process JOIN_CHROMOSOMES{
         fofn_input_subset.sh "${study_vcf_files}"
         bcftools concat --threads ${task.threads} -f ./fofn_vcfs.txt -Ob -o pre_${samplename}.bcf.gz
         bcftools index pre_${samplename}.bcf.gz
-        bcftools +fixref pre_${samplename}.bcf.gz -Ob -o ${samplename}.bcf.gz -- -d -f ${genome} -m flip
+        bcftools +fixref pre_${samplename}.bcf.gz -Ob -o ${samplename}.bcf.gz -- -d -f ${genome}/genome.fa -m flip
         bcftools index ${samplename}.bcf.gz
       """
 }
@@ -281,6 +275,7 @@ workflow SUBSET_WORKF{
     ch_ref_vcf
     donors_in_pools
     mode
+    genome
   main:
       donors_in_pools.combine(ch_ref_vcf).set{all_GT_pannels_and_pools}
       // subset genotypes per pool, per chromosome split.
@@ -289,7 +284,7 @@ workflow SUBSET_WORKF{
       // combnie all the chromosomes per pool
       // chromosome_vcfs_per_studypool.view()
       // Now we combine all the chromosomes together.
-      JOIN_CHROMOSOMES(chromosome_vcfs_per_studypool)
+      JOIN_CHROMOSOMES(chromosome_vcfs_per_studypool,genome)
       JOIN_CHROMOSOMES.out.joined_chromosomes_per_studytrance.groupTuple().set{study_vcfs_per_pool}
       study_vcfs_per_pool.subscribe {println "study_vcfs_per_pool:= ${it}\n"}
       // Merge all the pools.

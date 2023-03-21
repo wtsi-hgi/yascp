@@ -4,7 +4,7 @@ process RETRIEVE_RECOURSES{
     // This snipped is a replication of the function but as a nf module and hence the problem is avoided.
   publishDir "${params.outdir}/recourses",  mode: "${params.copy_mode}", overwrite: true  
   output:
-    path("10x_reference_assembly"),emit:recourses, optional: true
+    path("10x_reference_assembly"),emit:reference_assembly, optional: true
     // path("full_test_dataset"),emit:recourses, optional: true
     path("Done.tmp"),emit:done
   script:
@@ -36,8 +36,8 @@ process RETRIEVE_RECOURSES_TEST_DATASET{
   publishDir "${params.outdir}/recourses",  mode: "${params.copy_mode}", overwrite: true  
   output:
     path("full_test_dataset"),emit:recourses, optional: true
-    path("input.tsv"),emit:input_channel
-    path("vcf_inputs.tsv"),emit:vcf_inputs
+    path("input_test_data_file.tsv"),emit:input_channel
+    path("input_test_vcf_file.tsv"),emit:vcf_inputs
     path("Done.tmp"),emit:done
   script:
     // if (params.reference_assembly_fasta_dir='https://yascp.cog.sanger.ac.uk/public/10x_reference_assembly'){
@@ -58,10 +58,10 @@ process RETRIEVE_RECOURSES_TEST_DATASET{
         cwd1=\$PWD    
         $get_full_test_data
         cd \$cwd1
-        wget ${params.genotype_input.tsv_donor_panel_vcfs}
-        wget ${params.input_data_table}
-        sed -i 's#/path/to/replace/pointing/to/downloaded/files#${params.outdir}#' ${params.genotype_input.tsv_donor_panel_vcfs}
-        sed -i 's#/path/to/replace/pointing/to/downloaded/files#${params.outdir}#' ${params.input_data_table}
+        wget -c ${params.genotype_input.tsv_donor_panel_vcfs} -O  input_test_vcf_file.tsv
+        wget -c ${params.input_data_table} -O input_test_data_file.tsv
+        sed -i 's#/path/to/replace/pointing/to/downloaded/files#${params.outdir}/recourses/full_test_dataset/smaller_dataset/genotypes#' input_test_vcf_file.tsv
+        sed -i 's#/path/to/replace/pointing/to/downloaded/files#${params.outdir}/recourses/full_test_dataset#' input_test_data_file.tsv
         touch Done > Done.tmp
     """    
 }
