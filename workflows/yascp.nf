@@ -35,7 +35,7 @@ include {capture_cellbender_files} from "$projectDir/modules/nf-core/modules/cel
 workflow YASCP {
     take:
         mode
-
+        input_channel
     main:
         if("${mode}"!='default'){
             // here we have rerun something upstream - done for freeze1
@@ -51,7 +51,7 @@ workflow YASCP {
         // ###################################
         ch_poolid_csv_donor_assignments = Channel.empty()
         bam_split_channel = Channel.of()
-        input_channel = Channel.fromPath(params.input_data_table, followLinks: true, checkIfExists: true)
+        
                 
         if(!params.just_reports){
             // sometimes we just want to rerun report generation as a result of alterations, hence if we set params.just_reports =True pipeline will use the results directory and generate a new reports.

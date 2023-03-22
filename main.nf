@@ -9,14 +9,21 @@
 */
 
 nextflow.enable.dsl = 2
-include { YASCP } from './workflows/yascp'
-include { RETRIEVE_RECOURSES } from './subworkflows/local/retrieve_recourses'
+include { YASCP } from "$projectDir/workflows/yascp"
+include { RETRIEVE_RECOURSES;RETRIEVE_RECOURSES_TEST_DATASET } from "$projectDir/subworkflows/local/retrieve_recourses"
 ////// WORKFLOW: Run main nf-core/yascp analysis pipeline
 // This is the default entry point, we have others to update ceirtain parts of the results. 
 // Please go to ./workflows/yascp to see the main Yascp workflow.
 workflow MAIN {
-    RETRIEVE_RECOURSES()
-    YASCP ('default')
+
+    if (params.profile='test_full'){
+        RETRIEVE_RECOURSES_TEST_DATASET()
+        input_channel = RETRIEVE_RECOURSES_TEST_DATASET.out.input_channel
+    }else{
+        input_channel = Channel.fromPath(params.input_data_table, followLinks: true, checkIfExists: true)
+    }
+    YASCP ('default',input_channel)
+
 }
 
 workflow {
@@ -70,6 +77,14 @@ workflow TEST_CATCHE_ISSUES{
 }
 
 workflow GENOTYPE_UPDATE{
+
+    if (params.reference_assembly_fasta_dir='https://yascp.cog.sanger.ac.uk/public/10x_reference_assembly'){
+        RETRIEVE_RECOURSES()  
+        genome = RETRIEVE_RECOURSES.out.reference_assembly
+    }else{
+        genome = "${params.reference_assembly_fasta_dir}"
+    }
+
     // For Freeze1 we take the existing datasets and cp -as results folder so we can start from a breakpoint in pipeline
     // We rerun the GT match for all tranches as this has changed significantly since the beggining.
     myFileChannel = Channel.fromPath( "${params.outdir}/deconvolution/vireo/*/GT_donors.vireo.vcf.gz" )
@@ -197,6 +212,13 @@ workflow TEST {
   //TEST_SPLIT_BAM_PER_DONOR()
   //println "**** running TEST::TEST_ENCRYPT_DIR"
   //TEST_ENCRYPT_DIR()
+          if (params.reference_assembly_fasta_dir='https://yascp.cog.sanger.ac.uk/public/10x_reference_assembly'){
+            RETRIEVE_RECOURSES()  
+            genome = RETRIEVE_RECOURSES.out.reference_assembly
+        }else{
+            genome = "${params.reference_assembly_fasta_dir}"
+        }
+        
     println "**** running TEST::TEST_SUBSET_GENOTYPES"
     //   TEST_SUBSET_GENOTYPES()
     input_channel = Channel.fromPath(params.input_data_table, followLinks: true, checkIfExists: true)
