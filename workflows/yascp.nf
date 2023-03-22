@@ -68,10 +68,12 @@ workflow YASCP {
                     capture_cellbender_files.out.alt_input.flatten().map{sample -> tuple("${sample}".replaceFirst(/.*\/captured\//,"").replaceFirst(/\/.*/,""),sample)}.set{alt_input}
                     // remove the unncessary inputs.
                     // Run only the files that are not processed. 
-
-                    prepare_inputs.out.ch_experimentid_paths10x_raw.join(alt_input, remainder: true).set{post_ch_experimentid_paths10x_raw}
-                    prepare_inputs.out.ch_experimentid_paths10x_filtered.join(alt_input, remainder: true).set{post_ch_experimentid_paths10x_filtered}
-                    
+                    // alt_input.subscribe { println "alt_input: $it" }
+                    // prepare_inputs.out.ch_experimentid_paths10x_raw.subscribe { println "prepare_inputs: $it" }
+                    // file__anndata_merged.subscribe { println "value1: $it" }
+                    prepare_inputs.out.ch_experimentid_paths10x_raw.join(alt_input, by: [0], remainder: true).set{post_ch_experimentid_paths10x_raw}
+                    prepare_inputs.out.ch_experimentid_paths10x_filtered.join(alt_input, by: [0], remainder: true).set{post_ch_experimentid_paths10x_filtered}
+                    // post_ch_experimentid_paths10x_raw.subscribe { println "output:: $it" }
                     post_ch_experimentid_paths10x_raw.filter{ it[1] != null }.filter{ it[2] == null }.map{row -> tuple(row[0], row[1])}.set{ch_experimentid_paths10x_raw_2}
                     post_ch_experimentid_paths10x_filtered.filter{ it[1] != null }.filter{ it[2] == null }.map{row -> tuple(row[0], row[1])}.set{ch_experimentid_paths10x_filtered_2}
                     post_ch_experimentid_paths10x_raw.filter{ it[1] != null }.filter{ it[2] != null }.map{row -> tuple(row[0],row[2])}.set{alt_input3}

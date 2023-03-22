@@ -135,7 +135,7 @@ workflow  main_deconvolution {
         vireo_with_gt = Channel.of(params.genotype_input.vireo_with_gt)
         replacement_input.combine(vireo_with_gt).set{vir_repl_input}
         REPLACE_GT_DONOR_ID2(vir_repl_input)
-        vir_repl_input.view()
+        // vir_repl_input.view()
         VIREO_GT_FIX_HEADER(REPLACE_GT_DONOR_ID2.out.infered_vcf)
         VIREO_ADD_SAMPLE_PREFIX(VIREO_GT_FIX_HEADER.out.infered_vcf)
         MERGE_GENOTYPES_IN_ONE_VCF_INFERED(VIREO_ADD_SAMPLE_PREFIX.out.infered_vcf.collect(),'infered')
