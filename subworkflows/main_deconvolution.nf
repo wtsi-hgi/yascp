@@ -41,7 +41,7 @@ workflow  main_deconvolution {
     main:
 		log.info "#### running DECONVOLUTION workflow #####"
 
-        if (params.reference_assembly_fasta_dir='https://yascp.cog.sanger.ac.uk/public/10x_reference_assembly'){
+        if (params.reference_assembly_fasta_dir=='https://yascp.cog.sanger.ac.uk/public/10x_reference_assembly'){
             RETRIEVE_RECOURSES()  
             genome = RETRIEVE_RECOURSES.out.reference_assembly
         }else{

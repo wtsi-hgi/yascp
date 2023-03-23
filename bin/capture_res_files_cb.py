@@ -1,19 +1,41 @@
 #!/usr/bin/env python
+
+__author__ = 'Matiss Ozols'
+__date__ = '2022-03-22'
+__version__ = '0.0.1'
+
 import os
 import glob
 import argparse
 from os.path import exists
 # this code captures the cb files in two levels subdir or subdir/subdir and emits to the subsequent processes.
-# parser = argparse.ArgumentParser(
-#     description="""
-#         Filter and merge 10x data. Save to AnnData object.
-#         """
-# )
+parser = argparse.ArgumentParser(
+    description="""
+        Filter and merge 10x data. Save to AnnData object.
+        """
+)
+
+parser.add_argument(
+    '-v', '--version',
+    action='version',
+    version='%(prog)s {version}'.format(version=__version__)
+)
+# --method ${params.aggregation_method}
+parser.add_argument(
+    '-res', '--resolution',
+    action='store',
+    dest='resolution',
+    required=True,
+    help='',default=False
+)
+
+options = parser.parse_args()
+resolution = options.resolution
 
 PREFIX1=f"{os.getcwd()}/"
 os.mkdir(f"{PREFIX1}captured")
-all_vcfs = glob.glob(f'{PREFIX1}tmp1234/cellbender/*/*FPR_0pt1*/matrix.mtx.gz')
-all_vcfs2 = glob.glob(f'{PREFIX1}tmp1234/cellbender/*/*/*FPR_0pt1*/matrix.mtx.gz')
+all_vcfs = glob.glob(f'{PREFIX1}tmp1234/cellbender/*/*FPR_{resolution}*/matrix.mtx.gz')
+all_vcfs2 = glob.glob(f'{PREFIX1}tmp1234/cellbender/*/*/*FPR_{resolution}*/matrix.mtx.gz')
 for vcf1 in all_vcfs2:
     vcf1='/'.join(vcf1.split('/')[:-1])
     name = vcf1.split('/')[-3]

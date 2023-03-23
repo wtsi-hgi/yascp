@@ -99,7 +99,7 @@ process cellbender__rb__get_input_cells {
     ln --physical ${file_10x_features} txd_input/features.tsv.gz
     ln --physical ${file_10x_matrix} txd_input/matrix.mtx.gz
 
-    get_estimates_from_umi_counts.py ${cell_numbers} --tenxdata_path txd_input --output_file ${outfile} --expected_nemptydroplets_umi_cutoff   ${estimate_params_umis.expected_nemptydroplets_umi_cutoff} --method_estimate_ncells   ${estimate_params_umis.method_estimate_ncells} --lower_bound_umis_estimate_ncells   ${estimate_params_umis.lower_bound_umis_estimate_ncells} --method_estimate_nemptydroplets   ${estimate_params_umis.method_estimate_nemptydroplets} --lower_bound_umis_estimate_nemptydroplets   ${estimate_params_umis.lower_bound_umis_estimate_nemptydroplets} --upper_bound_umis_estimate_nemptydroplets   ${estimate_params_umis.upper_bound_umis_estimate_nemptydroplets} --estimate_nemptydroplets_add_umifactor   ${estimate_params_umis.estimate_nemptydroplets_umi_add_factor} --estimate_nemptydroplets_subtract_dropletfactor   ${estimate_params_umis.estimate_nemptydroplets_subtract_cell_factor} --estimate_nemptydroplets_min_nemptydroplets ${estimate_params_umis.estimate_nemptydroplets_min_drop}    ${cmd__expected_ncells} ${cmd__droplets_include}
+    get_estimates_from_umi_counts.py ${cell_numbers} --tenxdata_path txd_input --output_file ${outfile} --expected_nemptydroplets_umi_cutoff   ${estimate_params_umis.expected_nemptydroplets_umi_cutoff} --method_estimate_ncells   ${estimate_params_umis.method_estimate_ncells} --lower_bound_umis_estimate_ncells   5 --method_estimate_nemptydroplets   ${estimate_params_umis.method_estimate_nemptydroplets} --lower_bound_umis_estimate_nemptydroplets   ${estimate_params_umis.lower_bound_umis_estimate_nemptydroplets} --upper_bound_umis_estimate_nemptydroplets   ${estimate_params_umis.upper_bound_umis_estimate_nemptydroplets} --estimate_nemptydroplets_add_umifactor   ${estimate_params_umis.estimate_nemptydroplets_umi_add_factor} --estimate_nemptydroplets_subtract_dropletfactor   ${estimate_params_umis.estimate_nemptydroplets_subtract_cell_factor} --estimate_nemptydroplets_min_nemptydroplets ${estimate_params_umis.estimate_nemptydroplets_min_drop}    ${cmd__expected_ncells} ${cmd__droplets_include}
 
     mkdir plots
     mv *pdf plots/ 2>/dev/null || true
@@ -474,6 +474,7 @@ process capture_cellbender_files{
     
   script:
   """
+  
     mkdir tmp1234
     mkdir tmp1234/cellbender
     cd tmp1234/cellbender
@@ -488,7 +489,7 @@ process capture_cellbender_files{
         fi        
     done
     cd ../..
-    capture_res_files_cb.py
+    capture_res_files_cb.py -res ${params.cellbender_resolution_to_use}
   """    
 
 }

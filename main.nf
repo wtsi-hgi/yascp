@@ -16,7 +16,7 @@ include { RETRIEVE_RECOURSES;RETRIEVE_RECOURSES_TEST_DATASET } from "$projectDir
 // Please go to ./workflows/yascp to see the main Yascp workflow.
 workflow MAIN {
 
-    if (params.profile='test_full'){
+    if (params.profile=='test_full'){
         RETRIEVE_RECOURSES_TEST_DATASET()
         input_channel = RETRIEVE_RECOURSES_TEST_DATASET.out.input_channel
         vcf_inputs = RETRIEVE_RECOURSES_TEST_DATASET.out.vcf_inputs
@@ -88,7 +88,7 @@ workflow TEST_CATCHE_ISSUES{
 
 workflow GENOTYPE_UPDATE{
 
-    if (params.reference_assembly_fasta_dir='https://yascp.cog.sanger.ac.uk/public/10x_reference_assembly'){
+    if (params.reference_assembly_fasta_dir=='https://yascp.cog.sanger.ac.uk/public/10x_reference_assembly'){
         RETRIEVE_RECOURSES()  
         genome = RETRIEVE_RECOURSES.out.reference_assembly
     }else{
@@ -222,7 +222,7 @@ workflow TEST {
   //TEST_SPLIT_BAM_PER_DONOR()
   //println "**** running TEST::TEST_ENCRYPT_DIR"
   //TEST_ENCRYPT_DIR()
-          if (params.reference_assembly_fasta_dir='https://yascp.cog.sanger.ac.uk/public/10x_reference_assembly'){
+          if (params.reference_assembly_fasta_dir=='https://yascp.cog.sanger.ac.uk/public/10x_reference_assembly'){
             RETRIEVE_RECOURSES()  
             genome = RETRIEVE_RECOURSES.out.reference_assembly
         }else{
