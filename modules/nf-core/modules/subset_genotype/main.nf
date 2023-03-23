@@ -256,11 +256,11 @@ process JOIN_STUDIES_MERGE{
         fofn_input_subset.sh "${study_vcf_files}"
         if [ \$(cat fofn_vcfs.txt | wc -l) -gt 1 ]; then
             echo 'yes'
-            bcftools merge -file-list ${study_vcf_files} -Ou | bcftools sort -Oz -o pre_${mode}_${mode2}_${samplename}.vcf.gz
+            bcftools merge -file-list ${study_vcf_files} -Ou | bcftools sort -T ${params.tmpdir} -Oz -o pre_${mode}_${mode2}_${samplename}.vcf.gz
             bcftools index pre_${mode}_${mode2}_${samplename}.vcf.gz
         else
           echo 'no'
-          bcftools view ${study_vcf_files} | bcftools sort -Oz -o pre_${mode}_${mode2}_${samplename}.vcf.gz
+          bcftools view ${study_vcf_files} | bcftools sort -T ${params.tmpdir} -Oz -o pre_${mode}_${mode2}_${samplename}.vcf.gz
           bcftools index pre_${mode}_${mode2}_${samplename}.vcf.gz
           
         fi

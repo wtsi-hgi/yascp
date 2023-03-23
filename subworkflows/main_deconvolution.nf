@@ -36,6 +36,7 @@ workflow  main_deconvolution {
 		ch_experiment_filth5
 		ch_experiment_donorsvcf_donorslist
         channel__file_paths_10x
+        vcf_input
 
     main:
 		log.info "#### running DECONVOLUTION workflow #####"
@@ -58,11 +59,7 @@ workflow  main_deconvolution {
             .set { donors_in_pools }
             
             // 2) All the vcfs provided to us. 
-            Channel.fromPath(
-            params.genotype_input.tsv_donor_panel_vcfs,
-            followLinks: true,
-            checkIfExists: true
-            ).splitCsv(header: true, sep: '\t')
+            vcf_input.splitCsv(header: true, sep: '\t')
             .map { row -> tuple(row.label, file(row.vcf_file_path), file("${row.vcf_file_path}.csi")) }
             .set { ch_ref_vcf }
 
@@ -160,7 +157,7 @@ workflow  main_deconvolution {
                 .combine(ch_ref_vcf)
                 .set { gt_math_pool_against_panel_input }
 
-            match_genotypes(vireo_out_sample_donor_vcf,merged_expected_genotypes,VIREO_GT_FIX_HEADER.out.gt_pool,gt_math_pool_against_panel_input,genome)
+            match_genotypes(vireo_out_sample_donor_vcf,merged_expected_genotypes,VIREO_GT_FIX_HEADER.out.gt_pool,gt_math_pool_against_panel_input,genome,ch_ref_vcf)
             gt_matches = match_genotypes.out.donor_match_table.collect()
 
             ENHANCE_STATS_GT_MATCH(match_genotypes.out.donor_match_table_enhanced)

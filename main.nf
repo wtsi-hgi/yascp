@@ -19,10 +19,20 @@ workflow MAIN {
     if (params.profile='test_full'){
         RETRIEVE_RECOURSES_TEST_DATASET()
         input_channel = RETRIEVE_RECOURSES_TEST_DATASET.out.input_channel
+        vcf_inputs = RETRIEVE_RECOURSES_TEST_DATASET.out.vcf_inputs
     }else{
         input_channel = Channel.fromPath(params.input_data_table, followLinks: true, checkIfExists: true)
+        if (params.genotype_input.run_with_genotype_input) {
+            vcf_inputs = Channel.fromPath(
+                params.genotype_input.tsv_donor_panel_vcfs,
+                followLinks: true,
+                checkIfExists: true
+            )
+        }else{
+            vcf_inputs = Channel.of()
+        }
     }
-    YASCP ('default',input_channel)
+    YASCP ('default',input_channel,vcf_inputs)
 
 }
 

@@ -36,6 +36,7 @@ workflow YASCP {
     take:
         mode
         input_channel
+        vcf_input
     main:
         if("${mode}"!='default'){
             // here we have rerun something upstream - done for freeze1
@@ -112,7 +113,8 @@ workflow YASCP {
                         prepare_inputs.out.ch_experiment_npooled,
                         ch_experiment_filth5,
                         prepare_inputs.out.ch_experiment_donorsvcf_donorslist,
-                        channel__file_paths_10x)
+                        channel__file_paths_10x,
+                        vcf_input)
                     ch_poolid_csv_donor_assignments = main_deconvolution.out.ch_poolid_csv_donor_assignments
                     bam_split_channel = main_deconvolution.out.sample_possorted_bam_vireo_donor_ids
                     assignments_all_pools = main_deconvolution.out.assignments_all_pools
