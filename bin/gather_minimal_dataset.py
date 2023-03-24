@@ -89,6 +89,7 @@ COLUMNS_QC = {
 COLUMNS_CELLBENDER = {'cellbender_latent_probability': 'cellbender.latent.probability'}
 COLUMNS_DATASET = {
     'experiment_id': 'experiment.id',
+    'tranche.id':'tranche.id',
     'chromium_run_id': 'chromium.run.id',
     'chromium_lane': 'chromium.lane'
     }
@@ -1014,62 +1015,11 @@ if __name__ == '__main__':
 
 
     Sample_metadata = pd.DataFrame()
-    # try:
-    #     if args.extra_metadata:
-    #         Extra_Metadata = pd.read_csv('/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/fetch/ELGH_fech/results/yascp_inputs/Extra_Metadata.tsv',sep='\t')
-    #         # Extra_Metadata = pd.read_csv(args.extra_metadata,sep='\t')
-    #         Extra_Metadata=Extra_Metadata.set_index('sanger_sample_id')
-    #         Mappings_between_sanger_sampe_and_NS = Extra_Metadata['public_name']
-    #         Library_IDs = pd.read_csv('/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/fetch/ELGH_fech/results/yascp_inputs/Library_IDs.csv',sep='\t')
-    #         Sample_Manifest = pd.read_csv('/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/fetch/ELGH_fech/results/yascp_inputs/Sample_Manifest.csv',sep='\t')
-    #         Sample_Manifest=Sample_Manifest.set_index('Barcode (scan)')
-    #         Library_IDs = Library_IDs.set_index('S2-046 ID')
-            
-    #         for Lid in Mappings_between_sanger_sampe_and_NS.iteritems():
-    #             print(Lid)
-    #             Samples = Library_IDs[Library_IDs['library ID:'].str.contains(Lid[1])]
-    #             Samples['Sanger_id']=Lid[0]
-    #             Samples['NS_ID']=Lid[1]
-
-    #             intersect = set(Sample_Manifest.index).intersection(set(Samples.index))
-    #             missing = set(Samples.index)- set(Sample_Manifest.index)
-
-    #             # now combine the missing and existing values.
-    #             All_Vals = pd.DataFrame()
-    #             if len(intersect)>0:
-    #                 Recieved_sample_info = Sample_Manifest.loc[intersect]
-    #                 Recieved_sample_info = Recieved_sample_info[['Volume (ul)','Issue (optional)','Date received']]
-    #                 All_Vals = pd.concat([All_Vals,Recieved_sample_info],axis=0)
-                    
-    #             if len(missing)>0:
-    #                 # samples not recorded in sampe reception.
-    #                 missing = intersect
-    #                 Recieved_sample_info_missing = pd.DataFrame(columns={'Volume (ul)','Issue (optional)','Date received'},index=[list(missing)])
-    #                 All_Vals = pd.concat([All_Vals,Recieved_sample_info_missing],axis=0)
-    #             # 
-    #             S1 = Samples.join(Recieved_sample_info)
-    #             # Sample_metadata = Sample_metadata.merge(Samples)
-    #             Sample_metadata=pd.concat([Sample_metadata,S1])
-    #             print('Done')
-    #             # set(Samples.index)
-    #         # Read in sample manifest
-    #         # Read in Library IDs
-    #         print('Done')
-    #         Sample_metadata2= Sample_metadata[['NS_ID','Volume (ul)','Issue (optional)','Date received','Time blood samples taken','Date and time of last meal:','Sanger_id']]
-    #         Sample_metadata2.Sanger_id in df_raw.index
-    #         Sample_metadata2 = Sample_metadata2.reset_index()
-    #         S2 = Sample_metadata2.set_index('Sanger_id')
-    #         S3 = S2.loc[set(df_raw.index)]
-    #         df_raw.index
-    #         S3.to_csv('Sample_data3.tsv',sep='\t')
-
-            
-    # except:
-    #     print('not working')
-
     
-
-
+    adqc.obs['tranche.id']=args.experiment_name
+    adqc.obs['cell_passes_qc-per:Azimuth:L0_predicted.celltype.l2:score'] = adqc.obs['cell_passes_qc-per:Azimuth:L0_predicted.celltype.l2:score'].astype(float)
+    adqc.obs['cell_passes_qc-per:all_together::exclude:score']= adqc.obs['cell_passes_qc-per:all_together::exclude:score'].astype(float)
+    
     for expid in df_raw.index:
         # try:
         # expid ='OTARscRNA12924807'
