@@ -143,7 +143,7 @@ workflow REPORT_UPDATE{
     // We use this entry point to update the reports upon running some individual processes that have already completed.
     input_channel = Channel.fromPath(params.input_data_table, followLinks: true, checkIfExists: true)
     CREATE_ARTIFICIAL_BAM_CHANNEL(input_channel)
-    bam_split_channel = CREATE_ARTIFICIAL_BAM_CHANNEL.out.bam_split_channel
+    bam_split_channel = CREATE_ARTIFICIAL_BAM_CHANNEL.out.ch_experiment_bam_bai_barcodes
     ch_poolid_csv_donor_assignments = CREATE_ARTIFICIAL_BAM_CHANNEL.out.ch_poolid_csv_donor_assignments
     
     // // 1) The pihat values were impemented posthoc, hence we are runing this on each of the independent tranches. 
@@ -157,8 +157,8 @@ workflow REPORT_UPDATE{
     // // We sometimes aslo chnge apporach in the data fetch and we need to add in some extra metadata
     metadata_posthoc(update_input_channel)
     metadata_posthoc.out.dummy_out.set{o3}
-    // replace_donors_posthoc(update_input_channel)
-    // replace_donors_posthoc.out.dummy_out.set{o2}
+    replace_donors_posthoc(update_input_channel)
+    replace_donors_posthoc.out.dummy_out.set{o2}
     // o1.mix(o2).last().set{o3}
     // o3 = Channel.of('dummys')
     // Once everything is updated we need to make sure that the dataon the website and in the cardinal analysis foder is accurate and up to date, hence we rerun the data_handover scripts.
