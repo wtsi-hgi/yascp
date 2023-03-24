@@ -256,11 +256,11 @@ process JOIN_STUDIES_MERGE{
         fofn_input_subset.sh "${study_vcf_files}"
         if [ \$(cat fofn_vcfs.txt | wc -l) -gt 1 ]; then
             echo 'yes'
-            bcftools merge -file-list ${study_vcf_files} -Ou | bcftools sort -T ${params.tmpdir} -Oz -o pre_${mode}_${mode2}_${samplename}.vcf.gz
+            bcftools merge -file-list ${study_vcf_files} -Ou | bcftools sort -T \$PWD -Oz -o pre_${mode}_${mode2}_${samplename}.vcf.gz
             bcftools index pre_${mode}_${mode2}_${samplename}.vcf.gz
         else
           echo 'no'
-          bcftools view ${study_vcf_files} | bcftools sort -T ${params.tmpdir} -Oz -o pre_${mode}_${mode2}_${samplename}.vcf.gz
+          bcftools view ${study_vcf_files} | bcftools sort -T \$PWD -Oz -o pre_${mode}_${mode2}_${samplename}.vcf.gz
           bcftools index pre_${mode}_${mode2}_${samplename}.vcf.gz
           
         fi
@@ -286,7 +286,7 @@ workflow SUBSET_WORKF{
       // Now we combine all the chromosomes together.
       JOIN_CHROMOSOMES(chromosome_vcfs_per_studypool,genome)
       JOIN_CHROMOSOMES.out.joined_chromosomes_per_studytrance.groupTuple().set{study_vcfs_per_pool}
-      study_vcfs_per_pool.subscribe {println "study_vcfs_per_pool:= ${it}\n"}
+      // study_vcfs_per_pool.subscribe {println "study_vcfs_per_pool:= ${it}\n"}
       // Merge all the pools.
       JOIN_STUDIES_MERGE(study_vcfs_per_pool,'Study_Merge',mode)
       JOIN_STUDIES_MERGE.out.merged_expected_genotypes.set{merged_expected_genotypes}
