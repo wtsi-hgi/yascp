@@ -48,6 +48,8 @@ workflow  main_deconvolution {
             genome = "${params.reference_assembly_fasta_dir}"
         }
 
+        genome.subscribe { println "genome: $it" }
+
         if (params.genotype_input.run_with_genotype_input) {
             // We have to produce a single vcf file for each individual pool.
             // Therefore we create 2 channels:
@@ -136,6 +138,7 @@ workflow  main_deconvolution {
         full_vcf.filter { experiment, cellsnp, npooled, t,ti -> npooled == '1' }.set{not_deconvoluted}
 
         //Vireo creates per pool vcf vit donor0 etc, or if genotypes are provided genotype IDs will be placed there.
+        full_vcf2.subscribe { println "full_vcf2: $it" }
         VIREO(full_vcf2)
         //But to make it consistent we still randomly assign donor IDs per pool for each of the names.
         VIREO.out.all_required_data.set{replacement_input}
