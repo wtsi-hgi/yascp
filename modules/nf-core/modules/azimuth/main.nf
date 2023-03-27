@@ -35,7 +35,7 @@ process AZIMUTH{
         path "mapping_score_vln.pdf"
 
     script:
-    process_info = "${task.cpus} (cpus), ${task.memory} (memory)"
+    
     outdir = "${outdir_prev}/azimuth"
     // output file prefix: strip random hex number form beginning of file name
     outfil_prfx = "${file_h5ad_batch}".minus(".h5ad")
