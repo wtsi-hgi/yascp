@@ -359,12 +359,16 @@ def anndata_from_h5(
         obs={'barcode': d.pop('barcodes').astype(str)},
         var={
             'gene_ids': d.pop('id').astype(str),
-            'gene_symbols': gene_symbols
+            'gene_symbols': gene_symbols,
+            'feature_type':d.pop('feature_type').astype(str),
         }
     )
+    adata = adata[:,adata.var.query('feature_type=="Gene Expression"').index]
     adata.obs.set_index('barcode', inplace=True)
     adata.var.set_index('gene_ids', inplace=True)
-
+    
+    
+    
     # Add other information to the adata object in the appropriate slot.
     for key, value in d.items():
         try:

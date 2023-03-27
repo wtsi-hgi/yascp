@@ -115,6 +115,7 @@ if (os.path.exists(f"{path}/deconvolution/vireo_gt_fix")):
                     SITE = 'NA'
                     Amount = 'NA'
                     RECIEVED = 'NA'
+                    STATE = 'NA'
                     
                 try:
                     Matched_Donor_report.insert(8, 'lab_live_cell_count',live_cell_count)

@@ -63,6 +63,7 @@ process CELLSNP {
         ln -s ${barcodes_tsv_gz} bar_codes.txt
       fi
 
+
       cellsnp-lite -s ${bam_file} \\
         -b bar_codes.txt \\
         -O cellsnp_${samplename} \\
