@@ -100,7 +100,8 @@ process NORMALISE_AND_PCA {
             --number_cpu ${task.cpus} \
             ${cmd__vars_to_regress} \
             ${cmd__genes_exclude_hvg} \
-            ${cmd__genes_score}
+            ${cmd__genes_score} \
+            --drop_cell_passes_qc_from_clustering ${params.drop_cell_passes_qc_from_clustering}
         mkdir plots
         
         mv *pdf plots/ 2>/dev/null || true
