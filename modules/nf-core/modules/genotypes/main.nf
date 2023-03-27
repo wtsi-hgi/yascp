@@ -211,7 +211,7 @@ process GT_MATCH_POOL_IBD
       container "mercury/wtsihgi-nf_yascp_plink1-1.0"
   }
 
-  label 'process_tiny'
+  label 'process_low'
 
   input:
     tuple val(pool_id), path(vireo_gt_vcf)
@@ -238,7 +238,7 @@ process GT_MATCH_POOL_AGAINST_PANEL
       container "mercury/wtsihgi-nf_yascp_htstools-1.1"
   }
 
-  label 'process_medium'
+  label 'process_low'
   //when: params.vireo.run_gtmatch_aposteriori
 
   input:

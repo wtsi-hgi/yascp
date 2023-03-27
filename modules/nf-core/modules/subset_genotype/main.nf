@@ -152,7 +152,7 @@ process SUBSET_GENOTYPE {
 
 process SUBSET_GENOTYPE2 {
     tag "${samplename}.${sample_subset_file}"
-    label 'process_medium'
+    label 'process_low'
     publishDir "${params.outdir}/subset_genotypes/", mode: "${params.copy_mode}", pattern: "${samplename}.${sample_subset_file}.subset.vcf.gz"
 
 
