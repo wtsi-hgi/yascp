@@ -479,7 +479,7 @@ workflow MATCH_GT_VIREO {
     gt_check_by_panel.subscribe { println "gt_check_by_panel: gt_check_by_panel = ${it}\n" }
 
     ASSIGN_DONOR_FROM_PANEL(gt_check_by_panel)
-    ASSIGN_DONOR_FROM_PANEL.out.gtcheck_assignments
+    ASSIGN_DONOR_FROM_PANEL.out.gtcheck_assignments.unique()
       .groupTuple()
       .set{ ch_donor_assign_panel }
     // ch_donor_assign_panel.subscribe {println "ASSIGN_DONOR_OVERALL: ch_donor_assign_panel = ${it}\n"}

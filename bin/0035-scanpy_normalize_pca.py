@@ -422,6 +422,7 @@ def scanpy_normalize_and_pca(
     # Calculate the highly variable genes on the log1p(norm) data.
     # Do so for each sample and then merge - this avoids the selection of
     # batch-specific, highly variable genes.
+    print('---- Calculating highly variable genes ----')
     sc.pp.highly_variable_genes(
         adata,
         # min_mean=0.0125,
@@ -527,6 +528,7 @@ def scanpy_normalize_and_pca(
         # This effectively weights each gene evenly. Otherwise
         # genes with higher expression values will naturally have higher
         # variation that will be captured by PCA
+        print('---- Regressing variables ----')
         sc.pp.scale(
             adata,
             zero_center=scale_zero_center,  # If true, sparse becomes dense
@@ -802,6 +804,15 @@ def main():
     )
 
     parser.add_argument(
+        '-drop_cell_passes_qc_from_clustering', '--drop_cell_passes_qc_from_clusteringdrop_cell_passes_qc_from_clustering',
+        action='store',
+        dest='drop_cell_passes_qc_from_clustering',
+        default=False,
+        help='Whether we want to drop cells before clustering based on the cell_passes_qc filter established by outlier filter part of pipeline'
+    )
+
+
+    parser.add_argument(
         '-ncpu', '--number_cpu',
         action='store',
         dest='ncpu',
@@ -838,7 +849,7 @@ def main():
     sc.settings.n_jobs = options.ncpu  # number CPUs
     # sc.settings.max_memory = 500  # in Gb
     # sc.set_figure_params(dpi_save = 300)
-
+    drop_cell_passes_qc_from_clustering=options.drop_cell_passes_qc_from_clustering
     # Load the AnnData file
     adata = sc.read_h5ad(filename=options.h5)
 
@@ -855,31 +866,35 @@ def main():
         del adata.uns
 
     # If we have a flag for cells that pass QC then filter down to them
-    if 'cell_passes_qc' in adata.obs:
-        cells_prior_filters = adata.n_obs
-        adata = adata[adata.obs['cell_passes_qc'], :]
-        del adata.obs['cell_passes_qc']
-        print(
-            'filtered down to cell_passes_qc: {} old {} new adata'.format(
-                cells_prior_filters,
-                adata.n_obs
+    if (drop_cell_passes_qc_from_clustering=='False' or drop_cell_passes_qc_from_clustering=='false'):
+        drop_cell_passes_qc_from_clustering=False
+        
+    if drop_cell_passes_qc_from_clustering:
+        if 'cell_passes_qc' in adata.obs:
+            cells_prior_filters = adata.n_obs
+            adata = adata[adata.obs['cell_passes_qc'], :]
+            del adata.obs['cell_passes_qc']
+            print(
+                'filtered down to cell_passes_qc: {} old {} new adata'.format(
+                    cells_prior_filters,
+                    adata.n_obs
+                )
             )
-        )
-        # Re-calculate basic qc metrics of var (genes) for the whole dataset
-        # after filters.
-        # NOTE: we are only changing adata.var
-        obs_prior = adata.obs.copy()
-        sc.pp.calculate_qc_metrics(
-            adata,
-            qc_vars=[
-                'gene_group__mito_transcript',
-                'gene_group__mito_protein',
-                'gene_group__ribo_protein',
-                'gene_group__ribo_rna'
-            ],
-            inplace=True
-        )
-        adata.obs = obs_prior
+            # Re-calculate basic qc metrics of var (genes) for the whole dataset
+            # after filters.
+            # NOTE: we are only changing adata.var
+            obs_prior = adata.obs.copy()
+            sc.pp.calculate_qc_metrics(
+                adata,
+                qc_vars=[
+                    'gene_group__mito_transcript',
+                    'gene_group__mito_protein',
+                    'gene_group__ribo_protein',
+                    'gene_group__ribo_rna'
+                ],
+                inplace=True
+            )
+            adata.obs = obs_prior
 
     # Removing any donors with less than 3 cells as these must be outliers - the batch key needs at least 3 entires to calculate highly variable genes
     x=np.array(adata.obs[options.bk])
