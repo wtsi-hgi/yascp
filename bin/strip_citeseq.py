@@ -23,6 +23,7 @@ import click
 import logging
 import os
 compression_opts = 'gzip'
+filter_0_count_cells=False
 
 def cellbender_to_tenxmatrix(adata,out_file='',out_dir='tenx_from_adata',verbose=True):
     """Write 10x like data from 10x H5.
@@ -58,13 +59,14 @@ def cellbender_to_tenxmatrix(adata,out_file='',out_dir='tenx_from_adata',verbose
         compression_opts = dict(method='gzip', compresslevel=9)
 
     # First filter out any cells that have 0 total counts
-    zero_count_cells = adata.obs_names[np.where(adata.X.sum(axis=1) == 0)[0]]
-    if verbose:
-        print("Filtering {}/{} cells with 0 counts.".format(
-            len(zero_count_cells),
-            adata.n_obs
-        ))
-    adata = adata[adata.obs_names.difference(zero_count_cells, sort=False)]
+    if(filter_0_count_cells):
+        zero_count_cells = adata.obs_names[np.where(adata.X.sum(axis=1) == 0)[0]]
+        if verbose:
+            print("Filtering {}/{} cells with 0 counts.".format(
+                len(zero_count_cells),
+                adata.n_obs
+            ))
+        adata = adata[adata.obs_names.difference(zero_count_cells, sort=False)]
 
     # Save the barcodes.
     out_f = os.path.join(
@@ -286,6 +288,20 @@ def main():
         cache=False, cache_compression=compression_opts,gex_only=False)
 
     adata_antibody = adata_cellranger_filtered[:,adata_cellranger_filtered.var.query('feature_types=="Antibody Capture"').index]
+    zero_count_cells = adata_antibody.obs_names[np.where(adata_antibody.X.sum(axis=1) == 0)[0]]
+    adata2 = adata_antibody[adata_antibody.obs_names.difference(zero_count_cells, sort=False)]
+    if(adata2.shape[0]>0):
+        # Here we have actually captured some of the reads in the antibody dataset.
+        adata_antibody.write(
+            f'antibody-{options.outname}.h5ad',
+            compression='gzip'
+        )
+        _ = cellbender_to_tenxmatrix(
+            adata_antibody,
+            out_file='',
+            out_dir=f'{options.outname}__ab_data'
+        )
+    
     adata_gex = adata_cellranger_filtered[:,adata_cellranger_filtered.var.query('feature_types=="Gene Expression"').index]
     # adata_cellbender = anndata_from_h5('/lustre/scratch123/hgi/teams/hgi/mo11/tmp_projects/ania/analysis_trego/work/5d/6a30871e864ed7bc03e949ef846a1d/cellbender_FPR_0.1_filtered.h5',
     #                                         analyzed_barcodes_only=True)
@@ -296,16 +312,9 @@ def main():
         out_dir=f'{options.outname}__gex_data'
     )
     
-    _ = cellbender_to_tenxmatrix(
-        adata_antibody,
-        out_file='',
-        out_dir=f'{options.outname}__ab_data'
-    )
+
     
-    adata_antibody.write(
-        f'antibody-{options.outname}.h5ad',
-        compression='gzip'
-    )
+
 
     print('Done')
     

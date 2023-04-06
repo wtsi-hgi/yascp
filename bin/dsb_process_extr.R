@@ -1,9 +1,12 @@
+#!/usr/bin/env Rscript
+
+args = commandArgs(trailingOnly=TRUE)
 library(Seurat)
 library(tidyverse)
 library(sctransform)
 library(SeuratDisk)
 library(ggrastr)
-
+library(dsb)
 ## ----sample_declaration----------------------------------------------------------------------------------------------------------------
 #experiment-specific part where I get sample name and info etc.
 ## --------------------------------------------------------------------------------------------------------------------------------------
@@ -19,20 +22,22 @@ library(ggrastr)
 # qc_cells <- colnames(sample.seurat)
 
 #main GEX/CITEseq data
-cellranger_filepath <- '/lustre/scratch123/hgi/teams/hgi/mo11/tmp_projects/ania/analysis_trego/work/6e/ffddc30b501cb3d43c5e76eef66715/cellbender_FPR_0.1_filtered.h5'
-
+cellranger_filepath <- args[1] #'/lustre/scratch123/hgi/teams/hgi/mo11/tmp_projects/ania/analysis_trego/work/6e/ffddc30b501cb3d43c5e76eef66715/cellbender_FPR_0.1_filtered.h5'
+# cellranger_filepath <-'cellbender_FPR_0.1_filtered.h5'
 #raw data for dbs
-cellranger_rawfile_path <-  '/lustre/scratch123/hgi/teams/hgi/mo11/tmp_projects/ania/analysis_trego/work/6e/ffddc30b501cb3d43c5e76eef66715/CTRL_D1_BM__gex_data'
-
+cellranger_rawfile_path <- args[2] #'/lustre/scratch123/hgi/teams/hgi/mo11/tmp_projects/ania/analysis_trego/work/6e/ffddc30b501cb3d43c5e76eef66715/CTRL_D1_BM__gex_data'
+# cellranger_rawfile_path <- 'STAT3_A1_BM__gex_data'
 #AB data
-ab_filepath <- '/lustre/scratch123/hgi/teams/hgi/mo11/tmp_projects/ania/analysis_trego/work/6e/ffddc30b501cb3d43c5e76eef66715/CTRL_D1_BM__ab_data'
+ab_filepath <- args[3] #'/lustre/scratch123/hgi/teams/hgi/mo11/tmp_projects/ania/analysis_trego/work/6e/ffddc30b501cb3d43c5e76eef66715/CTRL_D1_BM__ab_data'
+# ab_filepath <- ''
+# sample = strsplit(ab_filepath,'/')
+# sample = sample[[1]][length(sample[[1]])]
 
-
-
+sample <- args[4]
+# sample = 'STAT3_A1_BM'
 ## --------------------------------------------------------------------------------------------------------------------------------------
 
   raw <- Read10X(cellranger_rawfile_path)
-  raw$`Gene Expression`
   cells <- Read10X_h5(cellranger_filepath, use.names = TRUE, unique.features = TRUE)
   antibody <- Read10X(ab_filepath)
   # Convert(ab_filepath, ".h5seurat", overwrite = TRUE)
@@ -49,10 +54,10 @@ ab_filepath <- '/lustre/scratch123/hgi/teams/hgi/mo11/tmp_projects/ania/analysis
   # split the RAW data into separate matrices for RNA and ADT
   #renaming by correct_abs_names() - needs a separate file with new names (I remap antibody names to more human readable names)
   
-  prot <- raw$`Antibody Capture` #%>%
+  prot <- antibody #%>%
     #correct_abs_names(., abs_info = abs_info)%>%.$adt_good_names 
   
-  rna <- raw$`Gene Expression`
+  rna <- raw
   
   
   # create metadata of droplet QC stats used in standard scRNAseq processing
@@ -100,7 +105,7 @@ ab_filepath <- '/lustre/scratch123/hgi/teams/hgi/mo11/tmp_projects/ania/analysis
 
     
 #outputs_plot_with_cutoffs      
-  ggsave(plot = g,paste0(output_dir,'/',sample,'.background-vs-cell_dsb.pdf'),
+  ggsave(plot = g,paste0(sample,'.background-vs-cell_dsb.pdf'),
          width=6, height=3)
 
   background_drops <- rownames(
@@ -117,9 +122,9 @@ ab_filepath <- '/lustre/scratch123/hgi/teams/hgi/mo11/tmp_projects/ania/analysis
   cellmd <- md[md$drop.class == 'cell', ]
   
 
-  cell.adt.raw <- as.matrix(prot[ , qc_cells])
-  cell.rna.raw = rna[ ,qc_cells]
-  cellmd = cellmd[qc_cells, ]
+  cell.adt.raw <- as.matrix(prot)
+  # cell.rna.raw = rna[ ,qc_cells]
+  # cellmd = cellmd[qc_cells, ]
   
   
   isotype.controls <- grep("sotype", rownames(cell.adt.raw), val=T)
@@ -136,8 +141,8 @@ ab_filepath <- '/lustre/scratch123/hgi/teams/hgi/mo11/tmp_projects/ania/analysis
   )
   
   #outputs_stats  
-  saveRDS(cells.dsb.norm$technical_stats, file=paste0(output_dir,'/',sample,'.dsb_technical_stats.RDS'))
-  saveRDS(cells.dsb.norm$protein_stats, file=paste0(output_dir,'/',sample,'.dsb_protein_stats.RDS'))
+  saveRDS(cells.dsb.norm$technical_stats, file=paste0(sample,'.dsb_technical_stats.RDS'))
+  saveRDS(cells.dsb.norm$protein_stats, file=paste0(sample,'.dsb_protein_stats.RDS'))
 
   #outputs_seurat: insert into a new slot, save 
   sample.seurat[["ADT_dbs"]] = CreateAssayObject(data = cells.dsb.norm$dsb_normalized_matrix[,]-3)
