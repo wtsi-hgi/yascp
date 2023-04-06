@@ -296,6 +296,7 @@ process cellbender__remove_background {
       path("*.h5"),val(cb_params),
       emit: cleanup_input
     )
+    tuple(val(experiment_id),path("cellbender_FPR_${params.cellbender_resolution_to_use.replaceAll('pt', '.')}_filtered.h5"),emit: cb_to_use_downstream)
 
     tuple(
       val(outdir),
@@ -456,12 +457,18 @@ process cellbender__remove_background__qc_plots {
 
 process capture_cellbender_files{
   publishDir  path: "${outdir}/cellbender",
-  saveAs: {filename -> 
+  saveAs: {filename ->
+        if (filename.contains("captured")) {
+          null
+        } else if (filename.contains(".h5")){
+          null
+        }
+        else {
           filename.replaceAll("tmp1234/cellbender/", "")
+        }
       },
         mode: "${params.copy_mode}",
     overwrite: "true"
-
   label 'process_tiny'
   // cache false
   input:
@@ -471,9 +478,14 @@ process capture_cellbender_files{
   output:
     path("tmp1234/cellbender/*") optional true
     path("captured/*/*FPR_${params.cellbender_resolution_to_use}*"),emit:alt_input optional true
+    path("cellbender/*/*/cellbender_FPR_${params.cellbender_resolution_to_use.replaceAll('pt', '.')}_filtered.h5"),emit:cb_to_use_downstream optional true
+    // cellbender/*/*/cellbender_FPR_0pt1_filtered.h5
+    // tuple(val(experiment_id),path("cellbender_FPR_${params.cellbender_resolution_to_use.replaceAll('pt', '.')}_filtered.h5"),emit: cb_to_use_downstream)
+
     
   script:
   """
+  
   
     mkdir tmp1234
     mkdir tmp1234/cellbender

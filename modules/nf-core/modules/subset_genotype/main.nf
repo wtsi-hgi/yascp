@@ -278,12 +278,17 @@ workflow SUBSET_WORKF{
     genome
   main:
       donors_in_pools.combine(ch_ref_vcf).unique().set{all_GT_pannels_and_pools}
-      // subset genotypes per pool, per chromosome split.
+      all_GT_pannels_and_pools.subscribe { println "all_GT_pannels_and_pools: $it" }
+      // Subset genotypes per pool, per chromosome split.
+      //  If we run it in a mode where we do not subset vcf files down to the ones that are expected in pools the folowing step is avoided and a dummy chanel created
+      // that lists a cohort and the pool and chromosome.
+      // !!!!! We need to ensure that the pools with the same compositions are not subset twice.
       SUBSET_GENOTYPE2(all_GT_pannels_and_pools)
       SUBSET_GENOTYPE2.out.subset_vcf_file.unique().groupTuple().set{chromosome_vcfs_per_studypool}
       // combnie all the chromosomes per pool
       // chromosome_vcfs_per_studypool.view()
       // Now we combine all the chromosomes together.
+      //  !!! We need to ensure that pools with the same compositions are not joined twice
       JOIN_CHROMOSOMES(chromosome_vcfs_per_studypool,genome)
       JOIN_CHROMOSOMES.out.joined_chromosomes_per_studytrance.unique().groupTuple().set{study_vcfs_per_pool}
       // study_vcfs_per_pool.subscribe {println "study_vcfs_per_pool:= ${it}\n"}

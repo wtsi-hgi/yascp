@@ -82,7 +82,6 @@ workflow CELLBENDER {
             params.cellbender_rb.low_count_threshold.value,
             params.cellbender_rb.fpr.value
         )
-
         cellbender__preprocess_output(
             cellbender__remove_background.out.cleanup_input,
             cellbender__remove_background.out.cb_plot_input,
@@ -109,10 +108,11 @@ workflow CELLBENDER {
         results_list = cellbender__preprocess_output.out.out_paths
         // prepeare the output channel for utilising in the deconvolution instead of barcode input.
         cellbender_path = cellbender__preprocess_output.out.alternative_input
-
+        cellbender_downstream = cellbender__remove_background.out.cb_to_use_downstream
         emit:
             // results_list //results list is not needed to be emited - if done it will wait for all the cellbender stuff to finish.
             cellbender_path
+            cellbender_downstream
 
             
 }
