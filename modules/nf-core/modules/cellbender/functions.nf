@@ -248,7 +248,7 @@ process cellbender__remove_background {
 	// label 'process_high_memory'
     gpu_text_info = '--cuda'
   }else{
-    label 'process_high'
+    label 'process_low'
     gpu_text_info = ''
   }
   
