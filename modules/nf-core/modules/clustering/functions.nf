@@ -368,7 +368,7 @@ process cluster_validate_resolution_keras {
                     } else if(filename.endsWith("clustered.tsv.gz")) {
                         null
                     } else {
-                        filename.replaceAll("-", "")
+                        filename.split("___")[1]
                     }
                 },
                 mode: "${params.copy_mode}",
@@ -392,22 +392,22 @@ process cluster_validate_resolution_keras {
         path(file__pcs, emit: pcs)
         path(file__reduced_dims, emit: reduced_dims)
         path(file__clusters, emit: clusters)
-        path("${outfile}.h5", emit: model)
-        path("${outfile}.yml", emit: model_yaml)
-        path("${outfile}-weights.h5", emit: model_weights)
-        path("${outfile}-model_report.tsv.gz", emit: model_report)
+        path("*${outfile}.h5", emit: model)
+        path("*${outfile}.yml", emit: model_yaml)
+        path("*${outfile}-weights.h5", emit: model_weights)
+        path("*${outfile}-model_report.tsv.gz", emit: model_report)
         path(
-            "${outfile}-test_result.tsv.gz",
+            "*${outfile}-test_result.tsv.gz",
             emit: model_test_result
         )
         path(
-            "${outfile}-weights.tsv.gz",
+            "*${outfile}-weights.tsv.gz",
             emit: model_weights_tsv
         )
         tuple(
             val("${outdir__reduced_dims}"),
-            file("${outfile}-model_report.tsv.gz",),
-            file("${outfile}-test_result.tsv.gz",),
+            file("*${outfile}-model_report.tsv.gz",),
+            file("*${outfile}-test_result.tsv.gz",),
             emit: plot_input
         )
         path("plots/*.png") optional true
@@ -433,6 +433,7 @@ process cluster_validate_resolution_keras {
 
         tf_memory = "${params.mem1*task.attempt/1000}"
         """
+        vcf_name=\$(python ${projectDir}/bin/random_id.py)
         rm -fr plots
         0057-scanpy_cluster_validate_resolution-keras.py \
             --h5_anndata ${file__anndata} \
@@ -441,7 +442,7 @@ process cluster_validate_resolution_keras {
             --batch_size 32 \
             --train_size_cells ${train_size_cells} \
             --memory_limit ${tf_memory} \
-            --output_file ${outfile}
+            --output_file \${vcf_name}___${outfile}
         mkdir plots
         mv *pdf plots/ 2>/dev/null || true
         mv *png plots/ 2>/dev/null || true
