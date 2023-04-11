@@ -66,9 +66,10 @@ Easyest to do is using a conda enviroment.
 
 3. Download/clone the pipeline and test it on a minimal dataset with a single command:
 
-    NOTE - the test dataset is in preparation for the pipeline to be run - please contact HGI if want to test.
+    !NOTE: you need to define your institution specific queues in the conf/base.conf or provide aditional config file with -c flag in folowing comand such as: -c /path/to/yascp/conf/extra_confs/sanger/base.conf
+    
     ```console
-    nextflow run nf-core/yascp -profile test,<docker/singularity/podman/shifter/charliecloud/conda/institute>
+    nextflow run /path/to/colned/yascp -profile test_full,<docker/singularity/podman/shifter/charliecloud/conda/institute>
     ```
 
     > * Please check [nf-core/configs](https://github.com/nf-core/configs#documentation) to see if a custom config file to run nf-core pipelines already exists for your Institute. If so, you can simply use `-profile <institute>` in your command. This will enable either `docker` or `singularity` and set the appropriate execution settings for your local compute environment.
