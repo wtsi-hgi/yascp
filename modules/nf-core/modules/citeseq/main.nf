@@ -37,9 +37,9 @@ process SPLIT_CITESEQ_GEX {
 process DSB {
     label 'process_medium'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "/lustre/scratch123/hgi/teams/hgi/mo11/tmp_projects/ania/azimuth_dsb.img"
+        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/azimuth_dsb.img"
     } else {
-        container "wtsihgi/nf_scrna_qc:6bb6af5"
+        container "mercury/azimuth_dsb:latest"
     }
 
     publishDir  path: "${params.outdir}/citeseq/${sample_name}", mode: "${params.copy_mode}",
@@ -55,6 +55,7 @@ process DSB {
         path("*.dsb_protein_stats.RDS"), emit: dsb_protein_stats optional true
         path("*_firstrun_dsb.h5Seurat"), emit: firstrun_dsb optional true
         path(antibody_data), emit: antibody_data optional true
+        path(cellranger_raw), emit: cellranger_raw optional true
 
     script:
         // [LRBA_B1_BM, /lustre/scratch123/hgi/mdt2/teams/hgi/mo11/tmp_projects/ania/analysis_trego/work/c5/b3f8dd3df7e3cc4c22a8dbd8102e17/cellbender_FPR_0.1_filtered.h5, /lustre/scratch123/hgi/mdt2/teams/hgi/mo11/tmp_projects/ania/analysis_trego/work/27/723d08a62a12435a74f99bab3a683e/antibody-LRBA_B1_BM.h5ad, /lustre/scratch123/hgi/mdt2/teams/hgi/mo11/tmp_projects/ania/analysis_trego/work/27/723d08a62a12435a74f99bab3a683e/LRBA_B1_BM__gex_data]

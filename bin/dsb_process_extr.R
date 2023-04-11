@@ -26,20 +26,26 @@ cellranger_filepath <- args[1] #'/lustre/scratch123/hgi/teams/hgi/mo11/tmp_proje
 # cellranger_filepath <-'cellbender_FPR_0.1_filtered.h5'
 #raw data for dbs
 cellranger_rawfile_path <- args[2] #'/lustre/scratch123/hgi/teams/hgi/mo11/tmp_projects/ania/analysis_trego/work/6e/ffddc30b501cb3d43c5e76eef66715/CTRL_D1_BM__gex_data'
-# cellranger_rawfile_path <- 'STAT3_A1_BM__gex_data'
+# cellranger_rawfile_path <- 'CTRL_B1_T__gex_data'
 #AB data
 ab_filepath <- args[3] #'/lustre/scratch123/hgi/teams/hgi/mo11/tmp_projects/ania/analysis_trego/work/6e/ffddc30b501cb3d43c5e76eef66715/CTRL_D1_BM__ab_data'
-# ab_filepath <- ''
+# ab_filepath <- 'CTRL_B1_T__ab_data'
 # sample = strsplit(ab_filepath,'/')
 # sample = sample[[1]][length(sample[[1]])]
+# sample = 'CTLA4_C1_T'
+# cellranger_filepath <-'cellbender_FPR_0.1_filtered.h5'
+# cellranger_rawfile_path <- 'CTLA4_C1_T__gex_data'
+# ab_filepath <- 'CTLA4_C1_T__ab_data'
 
 sample <- args[4]
-# sample = 'STAT3_A1_BM'
+# sample = 'CTRL_B1_T'
 ## --------------------------------------------------------------------------------------------------------------------------------------
 
-  raw <- Read10X(cellranger_rawfile_path)
+  rna = raw <- Read10X(cellranger_rawfile_path)
   cells <- Read10X_h5(cellranger_filepath, use.names = TRUE, unique.features = TRUE)
-  antibody <- Read10X(ab_filepath)
+  prot = antibody <- Read10X(ab_filepath)
+
+  
   # Convert(ab_filepath, ".h5seurat", overwrite = TRUE)
   # pbmc3k <- LoadH5Seurat("antibody-CTLA4_B1_BM.h5seurat")
   # antibody <- LoadH5Seurat("/lustre/scratch123/hgi/mdt2/teams/hgi/mo11/tmp_projects/ania/analysis_trego/work/7f/fed4885ad6ae9f4eef8142be635972/antibody-CTLA4_C1_BM.h5Seurat")
@@ -49,15 +55,10 @@ sample <- args[4]
   print("Defining bg and fg..")
   stained_cells <- colnames(cells)
   background <- setdiff(colnames(raw), colnames(cells))
-  
 
   # split the RAW data into separate matrices for RNA and ADT
   #renaming by correct_abs_names() - needs a separate file with new names (I remap antibody names to more human readable names)
-  
-  prot <- antibody #%>%
-    #correct_abs_names(., abs_info = abs_info)%>%.$adt_good_names 
-  
-  rna <- raw
+
   
   
   # create metadata of droplet QC stats used in standard scRNAseq processing
@@ -101,7 +102,7 @@ sample <- args[4]
                  lty=2, colour='red')+
     xlab('log10(total protein count)')+
     ylab('log10(total RNA count')+
-    theme(legend.position='right')+theme_bw()+guides( colour = guide_legend("Cells by cellranger"))
+    theme(legend.position='right')+theme_bw()+guides( colour = guide_legend("Cells by cellbender"))
 
     
 #outputs_plot_with_cutoffs      
@@ -119,12 +120,30 @@ sample <- args[4]
   
   
   #####
+  # qc_cells <- colnames(cells)
   cellmd <- md[md$drop.class == 'cell', ]
   
+  rna.mult = (3*mad(cellmd$rna.size))
+  prot.mult = (3*mad(cellmd$prot.size))
+  rna.lower = median(cellmd$rna.size) - rna.mult
+  rna.upper = median(cellmd$rna.size) + rna.mult
+  prot.lower = median(cellmd$prot.size) - prot.mult
+  prot.upper = median(cellmd$prot.size) + prot.mult
 
-  cell.adt.raw <- as.matrix(prot)
-  # cell.rna.raw = rna[ ,qc_cells]
-  # cellmd = cellmd[qc_cells, ]
+  qc_cells = rownames(
+    cellmd[cellmd$prot.size > prot.lower & 
+          cellmd$prot.size < prot.upper & 
+          cellmd$rna.size > rna.lower & 
+          cellmd$rna.size < rna.upper & 
+          cellmd$mt.prop < 0.14, ]
+    )
+
+
+  # cell.adt.raw <- as.matrix(prot)
+  
+  cell.adt.raw <- as.matrix(prot[ , qc_cells])
+  cell.rna.raw = rna[ ,qc_cells]
+  cellmd = cellmd[qc_cells, ]
   
   
   isotype.controls <- grep("sotype", rownames(cell.adt.raw), val=T)
@@ -145,8 +164,28 @@ sample <- args[4]
   saveRDS(cells.dsb.norm$protein_stats, file=paste0(sample,'.dsb_protein_stats.RDS'))
 
   #outputs_seurat: insert into a new slot, save 
-  sample.seurat[["ADT_dbs"]] = CreateAssayObject(data = cells.dsb.norm$dsb_normalized_matrix[,]-3)
-  SaveH5Seurat(sample.seurat, filename=file.path(output_dir, paste0(sample,"_firstrun_dsb.h5Seurat")), overwrite = TRUE, verbose = TRUE)
+
+stopifnot(isTRUE(all.equal(rownames(cellmd), colnames(cell.adt.raw))))
+stopifnot(isTRUE(all.equal(rownames(cellmd), colnames(cell.rna.raw))))
 
 
 
+# create Seurat object note: min.cells is a gene filter, not a cell filter
+# s = CreateSeuratObject(counts = cell.rna.raw, 
+#                                meta.data = cellmd,
+#                                assay = "RNA", 
+#                                )
+s = Seurat::CreateSeuratObject(counts = cell.rna.raw, 
+                               meta.data = cellmd,
+                               assay = "RNA", 
+                               min.cells = 20)
+s[["CITE"]] = Seurat::CreateAssayObject(data = cells.dsb.norm$dsb_normalized_matrix,names.delim = "_")
+
+# prots = rownames(s@assays$CITE@data)[1:28]
+# s = Seurat::FindNeighbors(object = s, dims = NULL,assay = 'CITE', 
+#                           features = prots, k.param = 30, 
+#                           verbose = FALSE)
+# c2[["ADT_dbs"]] = CreateAssayObject(data = cells.dsb.norm$dsb_normalized_matrix,names.delim = "_",)
+SaveH5Seurat(s, filename=paste0(sample,'_firstrun_dsb.h5Seurat'), overwrite = TRUE)
+
+# check_if_loads <- LoadH5Seurat(paste0(sample,'_firstrun_dsb.h5Seurat'))
