@@ -42,6 +42,8 @@ workflow YASCP {
             // here we have rerun something upstream - done for freeze1
             assignments_all_pools = mode
         }
+
+        vcf_input.subscribe { println "vcf_input: $it" }
         // ###################################
         // ################################### Readme
         // AMBIENT RNA REMOVAL USING CELLBENDER

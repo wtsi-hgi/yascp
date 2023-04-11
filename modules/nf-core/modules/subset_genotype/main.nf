@@ -152,7 +152,7 @@ process SUBSET_GENOTYPE {
 
 process SUBSET_GENOTYPE2 {
     tag "${samplename}.${sample_subset_file}"
-    label 'process_medium'
+    label 'process_low'
     publishDir "${params.outdir}/subset_genotypes/", mode: "${params.copy_mode}", pattern: "${samplename}.${sample_subset_file}.subset.vcf.gz"
 
 
@@ -277,15 +277,15 @@ workflow SUBSET_WORKF{
     mode
     genome
   main:
-      donors_in_pools.combine(ch_ref_vcf).set{all_GT_pannels_and_pools}
+      donors_in_pools.combine(ch_ref_vcf).unique().set{all_GT_pannels_and_pools}
       // subset genotypes per pool, per chromosome split.
       SUBSET_GENOTYPE2(all_GT_pannels_and_pools)
-      SUBSET_GENOTYPE2.out.subset_vcf_file.groupTuple().set{chromosome_vcfs_per_studypool}
+      SUBSET_GENOTYPE2.out.subset_vcf_file.unique().groupTuple().set{chromosome_vcfs_per_studypool}
       // combnie all the chromosomes per pool
       // chromosome_vcfs_per_studypool.view()
       // Now we combine all the chromosomes together.
       JOIN_CHROMOSOMES(chromosome_vcfs_per_studypool,genome)
-      JOIN_CHROMOSOMES.out.joined_chromosomes_per_studytrance.groupTuple().set{study_vcfs_per_pool}
+      JOIN_CHROMOSOMES.out.joined_chromosomes_per_studytrance.unique().groupTuple().set{study_vcfs_per_pool}
       // study_vcfs_per_pool.subscribe {println "study_vcfs_per_pool:= ${it}\n"}
       // Merge all the pools.
       JOIN_STUDIES_MERGE(study_vcfs_per_pool,'Study_Merge',mode)

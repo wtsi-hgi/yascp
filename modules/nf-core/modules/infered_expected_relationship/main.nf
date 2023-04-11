@@ -21,7 +21,7 @@ workflow Relationships_Between_Infered_Expected {
       // merged_expected_genotypes.view()
       vireo_GT_Genotypes.mix(merged_expected_genotypes).set{all_Expected_and_infeared}
       
-      all_Expected_and_infeared.groupTuple(by: 0).set{grouped}
+      all_Expected_and_infeared.unique().groupTuple(by: 0).set{grouped}
       // grouped.view()
       JOIN_INFERED_EXPECTED_MERGE(grouped,'InferedMerge',mode)
       // have to do this for each of the pools too. 

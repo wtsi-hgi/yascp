@@ -95,7 +95,7 @@ def main():
     # we look fo partial patterns in dataset as ELGH samples is typically designed in this way.
     # example mapping - 15001506221453 - full id = 
     for m1 in all_maped_samples:
-        d2 = Data_vcfsamples[Data_vcfsamples['samples'].str.contains(m1)]
+        d2 = Data_vcfsamples[Data_vcfsamples['samples'].str.contains(str(m1))]
         if len(d2)>0:
           i2 = d2.values[0][0]
           Interset.add(i2)

@@ -77,7 +77,19 @@ include { CELLSNP;capture_cellsnp_files } from "$projectDir/modules/nf-core/modu
 
 workflow FREEZE1_GENERATION{
     GENOTYPE_UPDATE()
-    YASCP (GENOTYPE_UPDATE.out.assignments_all_pools)
+
+    input_channel = Channel.fromPath(params.input_data_table, followLinks: true, checkIfExists: true)
+    if (params.genotype_input.run_with_genotype_input) {
+        vcf_inputs = Channel.fromPath(
+            params.genotype_input.tsv_donor_panel_vcfs,
+            followLinks: true,
+            checkIfExists: true
+        )
+    }else{
+        vcf_inputs = Channel.of()
+    }
+    
+    YASCP (GENOTYPE_UPDATE.out.assignments_all_pools,input_channel,vcf_inputs)
 
 }
 
@@ -120,7 +132,7 @@ workflow GENOTYPE_UPDATE{
             .set { ch_ref_vcf }
 
             // This will subsequently result in a joint vcf file for all the cohorts listed for each of the pools that can be used in VIREO and/or GT matching algorythm.
-            SUBSET_WORKF(ch_ref_vcf,donors_in_pools,'AllExpectedGT')
+            SUBSET_WORKF(ch_ref_vcf,donors_in_pools,'AllExpectedGT',genome)
             merged_expected_genotypes = SUBSET_WORKF.out.merged_expected_genotypes
             MERGE_GENOTYPES_IN_ONE_VCF_SUBSET(SUBSET_WORKF.out.study_merged_vcf.collect(),'subset')
 
@@ -163,8 +175,17 @@ workflow GENOTYPE_UPDATE{
     gt_pool
         .combine(ch_ref_vcf)
         .set { gt_math_pool_against_panel_input }
+    
+    vcf_input = Channel.fromPath(
+                params.genotype_input.tsv_donor_panel_vcfs,
+                followLinks: true,
+                checkIfExists: true
+            )
 
-    match_genotypes(vireo_out_sample_donor_vcf,merged_expected_genotypes,gt_pool,gt_math_pool_against_panel_input)
+    vcf_input.splitCsv(header: true, sep: '\t')
+            .map { row -> tuple(row.label, file(row.vcf_file_path), file("${row.vcf_file_path}.csi")) }
+            .set { ch_ref_vcf }
+    match_genotypes(vireo_out_sample_donor_vcf,merged_expected_genotypes,gt_pool,gt_math_pool_against_panel_input,genome,ch_ref_vcf)
     ENHANCE_STATS_GT_MATCH(match_genotypes.out.donor_match_table_enhanced)
     collect_file(ENHANCE_STATS_GT_MATCH.out.assignments.collect(),"assignments_all_pools.tsv",params.outdir+'/deconvolution/vireo_gt_fix',1,'')
     assignments_all_pools = collect_file.out.output_collection
@@ -177,7 +198,7 @@ workflow REPORT_UPDATE{
     // We use this entry point to update the reports upon running some individual processes that have already completed.
     input_channel = Channel.fromPath(params.input_data_table, followLinks: true, checkIfExists: true)
     CREATE_ARTIFICIAL_BAM_CHANNEL(input_channel)
-    bam_split_channel = CREATE_ARTIFICIAL_BAM_CHANNEL.out.bam_split_channel
+    bam_split_channel = CREATE_ARTIFICIAL_BAM_CHANNEL.out.ch_experiment_bam_bai_barcodes
     ch_poolid_csv_donor_assignments = CREATE_ARTIFICIAL_BAM_CHANNEL.out.ch_poolid_csv_donor_assignments
     
     // // 1) The pihat values were impemented posthoc, hence we are runing this on each of the independent tranches. 
@@ -191,8 +212,8 @@ workflow REPORT_UPDATE{
     // // We sometimes aslo chnge apporach in the data fetch and we need to add in some extra metadata
     metadata_posthoc(update_input_channel)
     metadata_posthoc.out.dummy_out.set{o3}
-    // replace_donors_posthoc(update_input_channel)
-    // replace_donors_posthoc.out.dummy_out.set{o2}
+    replace_donors_posthoc(update_input_channel)
+    replace_donors_posthoc.out.dummy_out.set{o2}
     // o1.mix(o2).last().set{o3}
     // o3 = Channel.of('dummys')
     // Once everything is updated we need to make sure that the dataon the website and in the cardinal analysis foder is accurate and up to date, hence we rerun the data_handover scripts.
