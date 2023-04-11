@@ -11,15 +11,10 @@ workflow match_genotypes {
     merged_expected_genotypes
     gt_pool
     gt_math_pool_against_panel_input
+    genome
+    ch_ref_vcf
   main:
-    Channel.fromPath(
-      params.genotype_input.tsv_donor_panel_vcfs,
-      followLinks: true,
-      checkIfExists: true
-    )
-    .splitCsv(header: true, sep: '\t')
-    .map { row -> tuple(row.label, file(row.vcf_file_path), file("${row.vcf_file_path}.csi")) }
-    .set { ch_ref_vcf }
+
        
     MATCH_GT_VIREO(gt_math_pool_against_panel_input)
     // «««««««««
@@ -45,15 +40,7 @@ workflow match_genotypes {
     // compare genotypes with the expected/matched genotypes to estimate the relationship between matches.
     // #### Note: this code takes in the subset genotypes (either determines as an expected inputs or determined as final matches [dependant on flag] and also the final GT match results to later extract the PI_HAT value)
 
-    Channel.fromPath(
-      params.genotype_input.tsv_donor_panel_vcfs,
-      followLinks: true,
-      checkIfExists: true
-    ).splitCsv(header: true, sep: '\t')
-    .map { row -> tuple(row.label, file(row.vcf_file_path), file("${row.vcf_file_path}.csi")) }
-    .set { ch_ref_vcf }
-
-    SUBSET_WORKF(ch_ref_vcf,gt_matched_samples,'GTMatchedSubset')
+    SUBSET_WORKF(ch_ref_vcf,gt_matched_samples,'GTMatchedSubset',genome)
     merged_GT_Matched_genotypes = SUBSET_WORKF.out.merged_expected_genotypes
 
     Relationships_Between_Infered_Expected(donors_in_pools,merged_expected_genotypes,gt_pool,'InferedExpected',MATCH_GT_VIREO.out.donor_match_table_with_pool_id,idb_pool)

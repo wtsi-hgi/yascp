@@ -35,12 +35,15 @@ include {capture_cellbender_files} from "$projectDir/modules/nf-core/modules/cel
 workflow YASCP {
     take:
         mode
-
+        input_channel
+        vcf_input
     main:
         if("${mode}"!='default'){
             // here we have rerun something upstream - done for freeze1
             assignments_all_pools = mode
         }
+
+        vcf_input.subscribe { println "vcf_input: $it" }
         // ###################################
         // ################################### Readme
         // AMBIENT RNA REMOVAL USING CELLBENDER
@@ -51,7 +54,7 @@ workflow YASCP {
         // ###################################
         ch_poolid_csv_donor_assignments = Channel.empty()
         bam_split_channel = Channel.of()
-        input_channel = Channel.fromPath(params.input_data_table, followLinks: true, checkIfExists: true)
+        
                 
         if(!params.just_reports){
             // sometimes we just want to rerun report generation as a result of alterations, hence if we set params.just_reports =True pipeline will use the results directory and generate a new reports.
@@ -69,10 +72,12 @@ workflow YASCP {
                     capture_cellbender_files.out.alt_input.flatten().map{sample -> tuple("${sample}".replaceFirst(/.*\/captured\//,"").replaceFirst(/\/.*/,""),sample)}.set{alt_input}
                     // remove the unncessary inputs.
                     // Run only the files that are not processed. 
-
-                    prepare_inputs.out.ch_experimentid_paths10x_raw.join(alt_input, remainder: true).set{post_ch_experimentid_paths10x_raw}
-                    prepare_inputs.out.ch_experimentid_paths10x_filtered.join(alt_input, remainder: true).set{post_ch_experimentid_paths10x_filtered}
-                    
+                    // alt_input.subscribe { println "alt_input: $it" }
+                    // prepare_inputs.out.ch_experimentid_paths10x_raw.subscribe { println "prepare_inputs: $it" }
+                    // file__anndata_merged.subscribe { println "value1: $it" }
+                    prepare_inputs.out.ch_experimentid_paths10x_raw.join(alt_input, by: [0], remainder: true).set{post_ch_experimentid_paths10x_raw}
+                    prepare_inputs.out.ch_experimentid_paths10x_filtered.join(alt_input, by: [0], remainder: true).set{post_ch_experimentid_paths10x_filtered}
+                    // post_ch_experimentid_paths10x_raw.subscribe { println "output:: $it" }
                     post_ch_experimentid_paths10x_raw.filter{ it[1] != null }.filter{ it[2] == null }.map{row -> tuple(row[0], row[1])}.set{ch_experimentid_paths10x_raw_2}
                     post_ch_experimentid_paths10x_filtered.filter{ it[1] != null }.filter{ it[2] == null }.map{row -> tuple(row[0], row[1])}.set{ch_experimentid_paths10x_filtered_2}
                     post_ch_experimentid_paths10x_raw.filter{ it[1] != null }.filter{ it[2] != null }.map{row -> tuple(row[0],row[2])}.set{alt_input3}
@@ -113,7 +118,8 @@ workflow YASCP {
                         prepare_inputs.out.ch_experiment_npooled,
                         ch_experiment_filth5,
                         prepare_inputs.out.ch_experiment_donorsvcf_donorslist,
-                        channel__file_paths_10x)
+                        channel__file_paths_10x,
+                        vcf_input)
                     ch_poolid_csv_donor_assignments = main_deconvolution.out.ch_poolid_csv_donor_assignments
                     bam_split_channel = main_deconvolution.out.sample_possorted_bam_vireo_donor_ids
                     assignments_all_pools = main_deconvolution.out.assignments_all_pools

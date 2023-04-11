@@ -3,10 +3,9 @@ channels:
   - bioconda
   - defaults
 dependencies:
-  - debugpy>=1.2.1
   - numba
   - pyyaml>=5.3.1
-  - pandas<1.3
+  - pandas>=1.2.3
   - scipy>=1.6.2
   - numpy>=1.20.2
   - leidenalg>=0.8.3
@@ -20,8 +19,8 @@ dependencies:
   - tensorflow-gpu>=2.4.1
   - scikit-learn>=0.24
   - joblib>=1.0.1
-
+  - scanpy
   - pip
   - pip:
     - cellex>=1.2.1
-    - scanpy>=1.9
+    - git+https://github.com/wtsi-hgi/sccaf.git

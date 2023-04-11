@@ -243,11 +243,12 @@ process cellbender__remove_background {
   //     // use GPU
   if (params.utilise_gpu){
     label 'gpu'
+
 	// only one label here, otherwise bsub -R -M will be doubled..
 	// label 'process_high_memory'
     gpu_text_info = '--cuda'
   }else{
-    label 'process_high'
+    label 'process_medium'
     gpu_text_info = ''
   }
   
@@ -366,7 +367,7 @@ process cellbender__remove_background {
     # LD_PRELOAD to fix mkl/anaconda python error
     # cf. https://stackoverflow.com/questions/36659453/intel-mkl-fatal-error-cannot-load-libmkl-avx2-so-or-libmkl-def-so
     export LD_PRELOAD=/opt/conda/envs/conda_cellbender/lib/libmkl_core.so:/opt/conda/envs/conda_cellbender/lib/libmkl_sequential.so
-
+    #// nvidia-smi
     rm -fr plots
     mkdir txd_input
     ln --physical ${file_10x_barcodes} txd_input/barcodes.tsv.gz
@@ -473,6 +474,7 @@ process capture_cellbender_files{
     
   script:
   """
+  
     mkdir tmp1234
     mkdir tmp1234/cellbender
     cd tmp1234/cellbender
@@ -487,7 +489,7 @@ process capture_cellbender_files{
         fi        
     done
     cd ../..
-    capture_res_files_cb.py
+    capture_res_files_cb.py -res ${params.cellbender_resolution_to_use}
   """    
 
 }

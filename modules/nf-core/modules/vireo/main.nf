@@ -50,7 +50,7 @@ process VIREO {
       tuple  val(samplename), path("vireo_${samplename}/GT_donors.vireo.vcf.gz"), path("vireo_${samplename}/${samplename}.sample_summary.txt"),path("vireo_${samplename}/${samplename}__exp.sample_summary.txt"),path("vireo_${samplename}/donor_ids.tsv"),path(vcf_file),path(donor_gt_csi), emit: all_required_data
 
     script:
-      vcf_file = ""
+
       if (params.genotype_input.vireo_with_gt){
         vcf = " -d ${donors_gt_vcf} --forceLearnGT"
         vcf_file = donors_gt_vcf

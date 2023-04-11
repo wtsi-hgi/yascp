@@ -1,3 +1,5 @@
+
+
 process VACUTAINER_TO_DONOR_ID {
   tag "${study_label}.${pool_id}"
   label 'process_tiny'
@@ -150,7 +152,7 @@ process SUBSET_GENOTYPE {
 
 process SUBSET_GENOTYPE2 {
     tag "${samplename}.${sample_subset_file}"
-    label 'process_medium'
+    label 'process_low'
     publishDir "${params.outdir}/subset_genotypes/", mode: "${params.copy_mode}", pattern: "${samplename}.${sample_subset_file}.subset.vcf.gz"
 
 
@@ -199,19 +201,22 @@ process JOIN_CHROMOSOMES{
 
     input:
       tuple val(samplename), path(study_vcf_files),path(study_vcf_csi_files)
+      path(genome)
 
 
     output:
       tuple val(s2), path("${samplename}.bcf.gz"),path("${samplename}.bcf.gz.csi"), emit: joined_chromosomes_per_studytrance
 
     script:
+
       s1 = samplename.split('___')[0]
       s2 = samplename.split('___')[1]
       """
+
         fofn_input_subset.sh "${study_vcf_files}"
         bcftools concat --threads ${task.threads} -f ./fofn_vcfs.txt -Ob -o pre_${samplename}.bcf.gz
         bcftools index pre_${samplename}.bcf.gz
-        bcftools +fixref pre_${samplename}.bcf.gz -Ob -o ${samplename}.bcf.gz -- -d -f ${params.reference_assembly_fasta_dir}/genome.fa -m flip
+        bcftools +fixref pre_${samplename}.bcf.gz -Ob -o ${samplename}.bcf.gz -- -d -f ${genome}/genome.fa -m flip
         bcftools index ${samplename}.bcf.gz
       """
 }
@@ -251,11 +256,11 @@ process JOIN_STUDIES_MERGE{
         fofn_input_subset.sh "${study_vcf_files}"
         if [ \$(cat fofn_vcfs.txt | wc -l) -gt 1 ]; then
             echo 'yes'
-            bcftools merge -file-list ${study_vcf_files} -Ou | bcftools sort -Oz -o pre_${mode}_${mode2}_${samplename}.vcf.gz
+            bcftools merge -file-list ${study_vcf_files} -Ou | bcftools sort -T \$PWD -Oz -o pre_${mode}_${mode2}_${samplename}.vcf.gz
             bcftools index pre_${mode}_${mode2}_${samplename}.vcf.gz
         else
           echo 'no'
-          bcftools view ${study_vcf_files} | bcftools sort -Oz -o pre_${mode}_${mode2}_${samplename}.vcf.gz
+          bcftools view ${study_vcf_files} | bcftools sort -T \$PWD -Oz -o pre_${mode}_${mode2}_${samplename}.vcf.gz
           bcftools index pre_${mode}_${mode2}_${samplename}.vcf.gz
           
         fi
@@ -270,17 +275,18 @@ workflow SUBSET_WORKF{
     ch_ref_vcf
     donors_in_pools
     mode
+    genome
   main:
-      donors_in_pools.combine(ch_ref_vcf).set{all_GT_pannels_and_pools}
+      donors_in_pools.combine(ch_ref_vcf).unique().set{all_GT_pannels_and_pools}
       // subset genotypes per pool, per chromosome split.
       SUBSET_GENOTYPE2(all_GT_pannels_and_pools)
-      SUBSET_GENOTYPE2.out.subset_vcf_file.groupTuple().set{chromosome_vcfs_per_studypool}
+      SUBSET_GENOTYPE2.out.subset_vcf_file.unique().groupTuple().set{chromosome_vcfs_per_studypool}
       // combnie all the chromosomes per pool
       // chromosome_vcfs_per_studypool.view()
       // Now we combine all the chromosomes together.
-      JOIN_CHROMOSOMES(chromosome_vcfs_per_studypool)
-      JOIN_CHROMOSOMES.out.joined_chromosomes_per_studytrance.groupTuple().set{study_vcfs_per_pool}
-      study_vcfs_per_pool.subscribe {println "study_vcfs_per_pool:= ${it}\n"}
+      JOIN_CHROMOSOMES(chromosome_vcfs_per_studypool,genome)
+      JOIN_CHROMOSOMES.out.joined_chromosomes_per_studytrance.unique().groupTuple().set{study_vcfs_per_pool}
+      // study_vcfs_per_pool.subscribe {println "study_vcfs_per_pool:= ${it}\n"}
       // Merge all the pools.
       JOIN_STUDIES_MERGE(study_vcfs_per_pool,'Study_Merge',mode)
       JOIN_STUDIES_MERGE.out.merged_expected_genotypes.set{merged_expected_genotypes}

@@ -16,6 +16,8 @@ include { match_genotypes } from './match_genotypes'
 include {ENHANCE_STATS_GT_MATCH } from "$projectDir/modules/nf-core/modules/genotypes/main"
 include {SUBSET_WORKF} from "$projectDir/modules/nf-core/modules/subset_genotype/main"
 include {REPLACE_GT_DONOR_ID2 } from "$projectDir/modules/nf-core/modules/genotypes/main"
+include { RETRIEVE_RECOURSES } from "$projectDir/subworkflows/local/retrieve_recourses"
+
 include {VIREO_GT_FIX_HEADER; VIREO_ADD_SAMPLE_PREFIX; MERGE_GENOTYPES_IN_ONE_VCF as MERGE_GENOTYPES_IN_ONE_VCF_INFERED; MERGE_GENOTYPES_IN_ONE_VCF as MERGE_GENOTYPES_IN_ONE_VCF_SUBSET} from "$projectDir/modules/nf-core/modules/genotypes/main"
 include {collect_file as collect_file1;
         collect_file as collect_file2;
@@ -34,9 +36,20 @@ workflow  main_deconvolution {
 		ch_experiment_filth5
 		ch_experiment_donorsvcf_donorslist
         channel__file_paths_10x
+        vcf_input
 
     main:
 		log.info "#### running DECONVOLUTION workflow #####"
+
+        if (params.reference_assembly_fasta_dir=='https://yascp.cog.sanger.ac.uk/public/10x_reference_assembly'){
+            RETRIEVE_RECOURSES()  
+            genome = RETRIEVE_RECOURSES.out.reference_assembly
+        }else{
+            genome = "${params.reference_assembly_fasta_dir}"
+        }
+
+        genome.subscribe { println "genome: $it" }
+
         if (params.genotype_input.run_with_genotype_input) {
             // We have to produce a single vcf file for each individual pool.
             // Therefore we create 2 channels:
@@ -48,16 +61,12 @@ workflow  main_deconvolution {
             .set { donors_in_pools }
             
             // 2) All the vcfs provided to us. 
-            Channel.fromPath(
-            params.genotype_input.tsv_donor_panel_vcfs,
-            followLinks: true,
-            checkIfExists: true
-            ).splitCsv(header: true, sep: '\t')
+            vcf_input.splitCsv(header: true, sep: '\t')
             .map { row -> tuple(row.label, file(row.vcf_file_path), file("${row.vcf_file_path}.csi")) }
             .set { ch_ref_vcf }
 
             // This will subsequently result in a joint vcf file for all the cohorts listed for each of the pools that can be used in VIREO and/or GT matching algorythm.
-            SUBSET_WORKF(ch_ref_vcf,donors_in_pools,'AllExpectedGT')
+            SUBSET_WORKF(ch_ref_vcf,donors_in_pools,'AllExpectedGT',genome)
             merged_expected_genotypes = SUBSET_WORKF.out.merged_expected_genotypes
             MERGE_GENOTYPES_IN_ONE_VCF_SUBSET(SUBSET_WORKF.out.study_merged_vcf.collect(),'subset')
 
@@ -129,6 +138,7 @@ workflow  main_deconvolution {
         full_vcf.filter { experiment, cellsnp, npooled, t,ti -> npooled == '1' }.set{not_deconvoluted}
 
         //Vireo creates per pool vcf vit donor0 etc, or if genotypes are provided genotype IDs will be placed there.
+        full_vcf2.subscribe { println "full_vcf2: $it" }
         VIREO(full_vcf2)
         //But to make it consistent we still randomly assign donor IDs per pool for each of the names.
         VIREO.out.all_required_data.set{replacement_input}
@@ -136,7 +146,7 @@ workflow  main_deconvolution {
         replacement_input.combine(vireo_with_gt).set{vir_repl_input}
         REPLACE_GT_DONOR_ID2(vir_repl_input)
         vir_repl_input.view()
-        VIREO_GT_FIX_HEADER(REPLACE_GT_DONOR_ID2.out.infered_vcf)
+        VIREO_GT_FIX_HEADER(REPLACE_GT_DONOR_ID2.out.infered_vcf,genome)
         VIREO_ADD_SAMPLE_PREFIX(VIREO_GT_FIX_HEADER.out.infered_vcf)
         MERGE_GENOTYPES_IN_ONE_VCF_INFERED(VIREO_ADD_SAMPLE_PREFIX.out.infered_vcf.collect(),'infered')
         
@@ -150,7 +160,7 @@ workflow  main_deconvolution {
                 .combine(ch_ref_vcf)
                 .set { gt_math_pool_against_panel_input }
 
-            match_genotypes(vireo_out_sample_donor_vcf,merged_expected_genotypes,VIREO_GT_FIX_HEADER.out.gt_pool,gt_math_pool_against_panel_input)
+            match_genotypes(vireo_out_sample_donor_vcf,merged_expected_genotypes,VIREO_GT_FIX_HEADER.out.gt_pool,gt_math_pool_against_panel_input,genome,ch_ref_vcf)
             gt_matches = match_genotypes.out.donor_match_table.collect()
 
             ENHANCE_STATS_GT_MATCH(match_genotypes.out.donor_match_table_enhanced)

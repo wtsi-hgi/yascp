@@ -31,11 +31,11 @@ process MERGE_GENOTYPES_IN_ONE_VCF{
 
       if [ \$(cat fofn_vcfs.txt | wc -l) -gt 1 ]; then
           echo 'yes'
-          bcftools merge --force-samples -file-list ${vireo_gt_vcf} -Ou | bcftools sort -Oz -o ${mode}_merged_vcf_file_all_pools.vcf.gz
+          bcftools merge --force-samples -file-list ${vireo_gt_vcf} -Ou | bcftools sort -T \$PWD -Oz -o ${mode}_merged_vcf_file_all_pools.vcf.gz
           bcftools index ${mode}_merged_vcf_file_all_pools.vcf.gz
       else
         echo 'no'
-        bcftools view ${vireo_gt_vcf} | bcftools sort -Oz -o ${mode}_merged_vcf_file_all_pools.vcf.gz
+        bcftools view ${vireo_gt_vcf} | bcftools sort -T \$PWD -Oz -o ${mode}_merged_vcf_file_all_pools.vcf.gz
         bcftools index ${mode}_merged_vcf_file_all_pools.vcf.gz
         
       fi
@@ -88,6 +88,7 @@ process VIREO_GT_FIX_HEADER
 
   input:
     tuple val(pool_id), path(vireo_gt_vcf)
+    path(genome)
 
   output:
     tuple val(pool_id), path("${vireo_fixed_vcf}"), path("${vireo_fixed_vcf}.tbi"), emit: gt_pool
@@ -97,11 +98,6 @@ process VIREO_GT_FIX_HEADER
   sorted_vcf = "${pool_id}_vireo_srt.vcf.gz"
   vireo_fixed_vcf = "${pool_id}_headfix_vireo.vcf.gz"
 
-  if (params.reference_assembly_fasta_dir='"https://yascp.cog.sanger.ac.uk/public/10x_reference_assembly"'){
-      genome = "${params.outdir}/recourses/10x_reference_assembly/genome.fa"
-  }else{
-      genome = "${params.reference_assembly_fasta_dir}/genome.fa"
-  }
 
   """
     # fix header of vireo VCF
@@ -125,7 +121,7 @@ process VIREO_GT_FIX_HEADER
     bcftools reheader -h header.txt ${sorted_vcf} | \
     bcftools view -Oz -o pre_${vireo_fixed_vcf}
     tabix -p vcf pre_${vireo_fixed_vcf}
-    bcftools +fixref pre_${vireo_fixed_vcf} -Oz -o ${vireo_fixed_vcf} -- -d -f ${genome} -m flip
+    bcftools +fixref pre_${vireo_fixed_vcf} -Oz -o ${vireo_fixed_vcf} -- -d -f ${genome}/genome.fa -m flip
     tabix -p vcf ${vireo_fixed_vcf}
 
 
@@ -215,7 +211,7 @@ process GT_MATCH_POOL_IBD
       container "mercury/wtsihgi-nf_yascp_plink1-1.0"
   }
 
-  label 'process_tiny'
+  label 'process_low'
 
   input:
     tuple val(pool_id), path(vireo_gt_vcf)
@@ -242,7 +238,7 @@ process GT_MATCH_POOL_AGAINST_PANEL
       container "mercury/wtsihgi-nf_yascp_htstools-1.1"
   }
 
-  label 'process_medium'
+  label 'process_low'
   //when: params.vireo.run_gtmatch_aposteriori
 
   input:
@@ -472,18 +468,18 @@ workflow MATCH_GT_VIREO {
     // VIREO header causes problems downstream
 
     // ch_gt_pool_ref_vcf.subscribe { println "match_genotypes: ch_gt_pool_ref_vcf = ${it}\n" }
-
+    // gt_math_pool_against_panel_input.subscribe { println "match_genotypes: gt_math_pool_against_panel_input = ${it}\n" }
     // now match genotypes against a panels
     GT_MATCH_POOL_AGAINST_PANEL(gt_math_pool_against_panel_input)
 
     // group by panel id
-    GT_MATCH_POOL_AGAINST_PANEL.out.gtcheck_results
+    GT_MATCH_POOL_AGAINST_PANEL.out.gtcheck_results.unique()
       .groupTuple()
       .set { gt_check_by_panel }
-    
+    gt_check_by_panel.subscribe { println "gt_check_by_panel: gt_check_by_panel = ${it}\n" }
 
     ASSIGN_DONOR_FROM_PANEL(gt_check_by_panel)
-    ASSIGN_DONOR_FROM_PANEL.out.gtcheck_assignments
+    ASSIGN_DONOR_FROM_PANEL.out.gtcheck_assignments.unique()
       .groupTuple()
       .set{ ch_donor_assign_panel }
     // ch_donor_assign_panel.subscribe {println "ASSIGN_DONOR_OVERALL: ch_donor_assign_panel = ${it}\n"}

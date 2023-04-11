@@ -72,8 +72,9 @@ workflow CELLBENDER {
         )
         
         // Correct counts matrix to remove ambient RNA
+        cellbender__rb__get_input_cells.out.cb_input.subscribe { println "cellbender__rb__get_input_cells: $it" }
         cellbender__remove_background(
-             outdir,
+            outdir,
             cellbender__rb__get_input_cells.out.cb_input,
             params.cellbender_rb.epochs.value,
             params.cellbender_rb.learning_rate.value,
