@@ -1,3 +1,4 @@
+rm ./fofn_vcfs.txt
 IN="$1"
 IFS=' ' read -ra ADDR <<< "$IN"
 mails=$(echo $IN | tr " " "\n")

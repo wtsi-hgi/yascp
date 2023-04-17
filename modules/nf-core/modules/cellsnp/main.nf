@@ -43,7 +43,8 @@ process CELLSNP {
         file(region_vcf)
 
     output:
-    tuple val(samplename), file("cellsnp_${samplename}"), emit: cellsnp_output_dir
+      tuple val(samplename), file("cellsnp_${samplename}"), emit: cellsnp_output_dir
+      tuple val(samplename), path("cellsnp_${samplename}/cellSNP.cells.vcf.gz"), emit: cell_vcfs
 
     script:
     if (n_pooled=='1'){

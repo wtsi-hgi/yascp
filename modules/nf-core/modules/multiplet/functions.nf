@@ -10,22 +10,18 @@ process make_cellmetadata_pipeline_input {
     //tag { output_dir }
     //cache false        // cache results from run
 
-    publishDir  path: "${outdir}",
+    publishDir  path: "${params.outdir}/multiplet.method=scrublet",
                 saveAs: {filename -> filename.replaceAll("-", "")},
                 mode: "${params.copy_mode}",
                 overwrite: "true"
 
     input:
-        val(outdir_prev)
         path("*multiplet_calls_published.txt")
 
     output:
-        val(outdir, emit: outdir)
         path('file_cellmetadata.tsv', emit: file__cellmetadata)
 
     script:
-
-        outdir = "${outdir_prev}"
 
         """
         # Note: the default paste delim is tab

@@ -95,14 +95,15 @@ def main():
     # we look fo partial patterns in dataset as ELGH samples is typically designed in this way.
     # example mapping - 15001506221453 - full id = 
     for m1 in all_maped_samples:
-        d2 = Data_vcfsamples[Data_vcfsamples['samples'].str.contains(str(m1))]
-        if len(d2)>0:
-          i2 = d2.values[0][0]
-          Interset.add(i2)
+        if(m1!=''):
+            d2 = Data_vcfsamples[Data_vcfsamples['samples'].str.contains(str(m1))]
+            if len(d2)>0:
+                i2 = d2.values[0][0]
+                Interset.add(i2)
     Interset = pd.DataFrame(Interset,columns=['samples'])
-    if len(Interset)>0:
-        Interset=Interset.sort_values(by=['samples'])
-        Interset.to_csv(output_file,index=False,header=False)
+    # if len(Interset)>0:
+    Interset=Interset.sort_values(by=['samples'])
+    Interset.to_csv(output_file,index=False,header=False)
     print('Done')
 
 

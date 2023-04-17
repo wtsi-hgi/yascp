@@ -28,6 +28,8 @@ workflow Relationships_Between_Infered_Expected {
       JOIN_INFERED_EXPECTED_MERGE.out.merged_expected_genotypes.map { row -> tuple(row[0], row[1]) }
       .set { sample_name_vcf_no_csi }
       
+      sample_name_vcf_no_csi.subscribe { println "sample_name_vcf_no_csi: $it" }
+      
       GT_MATCH_INFERED_EXPECTED(sample_name_vcf_no_csi,'Expected_Infered',mode)
     
       GT_MATCH_INFERED_EXPECTED.out.plink_ibd.combine(donor_match_table, by: 0).set{ibd_genome_mix}
