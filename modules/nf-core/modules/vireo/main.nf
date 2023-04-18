@@ -19,6 +19,7 @@ process CAPTURE_VIREO{
 
 
 
+
 process VIREO {
     tag "${samplename}"
     label 'process_high'
@@ -48,11 +49,12 @@ process VIREO {
       path("vireo_${samplename}/${samplename}.sample_summary.txt"), emit: sample_summary_tsv
       path("vireo_${samplename}/${samplename}__exp.sample_summary.txt"), emit: sample__exp_summary_tsv
       tuple  val(samplename), path("vireo_${samplename}/GT_donors.vireo.vcf.gz"), path("vireo_${samplename}/${samplename}.sample_summary.txt"),path("vireo_${samplename}/${samplename}__exp.sample_summary.txt"),path("vireo_${samplename}/donor_ids.tsv"),path(vcf_file),path(donor_gt_csi), emit: all_required_data
-
+      tuple val(samplename), path("sub_${samplename}_Expected.vcf.gz"), emit: exp_sub_gt optional true
     script:
-
+      vcf_file = ""
       if (params.genotype_input.vireo_with_gt){
-        vcf = " -d ${donors_gt_vcf} --forceLearnGT"
+        vcf = " -d sub_${samplename}_Expected.vcf.gz --forceLearnGT"
+        subset = "bcftools view ${donors_gt_vcf} -R ${cell_data}/cellSNP.cells.vcf.gz -Oz -o sub_${samplename}_Expected.vcf.gz"
         vcf_file = donors_gt_vcf
         com2 = "cd vireo_${samplename} && ln -s ../${donors_gt_vcf} GT_donors.vireo.vcf.gz"
         com2 = ""
@@ -60,13 +62,14 @@ process VIREO {
          vcf = ""
          vcf_file = donors_gt_vcf
          com2 = ""
+         subset=""
       }
 
     """
 
       umask 2 # make files group_writable
 
-      
+      ${subset}
       vireo -c $cell_data -N $n_pooled -o vireo_${samplename} ${vcf} -t GT --randSeed 1 -p $task.cpus --nInit 200
       # add samplename to summary.tsv,
       # to then have Nextflow concat summary.tsv of all samples into a single file:

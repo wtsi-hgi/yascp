@@ -269,8 +269,8 @@ cell_assignments = '/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_U
 # CRD='CRD_CMB13086618'
 cell_vcf = '/lustre/scratch123/hgi/teams/hgi/mo11/tmp_projects/cellsnp_optimisations/work/runs/CRD_CMB13086618__20__genome1K_phase3_SNP_AF5e2_chr1toX_hg38_vcf_gz/cellsnp_CRD_CMB13086618__20__genome1K_phase3_SNP_AF5e2_chr1toX_hg38_vcf_gz/cellSNP.cells.vcf.gz'
 donor_assignments = f'/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/qc/Cardinal_45596_Aug_22_2022/results_rsync2/results_rsync3/results/gtmatch/CRD_CMB13086618/PiHAT_Stats_File_CRD_CMB13086618.csv'
-gt_match_vcf = f'/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/qc/Cardinal_45596_Aug_22_2022/results_rsync copy/results/subset_genotypes/Genotype_CRD_CMB13086618/InferedMerge_InferedGTMatched_CRD_CMB13086618.vcf.gz'
-expected_vcf = f'/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/qc/Cardinal_45596_Aug_22_2022/results_rsync copy/subset_genotypes/Genotype_CRD_CMB13086618/InferedMerge_InferedExpected_CRD_CMB13086618.vcf.gz'
+gt_match_vcf = f'/lustre/scratch123/hgi/teams/hgi/mo11/tmp_projects/cellsnp_optimisations/work/files/Study_Merge_sorted_Expected_CRD_CMB13086618.vcf.gz'
+expected_vcf = f'/lustre/scratch123/hgi/teams/hgi/mo11/tmp_projects/cellsnp_optimisations/work/files/Study_Merge_sorted_Expected_CRD_CMB13086618.vcf.gz'
 cell_assignments = f'/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/qc/Cardinal_45596_Aug_22_2022/results_rsync copy/results/deconvolution/vireo/CRD_CMB13086616/donor_ids.tsv'
 
 
