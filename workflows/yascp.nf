@@ -119,12 +119,12 @@ workflow YASCP {
                         prepare_inputs.out.ch_experiment_donorsvcf_donorslist,
                         channel__file_paths_10x,
                         vcf_input)
-                    // ch_poolid_csv_donor_assignments = main_deconvolution.out.ch_poolid_csv_donor_assignments
-                    // bam_split_channel = main_deconvolution.out.sample_possorted_bam_vireo_donor_ids
-                    // assignments_all_pools = main_deconvolution.out.assignments_all_pools
-                    // if (!params.skip_merge){
-                    //     MERGE_SAMPLES(main_deconvolution.out.out_h5ad,main_deconvolution.out.vireo_out_sample__exp_summary_tsv,'h5ad')
-                    // }
+                    ch_poolid_csv_donor_assignments = main_deconvolution.out.ch_poolid_csv_donor_assignments
+                    bam_split_channel = main_deconvolution.out.sample_possorted_bam_vireo_donor_ids
+                    assignments_all_pools = main_deconvolution.out.assignments_all_pools
+                    if (!params.skip_merge){
+                        MERGE_SAMPLES(main_deconvolution.out.out_h5ad,main_deconvolution.out.vireo_out_sample__exp_summary_tsv,'h5ad')
+                    }
                 }else{
                     channel__metadata = prepare_inputs.out.channel__metadata
                     if (!params.skip_merge){
@@ -133,10 +133,10 @@ workflow YASCP {
                     assignments_all_pools = Channel.from("$projectDir/assets/fake_file.fq")
                 }
                 // TODO: Here add a fundtion to take an extra h5ad and merge it together with the current run. This will be required for the downstream analysis when we want to integrate multiple datasets and account for the batches in these
-                // if (!params.skip_merge){
-                //     file__anndata_merged = MERGE_SAMPLES.out.file__anndata_merged
-                //     file__cells_filtered = MERGE_SAMPLES.out.file__cells_filtered
-                // }
+                if (!params.skip_merge){
+                    file__anndata_merged = MERGE_SAMPLES.out.file__anndata_merged
+                    file__cells_filtered = MERGE_SAMPLES.out.file__cells_filtered
+                }
             }else{
                 // This option skips all the deconvolution and and takes a preprocessed yascp h5ad file to run the downstream clustering and celltype annotation.
                 log.info '''----Skipping Preprocessing since we already have prepeared h5ad input file----'''
@@ -175,11 +175,11 @@ workflow YASCP {
             // ###################################
             // ###################################
 
-            // if (params.celltype_assignment.run_celltype_assignment){
-            //     celltype(file__anndata_merged,file__cells_filtered)
-            //     file__anndata_merged=celltype.out.file__anndata_merged2
+            if (params.celltype_assignment.run_celltype_assignment){
+                celltype(file__anndata_merged,file__cells_filtered)
+                file__anndata_merged=celltype.out.file__anndata_merged2
                 
-            // }
+            }
 
             // ###################################
             // ################################### Readme
@@ -189,14 +189,14 @@ workflow YASCP {
             // ###################################
             // ###################################
 
-            // if (!params.skip_qc){
-            //     qc(file__anndata_merged,file__cells_filtered,assignments_all_pools) //This runs the Clusterring and qc assessments of the datasets.
-            //     process_finish_check_channel = qc.out.LI
-            //     file__anndata_merged = qc.out.file__anndata_merged
-            // }else{
-            //     // if we are not running qc step we need to account for an dummy channel. 
-            //     process_finish_check_channel = Channel.of([1, 'dummy'])
-            // }
+            if (!params.skip_qc){
+                qc(file__anndata_merged,file__cells_filtered,assignments_all_pools) //This runs the Clusterring and qc assessments of the datasets.
+                process_finish_check_channel = qc.out.LI
+                file__anndata_merged = qc.out.file__anndata_merged
+            }else{
+                // if we are not running qc step we need to account for an dummy channel. 
+                process_finish_check_channel = Channel.of([1, 'dummy'])
+            }
 
             // // ###################################
             // // ################################### Readme
@@ -205,9 +205,9 @@ workflow YASCP {
             // // ###################################
             // // ###################################
 
-            // if (params.genotype_input.run_with_genotype_input){
-            //     eQTL(file__anndata_merged,assignments_all_pools)
-            // }
+            if (params.genotype_input.run_with_genotype_input){
+                eQTL(file__anndata_merged,assignments_all_pools)
+            }
             
 
         }else{
@@ -231,12 +231,12 @@ workflow YASCP {
         // ###################################
         // ###################################
 
-        // if (!params.skip_handover){
-        //     data_handover(params.output_dir,
-        //                     process_finish_check_channel,
-        //                     ch_poolid_csv_donor_assignments,
-        //                     bam_split_channel) 
-        // }
+        if (!params.skip_handover){
+            data_handover(params.output_dir,
+                            process_finish_check_channel,
+                            ch_poolid_csv_donor_assignments,
+                            bam_split_channel) 
+        }
                         
                         
 }

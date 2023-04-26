@@ -2,7 +2,7 @@
 
 __date__ = '2023-04-14'
 __version__ = '0.0.1'
-# python -m debugpy --listen 0.0.0.0:5678 --wait-for-client /lustre/scratch125/humgen/teams/hgi/mo11/oneK1k/extra0/yascp/bin/concordance_calculations_donor_exclusive_work.py --cpus 6 --cell_vcf cellSNP.cells.vcf.gz --donor_assignments stats_pool12_gt_donor_assignments.csv --gt_match_vcf Study_Merge_GTMatchedSubset_EUY8DDDZD_out.vcf.gz --expected_vcf Study_Merge_AllExpectedGT_SYIDTL7VN_out.vcf.gz --cell_assignments GT_replace_donor_ids_true.tsv
+
 import argparse
 import sys
 import importlib.util
@@ -17,6 +17,76 @@ from multiprocessing import Lock
 import logging
 import os
 
+class Concordances:
+        def __init__(self, donor_assignments_table,cell_assignments_table,exclusive_don_variants,exclusive_cell_variants):
+            self.cell_concordance_table = {}
+            self.donor_assignments_table=donor_assignments_table
+            self.cell_assignments_table=cell_assignments_table
+            self.exclusive_don_variants=exclusive_don_variants
+            self.exclusive_cell_variants=exclusive_cell_variants
+
+        def append_results_cell_concordances(self,result):
+            try:
+                percent_concordant = result[2]/(result[3]+result[2])*100
+            except:
+                percent_concordant = 0
+            
+            try:
+                percent_discordant = result[3]/(result[3]+result[2])*100
+            except:
+                percent_discordant = 0
+            count=result[7]
+            self.cell_concordance_table[f'{result[0]} --- {result[1]}'] = {'GT 1':result[0],
+                                                                    'GT 2':result[1],
+                                                                    'Nr_Concordant':result[2],
+                                                                    'Nr_Discordant':result[3],
+                                                                    'Percent Concordant':percent_concordant,
+                                                                    'Percent Discordant':percent_discordant,
+                                                                    'NrTotal_Overlapping_sites between two gewnotypes':result[4],
+                                                                    'Nr_donor_distinct_sites_within_pool_individuals':result[6],
+                                                                    'Number_of_sites_that_are_donor_concordant_and_exclusive':result[5],
+                                                                    }
+
+        def conc_table(self):
+            donor_assignments_table=self.donor_assignments_table
+            cell_assignments_table=self.cell_assignments_table
+            exclusive_don_variants=self.exclusive_don_variants
+            exclusive_cell_variants= self.exclusive_cell_variants
+            
+            pool = mp.Pool(cpus)
+            for i,row1 in donor_assignments_table.iterrows():
+                donor_in_question = row1['donor_query']
+                donor_gt_match = row1['donor_gt']
+                # print(donor_gt_match)
+                if (donor_gt_match=='NONE'):
+                    continue
+                Cells_to_keep_pre = list(set(cell_assignments_table.loc[cell_assignments_table['donor_id']==donor_in_question,'cell']))
+                try:
+                    # Now we subset this down to each of the uniqie variants per donor and check which of the concordant sites are exclusive to donor.
+                    dds = donor_distinct_sites[donor_gt_match]
+                except:
+                    continue
+                count = 0
+                for cell1 in Cells_to_keep_pre:
+                    count+=1
+                    expected_vars = exclusive_don_variants[donor_gt_match]
+                    cell_vars = exclusive_cell_variants[cell1]
+                    self.cell_concordance_table[f'{cell1} --- {donor_gt_match}']={}
+                    pool.apply_async(self.concordance_dable_production, args=([expected_vars,cell_vars,cell1,donor_gt_match,dds]),callback=self.append_results_cell_concordances)          
+            pool.close()
+            pool.join()
+            return self.cell_concordance_table
+        
+        def concordance_dable_production(self,expected_vars,cell_vars,cell1,donor_gt_match,dds,count):
+            Nr_donor_distinct_sites = len(dds)
+            Concordant_Sites, Discodrant_sites, Total_Overlappin_sites = retrieve_concordant_discordant_sites(expected_vars,cell_vars)
+            Nr_Concordant = len(Concordant_Sites)
+            Nr_Discordant = len(Discodrant_sites)
+            Nr_Total_Overlapping_sites = len(Total_Overlappin_sites)
+            Number_of_sites_that_are_donor_concordant_and_exclusive = len(set(dds).intersection(set(Concordant_Sites)))
+            return [cell1,donor_gt_match,Nr_Concordant,Nr_Discordant,Nr_Total_Overlapping_sites,Number_of_sites_that_are_donor_concordant_and_exclusive,Nr_donor_distinct_sites,count]
+
+
 class VCF_Loader:
     
     def __init__(self, vcf_file, biallelic_only=True,
@@ -25,20 +95,16 @@ class VCF_Loader:
         self.load_sample = True
         self.biallelic_only = biallelic_only
         self.sparse = sparse
-        self.record_dict={}
-        self.reset()
         self.format_list = format_list
-        self.exclusive_donor_variants = {}
+        self.reset()
         self.curently_pushing =[] #this is a lock value to check if rhe curent field is updated so to avaid the race for update
         self.last_count=-1
-        self.reset_c()
-    
-    def reset_c(self):
-        self.record_times=0
-        
+        self.record_dict = {}
+        self.exclusive_donor_variants_base={}
+
     def reset(self):
         self.exclusive_donor_variants ={}
-                
+        
     def myfunc(self):
         print(f"Hello my name is {self.biallelic_only}" )
         
@@ -63,16 +129,12 @@ class VCF_Loader:
             c = list(zip(obs_with_gt, list_val_with_gt))
             random.shuffle(c)
             obs_with_gt, list_val_with_gt = zip(*c)
-            # self.append_results([obs_with_gt,list_val_with_gt,idx,list_val,count])
 
         return [obs_with_gt,list_val_with_gt,idx,list_val,count]
 
-    def set_results(self,to_set,id):
-        # Recod to disk to save the loading mmeory time.
-        with open(f'tmp_{id}.pkl', 'wb') as f:
-            pickle.dump(to_set, f)
-        self.record_dict[id]=f'tmp_{id}.pkl'
-    
+    # def reset_data(self):
+        
+
     def append_results(self,result):
         # exclusive_donor_variants
         obs_with_gt= result[0]
@@ -80,58 +142,44 @@ class VCF_Loader:
         idx = result[2]
         list_val = result[3]
         count = result[4]
-        # print(count)
-        # print(self.record_times)
-        # if
-        # print(self.last_count)
+        print(count)
+        print(self.last_count)
         count11=0
-        # r = random.random()
+        r = random.random()
         # Issue is that this slows down after number of entries is recorded. So recoding takes longer and longer.
         # every 500 itterations we push the data to a dictionary, later we combine these together.
-        if (count % 300 == 0):
-            print(f'recording and resetting memory {count}')
-            # self.record_dict[count]=self.exclusive_donor_variants
-            self.set_results(self.exclusive_donor_variants,count)
-            self.reset()  
-            self.reset_c()        
         
+        if (count % 500 == 0):
+            print('recording and resetting')
+            self.record_dict[count]=self.exclusive_donor_variants
+            self.reset()
+            # self.exclusive_donor_variants=__vals
+        if (count==self.last_count):
+            print('recording and resetting')
+            self.record_dict[count]=self.exclusive_donor_variants
+            self.reset()
+            # self.exclusive_donor_variants=__vals
+        tic = time.perf_counter()
+
         for ob_id in obs_with_gt:
             donor_loc_in_list = count11
             alleles = list_val_with_gt[donor_loc_in_list].split(':')[idx]
             if alleles!='.':
                 ids = "_".join([list_val[x] for x in [0, 1, 3, 4]])
                 donor_var = f"{ids}_{alleles}"
-                while ob_id in self.curently_pushing:
-                    time.sleep(r*0.01)
+                # while ob_id in self.curently_pushing:
+                #     time.sleep(r*0.01)
                 self.curently_pushing.append(ob_id)           
                 try:
                     self.exclusive_donor_variants[ob_id].add(donor_var)
-                    self.record_times=self.record_times+1
                 except:
                     self.exclusive_donor_variants[ob_id]=set()
                     self.exclusive_donor_variants[ob_id].add(donor_var)
-                    self.record_times=self.record_times+1
                 self.curently_pushing.remove(ob_id)
-                # self.exclusive_donor_variants['CTGAAACGTAAGTTCC-1']
             count11+=1 
+        toc = time.perf_counter()
+        print(f"Loadiong took {toc - tic:0.4f} seconds")
 
-    def combine_written_files(self):
-        to_export = self.exclusive_donor_variants
-        for val1 in self.record_dict.values():
-            # here remove the int files.
-            print(f"merging temp file: {val1}")
-            with open(val1, 'rb') as f:
-                loaded_dict = pickle.load(f)
-                for k1 in loaded_dict.keys():
-                    try:
-                        to_export[k1]=to_export[k1].union(loaded_dict[k1])
-                    except:
-                        to_export[k1]=set()
-                        to_export[k1]=to_export[k1].union(loaded_dict[k1])
-            os.remove(val1)
-        return to_export
-    
-    
     def load_VCF_batch_paralel(self):
         """
         Load whole VCF file by utilising multiple cores to speed up loading of large cell files
@@ -168,8 +216,8 @@ class VCF_Loader:
         count=0 #57077    
         for line in infile:
             count+=1
-            # if count>10000:
-            #     break
+            if count>3000:
+                break
             if is_gzip:
                 line = line.decode('utf-8')
             if line.startswith("#"):
@@ -180,6 +228,7 @@ class VCF_Loader:
                         obs_ids = line.rstrip().split("\t")[9:]
                         for ob_id in obs_ids:
                             self.exclusive_donor_variants[ob_id]=set()
+                            self.exclusive_donor_variants_base[ob_id]=set()
                     key_ids = line[1:].rstrip().split("\t")[:8]
                     for _key in key_ids:
                         FixedINFO[_key] = []
@@ -191,10 +240,7 @@ class VCF_Loader:
         self.last_count=count
         pool.close()
         pool.join()
-        
-        output = self.combine_written_files()
-        
-        return output
+        return self.exclusive_donor_variants
 
 
 """Run CLI."""
@@ -263,8 +309,6 @@ cell_vcf = '/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/qc/Ca
 donor_assignments = '/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/qc/Cardinal_46291_Nov_29_2022/results_rsync2_copy/results/gtmatch/CRD_CMB13259712/PiHAT_Stats_File_CRD_CMB13259712.csv'
 gt_match_vcf = '/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/qc/Cardinal_46291_Nov_29_2022/results_rsync2/results/subset_genotypes/Genotype_CRD_CMB13259712/InferedMerge_InferedGTMatched_CRD_CMB13259712.vcf.gz'
 expected_vcf = '/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/qc/Cardinal_46291_Nov_29_2022/results_rsync2/results/subset_genotypes/Genotype_CRD_CMB13259712/InferedMerge_InferedExpected_CRD_CMB13259712.vcf.gz'
-cell_assignments = '/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/qc/Cardinal_46291_Nov_29_2022/results_rsync2_copy/results/deconvolution/vireo_gt_fix/CRD_CMB13259712/GT_replace_donor_ids_false.tsv'
-
 
 options = parser.parse_args()
 cpus=int(options.cpus)
@@ -630,7 +674,6 @@ def concordance_table(donor_cell_vcf,donor_genotype_replicated,donor_in_question
 def norm_genotypes(expected_vars):
     expected_vars = pd.DataFrame(expected_vars)
     expected_vars['ids'] = expected_vars[0].str.split("_").str[:-1].str.join('_')
-    expected_vars['pos'] = expected_vars[0].str.split("_").str[:2].str.join('_')
     expected_vars['vars'] = expected_vars[0].str.split("_").str[-1].str.join('')
     expected_vars['vars'] = expected_vars['vars'].str.replace('|','/',regex=False)
     expected_vars = expected_vars[expected_vars['vars']!='./.']
@@ -649,12 +692,8 @@ def retrieve_concordant_discordant_sites(expected_vars,cell_vars):
     cell_vars2 = cell_vars_norm[cell_vars_norm['ids'].isin(Total_Overlappin_sites)]
     Concordant_Sites = set(cell_vars2['combo']).intersection(set(expected_vars2['combo']))
     Discodrant_sites = set(cell_vars2['combo'])-set(expected_vars2['combo'])
-    disc = pd.DataFrame(Discodrant_sites,columns=['combo_x'])
-    df_cd = pd.merge(cell_vars2, expected_vars2, how='inner', on = 'pos')
-    disc2= pd.merge(disc, df_cd, how='inner', on = 'combo_x')
-    disc2['expected_retrieved'] = disc2['0_x']+'::'+disc2['0_y']
-    disc_sites = ';'.join(disc2['expected_retrieved'])
-    return Concordant_Sites, Discodrant_sites, Total_Overlappin_sites, disc_sites
+    
+    return Concordant_Sites, Discodrant_sites, Total_Overlappin_sites
 
 def donor_exclusive_sites(exclusive_don_variants2):
     # Here we generate a function for determining the sites that are donor exclusive
@@ -664,6 +703,7 @@ def donor_exclusive_sites(exclusive_don_variants2):
         to_compare = []
         for col2 in exclusive_don_variants2.keys():
             if col1==col2:
+                
                 # we set this as the unique entry
                 # print('1')
                 to_compare = set(exclusive_don_variants2[col2])
@@ -719,18 +759,17 @@ def append_results_cell_concordances(result):
                                                             'NrTotal_Overlapping_sites between two gewnotypes':result[4],
                                                             'Nr_donor_distinct_sites_within_pool_individuals':result[6],
                                                             'Number_of_sites_that_are_donor_concordant_and_exclusive':result[5],
-                                                            'Discordant Site Identities':result[8]
                                                             }
     
 
-def concordance_dable_production(expected_vars,cell_vars,cell1,donor_gt_match,dds,count):
+def concordance_dable_production(expected_vars,cell_vars,cell1,donor_gt_match,dds):
     Nr_donor_distinct_sites = len(dds)
-    Concordant_Sites, Discodrant_sites, Total_Overlappin_sites,discordant_sites = retrieve_concordant_discordant_sites(expected_vars,cell_vars)
+    Concordant_Sites, Discodrant_sites, Total_Overlappin_sites = retrieve_concordant_discordant_sites(expected_vars,cell_vars)
     Nr_Concordant = len(Concordant_Sites)
     Nr_Discordant = len(Discodrant_sites)
     Nr_Total_Overlapping_sites = len(Total_Overlappin_sites)
     Number_of_sites_that_are_donor_concordant_and_exclusive = len(set(dds).intersection(set(Concordant_Sites)))
-    return [cell1,donor_gt_match,Nr_Concordant,Nr_Discordant,Nr_Total_Overlapping_sites,Number_of_sites_that_are_donor_concordant_and_exclusive,Nr_donor_distinct_sites,count,discordant_sites]
+    return [cell1,donor_gt_match,Nr_Concordant,Nr_Discordant,Nr_Total_Overlapping_sites,Number_of_sites_that_are_donor_concordant_and_exclusive,Nr_donor_distinct_sites]
 
 def conc_table(donor_assignments_table,cell_assignments_table,exclusive_don_variants,exclusive_cell_variants):
     pool = mp.Pool(cpus)
@@ -763,15 +802,11 @@ def conc_table(donor_assignments_table,cell_assignments_table,exclusive_don_vari
 
 if __name__ == "__main__":
  
-    print('---Genotype loader init----')    
-    loader2 = VCF_Loader(gt_match_vcf, biallelic_only=True,
-                    sparse=False, format_list=['GT'])
-    GT_Matched_variants = loader2.load_VCF_batch_paralel()
-    del loader2
-    
-     
+ 
     print('---Lets load cell vcf----')
     tic = time.perf_counter()
+    # toc = time.perf_counter()
+    # print(f"Loadiong took {toc - tic:0.4f} seconds")
     loader1 = VCF_Loader(cell_vcf, biallelic_only=True,
                         sparse=False, format_list=['GT'])
     exclusive_cell_variants = loader1.load_VCF_batch_paralel()
@@ -785,7 +820,12 @@ if __name__ == "__main__":
     donor_assignments_table = pd.read_csv(donor_assignments)
     cell_assignments_table = pd.read_csv(cell_assignments,sep='\t')
     
-
+    print('---Genotype loader init----')    
+    
+    loader2 = VCF_Loader(gt_match_vcf, biallelic_only=True,
+                    sparse=False, format_list=['GT'])
+    GT_Matched_variants = loader2.load_VCF_batch_paralel()
+    del loader2
     print('---Variant1 files loaded----')
     loader3 = VCF_Loader(expected_vcf, biallelic_only=True,
                     sparse=False, format_list=['GT'])
@@ -793,7 +833,7 @@ if __name__ == "__main__":
     del loader3
     
     
-    # GT_Matched_variants2 = load_VCF_batch(gt_match_vcf, biallelic_only=True,
+    # GT_Matched_variants = load_VCF_batch(gt_match_vcf, biallelic_only=True,
     #                         sparse=False, format_list=['GT'])
     # GT_Expected_variants = load_VCF_batch(expected_vcf, biallelic_only=True,
     #                         sparse=False, format_list=['GT'])
@@ -815,7 +855,9 @@ if __name__ == "__main__":
         
     donor_distinct_sites = donor_exclusive_sites(exclusive_don_variants)
     print('---donor_distinct_sites calculated----')
-    cell_concordance_table = conc_table(donor_assignments_table,cell_assignments_table,exclusive_don_variants,exclusive_cell_variants)
+    conc1 = Concordances(donor_assignments_table,cell_assignments_table,exclusive_don_variants,exclusive_cell_variants)
+    cell_concordance_table = conc1.conc_table()
+    
     result = pd.DataFrame(cell_concordance_table).T
     result.to_csv('cell_concordance_table.tsv',sep='\t')
     print('Processing Done')
