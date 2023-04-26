@@ -43,7 +43,7 @@ workflow YASCP {
             assignments_all_pools = mode
         }
 
-        vcf_input.subscribe { println "vcf_input: $it" }
+        // vcf_input.subscribe { println "vcf_input: $it" }
         // ###################################
         // ################################### Readme
         // AMBIENT RNA REMOVAL USING CELLBENDER
@@ -199,12 +199,12 @@ workflow YASCP {
                 process_finish_check_channel = Channel.of([1, 'dummy'])
             }
 
-            // ###################################
-            // ################################### Readme
-            // PSEUDOBULK AGGREGATION AND PREP STEP FOR eQTL MAPPING
-            // Once we have a QC'd data we can use this to perform a pseudobulk aggregation of data that can be used as an input in eQTL pipeline: https://github.com/wtsi-hgi//eqtl 
-            // ###################################
-            // ###################################
+            // // ###################################
+            // // ################################### Readme
+            // // PSEUDOBULK AGGREGATION AND PREP STEP FOR eQTL MAPPING
+            // // Once we have a QC'd data we can use this to perform a pseudobulk aggregation of data that can be used as an input in eQTL pipeline: https://github.com/wtsi-hgi//eqtl 
+            // // ###################################
+            // // ###################################
 
             if (params.genotype_input.run_with_genotype_input){
                 eQTL(file__anndata_merged,assignments_all_pools)

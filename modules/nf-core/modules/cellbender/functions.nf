@@ -456,12 +456,20 @@ process cellbender__remove_background__qc_plots {
 
 process capture_cellbender_files{
   publishDir  path: "${outdir}/cellbender",
-  saveAs: {filename -> 
+  // saveAs: {filename -> 
+  //         filename.replaceAll("tmp1234/cellbender/", "")
+  //     },
+  //       mode: "${params.copy_mode}",
+  //   overwrite: "true"
+  saveAs: {filename ->
+        if (filename.contains("captured")) {
+        null
+        } else {
           filename.replaceAll("tmp1234/cellbender/", "")
+        }
       },
         mode: "${params.copy_mode}",
     overwrite: "true"
-
   label 'process_tiny'
   // cache false
   input:

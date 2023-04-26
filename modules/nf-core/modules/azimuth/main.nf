@@ -77,5 +77,4 @@ process REMAP_AZIMUTH{
             remap_azimuth_l2.py -of ${celltype_table} -m ${mapping_file} -az ${azimuth_file}
         """
 
-
 }

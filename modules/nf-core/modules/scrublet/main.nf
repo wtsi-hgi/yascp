@@ -18,7 +18,7 @@ process SCRUBLET {
     //scratch true        // use tmp directory
 
 
-    label 'process_medium'
+    label 'process_low'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "https://yascp.cog.sanger.ac.uk/public/singularity_images/wtsihgi_nf_scrna_qc_6bb6af5-2021-12-23-3270149cf265.sif"
         //// container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/nf_qc_cluster_2.4.img"
@@ -39,7 +39,7 @@ process SCRUBLET {
                 overwrite: "true"
 
     input:
-        path(outdir_prev)
+        // path(outdir_prev)
         tuple(
             val(experiment_id),
             path(file_10x_barcodes),
@@ -52,7 +52,7 @@ process SCRUBLET {
         val(scale_log10)
 
     output:
-        val(outdir, emit: outdir)
+        // val(outdir, emit: outdir)
         tuple val(experiment_id), path("${outfile}-scrublet.tsv.gz"), emit: scrublet_paths
         val(experiment_id, emit: experiment_id)
         path("${outfile}-scrublet.tsv.gz", emit: multiplet_calls)
@@ -65,7 +65,7 @@ process SCRUBLET {
 
     script:
         
-        outdir = "${outdir_prev}/multiplet"
+        outdir = "${params.outdir}/multiplet"
         outdir = "${outdir}.method=scrublet"
         outfile = "${experiment_id}"
         // Check to see if we should use use log10 of the doublet simulations
