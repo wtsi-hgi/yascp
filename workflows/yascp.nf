@@ -16,7 +16,6 @@ include { CREATE_ARTIFICIAL_BAM_CHANNEL } from "$projectDir/modules/local/create
 include {MERGE_SAMPLES} from "$projectDir/modules/nf-core/modules/merge_samples/main"
 include {MULTIPLET} from "$projectDir/modules/nf-core/modules/multiplet/main"
 include {dummy_filtered_channel} from "$projectDir/modules/nf-core/modules/merge_samples/functions"
-include {capture_cellbender_files} from "$projectDir/modules/nf-core/modules/cellbender/functions"
 
 /*
 ========================================================================================
@@ -67,27 +66,12 @@ workflow YASCP {
                 if (params.input == 'existing_cellbender'){
                     // Here we are using the existing cellbender from a different run, Nothe that the structure of the cellbender folder should be same as produced by this pipeline.
                     log.info ' ---- using existing cellbender output for deconvolution---'
-                    if (params.cellbender_location!='')
-                    capture_cellbender_files(params.cellbender_location,"${params.output_dir}/nf-preprocessing",params.input_data_table)
-                    capture_cellbender_files.out.alt_input.flatten().map{sample -> tuple("${sample}".replaceFirst(/.*\/captured\//,"").replaceFirst(/\/.*/,""),sample)}.set{alt_input}
-                    // remove the unncessary inputs.
-                    // Run only the files that are not processed. 
-                    // alt_input.subscribe { println "alt_input: $it" }
-                    // prepare_inputs.out.ch_experimentid_paths10x_raw.subscribe { println "prepare_inputs: $it" }
-                    // file__anndata_merged.subscribe { println "value1: $it" }
-                    prepare_inputs.out.ch_experimentid_paths10x_raw.join(alt_input, by: [0], remainder: true).set{post_ch_experimentid_paths10x_raw}
-                    prepare_inputs.out.ch_experimentid_paths10x_filtered.join(alt_input, by: [0], remainder: true).set{post_ch_experimentid_paths10x_filtered}
-                    // post_ch_experimentid_paths10x_raw.subscribe { println "output:: $it" }
-                    post_ch_experimentid_paths10x_raw.filter{ it[1] != null }.filter{ it[2] == null }.map{row -> tuple(row[0], row[1])}.set{ch_experimentid_paths10x_raw_2}
-                    post_ch_experimentid_paths10x_filtered.filter{ it[1] != null }.filter{ it[2] == null }.map{row -> tuple(row[0], row[1])}.set{ch_experimentid_paths10x_filtered_2}
-                    post_ch_experimentid_paths10x_raw.filter{ it[1] != null }.filter{ it[2] != null }.map{row -> tuple(row[0],row[2])}.set{alt_input3}
 
-                    ambient_RNA(ch_experimentid_paths10x_raw_2,
-                        ch_experimentid_paths10x_filtered_2,prepare_inputs.out.channel__metadata)
-                    alt_input1 = ambient_RNA.out.cellbender_path
-                    alt_input2 = alt_input3.concat(alt_input1)
 
-                    DECONV_INPUTS(alt_input2,prepare_inputs)
+                    ambient_RNA( prepare_inputs.out.ch_experimentid_paths10x_raw,
+                        prepare_inputs,prepare_inputs.out.channel__metadata)
+                    
+                    DECONV_INPUTS(ambient_RNA.out.cellbender_path,prepare_inputs)
                 
                     channel__file_paths_10x = DECONV_INPUTS.out.channel__file_paths_10x
                     ch_experiment_bam_bai_barcodes= DECONV_INPUTS.out.ch_experiment_bam_bai_barcodes

@@ -301,46 +301,31 @@ process JOIN_STUDIES_MERGE{
       tuple val(samplename), path("*_out.vcf.gz"),path("*_out.vcf.gz.csi"), emit: merged_expected_genotypes
       path("*_out.vcf.gz",emit:study_merged_vcf)
     script:
-      // if (mode=='Infered_Merge'){
+
         cmd__run = "overlapping_positions_vcfs.py -vcfs '${study_vcf_files}'"
-      // }else{
-      //   cmd__run = " "
-      // }
-        // vcf_name = Long.toUnsignedString(new Random().nextLong(), 9).toUpperCase()
+        if (params.just_overlapping_positions_for_study_merge){
+          cmd="bcftools view -R Bed_File_record.bed pre_${mode}_${mode2}_\${vcf_name}__vcf.vcf.gz -Oz -o ${mode}_${mode2}_\${vcf_name}_out.vcf.gz && bcftools index ${mode}_${mode2}_\${vcf_name}_out.vcf.gz"
+        }else{
+          cmd="mv pre_${mode}_${mode2}_\${vcf_name}__vcf.vcf.gz ${mode}_${mode2}_\${vcf_name}_out.vcf.gz && mv pre_${mode}_${mode2}_\${vcf_name}__vcf.vcf.gz.csi ${mode}_${mode2}_\${vcf_name}_out.vcf.gz.csi"
+        }
+
       """
         vcf_name=\$(python ${projectDir}/bin/random_id.py)
-        #// ${cmd__run}
-        #// fofn_input_subset.sh "${study_vcf_files}"
-        #// if [ \$(cat fofn_vcfs.txt | wc -l) -gt 1 ]; then
-        #//     echo 'yes'
-        #//     bcftools merge -file-list ${study_vcf_files} -Ou | bcftools sort -T \$PWD -Oz -o pre_${mode}_${mode2}_\${vcf_name}__vcf.vcf.gz
-        #//     bcftools index pre_${mode}_${mode2}_\${vcf_name}__vcf.vcf.gz
-        #//     bcftools view -R Bed_File_record.bed pre_${mode}_${mode2}_\${vcf_name}__vcf.vcf.gz -Oz -o ${mode}_${mode2}_\${vcf_name}_out.vcf.gz
-        #//     bcftools index ${mode}_${mode2}_\${vcf_name}_out.vcf.gz
-        #// else
-        #//   echo 'no'
-        #//   ln -s ${study_vcf_files} ${mode}_${mode2}_\${vcf_name}_out.vcf.gz
-        #//   ln -s ${study_vcf_files}.csi ${mode}_${mode2}_\${vcf_name}_out.vcf.gz.csi
-
-        #// fi
-        #// rm -r pre_* || echo 'nothing to remove'
-        
+       
         ${cmd__run}
         fofn_input_subset.sh "${study_vcf_files}"
         if [ \$(cat fofn_vcfs.txt | wc -l) -gt 1 ]; then
             echo 'yes'
             bcftools merge -file-list ${study_vcf_files} -Ou | bcftools sort -T \$PWD -Oz -o pre_${mode}_${mode2}_\${vcf_name}__vcf.vcf.gz
             bcftools index pre_${mode}_${mode2}_\${vcf_name}__vcf.vcf.gz
-            bcftools view -R Bed_File_record.bed pre_${mode}_${mode2}_\${vcf_name}__vcf.vcf.gz -Oz -o ${mode}_${mode2}_\${vcf_name}_out.vcf.gz
-            bcftools index ${mode}_${mode2}_\${vcf_name}_out.vcf.gz
+            ${cmd}
         else
           echo 'no'
           bcftools view ${study_vcf_files} | bcftools sort -T \$PWD -Oz -o ${mode}_${mode2}_\${vcf_name}_out.vcf.gz
           bcftools index ${mode}_${mode2}_\${vcf_name}_out.vcf.gz 
           
         fi
-        #// bcftools view -R Bed_File_record.bed pre_${mode}_${mode2}_${samplename}.vcf.gz -Oz -o ${mode}_${mode2}_${samplename}.vcf.gz
-        #// bcftools index ${mode}_${mode2}_${samplename}.vcf.gz        
+     
         rm -r pre_* || echo 'nothing to remove'
       """
 }

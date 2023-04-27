@@ -98,6 +98,7 @@ workflow  main_deconvolution {
                 .set{cellsnp_cell_vcfs}           
         }else{
             cellsnp_output_dir1 = Channel.of()
+            cellsnp_cell_vcfs = Channel.of()
         }
         CELLSNP(cellsnp_with_npooled,
             Channel.fromPath(params.cellsnp.vcf_candidate_snps).collect())
