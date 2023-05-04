@@ -32,6 +32,6 @@ process CONCORDANCE_CALCLULATIONS {
             bcftools view ${vcf_exp} -R ${cell_vcf} -Oz -o sub_${pool_id}_Expected.vcf.gz
             bcftools view ${vcf_gt_match} -R ${cell_vcf} -Oz -o sub_${pool_id}_GT_Matched.vcf.gz
             bcftools view  -i 'FORMAT/DP > 3' ${cell_vcf} -Oz -o sub_${pool_id}_cellSNP_dp_filter.vcf.gz
-            concordance_calculations_donor_exclusive.py --cpus $task.cpus --cell_vcf ${cell_vcf} --cell_vcf_dp sub_${pool_id}_cellSNP_dp_filter.vcf.gz --donor_assignments ${donor_table} --gt_match_vcf sub_${pool_id}_GT_Matched.vcf.gz --expected_vcf sub_${pool_id}_Expected.vcf.gz --cell_assignments ${cell_assignments}
+            concordance_calculations_donor_exclusive_dp.py --cpus $task.cpus --cell_vcf ${cell_vcf} --cell_vcf_dp sub_${pool_id}_cellSNP_dp_filter.vcf.gz --donor_assignments ${donor_table} --gt_match_vcf sub_${pool_id}_GT_Matched.vcf.gz --expected_vcf sub_${pool_id}_Expected.vcf.gz --cell_assignments ${cell_assignments}
         """
 }
