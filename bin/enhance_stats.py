@@ -67,7 +67,7 @@ GT_Assignments['tranche']=tranche
 GT_Assignments['donor_gt original']=GT_Assignments['donor_gt']
 D2 = pd.DataFrame(All_expected_ids,columns=['col1'])
 for ix in GT_Assignments.index:
-    print(ix)
+    # print(ix)
     #Here should add a a filter to estimate whether it is a good match.
     replacement = GT_Assignments.loc[ix,'donor_gt']
     # if (replacement=='15001506223417_203765330119_R02C02'):
@@ -84,7 +84,7 @@ for ix in GT_Assignments.index:
         try:
             # replacement = 'S2-046-01741'
             replacement = str(gp_ma.loc[replacement][0])
-            print(replacement)
+            # print(replacement)
             # replacement = replacement.values[0]
             
             if len(D2[D2.col1.str.contains(replacement)])>0:
@@ -94,16 +94,21 @@ for ix in GT_Assignments.index:
                 # replacement='15001608190388_204238910153_R09C02'
                 
                 replacements = gp_ma.loc[replacement.split('_')[0]]
-                replacement = replacements.values[0]
-                # for rep1 in replacements.iloc[:,0]:
-                    
-                #     if len(D2[D2.col1.str.contains(rep1)])>0:
-                #         GT_Assignments.loc[ix,'Match Expected']='True'
-                #         replacement = rep1
+                
+                if len(replacements)>1:
+                    for rep1 in replacements.iloc[:,0]:
+                        
+                        if len(D2[D2.col1.str.contains(rep1)])>0:
+                            GT_Assignments.loc[ix,'Match Expected']='True'
+                            replacement = rep1
+                else:
+                    replacement = replacements.values[0]
             except:
                 replacement = 'No_mapping___'+replacement
     else:
         _ = ''
+    if len(D2[D2.col1.str.contains(replacement)])>0:
+        GT_Assignments.loc[ix,'Match Expected']='True'
     if 'THP1' in replacement:
         replacement = 'celline_THP1'
     if 'U937' in replacement:
