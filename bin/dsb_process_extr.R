@@ -8,21 +8,22 @@ library(SeuratDisk)
 library(ggrastr)
 library(dsb)
 
-#main GEX/CITEseq data
-cellranger_filepath <- args[1] #'/lustre/scratch123/hgi/teams/hgi/mo11/tmp_projects/ania/analysis_trego/work/6e/ffddc30b501cb3d43c5e76eef66715/cellbender_FPR_0.1_filtered.h5'
-# cellranger_filepath <-'cellbender_FPR_0.1_filtered.h5'
-#raw data for dbs
-cellranger_rawfile_path <- args[2] #'/lustre/scratch123/hgi/teams/hgi/mo11/tmp_projects/ania/analysis_trego/work/6e/ffddc30b501cb3d43c5e76eef66715/CTRL_D1_BM__gex_data'
-# cellranger_rawfile_path <- 'CTLA4_A1_BM__gex_data'
-#AB data
-ab_filepath <- args[3] #'/lustre/scratch123/hgi/teams/hgi/mo11/tmp_projects/ania/analysis_trego/work/6e/ffddc30b501cb3d43c5e76eef66715/CTRL_D1_BM__ab_data'
-# ab_filepath <- 'CTLA4_A1_BM__ab_data'
 
-sample <- args[4]
-# sample = 'CTLA4_A1_BM'
+    cellranger_filepath <- args[1] #'/lustre/scratch123/hgi/teams/hgi/mo11/tmp_projects/ania/analysis_trego/work/6e/ffddc30b501cb3d43c5e76eef66715/cellbender_FPR_0.1_filtered.h5'
+    # cellranger_filepath <-'cellbender_FPR_0.1_filtered.h5'
+    #raw data for dbs
+    cellranger_rawfile_path <- args[2] #'/lustre/scratch123/hgi/teams/hgi/mo11/tmp_projects/ania/analysis_trego/work/6e/ffddc30b501cb3d43c5e76eef66715/CTRL_D1_BM__gex_data'
+    # cellranger_rawfile_path <- 'CTLA4_A1_BM__gex_data'
+    #AB data
+    ab_filepath <- args[3] #'/lustre/scratch123/hgi/teams/hgi/mo11/tmp_projects/ania/analysis_trego/work/6e/ffddc30b501cb3d43c5e76eef66715/CTRL_D1_BM__ab_data'
+    # ab_filepath <- 'CTLA4_A1_BM__ab_data'
+    
+  #main GEX/CITEseq data
+    sample <- args[4]
+    # sample = 'CTLA4_A1_BM'
 
-## --------------------------------------------------------------------------------------------------------------------------------------
-# We are loading the protein data, all the rna data and the cellbender background removed gex matrix
+    ## --------------------------------------------------------------------------------------------------------------------------------------
+    # We are loading the protein data, all the rna data and the cellbender background removed gex matrix
     rna = raw <- Read10X(cellranger_rawfile_path)
     cells <- Read10X_h5(cellranger_filepath, use.names = TRUE, unique.features = TRUE)
     prot = antibody <- Read10X(ab_filepath)
