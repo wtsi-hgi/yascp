@@ -955,7 +955,8 @@ def donor_exclusive_sites(exclusive_don_variants2):
 #     pool.join()
 #     return cell_concordance_table
 
-debug=True
+debug=False
+
 if __name__ == "__main__":
     donor_assignments_table = pd.read_csv(donor_assignments)
     cell_assignments_table = pd.read_csv(cell_assignments,sep='\t')
