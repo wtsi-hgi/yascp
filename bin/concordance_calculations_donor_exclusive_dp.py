@@ -30,17 +30,16 @@ class Concordances:
 
         def norm_genotypes(self,expected_vars):
             expected_vars = pd.DataFrame(expected_vars)
-            split_str=expected_vars[0].str.split("_")
-            # expected_vars['ids'] = split_str.str[:-1].str.join('_')
-            expected_vars['ids'] = split_str.str[0]+'_'+split_str.str[1]+'_'+split_str.str[2]+'_'+split_str.str[3]
-            expected_vars['pos'] = split_str.str[0]+'_'+split_str.str[1]
-            expected_vars['vars'] = split_str.str[-1]
-            expected_vars['vars'] = expected_vars['vars'].str.replace('|','/',regex=False)
-            expected_vars = expected_vars[expected_vars['vars']!='./.']
-            expected_vars.loc[expected_vars['vars']=='0/1','vars']='1/0'
-            expected_vars['combo']= expected_vars['ids']+'_'+expected_vars['vars']
+            if len(expected_vars) > 0:
+                split_str=expected_vars[0].str.split("_")
+                expected_vars['ids'] = split_str.str[0]+'_'+split_str.str[1]+'_'+split_str.str[2]+'_'+split_str.str[3]
+                expected_vars['pos'] = split_str.str[0]+'_'+split_str.str[1]
+                expected_vars['vars'] = split_str.str[-1]
+                expected_vars['vars'] = expected_vars['vars'].str.replace('|','/',regex=False)
+                expected_vars = expected_vars[expected_vars['vars']!='./.']
+                expected_vars.loc[expected_vars['vars']=='0/1','vars']='1/0'
+                expected_vars['combo']= expected_vars['ids']+'_'+expected_vars['vars']
             return expected_vars
-
         
         def reset(self):
             self.cell_concordance_table ={}
@@ -51,16 +50,23 @@ class Concordances:
             # Author: M.Ozols
             
             cell_vars_norm = self.norm_genotypes(cell_vars)
-            Total_Overlappin_sites = set(expected_vars_norm['ids']).intersection(set(cell_vars_norm['ids']))
-            expected_vars2 = expected_vars_norm[expected_vars_norm['ids'].isin(Total_Overlappin_sites)]
-            cell_vars2 = cell_vars_norm[cell_vars_norm['ids'].isin(Total_Overlappin_sites)]
-            Concordant_Sites = set(cell_vars2['combo']).intersection(set(expected_vars2['combo']))
-            Discodrant_sites = set(cell_vars2['combo'])-set(expected_vars2['combo'])
-            disc = pd.DataFrame(Discodrant_sites,columns=['combo_x'])
-            df_cd = pd.merge(cell_vars2, expected_vars2, how='inner', on = 'pos')
-            disc2= pd.merge(disc, df_cd, how='inner', on = 'combo_x')
-            disc2['expected_retrieved'] = disc2['0_x']+'::'+disc2['0_y']
-            disc_sites = ';'.join(disc2['expected_retrieved'])
+            if len(cell_vars_norm) > 0:
+                Total_Overlappin_sites = set(expected_vars_norm['ids']).intersection(set(cell_vars_norm['ids']))
+                expected_vars2 = expected_vars_norm[expected_vars_norm['ids'].isin(Total_Overlappin_sites)]
+                cell_vars2 = cell_vars_norm[cell_vars_norm['ids'].isin(Total_Overlappin_sites)]
+                Concordant_Sites = set(cell_vars2['combo']).intersection(set(expected_vars2['combo']))
+                Discodrant_sites = set(cell_vars2['combo'])-set(expected_vars2['combo'])
+                disc = pd.DataFrame(Discodrant_sites,columns=['combo_x'])
+                df_cd = pd.merge(cell_vars2, expected_vars2, how='inner', on = 'pos')
+                disc2= pd.merge(disc, df_cd, how='inner', on = 'combo_x')
+                disc2['expected_retrieved'] = disc2['0_x']+'::'+disc2['0_y']
+                disc_sites = ';'.join(disc2['expected_retrieved'])
+            else:
+                Total_Overlappin_sites = set()
+                Concordant_Sites = set()
+                Discodrant_sites = set()
+                disc_sites = ''
+
             return Concordant_Sites, Discodrant_sites, Total_Overlappin_sites, disc_sites,cell_vars_norm
         
         def set_results(self,to_set,id):
@@ -949,7 +955,7 @@ def donor_exclusive_sites(exclusive_don_variants2):
 #     pool.join()
 #     return cell_concordance_table
 
-debug=False
+debug=True
 if __name__ == "__main__":
     donor_assignments_table = pd.read_csv(donor_assignments)
     cell_assignments_table = pd.read_csv(cell_assignments,sep='\t')
@@ -965,6 +971,8 @@ if __name__ == "__main__":
             donor_distinct_sites = pickle.load(f)  
         with open('tmp_exclusive_don_variants.pkl', 'rb') as f:
             exclusive_don_variants = pickle.load(f) 
+        with open('tmp_exclusive_cell_variants_dp.pkl', 'rb') as f:
+            exclusive_cell_variants_dp = pickle.load(f) 
     else:  
         print('---Genotype loader init----')    
         loader2 = VCF_Loader(gt_match_vcf, biallelic_only=True,
