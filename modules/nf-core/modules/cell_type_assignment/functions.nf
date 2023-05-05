@@ -1,6 +1,6 @@
 process CELLTYPE_FILE_MERGE{
     tag "${samplename}"    
-    label 'process_low'
+    label 'process_medium'
     publishDir  path: "${params.outdir}/celltype/",
             saveAs: {filename -> filename},
             mode: "${params.copy_mode}",
