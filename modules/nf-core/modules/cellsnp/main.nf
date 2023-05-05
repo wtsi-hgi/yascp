@@ -20,6 +20,37 @@ process capture_cellsnp_files{
 
 }
 
+
+process DYNAMIC_DONOR_EXCLUSIVE_SNP_SELECTION{
+    label 'process_medium'
+    if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
+        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_62bd56a-2021-12-15-4d1ec9312485.sif"
+        //// container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_latest.img"
+    } else {
+        container "mercury/scrna_deconvolution:62bd56a"
+    }
+
+    input: 
+        tuple val(samplename), path(vcf_file),path(csi),path(cellsnp_primary_file)
+    output:
+      tuple val(samplename), path("cellsnp_panel_${samplename}.vcf.gz"),emit:cellsnp_pool_panel
+    script:       
+      """
+        echo ${samplename}
+        echo ${vcf_file}
+        echo ${cellsnp_primary_file}
+        bcftools view -i 'MAF > 0.0001 & R2>=1.00' -Oz -o dynamic_snps.vcf.gz ${vcf_file}
+        dynamic_donor_exclusive_snp_selection.py -cpus ${task.cpus} -vcf dynamic_snps.vcf.gz -cellsnp ${cellsnp_primary_file}
+        echo test > output.csv
+        bcftools view -h ${cellsnp_primary_file} > cellsnp_panel_${samplename}.vcf
+        cat cellsnp_variants.tsv >> cellsnp_panel_${samplename}.vcf
+        gzip cellsnp_panel_${samplename}.vcf
+        rm -r dynamic_snps.vcf.gz
+      """
+}
+
+
+
 process CELLSNP {
     tag "${samplename}"
     
@@ -35,12 +66,8 @@ process CELLSNP {
         container "mercury/scrna_deconvolution:62bd56a"
     }
 
-    when: 
-        params.cellsnp.run
-
     input: 
-        tuple val(samplename), path(bam_file), path(bai_file), path(barcodes_tsv_gz),val(n_pooled)
-        file(region_vcf)
+        tuple val(samplename), path(bam_file), path(bai_file), path(barcodes_tsv_gz),val(n_pooled),path(region_vcf)
 
     output:
       tuple val(samplename), file("cellsnp_${samplename}"), emit: cellsnp_output_dir

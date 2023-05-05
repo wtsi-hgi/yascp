@@ -2,7 +2,6 @@
 
 __date__ = '2023-04-14'
 __version__ = '0.0.1'
-# python -m debugpy --listen 0.0.0.0:5678 --wait-for-client /lustre/scratch125/humgen/teams/hgi/mo11/oneK1k/extra0/yascp/bin/concordance_calculations_donor_exclusive_work.py --cpus 6 --cell_vcf cellSNP.cells.vcf.gz --donor_assignments stats_pool12_gt_donor_assignments.csv --gt_match_vcf Study_Merge_GTMatchedSubset_EUY8DDDZD_out.vcf.gz --expected_vcf Study_Merge_AllExpectedGT_SYIDTL7VN_out.vcf.gz --cell_assignments GT_replace_donor_ids_true.tsv
 import argparse
 import sys
 import importlib.util
@@ -17,6 +16,153 @@ from multiprocessing import Lock
 import logging
 import os
 
+
+class Concordances:
+        def __init__(self, donor_assignments_table,cell_assignments_table,exclusive_don_variants,exclusive_cell_variants,donor_distinct_sites):
+            self.reset()
+            self.donor_assignments_table=donor_assignments_table
+            self.cell_assignments_table=cell_assignments_table
+            self.exclusive_don_variants=exclusive_don_variants
+            self.exclusive_cell_variants=exclusive_cell_variants
+            self.donor_distinct_sites=donor_distinct_sites
+            self.record_dict={}
+
+        def norm_genotypes(self,expected_vars):
+            expected_vars = pd.DataFrame(expected_vars)
+            split_str=expected_vars[0].str.split("_")
+            # expected_vars['ids'] = split_str.str[:-1].str.join('_')
+            expected_vars['ids'] = split_str.str[0]+'_'+split_str.str[1]+'_'+split_str.str[2]+'_'+split_str.str[3]
+            expected_vars['pos'] = split_str.str[0]+'_'+split_str.str[1]
+            expected_vars['vars'] = split_str.str[-1]
+            expected_vars['vars'] = expected_vars['vars'].str.replace('|','/',regex=False)
+            expected_vars = expected_vars[expected_vars['vars']!='./.']
+            expected_vars.loc[expected_vars['vars']=='0/1','vars']='1/0'
+            expected_vars['combo']= expected_vars['ids']+'_'+expected_vars['vars']
+            return expected_vars
+
+        
+        def reset(self):
+            self.cell_concordance_table ={}
+
+        def retrieve_concordant_discordant_sites(self,expected_vars_norm,cell_vars):
+            # This function has been inspired by Hails Concordance implementations, however hail has a pitfall that it performs a lot of other stuff under hood and requires intermediate sorting operations.
+            # Since the single cell calculations requires concordance calculations per cell this becomes very computationally heavy on Hail, hence we have implemented concordance calculations here as part of the pipeline.
+            # Author: M.Ozols
+            
+            cell_vars_norm = self.norm_genotypes(cell_vars)
+            Total_Overlappin_sites = set(expected_vars_norm['ids']).intersection(set(cell_vars_norm['ids']))
+            expected_vars2 = expected_vars_norm[expected_vars_norm['ids'].isin(Total_Overlappin_sites)]
+            cell_vars2 = cell_vars_norm[cell_vars_norm['ids'].isin(Total_Overlappin_sites)]
+            Concordant_Sites = set(cell_vars2['combo']).intersection(set(expected_vars2['combo']))
+            Discodrant_sites = set(cell_vars2['combo'])-set(expected_vars2['combo'])
+            disc = pd.DataFrame(Discodrant_sites,columns=['combo_x'])
+            df_cd = pd.merge(cell_vars2, expected_vars2, how='inner', on = 'pos')
+            disc2= pd.merge(disc, df_cd, how='inner', on = 'combo_x')
+            disc2['expected_retrieved'] = disc2['0_x']+'::'+disc2['0_y']
+            disc_sites = ';'.join(disc2['expected_retrieved'])
+            return Concordant_Sites, Discodrant_sites, Total_Overlappin_sites, disc_sites,cell_vars_norm
+        
+        def set_results(self,to_set,id):
+            # Recod to disk to save the loading mmeory time.
+            with open(f'tmp_{id}.pkl', 'wb') as f:
+                pickle.dump(to_set, f)
+            self.record_dict[id]=f'tmp_{id}.pkl'
+        
+        def append_results_cell_concordances(self,result):
+            count=result[7]
+            try:
+                percent_concordant = result[2]/(result[3]+result[2])*100
+            except:
+                percent_concordant = 0
+            
+            try:
+                percent_discordant = result[3]/(result[3]+result[2])*100
+            except:
+                percent_discordant = 0
+
+
+                # self.reset_c()   
+            print(count)
+            self.cell_concordance_table[f'{result[0]} --- {result[1]}'] = {'GT 1':result[0],
+                                                                    'GT 2':result[1],
+                                                                    'Nr_Concordant':result[2],
+                                                                    'Nr_Discordant':result[3],
+                                                                    'Percent Concordant':percent_concordant,
+                                                                    'Percent Discordant':percent_discordant,
+                                                                    'NrTotal_Overlapping_sites between two genotypes':result[4],
+                                                                    'Nr_donor_distinct_sites_within_pool_individuals':result[6],
+                                                                    'Number_of_sites_that_are_donor_concordant_and_exclusive':result[5],
+                                                                    'Discordant Site Identities':result[8]
+                                                                    }   
+            if (count % 200 == 0):
+                print(f'recording and resetting memory {count}')
+                # self.record_dict[count]=self.exclusive_donor_variants
+                self.set_results(self.cell_concordance_table,count)
+                self.reset()  
+            _=""
+        
+        def combine_written_files(self):
+            to_export = self.cell_concordance_table
+            for val1 in self.record_dict.values():
+                # here remove the int files.
+                print(f"merging temp file: {val1}")
+                with open(val1, 'rb') as f:
+                    loaded_dict = pickle.load(f)
+                    for k1 in loaded_dict.keys():
+                        to_export[k1]=loaded_dict[k1]
+                os.remove(val1)
+            return to_export
+        
+        
+        def conc_table(self):
+            donor_assignments_table=self.donor_assignments_table
+            cell_assignments_table=self.cell_assignments_table
+            exclusive_don_variants=self.exclusive_don_variants
+            exclusive_cell_variants= self.exclusive_cell_variants
+            
+            pool = mp.Pool(cpus)
+            count = 0
+            for i,row1 in donor_assignments_table.iterrows():
+                donor_in_question = row1['donor_query']
+                donor_gt_match = row1['donor_gt']
+                # print(donor_gt_match)
+                if (donor_gt_match=='NONE'):
+                    continue
+                Cells_to_keep_pre = list(set(cell_assignments_table.loc[cell_assignments_table['donor_id']==donor_in_question,'cell']))
+                expected_vars = exclusive_don_variants[donor_gt_match]
+                expected_vars_norm = self.norm_genotypes(expected_vars)
+                try:
+                    # Now we subset this down to each of the uniqie variants per donor and check which of the concordant sites are exclusive to donor.
+                    dds = self.donor_distinct_sites[donor_gt_match]
+                except:
+                    continue
+                
+                for cell1 in Cells_to_keep_pre:
+                    count+=1
+                    # if count>800:
+                    #     break
+                    cell_vars = exclusive_cell_variants[cell1]
+                    self.cell_concordance_table[f'{cell1} --- {donor_gt_match}']={}
+                    # pool.apply_async(self.concordance_dable_production, args=([expected_vars_norm,cell_vars,cell1,donor_gt_match,dds,count]),callback=self.append_results_cell_concordances)          
+                    result1 = self.concordance_dable_production(expected_vars_norm,cell_vars,cell1,donor_gt_match,dds,count)
+                    self.append_results_cell_concordances(result1)
+                    
+            pool.close()
+            pool.join()
+            output = self.combine_written_files()
+            return output
+        
+        def concordance_dable_production(self,expected_vars_norm,cell_vars,cell1,donor_gt_match,dds,count):
+            Nr_donor_distinct_sites = len(dds)
+            Concordant_Sites, Discodrant_sites, Total_Overlappin_sites,discordant_sites,cell_vars_norm = self.retrieve_concordant_discordant_sites(expected_vars_norm,cell_vars)
+            Nr_Concordant = len(Concordant_Sites)
+            Nr_Discordant = len(Discodrant_sites)
+            Nr_Total_Overlapping_sites = len(Total_Overlappin_sites)
+            Number_of_sites_that_are_donor_concordant_and_exclusive = len(set(dds).intersection(set(Concordant_Sites)))
+            Number_of_sites_in_cellsnp_but_not_in_reference = set(cell_vars_norm['pos'])-set(expected_vars_norm['pos'])
+            return [cell1,donor_gt_match,Nr_Concordant,Nr_Discordant,Nr_Total_Overlapping_sites,Number_of_sites_that_are_donor_concordant_and_exclusive,Nr_donor_distinct_sites,count,discordant_sites]
+        
+        
 class VCF_Loader:
     
     def __init__(self, vcf_file, biallelic_only=True,
@@ -88,7 +234,7 @@ class VCF_Loader:
         # r = random.random()
         # Issue is that this slows down after number of entries is recorded. So recoding takes longer and longer.
         # every 500 itterations we push the data to a dictionary, later we combine these together.
-        if (count % 300 == 0):
+        if (count % 200 == 0):
             print(f'recording and resetting memory {count}')
             # self.record_dict[count]=self.exclusive_donor_variants
             self.set_results(self.exclusive_donor_variants,count)
@@ -761,61 +907,94 @@ def conc_table(donor_assignments_table,cell_assignments_table,exclusive_don_vari
     pool.join()
     return cell_concordance_table
 
+debug=False
 if __name__ == "__main__":
- 
-    print('---Genotype loader init----')    
-    loader2 = VCF_Loader(gt_match_vcf, biallelic_only=True,
-                    sparse=False, format_list=['GT'])
-    GT_Matched_variants = loader2.load_VCF_batch_paralel()
-    del loader2
-    
-     
-    print('---Lets load cell vcf----')
-    tic = time.perf_counter()
-    loader1 = VCF_Loader(cell_vcf, biallelic_only=True,
-                        sparse=False, format_list=['GT'])
-    exclusive_cell_variants = loader1.load_VCF_batch_paralel()
-    del loader1
-    toc = time.perf_counter()
-    print(f"Loadiong took {toc - tic:0.4f} seconds")
-    # exclusive_cell_variants = load_VCF_batch_paralel(cell_vcf, biallelic_only=True,
-    #                     sparse=False, format_list=['GT'])
-    
-    print('---Cell VCF file loaded----')
     donor_assignments_table = pd.read_csv(donor_assignments)
     cell_assignments_table = pd.read_csv(cell_assignments,sep='\t')
     
+    if debug:
+        with open('tmp_GT_Expected_variants.pkl', 'rb') as f:
+            GT_Expected_variants = pickle.load(f)
+        with open('tmp_GT_Matched_variants.pkl', 'rb') as f:
+            GT_Matched_variants = pickle.load(f)   
+        with open('tmp_exclusive_cell_variants.pkl', 'rb') as f:
+            exclusive_cell_variants = pickle.load(f) 
+        with open('tmp_donor_distinct_sites.pkl', 'rb') as f:
+            donor_distinct_sites = pickle.load(f)  
+        with open('tmp_exclusive_don_variants.pkl', 'rb') as f:
+            exclusive_don_variants = pickle.load(f) 
+    else:  
+        print('---Genotype loader init----')    
+        loader2 = VCF_Loader(gt_match_vcf, biallelic_only=True,
+                        sparse=False, format_list=['GT'])
+        GT_Matched_variants = loader2.load_VCF_batch_paralel()
+        del loader2
 
-    print('---Variant1 files loaded----')
-    loader3 = VCF_Loader(expected_vcf, biallelic_only=True,
-                    sparse=False, format_list=['GT'])
-    GT_Expected_variants = loader3.load_VCF_batch_paralel()
-    del loader3
-    
-    
-    # GT_Matched_variants2 = load_VCF_batch(gt_match_vcf, biallelic_only=True,
-    #                         sparse=False, format_list=['GT'])
-    # GT_Expected_variants = load_VCF_batch(expected_vcf, biallelic_only=True,
-    #                         sparse=False, format_list=['GT'])
-    print('---Variant2 files loaded----')
-    exclusive_don_variants = GT_Expected_variants.keys()
-    content = [x for x in exclusive_don_variants if not x.startswith('donor')]
-    GT_Expected_variants = {key: GT_Expected_variants[key] for key in content}
-    
-    exclusive_don_variants = GT_Matched_variants.keys()
-    content = [x for x in exclusive_don_variants if not x.startswith('donor')]
-    GT_Matched_variants = {key: GT_Matched_variants[key] for key in content}
-    
-    exclusive_don_variants = GT_Expected_variants
-    for key in GT_Matched_variants.keys():
-        if key in exclusive_don_variants.keys():
-            _=''
-        else:
-            exclusive_don_variants[key]=GT_Matched_variants[key]
+        with open(f'tmp_GT_Matched_variants.pkl', 'wb') as f:
+            pickle.dump(GT_Matched_variants, f)
         
-    donor_distinct_sites = donor_exclusive_sites(exclusive_don_variants)
+        print('---Lets load cell vcf----')
+        tic = time.perf_counter()
+        loader1 = VCF_Loader(cell_vcf, biallelic_only=True,
+                            sparse=False, format_list=['GT'])
+        exclusive_cell_variants = loader1.load_VCF_batch_paralel()
+        del loader1
+
+        toc = time.perf_counter()
+            
+        with open(f'tmp_exclusive_cell_variants.pkl', 'wb') as f:
+            pickle.dump(exclusive_cell_variants, f)
+        print(f"Loadiong took {toc - tic:0.4f} seconds")
+        # exclusive_cell_variants = load_VCF_batch_paralel(cell_vcf, biallelic_only=True,
+        #                     sparse=False, format_list=['GT'])
+        
+        print('---Cell VCF file loaded----')
+      
+
+        print('---Variant1 files loaded----')
+        loader3 = VCF_Loader(expected_vcf, biallelic_only=True,
+                        sparse=False, format_list=['GT'])
+        GT_Expected_variants = loader3.load_VCF_batch_paralel()
+        del loader3
+
+        with open(f'tmp_GT_Expected_variants.pkl', 'wb') as f:
+            pickle.dump(GT_Expected_variants, f)
+        
+        # GT_Matched_variants2 = load_VCF_batch(gt_match_vcf, biallelic_only=True,
+        #                         sparse=False, format_list=['GT'])
+        # GT_Expected_variants = load_VCF_batch(expected_vcf, biallelic_only=True,
+        #                         sparse=False, format_list=['GT'])
+        print('---Variant2 files loaded----')
+        
+        
+        
+        exclusive_don_variants = GT_Expected_variants.keys()
+        content = [x for x in exclusive_don_variants if not x.startswith('donor')]
+        GT_Expected_variants = {key: GT_Expected_variants[key] for key in content}
+        
+        exclusive_don_variants = GT_Matched_variants.keys()
+        content = [x for x in exclusive_don_variants if not x.startswith('donor')]
+        GT_Matched_variants = {key: GT_Matched_variants[key] for key in content}
+        
+        exclusive_don_variants = GT_Expected_variants
+        for key in GT_Matched_variants.keys():
+            if key in exclusive_don_variants.keys():
+                _=''
+            else:
+                exclusive_don_variants[key]=GT_Matched_variants[key]
+        
+        with open(f'tmp_exclusive_don_variants.pkl', 'wb') as f:
+            pickle.dump(exclusive_don_variants, f)
+        donor_distinct_sites = donor_exclusive_sites(exclusive_don_variants)
+        with open(f'tmp_donor_distinct_sites.pkl', 'wb') as f:
+            pickle.dump(donor_distinct_sites, f)
+        
     print('---donor_distinct_sites calculated----')
-    cell_concordance_table = conc_table(donor_assignments_table,cell_assignments_table,exclusive_don_variants,exclusive_cell_variants)
+    
+    conc1 = Concordances(donor_assignments_table,cell_assignments_table,exclusive_don_variants,exclusive_cell_variants,donor_distinct_sites)
+    cell_concordance_table = conc1.conc_table()
+    
+    # cell_concordance_table = conc_table(donor_assignments_table,cell_assignments_table,exclusive_don_variants,exclusive_cell_variants)
     result = pd.DataFrame(cell_concordance_table).T
     result.to_csv('cell_concordance_table.tsv',sep='\t')
     print('Processing Done')

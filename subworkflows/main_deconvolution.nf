@@ -2,7 +2,7 @@ nextflow.enable.dsl=2
 
 // main deconvolution modules, common to all input modes:
 
-include { CELLSNP;capture_cellsnp_files } from "$projectDir/modules/nf-core/modules/cellsnp/main"
+include { CELLSNP;capture_cellsnp_files;DYNAMIC_DONOR_EXCLUSIVE_SNP_SELECTION } from "$projectDir/modules/nf-core/modules/cellsnp/main"
 include { SUBSET_GENOTYPE } from "$projectDir/modules/nf-core/modules/subset_genotype/main"
 include { VIREO } from "$projectDir/modules/nf-core/modules/vireo/main"
 include { GUZIP_VCF } from "$projectDir/modules/nf-core/modules/guzip_vcf/main"
@@ -68,7 +68,13 @@ workflow  main_deconvolution {
             // This will subsequently result in a joint vcf file per cohort per donors listed for each of the pools that can be used in VIREO and/or GT matching algorythm.
             SUBSET_WORKF(ch_ref_vcf,donors_in_pools,'AllExpectedGT',genome)
             merged_expected_genotypes = SUBSET_WORKF.out.merged_expected_genotypes
+            merged_expected_genotypes2 = merged_expected_genotypes.combine(Channel.fromPath(params.cellsnp.vcf_candidate_snps))
+            // merged_expected_genotypes2.subscribe { println "merged_expected_genotypes2: $it" }
             
+            DYNAMIC_DONOR_EXCLUSIVE_SNP_SELECTION(merged_expected_genotypes2)
+            cellsnp_panels = DYNAMIC_DONOR_EXCLUSIVE_SNP_SELECTION.out.cellsnp_pool_panel
+
+
             // // If we have selected that we want to use all the genotypes as an input in the VCF file we will use the output of the MERGE_GENOTYPES_IN_ONE_VCF_SUBSET
             // if (params.genotype_input.subset_vireo_genotypes){
             //     MERGE_GENOTYPES_IN_ONE_VCF_SUBSET(SUBSET_WORKF.out.study_merged_vcf.collect(),'subset')
@@ -84,24 +90,35 @@ workflow  main_deconvolution {
         ch_poolid_donor_assignment = Channel.empty()
         ch_experiment_donorsvcf_donorslist.map { experiment, donorsvcf, donorstbi,donorslist -> tuple(experiment, donorslist.replaceAll(/,/, " ").replaceAll(/"/, ""))}.set{donors_in_lane}
         ch_experiment_bam_bai_barcodes.combine(ch_experiment_npooled, by: 0).set{cellsnp_with_npooled}
-        if (params.existing_cellsnp != ''){
-            log.info('Capturing some of the existing CELLSNP files')
-            capture_cellsnp_files(params.existing_cellsnp)
-            capture_cellsnp_files.out.cellsnp_loc.splitCsv(header: false, sep: ' ')
-                .map{row->tuple(row[0], "${row[1]}")}
-                .set{cellsnp_output_dir1}
-            cellsnp_output_dir1.join(cellsnp_with_npooled, remainder: true).set{filter_channel}
-            filter_channel.filter{ it[1] == null }.map{row -> tuple(row[0], row[2],row[3],row[4],row[5])}.set{cellsnp_with_npooled}
-            
-            capture_cellsnp_files.out.cellsnp_loc.splitCsv(header: false, sep: ' ')
-                .map{row->tuple(row[0], file("${row[1]}/cellSNP.cells.vcf.gz"))}
-                .set{cellsnp_cell_vcfs}           
+
+        if (params.genotype_input.run_with_genotype_input) {
+            // Here we provide sites to pile up the snps within the pool. 
+            // As a starting point instead of the default cellsnp panel users are encouraged to:
+            if (params.provide_within_pool_donor_specific_sites_for_pilup){
+                cellsnp_with_npooled2 = cellsnp_with_npooled.combine(cellsnp_panels, by: 0)
+            }else{
+                cellsnp_with_npooled2 = cellsnp_with_npooled.combine(Channel.fromPath(params.cellsnp.vcf_candidate_snps))
+            }
         }else{
-            cellsnp_output_dir1 = Channel.of()
-            cellsnp_cell_vcfs = Channel.of()
+            cellsnp_with_npooled2 = cellsnp_with_npooled.combine(Channel.fromPath(params.cellsnp.vcf_candidate_snps))
         }
-        CELLSNP(cellsnp_with_npooled,
-            Channel.fromPath(params.cellsnp.vcf_candidate_snps).collect())
+        cellsnp_with_npooled2.subscribe { println "cellsnp_with_npooled2: $it" }
+        
+
+        log.info('Capturing some of the existing CELLSNP files')
+        capture_cellsnp_files(params.existing_cellsnp)
+        capture_cellsnp_files.out.cellsnp_loc.splitCsv(header: false, sep: ' ')
+            .map{row->tuple(row[0], "${row[1]}")}
+            .set{cellsnp_output_dir1}
+        cellsnp_output_dir1.join(cellsnp_with_npooled, remainder: true).set{filter_channel}
+        filter_channel.filter{ it[1] == null }.map{row -> tuple(row[0], row[2],row[3],row[4],row[5])}.set{cellsnp_with_npooled}
+        
+        capture_cellsnp_files.out.cellsnp_loc.splitCsv(header: false, sep: ' ')
+            .map{row->tuple(row[0], file("${row[1]}/cellSNP.cells.vcf.gz"))}
+            .set{cellsnp_cell_vcfs}           
+
+        CELLSNP(cellsnp_with_npooled2)
+
         cellsnp_output_dir2 = CELLSNP.out.cellsnp_output_dir
         cellsnp_output_dir=cellsnp_output_dir1.concat(cellsnp_output_dir2)
         cellsnp_cell_vcfs2=cellsnp_cell_vcfs.concat(CELLSNP.out.cell_vcfs)
