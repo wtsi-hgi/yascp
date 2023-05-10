@@ -107,6 +107,8 @@ class Concordances:
                 Concordant_Sites = set()
                 Discodrant_sites = set()
                 disc_sites = ''
+                true_discordant_count = 0
+                relaxed_concordant_count = 0
 
             return Concordant_Sites, Discodrant_sites, Total_Overlappin_sites, disc_sites,cell_vars_norm, true_discordant_count, relaxed_concordant_count
         
