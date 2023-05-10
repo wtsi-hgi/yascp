@@ -46,7 +46,7 @@ The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool
 13. Hard filters
 14. Genotype deconvolution and GT match against multiple panels.
 15. Citeseq DSB normalisations
-16. Cell genotype Concordance Calculations
+16. Cell genotype concordance Calculations
 
 <p align="center">
   <img src="https://github.com/wtsi-hgi/yascp/blob/main/assets/images/yascp_workflow.png" width="98%"/>

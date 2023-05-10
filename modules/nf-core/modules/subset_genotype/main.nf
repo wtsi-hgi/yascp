@@ -151,7 +151,7 @@ process SUBSET_GENOTYPE {
 
     output:
     tuple val(samplename), path("${samplename}.subset.vcf.gz"),path("${samplename}.subset.vcf.gz.csi"), emit: samplename_subsetvcf
-
+    
     script:
     """
         echo ${sample_subset_file}
@@ -389,6 +389,8 @@ workflow SUBSET_WORKF{
       }
       pools_panels.splitCsv(header: true, sep: '\t').map { row -> tuple(row['Pool_id'], file(row.vcf), file(row.vcf_csi)) }
                 .set{merged_expected_genotypes}
+      pools_panels.splitCsv(header: true, sep: '\t').map { row -> tuple(row['Pool_id'], file(row.vcf)) }
+                .set{samplename_subsetvcf_ibd}
       // If we are not subsetting anything down to the expected donors and are planning to use these genotypes multiple times we should just provide a single cohort genotype file as an input.
       study_merged_vcf = JOIN_STUDIES_MERGE.out.study_merged_vcf
       
@@ -396,5 +398,5 @@ workflow SUBSET_WORKF{
   emit:
     merged_expected_genotypes
     study_merged_vcf
-
+    samplename_subsetvcf_ibd
 }
