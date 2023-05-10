@@ -19,8 +19,8 @@ process CONCORDANCE_CALCLULATIONS {
         path(vcf_gt_match_csi),
         path(vcf_exp), 
         path(vcf_exp_csi),
-         path(cell_vcf),
-         path(donor_table),path(cell_assignments))
+        path(cell_vcf),
+        path(donor_table),path(cell_assignments))
 
     output:
         path("cell_concordance_table.tsv", emit: concordances)
@@ -31,6 +31,7 @@ process CONCORDANCE_CALCLULATIONS {
             echo ${pool_id}
             bcftools view ${vcf_exp} -R ${cell_vcf} -Oz -o sub_${pool_id}_Expected.vcf.gz
             bcftools view ${vcf_gt_match} -R ${cell_vcf} -Oz -o sub_${pool_id}_GT_Matched.vcf.gz
-            concordance_calculations_donor_exclusive.py --cpus $task.cpus --cell_vcf ${cell_vcf} --donor_assignments ${donor_table} --gt_match_vcf sub_${pool_id}_GT_Matched.vcf.gz --expected_vcf sub_${pool_id}_Expected.vcf.gz --cell_assignments ${cell_assignments}
+            bcftools view  -i 'FORMAT/DP > 3' ${cell_vcf} -Oz -o sub_${pool_id}_cellSNP_dp_filter.vcf.gz
+            concordance_calculations_donor_exclusive_dp.py --cpus $task.cpus --cell_vcf ${cell_vcf} --cell_vcf_dp sub_${pool_id}_cellSNP_dp_filter.vcf.gz --donor_assignments ${donor_table} --gt_match_vcf sub_${pool_id}_GT_Matched.vcf.gz --expected_vcf sub_${pool_id}_Expected.vcf.gz --cell_assignments ${cell_assignments}
         """
 }
