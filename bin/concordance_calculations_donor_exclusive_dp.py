@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__date__ = '2023-04-14'
+__date__ = '2023-05-10'
 __version__ = '0.0.1'
 import argparse
 import sys
@@ -44,6 +44,45 @@ class Concordances:
         def reset(self):
             self.cell_concordance_table ={}
 
+
+        def get_strict_discordance(self, snp_gtypes, cellsnp_gtypes):
+            '''
+            take a list of SNP array genotypes and a list of cellSNP genotypes, return counts of truly discordant 
+            sites and relaxed concordant sites
+            1) If you have 1/1 om SNP array you can not get a 0/1 or 0/0 genotype
+            2) if you have a 0/0 you can not get a 1/1 or 0/1
+            3) if you genotype is 0/1 you can get all copies: 0/0 . 0/1. 1/1
+            So - each obversed cellsnp allele must be in the array SNP gtype
+            '''
+            true_discordant = 0
+            relaxed_concordant = 0
+
+            for i in range(0, len(snp_gtypes)):
+                discordant = False
+                snp_alleles = [snp_gtypes[i][-3], snp_gtypes[i][-1]]
+                cellsnp_alleles = [cellsnp_gtypes[i][-3], cellsnp_gtypes[i][-1]]
+                snp_alleles_set = set(snp_alleles)
+                cellsnp_alleles_set = set(cellsnp_alleles)
+                
+                snp_var = snp_gtypes[i][:-3]
+                cellsnp_var = cellsnp_gtypes[i][:-3]
+
+                if not cellsnp_var == snp_var:
+                    print("Error with strict discordance calculations: " + snp_gtypes[i] + " " + cellsnp_gtypes[i])
+                    exit(1)
+                else:
+                    for allele in cellsnp_alleles_set:
+                        if not allele in snp_alleles_set:#if a cellSNP allele is found that is not in the array data this is discordant
+                            discordant = True
+                
+                if discordant == True:
+                    true_discordant+=1
+                else:
+                    relaxed_concordant+=1
+
+            return true_discordant, relaxed_concordant
+        
+
         def retrieve_concordant_discordant_sites(self,expected_vars_norm,cell_vars):
             # This function has been inspired by Hails Concordance implementations, however hail has a pitfall that it performs a lot of other stuff under hood and requires intermediate sorting operations.
             # Since the single cell calculations requires concordance calculations per cell this becomes very computationally heavy on Hail, hence we have implemented concordance calculations here as part of the pipeline.
@@ -61,14 +100,17 @@ class Concordances:
                 disc2= pd.merge(disc, df_cd, how='inner', on = 'combo_x')
                 disc2['expected_retrieved'] = disc2['0_x']+'::'+disc2['0_y']
                 disc_sites = ';'.join(disc2['expected_retrieved'])
+                #find truly discordant sites
+                true_discordant_count, relaxed_concordant_count = self.get_strict_discordance(disc2['0_y'], disc2['0_x'])
             else:
                 Total_Overlappin_sites = set()
                 Concordant_Sites = set()
                 Discodrant_sites = set()
                 disc_sites = ''
 
-            return Concordant_Sites, Discodrant_sites, Total_Overlappin_sites, disc_sites,cell_vars_norm
+            return Concordant_Sites, Discodrant_sites, Total_Overlappin_sites, disc_sites,cell_vars_norm, true_discordant_count, relaxed_concordant_count
         
+
         def set_results(self,to_set,id):
             # Recod to disk to save the loading mmeory time.
             with open(f'tmp_{id}.pkl', 'wb') as f:
@@ -76,7 +118,7 @@ class Concordances:
             self.record_dict[id]=f'tmp_{id}.pkl'
         
         def append_results_cell_concordances(self,result):
-            count=result[7]
+            count=result[9]
             try:
                 percent_concordant = result[2]/(result[3]+result[2])*100
             except:
@@ -88,14 +130,34 @@ class Concordances:
                 percent_discordant = 0
 
             try:
-                percent_concordant_dp = result[9]/(result[10]+result[9])*100
+                percent_relaxed_concordant = result[4]/(result[4]+result[5])*100
+            except:
+                percent_relaxed_concordant = 0
+            
+            try:
+                percent_strict_discordant = result[5]/(result[4]+result[5])*100
+            except:
+                percent_strict_discordant = 0
+
+            try:
+                percent_concordant_dp = result[11]/(result[12]+result[11])*100
             except:
                 percent_concordant_dp = 0
 
             try:
-                percent_discordant_dp = result[10]/(result[10]+result[9])*100
+                percent_discordant_dp = result[12]/(result[12]+result[11])*100
             except:
                 percent_discordant_dp = 0
+
+            try:
+                percent_relaxed_concordant_dp = result[13]/(result[13]+result[14])*100
+            except:
+                percent_relaxed_concordant_dp = 0
+            
+            try:
+                percent_strict_discordant_dp = result[14]/(result[13]+result[14])*100
+            except:
+                percent_strict_discordant_dp = 0
 
 
                 # self.reset_c()   
@@ -104,19 +166,27 @@ class Concordances:
                                                                     'GT 2':result[1],
                                                                     'Nr_Concordant':result[2],
                                                                     'Nr_Discordant':result[3],
+                                                                    'Nr_Relaxed_concordant':result[4],
+                                                                    'Nr_strict_discordant':result[5],
                                                                     'Percent Concordant':percent_concordant,
                                                                     'Percent Discordant':percent_discordant,
-                                                                    'NrTotal_Overlapping_sites_between_two_genotypes':result[4],
-                                                                    'Nr_donor_distinct_sites_within_pool_individuals':result[6],
-                                                                    'Number_of_sites_that_are_donor_concordant_and_exclusive':result[5],
-                                                                    'Discordant_Site_Identities':result[8],
-                                                                    'Nr_Concordant_dp':result[9],
-                                                                    'Nr_Discordant_dp':result[10],
+                                                                    'Percent_relaxed_concordant': percent_relaxed_concordant,
+                                                                    'Percent_strict_discordant': percent_strict_discordant,
+                                                                    'NrTotal_Overlapping_sites_between_two_genotypes':result[6],
+                                                                    'Nr_donor_distinct_sites_within_pool_individuals':result[8],
+                                                                    'Number_of_sites_that_are_donor_concordant_and_exclusive':result[7],
+                                                                    'Discordant_Site_Identities':result[10],
+                                                                    'Nr_Concordant_dp':result[11],
+                                                                    'Nr_Discordant_dp':result[12],
+                                                                    'Nr_relaxed_concordant_dp':result[13],
+                                                                    'Nr_strict_discordant_dp':result[14],
                                                                     'Percent_Concordant_dp':percent_concordant_dp,
                                                                     'Percent_Discordant_dp':percent_discordant_dp,
-                                                                    'NrTotal_Overlapping_sites_between_two_genotypes_dp':result[11],
-                                                                    'Number_of_sites_that_are_donor_concordant_and_exclusive_dp':result[12],
-                                                                    'Discordant_Site_Identities_dp':result[13]
+                                                                    'Percent_relaxed_concordant_dp': percent_relaxed_concordant_dp,
+                                                                    'Percent_strict_discordant_dp': percent_strict_discordant_dp,
+                                                                    'NrTotal_Overlapping_sites_between_two_genotypes_dp':result[15],
+                                                                    'Number_of_sites_that_are_donor_concordant_and_exclusive_dp':result[16],
+                                                                    'Discordant_Site_Identities_dp':result[17]
                                                                     }   
             
             if (count % 200 == 0):
@@ -182,22 +252,25 @@ class Concordances:
         
         def concordance_dable_production(self,expected_vars_norm,cell_vars,cell_vars_dp,cell1,donor_gt_match,dds,count):
             Nr_donor_distinct_sites = len(dds)
-            Concordant_Sites, Discodrant_sites, Total_Overlappin_sites,discordant_sites,cell_vars_norm = self.retrieve_concordant_discordant_sites(expected_vars_norm,cell_vars)
+            Concordant_Sites, Discodrant_sites, Total_Overlappin_sites,discordant_sites,cell_vars_norm, Nr_strict_discordant, relaxed_concordant_count = self.retrieve_concordant_discordant_sites(expected_vars_norm,cell_vars)
             Nr_Concordant = len(Concordant_Sites)
+            Nr_Relaxed_concordant = Nr_Concordant + relaxed_concordant_count
             Nr_Discordant = len(Discodrant_sites)
             Nr_Total_Overlapping_sites = len(Total_Overlappin_sites)
             Number_of_sites_that_are_donor_concordant_and_exclusive = len(set(dds).intersection(set(Concordant_Sites)))
             Number_of_sites_in_cellsnp_but_not_in_reference = set(cell_vars_norm['pos'])-set(expected_vars_norm['pos'])
 
-            Concordant_Sites_dp, Discodrant_sites_dp, Total_Overlappin_sites_dp,discordant_sites_dp,cell_vars_norm_dp = self.retrieve_concordant_discordant_sites(expected_vars_norm,cell_vars_dp)
+            Concordant_Sites_dp, Discodrant_sites_dp, Total_Overlappin_sites_dp,discordant_sites_dp,cell_vars_norm_dp, Nr_strict_discordant_dp, relaxed_concordant_count_dp = self.retrieve_concordant_discordant_sites(expected_vars_norm,cell_vars_dp)
             Nr_Concordant_dp = len(Concordant_Sites_dp)
+            Nr_Relaxed_concordant_dp = Nr_Concordant_dp + relaxed_concordant_count_dp
             Nr_Discordant_dp = len(Discodrant_sites_dp)
             Nr_Total_Overlapping_sites_dp = len(Total_Overlappin_sites_dp)
             Number_of_sites_that_are_donor_concordant_and_exclusive_dp = len(set(dds).intersection(set(Concordant_Sites_dp)))
             Number_of_sites_in_cellsnp_but_not_in_reference = set(cell_vars_norm['pos'])-set(expected_vars_norm['pos'])
 
-            return [cell1,donor_gt_match,Nr_Concordant,Nr_Discordant,Nr_Total_Overlapping_sites,Number_of_sites_that_are_donor_concordant_and_exclusive,
-                    Nr_donor_distinct_sites,count,discordant_sites,Nr_Concordant_dp,Nr_Discordant_dp,Nr_Total_Overlapping_sites_dp,
+            return [cell1,donor_gt_match,Nr_Concordant,Nr_Discordant,Nr_Relaxed_concordant, Nr_strict_discordant, Nr_Total_Overlapping_sites,
+                    Number_of_sites_that_are_donor_concordant_and_exclusive, Nr_donor_distinct_sites,count,discordant_sites,
+                    Nr_Concordant_dp,Nr_Discordant_dp, Nr_Relaxed_concordant_dp, Nr_strict_discordant_dp, Nr_Total_Overlapping_sites_dp,
                     Number_of_sites_that_are_donor_concordant_and_exclusive_dp,discordant_sites_dp]
         
         
@@ -473,353 +546,10 @@ curently_pushing =[] #this is a lock value to check if rhe curent field is updat
 All_Results={}
 cell_concordance_table = {}
 
-def append_results(result):
-    # exclusive_donor_variants
-    obs_with_gt= result[0]
-    list_val_with_gt= result[1]
-    idx = result[2]
-    list_val = result[3]
-    count = result[4]
-    count11=0
-    r = random.random()
-    for ob_id in obs_with_gt:
-        donor_loc_in_list = count11
-        alleles = list_val_with_gt[donor_loc_in_list].split(':')[idx]
-        if alleles!='.':
-            ids = "_".join([list_val[x] for x in [0, 1, 3, 4]])
-            donor_var = f"{ids}_{alleles}"
-            while ob_id in curently_pushing:
-               time.sleep(r*0.1)
-            curently_pushing.append(ob_id)           
-            exclusive_donor_variants[ob_id].add(donor_var)
-            curently_pushing.remove(ob_id)
-        count11+=1 
   
 def find(lst, a):
     return [i for i, x in enumerate(lst) if x==a ]
 
-def load_sample_mp(line,obs_ids,count,format_list):
-    list_val = line.rstrip().split("\t") #[:5] #:8
-    idx = find(list_val[8].split(':'),format_list[0])[0]
-    if len(list_val[3]) > 1 or len(list_val[4]) > 1:
-        # CURRENTLY DEALS ONLY WITH BIALELIC
-        print(f'{idx} var not bialelic')
-    else:
-        list_val2 = list_val[9:]
-        obs = pd.DataFrame(obs_ids)
-        lv = pd.DataFrame(list_val2)
-        lv_proc =lv[0].str.split(':').str[idx]
-        gt_exists = lv_proc[lv_proc != '.']
-        idx2 = gt_exists.index
-        obs_with_gt = obs.loc[idx2.values]
-        obs_with_gt = list(obs_with_gt[0].values)
-        list_val_with_gt = lv.loc[idx2.values]
-        list_val_with_gt = list(list_val_with_gt[0].values)
-        random.seed(count)
-        c = list(zip(obs_with_gt, list_val_with_gt))
-        random.shuffle(c)
-        obs_with_gt, list_val_with_gt = zip(*c)
-
-    return [obs_with_gt,list_val_with_gt,idx,list_val,count]
-
-# def load_VCF_batch_paralel(vcf_file, biallelic_only=False, load_sample=True, sparse=True,
-#              format_list=None):
-#     """
-#     Load whole VCF file by utilising multiple cores to speed up loading of large cell files
-#     -------------------
-#     Initially designed to load VCF from cellSNP output, requiring 
-#     1) all variants have the same format list;
-#     2) a line starting with "#CHROM", with sample ids.
-#     If these two requirements are satisfied, this function also supports general
-#     VCF files, e.g., genotype for multiple samples.
-
-#     Note, it may take a large memory, please filter the VCF with bcftools first.
-#     """
-#     pool = mp.Pool(cpus)
-#     import time
-#     if vcf_file[-3:] == ".gz" or vcf_file[-4:] == ".bgz":
-#         infile = gzip.open(vcf_file, "rb")
-#         is_gzip = True
-#     else:
-#         infile = open(vcf_file, "r")
-#         is_gzip = False
-    
-#     FixedINFO = {}
-#     contig_lines = []
-#     comment_lines = []
-#     var_ids, obs_ids, obs_dat = [], [], []
-    
-#     # exclusive_donor_variants = {}
-#     count=0 #57077    
-#     for line in infile:
-#         count+=1
-#         # if count>10000:
-#         #     break
-#         if is_gzip:
-#             line = line.decode('utf-8')
-#         if line.startswith("#"):
-#             if line.startswith("##contig="):
-#                 contig_lines.append(line.rstrip())
-#             if line.startswith("#CHROM"):
-#                 if load_sample:
-#                     obs_ids = line.rstrip().split("\t")[9:]
-#                     for ob_id in obs_ids:
-#                         exclusive_donor_variants[ob_id]=set()
-#                 key_ids = line[1:].rstrip().split("\t")[:8]
-#                 for _key in key_ids:
-#                     FixedINFO[_key] = []
-#             else:
-#                 comment_lines.append(line.rstrip())
-#         else:
-#             # #These lines activate will ignore the multiprocessing - was used to optimise the performance and check if there are no contestant for recording in directory.
-#             # line_count = load_sample_mp(line,obs_ids,count,format_list)       
-#             # append_results(line_count)
-#             ## Apply the multiprocessing strategy to load and process multiple lines simultaneously. 
-#             pool.apply_async(load_sample_mp, args=([line,obs_ids,count,format_list]),callback=append_results)
-#     pool.close()
-#     pool.join()
-#     return exclusive_donor_variants
-
-# def load_VCF_batch(vcf_file, biallelic_only=False, load_sample=True, sparse=True,
-#              format_list=None):
-#     """
-#     Load whole VCF file 
-#     -------------------
-#     Initially designed to load VCF from cellSNP output, requiring 
-#     1) all variants have the same format list;
-#     2) a line starting with "#CHROM", with sample ids.
-#     If these two requirements are satisfied, this function also supports general
-#     VCF files, e.g., genotype for multiple samples.
-
-#     Note, it may take a large memory, please filter the VCF with bcftools first.
-#     """
-    
-#     if vcf_file[-3:] == ".gz" or vcf_file[-4:] == ".bgz":
-#         infile = gzip.open(vcf_file, "rb")
-#         is_gzip = True
-#     else:
-#         infile = open(vcf_file, "r")
-#         is_gzip = False
-    
-#     FixedINFO = {}
-#     contig_lines = []
-#     comment_lines = []
-#     var_ids, obs_ids, obs_dat = [], [], []
-#     def find(lst, a):
-#         return [i for i, x in enumerate(lst) if x==a ]
-#     exclusive_donor_variants = {}
-#     count=0 #57077
-#     for line in infile:
-#         count+=1
-#         if is_gzip:
-#             line = line.decode('utf-8')
-#         if line.startswith("#"):
-#             if line.startswith("##contig="):
-#                 contig_lines.append(line.rstrip())
-#             if line.startswith("#CHROM"):
-#                 if load_sample:
-#                     obs_ids = line.rstrip().split("\t")[9:]
-#                     for ob_id in obs_ids:
-#                         exclusive_donor_variants[ob_id]=[]
-#                 key_ids = line[1:].rstrip().split("\t")[:8]
-#                 for _key in key_ids:
-#                     FixedINFO[_key] = []
-#             else:
-#                 comment_lines.append(line.rstrip())
-#         else:
-#             list_val = line.rstrip().split("\t") #[:5] #:8
-#             idx = find(list_val[8].split(':'),format_list[0])[0]
-#             if biallelic_only:
-#                 if len(list_val[3]) > 1 or len(list_val[4]) > 1:
-#                     continue
-#             if load_sample:
-#                 # obs_dat.append(list_val[9:])
-#                 list_val2 = list_val[9:]
-#                 # len(list_val2)
-#                 count11=0
-#                 obs = pd.DataFrame(obs_ids)
-#                 lv = pd.DataFrame(list_val2)
-#                 lv_proc =lv[0].str.split(':').str[idx]
-#                 gt_exists = lv_proc[lv_proc != '.']
-#                 idx2 = gt_exists.index
-#                 obs_with_gt = obs.loc[idx2.values]
-#                 obs_with_gt = list(obs_with_gt[0].values)
-#                 list_val_with_gt = lv.loc[idx2.values]
-#                 list_val_with_gt = list(list_val_with_gt[0].values)
-#                 for ob_id in obs_with_gt:
-#                     donor_loc_in_list = count11
-#                     alleles = list_val_with_gt[donor_loc_in_list].split(':')[idx]
-
-#                     if alleles!='.':
-#                         ids = "_".join([list_val[x] for x in [0, 1, 3, 4]])
-#                         donor_var = f"{ids}_{alleles}"
-#                         exclusive_donor_variants[ob_id].append(donor_var) 
-#                     count11+=1                      
-#     return exclusive_donor_variants
-
-# def load_VCF(vcf_file, biallelic_only=False, load_sample=True, sparse=True,
-#              format_list=None):
-#     """
-#     Load whole VCF file 
-#     -------------------
-#     Initially designed to load VCF from cellSNP output, requiring 
-#     1) all variants have the same format list;
-#     2) a line starting with "#CHROM", with sample ids.
-#     If these two requirements are satisfied, this function also supports general
-#     VCF files, e.g., genotype for multiple samples.
-
-#     Note, it may take a large memory, please filter the VCF with bcftools first.
-#     """
-#     if vcf_file[-3:] == ".gz" or vcf_file[-4:] == ".bgz":
-#         infile = gzip.open(vcf_file, "rb")
-#         is_gzip = True
-#     else:
-#         infile = open(vcf_file, "r")
-#         is_gzip = False
-    
-#     FixedINFO = {}
-#     contig_lines = []
-#     comment_lines = []
-#     var_ids, obs_ids, obs_dat = [], [], []
-#     def find(lst, a):
-#         return [i for i, x in enumerate(lst) if x==a ]
-#     exclusive_donor_variants = {}
-    
-#     for line in infile:
-#         if is_gzip:
-#             line = line.decode('utf-8')
-#         if line.startswith("#"):
-#             if line.startswith("##contig="):
-#                 contig_lines.append(line.rstrip())
-#             if line.startswith("#CHROM"):
-#                 if load_sample:
-#                     obs_ids = line.rstrip().split("\t")[9:]
-#                     for ob_id in obs_ids:
-#                         exclusive_donor_variants[ob_id]=[]
-#                 key_ids = line[1:].rstrip().split("\t")[:8]
-#                 for _key in key_ids:
-#                     FixedINFO[_key] = []
-#             else:
-#                 comment_lines.append(line.rstrip())
-#         else:
-#             list_val = line.rstrip().split("\t") #[:5] #:8
-#             idx = find(list_val[8].split(':'),format_list[0])[0]
-#             if biallelic_only:
-#                 if len(list_val[3]) > 1 or len(list_val[4]) > 1:
-#                     continue
-#             if load_sample:
-#                 obs_dat.append(list_val[8:])
-#                 count=0
-#                 for ob_id in obs_ids:
-#                     donor_loc_in_list = count+9
-#                     ids = "_".join([list_val[x] for x in [0, 1, 3, 4]])
-#                     alleles = list_val[donor_loc_in_list].split(':')[idx]
-#                     donor_var = f"{ids}_{alleles}"
-#                     exclusive_donor_variants[ob_id].append(donor_var)
-#                     count+=1
-                
-#             for i in range(len(key_ids)):
-#                 FixedINFO[key_ids[i]].append(list_val[i])
-#             var_ids.append("_".join([list_val[x] for x in [0, 1, 3, 4]]))
-#     infile.close()
-
-    # RV = {}
-    # RV["variants"]  = var_ids
-    # RV["FixedINFO"] = FixedINFO
-    # RV["contigs"]   = contig_lines
-    # RV["comments"]  = comment_lines
-    # if load_sample:
-    #     RV["samples"]   = obs_ids
-    #     RV["GenoINFO"], RV["n_SNP_tagged"]  = parse_sample_info(
-    #         obs_dat, sparse, format_list)
-    # return RV, exclusive_donor_variants
-
-# def parse_sample_info(sample_dat, sparse=True, format_list=None):
-#     """
-#     Parse genotype information for each sample
-#     Note, it requires the format for each variants to 
-#     be the same.
-#     """
-#     if sample_dat == [] or sample_dat is None:
-#         return None
-
-#     # require the same format for all variants
-#     format_all = [x[0].split(":") for x in sample_dat]
-#     if format_list is None:
-#         format_list = format_all[0]
-
-#     RV = {}
-#     n_SNP_tagged = np.zeros(len(format_list), np.int64)
-#     for _key in format_list:
-#         RV[_key] = []
-#     if sparse:
-#         ## sparse matrix requires all keys
-#         format_set_all = [set(x) for x in format_all]
-#         if format_set_all.count(set(format_list)) != len(format_all):
-#             print("Error: require the same format for all variants.")
-#             exit()
-
-#         RV['indices'] = []
-#         RV['indptr'] = [0]
-#         RV['shape'] = (len(sample_dat[0][1:]), len(sample_dat))
-#         missing_val = ":".join(["."] * len(format_list))
-        
-#         cnt = 0
-#         for j in range(len(sample_dat)): #variant j
-#             _line = sample_dat[j]
-#             key_idx = [format_all[j].index(_key) for _key in format_list]
-#             for i in range(len(_line[1:])): #cell i
-#                 if _line[i+1] == missing_val or _line[i+1] == ".":
-#                     continue
-#                 _line_key = _line[i+1].split(":")
-#                 for k in range(len(format_list)):
-#                     RV[format_list[k]].append(_line_key[key_idx[k]])
-
-#                 cnt += 1
-#                 RV['indices'].append(i)
-#                 n_SNP_tagged += 1
-#             RV['indptr'].append(cnt)
-#     else:
-#         for j in range(len(sample_dat)): #variant j
-#             _line = sample_dat[j]
-#             _line_split = [x.split(":") for x in _line[1:]]
-#             for il, _key in enumerate(format_list):
-#                 if _key in format_all[j]:
-#                     k = format_all[j].index(_key)
-#                     _line_key = [x[k] for x in _line_split]
-#                     RV[_key].append(_line_key)
-#                     n_SNP_tagged[il] += 1
-#                 else:
-#                     RV[_key].append(["."] * len(_line_split))
-
-#     # Check if format tags are well convered
-#     idx_low_tag = np.where(n_SNP_tagged < (0.1 * len(sample_dat)))[0]
-#     if len(idx_low_tag) > 0:
-#         print('[vireo] Warning: too few variants with tags!',
-#               '\t'.join([format_list[k] + ": " + str(n_SNP_tagged[k])
-#                          for k in range(len(format_list))]))
-    
-#     return RV, n_SNP_tagged
-
-# def concordance_table(donor_cell_vcf,donor_genotype_replicated,donor_in_question,donor_gt_match):
-#     # Now that we have correctly named 2 gtfiles we can calculate the concordances/discordances
-#     # Load the Genotypes in vcf format as per vireo  and calculate the concordances as per Hail.
-#     biallelic_dataset_donor_cell_vcf = donor_cell_vcf.filter_rows(hl.len(donor_cell_vcf.alleles) == 2)
-#     biallelic_dataset_donor_genotype_replicated = donor_genotype_replicated.filter_rows(hl.len(donor_genotype_replicated.alleles) == 2)
-#     samples =  hl.concordance(biallelic_dataset_donor_cell_vcf, biallelic_dataset_donor_genotype_replicated)
-#     samples2 = samples.to_pandas(flatten=False)
-#     dataset= []
-#     for i in range(0,len(samples2)):
-#         id_2=samples2.loc[i,'s']
-#         total_concordant = samples2.iloc[i]['concordance'][2][2]+samples2.iloc[i]['concordance'][3][3]+samples2.iloc[i]['concordance'][4][4]
-#         total_discordant = sum([sum(s[2:]) for s in samples2.iloc[i]['concordance'][2:]]) - total_concordant
-#         percent_discordant = total_discordant/(total_concordant+total_discordant)*100
-#         dataset.append({'donor_in_question':donor_in_question,'donor_gt_match':donor_gt_match,'sample':id_2,'total_concordant':total_concordant,'total_discordant':total_discordant,'percent_discordant':percent_discordant})
-
-#     Data2 = pd.DataFrame(dataset) 
-#     del biallelic_dataset_donor_cell_vcf
-#     del biallelic_dataset_donor_genotype_replicated
-#     return Data2
 
 def norm_genotypes(expected_vars):
     expected_vars = pd.DataFrame(expected_vars)
@@ -832,23 +562,6 @@ def norm_genotypes(expected_vars):
     expected_vars['combo']= expected_vars['ids']+'_'+expected_vars['vars']
     return expected_vars
 
-# def retrieve_concordant_discordant_sites(expected_vars,cell_vars):
-#     # This function has been inspired by Hails Concordance implementations, however hail has a pitfall that it performs a lot of other stuff under hood and requires intermediate sorting operations.
-#     # Since the single cell calculations requires concordance calculations per cell this becomes very computationally heavyon Hail, hence we have implemented concordance calculations here as part of the pipeline.
-#     # Author: M.Ozols
-#     expected_vars_norm = norm_genotypes(expected_vars)
-#     cell_vars_norm = norm_genotypes(cell_vars)
-#     Total_Overlappin_sites = set(expected_vars_norm['ids']).intersection(set(cell_vars_norm['ids']))
-#     expected_vars2 = expected_vars_norm[expected_vars_norm['ids'].isin(Total_Overlappin_sites)]
-#     cell_vars2 = cell_vars_norm[cell_vars_norm['ids'].isin(Total_Overlappin_sites)]
-#     Concordant_Sites = set(cell_vars2['combo']).intersection(set(expected_vars2['combo']))
-#     Discodrant_sites = set(cell_vars2['combo'])-set(expected_vars2['combo'])
-#     disc = pd.DataFrame(Discodrant_sites,columns=['combo_x'])
-#     df_cd = pd.merge(cell_vars2, expected_vars2, how='inner', on = 'pos')
-#     disc2= pd.merge(disc, df_cd, how='inner', on = 'combo_x')
-#     disc2['expected_retrieved'] = disc2['0_x']+'::'+disc2['0_y']
-#     disc_sites = ';'.join(disc2['expected_retrieved'])
-#     return Concordant_Sites, Discodrant_sites, Total_Overlappin_sites, disc_sites
 
 def donor_exclusive_sites(exclusive_don_variants2):
     # Here we generate a function for determining the sites that are donor exclusive
@@ -878,82 +591,6 @@ def donor_exclusive_sites(exclusive_don_variants2):
         donor_distinct_sites[col1]=distinct_donor_sites
         # Perform the distinct set function.
     return donor_distinct_sites
-
-# def calculate_concordances(all_cells_to_perform_operation_on,donor_cell_vcf,donor_genotype_replicated,donor_in_question,donor_gt_match,count):
-#     Cells_to_keep =hl.literal(set(all_cells_to_perform_operation_on))
-#     donor_single_cell_vcf = donor_cell_vcf.filter_cols(Cells_to_keep.contains(donor_cell_vcf['s']))
-#     del Cells_to_keep
-#     # donor_genotype_replicated = donor_genotype_replicated.checkpoint(f'/lustre/scratch123/hgi/teams/hgi/mo11/tmp_projects/cellsnp_optimisations/checkpoints/donor_checkpoint_{count}', overwrite=True)
-#     D2 = concordance_table(donor_single_cell_vcf,donor_genotype_replicated,donor_in_question,donor_gt_match)
-#     del donor_single_cell_vcf
-#     D2.to_csv(f'/lustre/scratch123/hgi/teams/hgi/mo11/tmp_projects/cellsnp_optimisations/{count}_out.csv',sep='\t')
-#     # Data_All= pd.concat([Data_All,D2])
-#     return {'idx':count,'Result':D2}
-
-#     # if we can load n cells at a time from the cellvcf file then we can see if the concordant sites are correctly picked up and which sites are concordant and which are not.
-
-# def append_results_cell_concordances(result):
-#     # print(result)
-#     try:
-#         percent_concordant = result[2]/(result[3]+result[2])*100
-#     except:
-#         percent_concordant = 0
-    
-#     try:
-#         percent_discordant = result[3]/(result[3]+result[2])*100
-#     except:
-#         percent_discordant = 0
-    
-#     cell_concordance_table[f'{result[0]} --- {result[1]}'] = {'GT 1':result[0],
-#                                                             'GT 2':result[1],
-#                                                             'Nr_Concordant':result[2],
-#                                                             'Nr_Discordant':result[3],
-#                                                             'Percent Concordant':percent_concordant,
-#                                                             'Percent Discordant':percent_discordant,
-#                                                             'NrTotal_Overlapping_sites between two gewnotypes':result[4],
-#                                                             'Nr_donor_distinct_sites_within_pool_individuals':result[6],
-#                                                             'Number_of_sites_that_are_donor_concordant_and_exclusive':result[5],
-#                                                             'Discordant Site Identities':result[8]
-#                                                             }
-    
-
-# def concordance_dable_production(expected_vars,cell_vars,cell1,donor_gt_match,dds,count):
-#     Nr_donor_distinct_sites = len(dds)
-#     Concordant_Sites, Discodrant_sites, Total_Overlappin_sites,discordant_sites = retrieve_concordant_discordant_sites(expected_vars,cell_vars)
-#     Nr_Concordant = len(Concordant_Sites)
-#     Nr_Discordant = len(Discodrant_sites)
-#     Nr_Total_Overlapping_sites = len(Total_Overlappin_sites)
-#     Number_of_sites_that_are_donor_concordant_and_exclusive = len(set(dds).intersection(set(Concordant_Sites)))
-#     return [cell1,donor_gt_match,Nr_Concordant,Nr_Discordant,Nr_Total_Overlapping_sites,Number_of_sites_that_are_donor_concordant_and_exclusive,Nr_donor_distinct_sites,count,discordant_sites]
-
-# def conc_table(donor_assignments_table,cell_assignments_table,exclusive_don_variants,exclusive_cell_variants):
-#     pool = mp.Pool(cpus)
-#     for i,row1 in donor_assignments_table.iterrows():
-#         donor_in_question = row1['donor_query']
-#         donor_gt_match = row1['donor_gt']
-#         # print(donor_gt_match)
-#         if (donor_gt_match=='NONE'):
-#             continue
-#         Cells_to_keep_pre = list(set(cell_assignments_table.loc[cell_assignments_table['donor_id']==donor_in_question,'cell']))
-#         try:
-#             # Now we subset this down to each of the uniqie variants per donor and check which of the concordant sites are exclusive to donor.
-#             dds = donor_distinct_sites[donor_gt_match]
-#         except:
-#             continue
-        
-#         count = 0
-#         for cell1 in Cells_to_keep_pre:
-#             count+=1
-#             # if count>100:
-#             #     break
-#             # print(count)
-#             expected_vars = exclusive_don_variants[donor_gt_match]
-#             cell_vars = exclusive_cell_variants[cell1]
-#             cell_concordance_table[f'{cell1} --- {donor_gt_match}']={}
-#             pool.apply_async(concordance_dable_production, args=([expected_vars,cell_vars,cell1,donor_gt_match,dds,count]),callback=append_results_cell_concordances)          
-#     pool.close()
-#     pool.join()
-#     return cell_concordance_table
 
 debug=False
 
