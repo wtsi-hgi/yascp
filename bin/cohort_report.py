@@ -174,7 +174,7 @@ if (os.path.exists(f"{path}/deconvolution/vireo_gt_fix")):
                 print('no successful matches in this cohort')
         return Total_Report
 
-
+    GT_MATCH['final_panel']=GT_MATCH['final_panel'].str.replace("_[1-9][0-9]*$","", regex=True)
     for confident_panel in set(GT_MATCH['final_panel']):
         if (confident_panel!='NONE' and confident_panel!='GT_cell_lines'):
             print(confident_panel)

@@ -190,9 +190,9 @@ workflow YASCP {
             // // ###################################
             // // ###################################
 
-            if (params.genotype_input.run_with_genotype_input){
-                eQTL(file__anndata_merged,assignments_all_pools)
-            }
+            // if (params.genotype_input.run_with_genotype_input){
+            //     eQTL(file__anndata_merged,assignments_all_pools)
+            // }
             
 
         }else{
