@@ -363,7 +363,7 @@ def main():
         ########                 
     # all_index = pd.DataFrame(adata.obs.index,columns=['col'])
     # all_together = all_indexes.str[0]+'-'+all_indexes.str[1]+'-'+all_indexes.str[2]
-    adata_original = adata.copy()
+    
     for outlier_filtering_strategy in outlier_filtering_strategys:
         metadata_columns = metadata_columns_original.copy()
         if (outlier_filtering_strategy == 'all_together'):
@@ -404,29 +404,18 @@ def main():
                     
                 else:
                     print(f'For a category {subset_id_for_ad_qc} we have only {len(subset_ad)} cells and as its not sufficient ammount to estimate distributions we assuma all pass QC')
-                subset_ad.uns['cell_outlier_estimator'] = method
+                # subset_ad.uns['cell_outlier_estimator'] = method
                 of = f'per_celltype_outliers__{outlier_filtering_strategy}/{subset_id_for_ad_qc}---{options.of}'
                 generate_plots(subset_ad,cell_qc_column,metadata_columns,metadata_columns_original,of)
+                del subset_ad
         adata.uns['cell_outlier_estimator'] = method  
-           
-        # Update the original data to flag those cells that passed the outlier
-        adata_original.obs[cell_qc_column] = False
-        adata_original.obs[cell_qc_column_score]=None
-        adata_original.obs.loc[
-            adata.obs['cell_id'][adata.obs[cell_qc_column]],
-            cell_qc_column
-        ] = True
-        adata_original.obs[cell_qc_column_score]=adata.obs[cell_qc_column_score]
-
-        adata_original.obs[['cell_id', cell_qc_column]].to_csv(
+        adata.obs[['cell_id', cell_qc_column]].to_csv(
             f'{options.of}-outliers_filtered__{cell_qc_column}.tsv.gz',
             sep='\t',
             compression=compression_opts,
             index=False,
             header=True
         )
-
-
 
         # Calculate cell_filtered_per_experiment
         filter_columns = [
@@ -485,8 +474,8 @@ def main():
 
     # Save the updated adata matrix
     # print("Saving data")
-    del adata_original.obs['cell_id']
-    adata_original.write(
+
+    adata.write(
         '{}.h5ad'.format(options.of),
         compression='gzip',
         compression_opts=options.anndata_compression_opts
