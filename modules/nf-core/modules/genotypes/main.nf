@@ -231,8 +231,10 @@ process GT_MATCH_POOL_IBD
     tuple val(pool_id),path("*_${pool_id}.genome*"), emit:plink_ibd
 
   script:
+    // The tresholds of LD pruning set as per: https://uw-gac.github.io/SISG_2021/ancestry-and-relatedness-inference.html
     """
-      plink --vcf ${vireo_gt_vcf} --genome unbounded --const-fid dummy --out ${mode2}_${mode}_${pool_id}
+      bcftools +prune -m 0.1 -w 1000000 ${vireo_gt_vcf} -Ov -o pruned_${vireo_gt_vcf}
+      plink --vcf pruned_${vireo_gt_vcf} --genome unbounded --const-fid dummy --out ${mode2}_${mode}_${pool_id}
     """
 }
 
