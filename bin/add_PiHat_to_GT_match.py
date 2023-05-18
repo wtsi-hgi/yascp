@@ -161,8 +161,10 @@ def main():
         donor_querry = row1['donor_query']
 
         set1 =Genome_PiHAT[Genome_PiHAT['IID1']==donor_querry]
+        set12 =Genome_PiHAT[Genome_PiHAT['IID1']==f'{donor_querry}_{donor_querry}']
         set2 =Genome_PiHAT[Genome_PiHAT['IID2']==donor_querry]
-        combo=pd.concat([set1,set2])
+        set21 =Genome_PiHAT[Genome_PiHAT['IID2']==f'{donor_querry}_{donor_querry}']
+        combo=pd.concat([set1,set12,set2,set21])
 
         set2_1 =combo[combo['IID1']==donor_gt]
         set2_2 =combo[combo['IID2']==donor_gt]
