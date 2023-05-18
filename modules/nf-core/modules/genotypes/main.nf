@@ -215,9 +215,9 @@ process GT_MATCH_POOL_IBD
           overwrite: "true"
 
   if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-      container "https://yascp.cog.sanger.ac.uk/public/singularity_images/wtsihgi-nf_yascp_plink1-1.0.img"
+      container "https://yascp.cog.sanger.ac.uk/public/singularity_images/nf_qc_scrna_v2.img"
   } else {
-      container "mercury/wtsihgi-nf_yascp_plink1-1.0"
+      container "mercury/nf_qc_scrna:v2"
   }
 
   
@@ -231,10 +231,12 @@ process GT_MATCH_POOL_IBD
     tuple val(pool_id),path("*_${pool_id}.genome*"), emit:plink_ibd
 
   script:
-    // The tresholds of LD pruning set as per: https://uw-gac.github.io/SISG_2021/ancestry-and-relatedness-inference.html
     """
-      bcftools +prune -m 0.1 -w 1000000 ${vireo_gt_vcf} -Ov -o pruned_${vireo_gt_vcf}
-      plink --vcf pruned_${vireo_gt_vcf} --genome unbounded --const-fid dummy --out ${mode2}_${mode}_${pool_id}
+      #bcftools +prune -m 0.2 -w 50 ${vireo_gt_vcf} -Ov -o pruned_${vireo_gt_vcf}
+      plink --vcf ${vireo_gt_vcf} --indep-pairwise 50 5 0.2 --out all2 --make-bed
+      plink --bfile all2 --extract all2.prune.in --out pruned --export vcf
+      plink --vcf pruned.vcf --genome unbounded --const-fid dummy --out ${mode2}_${mode}_${pool_id}
+      rm all*
     """
 }
 
@@ -271,7 +273,7 @@ process ASSIGN_DONOR_FROM_PANEL
 {
   // sum gtcheck discrepancy scores from multiple ouputput files of the same panel
   tag "${pool_panel_id}"
-  label 'process_medium'
+  label 'process_low'
   publishDir  path: "${params.outdir}/gtmatch/${pool_id}",
           pattern: "*.csv",
           mode: "${params.copy_mode}",
