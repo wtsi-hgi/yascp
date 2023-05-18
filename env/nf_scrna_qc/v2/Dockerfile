@@ -14,15 +14,10 @@ ENV HOME /home/${NB_USER}
 # USER container_user
 # RUN chown -R ${NB_USER}:${NB_USER} ${HOME}
 USER ${NB_USER}
-SHELL ["conda", "run", "-n", "cenv", "/bin/bash", "-c"]
 
-# RUN which pip
-
-############################ Setup: R packages #################################
-ENV CONDA_DEFAULT_ENV cenv
-ENV PATH ${HOME}/conda/envs/cenv/bin:$PATH
-USER root
-RUN conda install -c bioconda plink
-RUN conda install -c bioconda bcftools==1.15.1
+RUN conda config --add channels defaults & conda config --add channels bioconda & conda config --add channels conda-forge & conda config --set channel_priority strict
+RUN ls
+RUN conda install openssl
+RUN conda install  -c bioconda samtools bcftools plink 
 USER ${NB_USER}
 ################################################################################
