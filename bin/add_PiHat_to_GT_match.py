@@ -167,8 +167,10 @@ def main():
         combo=pd.concat([set1,set12,set2,set21])
 
         set2_1 =combo[combo['IID1']==donor_gt]
+        set2_1_2 =combo[combo['IID1']==f'{donor_gt}_{donor_gt}']
         set2_2 =combo[combo['IID2']==donor_gt]
-        combo2=pd.concat([set2_1,set2_2])
+        set2_2_2 =combo[combo['IID2']==f'{donor_gt}_{donor_gt}']
+        combo2=pd.concat([set2_1,set2_2,set2_1_2,set2_2_2])
         
         if Condition_Column=='Expected' and wpi:    
             try:

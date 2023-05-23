@@ -233,7 +233,7 @@ process GT_MATCH_POOL_IBD
   script:
     """
       #bcftools +prune -m 0.2 -w 50 ${vireo_gt_vcf} -Ov -o pruned_${vireo_gt_vcf}
-      plink --vcf ${vireo_gt_vcf} --indep-pairwise 50 5 0.2 --out all2 --make-bed
+      plink --vcf ${vireo_gt_vcf} --indep-pairwise 50 5 0.2 --out all2 --make-bed --double-id
       plink --bfile all2 --extract all2.prune.in --out pruned --export vcf
       plink --vcf pruned.vcf --genome unbounded --const-fid dummy --out ${mode2}_${mode}_${pool_id}
       rm all*

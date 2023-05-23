@@ -17,9 +17,9 @@ workflow ambient_RNA {
         capture_cellbender_files(params.cellbender_location,"${params.output_dir}/nf-preprocessing",params.input_data_table)
         capture_cellbender_files.out.alt_input.flatten().map{sample -> tuple("${sample}".replaceFirst(/.*\/captured\//,"").replaceFirst(/\/.*/,""),sample)}.set{alt_input}
         
-        capture_cellbender_files.out.cb_to_use_downstream.subscribe { println "cb_to_use_downstream2: $it" }
+        // capture_cellbender_files.out.cb_to_use_downstream.subscribe { println "cb_to_use_downstream2: $it" }
         capture_cellbender_files.out.cb_to_use_downstream.flatten().map{sample -> tuple("${sample}".replaceFirst(/.*\/cellbender\//,"").replaceFirst(/\/.*/,""),sample)}.set{cb_Filtered_pre2}
-        cb_Filtered_pre2.subscribe { println "cb_Filtered_pre2: $it" }
+        // cb_Filtered_pre2.subscribe { println "cb_Filtered_pre2: $it" }
         // alt_input.subscribe { println "alt_input: $it" }
         // remove the unncessary inputs.
         // Run only the files that are not processed. 
@@ -48,7 +48,7 @@ workflow ambient_RNA {
         // If we rerun this with a provided cb path this will not emit anything. 
         cb_Filtered =cb_Filtered_pre2.concat(cb_Filtered_pre)
         // cb_Filtered_pre2 = capture_cellbender_files.out.cellbender_downstream
-        cb_Filtered.subscribe { println "cb_Filtered: $it" }
+        // cb_Filtered.subscribe { println "cb_Filtered: $it" }
         if (params.citeseq){
             // Here we capture the filtered matrix and applyt the DSB normalisation on the citeseq datasets
             cb_Filtered.join(ab_data, by: [0], remainder: false).set{cb_ab}

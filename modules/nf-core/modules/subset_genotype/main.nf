@@ -196,8 +196,13 @@ process SUBSET_GENOTYPE2 {
         echo *_${donor_vcf}_subset.vcf.gz
         bcftools query -l ${donor_vcf} > samples.tsv
         extract_overlaps.py -vs samples.tsv ${g_p_map} -s ${sample_subset_file} -o sample_file.tsv || touch sample_file.tsv && echo 'no input, as a result of samples missing from the file'
-        bcftools view ${donor_vcf} -S sample_file.tsv -Oz -o ${donor_vcf}_subset.vcf.gz && bcftools index ${donor_vcf}_subset.vcf.gz || echo 'no input, as a result of samples missing from the file'
-        
+        if [ \$(cat sample_file.tsv | wc -l) -gt 0 ]; then
+          bcftools view ${donor_vcf} -S sample_file.tsv -Oz -o ${donor_vcf}_subset.vcf.gz 
+          bcftools index ${donor_vcf}_subset.vcf.gz
+        else
+          echo 'no'
+        fi
+        rm samples.tsv sample_file.tsv
     """
 }
 
