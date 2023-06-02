@@ -34,6 +34,7 @@ process DYNAMIC_DONOR_EXCLUSIVE_SNP_SELECTION{
         tuple val(samplename), path(vcf_file),path(csi),path(cellsnp_primary_file)
     output:
       tuple val(samplename), path("cellsnp_panel_${samplename}.vcf.gz"),emit:cellsnp_pool_panel
+      tuple val(samplename), path("set2_informative_sites_${samplename}.tsv"), path("set2_informative_sites_${samplename}.tsv"),emit:informative_uninformative_sites 
     script:       
       """
         echo ${samplename}
@@ -44,6 +45,8 @@ process DYNAMIC_DONOR_EXCLUSIVE_SNP_SELECTION{
         echo test > output.csv
         bcftools view -h ${cellsnp_primary_file} > cellsnp_panel_${samplename}.vcf
         cat cellsnp_variants.tsv >> cellsnp_panel_${samplename}.vcf
+        ln -s set1_uninformative_sites.tsv set1_uninformative_sites_${samplename}.tsv
+        ln -s set2_informative_sites.tsv set2_informative_sites_${samplename}.tsv
         gzip cellsnp_panel_${samplename}.vcf
         rm -r dynamic_snps.vcf.gz
       """
