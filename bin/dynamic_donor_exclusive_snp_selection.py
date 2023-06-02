@@ -333,7 +333,7 @@ if __name__ == "__main__":
     informative_sites_covered_in_default_panel = set(exta_snps.index)-set(cellsnp.index)
     
     cellsnp_exta_snps = cellsnp_exta_snps.drop_duplicates(subset=[0, 1])
-    set1_uninformative_sites = cellsnp_exta_snps.loc[set1_uninformative_sites]
+    set1_uninformative_sites = cellsnp.loc[set1_uninformative_sites]
     set2_informative_sites = exta_snps
     cellsnp_exta_snps.to_csv('cellsnp_variants.tsv',sep='\t',index=False,header=False)
     set1_uninformative_sites.to_csv('set1_uninformative_sites.tsv',sep='\t',index=False,header=False)
