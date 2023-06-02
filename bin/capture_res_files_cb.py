@@ -34,8 +34,12 @@ resolution = options.resolution
 
 PREFIX1=f"{os.getcwd()}/"
 os.mkdir(f"{PREFIX1}captured")
-all_vcfs = glob.glob(f'{PREFIX1}tmp1234/cellbender/*/*FPR_{resolution}*/matrix.mtx.gz')
-all_vcfs2 = glob.glob(f'{PREFIX1}tmp1234/cellbender/*/*/*FPR_{resolution}*/matrix.mtx.gz')
+all_vcfs = glob.glob(f'{PREFIX1}tmp1234/cellbender/*/cellbenderFPR_0pt1*')
+all_vcfs12 = glob.glob(f'{PREFIX1}tmp1234/cellbender/*/cellbender_FPR_0pt1*')
+all_vcfs.extend(all_vcfs12)
+all_vcfs2 = glob.glob(f'{PREFIX1}tmp1234/cellbender/*/*/cellbenderFPR_0pt1*')
+all_vcfs22 = glob.glob(f'{PREFIX1}tmp1234/cellbender/*/*/cellbender_FPR_0pt1*')
+all_vcfs2.extend(all_vcfs22)
 for vcf1 in all_vcfs2:
     vcf1='/'.join(vcf1.split('/')[:-1])
     name = vcf1.split('/')[-3]
