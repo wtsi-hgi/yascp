@@ -14,7 +14,7 @@ import multiprocessing as mp
 from multiprocessing import Lock
 import os
 
-
+use_only_informative_snps=True #When this is set to True we ignore any sites that have no difference between all the individuals.
 class VCF_Loader:
     
     def __init__(self, vcf_file, biallelic_only=True,
@@ -50,7 +50,8 @@ class VCF_Loader:
         
         if len(list_val[3]) > 1 or len(list_val[4]) > 1:
             # CURRENTLY DEALS ONLY WITH BIALELIC
-            print(f'{idx} var not bialelic')
+            _=f'{idx} var not bialelic'
+            # print(f'{idx} var not bialelic')
         else:
             list_val2 = list_val[9:]
             obs = pd.DataFrame(obs_ids)
@@ -66,9 +67,17 @@ class VCF_Loader:
             c = list(zip(obs_with_gt, list_val_with_gt))
             random.shuffle(c)
             obs_with_gt, list_val_with_gt = zip(*c)
-            # self.append_results([obs_with_gt,list_val_with_gt,idx,list_val,count])
-
-        return [obs_with_gt,list_val_with_gt,idx,list_val,count,coment_fields]
+            test_if_there_is_difference = set(pd.DataFrame(list_val_with_gt)[0].str.split(":").str[0])
+            nr_genotypes = len(test_if_there_is_difference)
+            if use_only_informative_snps==True:
+                if nr_genotypes>1:
+                    return [obs_with_gt,list_val_with_gt,idx,list_val,count,coment_fields]
+                else:
+                    _='Site is not informative'
+                    # print('Site is not informative')
+            else:
+                return [obs_with_gt,list_val_with_gt,idx,list_val,count,coment_fields]
+        
 
     def set_results(self,to_set,id):
         # Recod to disk to save the loading mmeory time.
@@ -78,48 +87,49 @@ class VCF_Loader:
     
     def append_results(self,result):
         # exclusive_donor_variants
-        obs_with_gt= result[0]
-        list_val_with_gt= result[1]
-        idx = result[2]
-        list_val = result[3]
-        count = result[4]
-        comment_fields= result[5]
-        # if any("R2=" in s for s in comment_fields):
-        #     comment_fields
-        # print(count)
-        # print(self.record_times)
-        # if
-        # print(self.last_count)
-        count11=0
-        # r = random.random()
-        # Issue is that this slows down after number of entries is recorded. So recoding takes longer and longer.
-        # every 500 itterations we push the data to a dictionary, later we combine these together.
-        if (count % 300 == 0):
-            print(f'recording and resetting memory {count}')
-            # self.record_dict[count]=self.exclusive_donor_variants
-            self.set_results(self.exclusive_donor_variants,count)
-            self.reset()  
-            self.reset_c()        
-        
-        for ob_id in obs_with_gt:
-            donor_loc_in_list = count11
-            alleles = list_val_with_gt[donor_loc_in_list].split(':')[idx]
-            if alleles!='.':
-                ids = "_".join([list_val[x] for x in [0, 1, 3, 4]])
-                donor_var = f"{ids}_{alleles}"
-                while ob_id in self.curently_pushing:
-                    time.sleep(r*0.01)
-                self.curently_pushing.append(ob_id)           
-                try:
-                    self.exclusive_donor_variants[ob_id].add(donor_var)
-                    self.record_times=self.record_times+1
-                except:
-                    self.exclusive_donor_variants[ob_id]=set()
-                    self.exclusive_donor_variants[ob_id].add(donor_var)
-                    self.record_times=self.record_times+1
-                self.curently_pushing.remove(ob_id)
-                # self.exclusive_donor_variants['CTGAAACGTAAGTTCC-1']
-            count11+=1 
+        if result!=None:
+            obs_with_gt= result[0]
+            list_val_with_gt= result[1]
+            idx = result[2]
+            list_val = result[3]
+            count = result[4]
+            comment_fields= result[5]
+            # if any("R2=" in s for s in comment_fields):
+            #     comment_fields
+            # print(count)
+            # print(self.record_times)
+            # if
+            # print(self.last_count)
+            count11=0
+            # r = random.random()
+            # Issue is that this slows down after number of entries is recorded. So recoding takes longer and longer.
+            # every 500 itterations we push the data to a dictionary, later we combine these together.
+            if (count % 300 == 0):
+                print(f'recording and resetting memory {count}')
+                # self.record_dict[count]=self.exclusive_donor_variants
+                self.set_results(self.exclusive_donor_variants,count)
+                self.reset()  
+                self.reset_c()        
+            
+            for ob_id in obs_with_gt:
+                donor_loc_in_list = count11
+                alleles = list_val_with_gt[donor_loc_in_list].split(':')[idx]
+                if alleles!='.':
+                    ids = "_".join([list_val[x] for x in [0, 1, 3, 4]])
+                    donor_var = f"{ids}_{alleles}"
+                    while ob_id in self.curently_pushing:
+                        time.sleep(r*0.01)
+                    self.curently_pushing.append(ob_id)           
+                    try:
+                        self.exclusive_donor_variants[ob_id].add(donor_var)
+                        self.record_times=self.record_times+1
+                    except:
+                        self.exclusive_donor_variants[ob_id]=set()
+                        self.exclusive_donor_variants[ob_id].add(donor_var)
+                        self.record_times=self.record_times+1
+                    self.curently_pushing.remove(ob_id)
+                    # self.exclusive_donor_variants['CTGAAACGTAAGTTCC-1']
+                count11+=1 
 
     def combine_written_files(self):
         to_export = self.exclusive_donor_variants
@@ -279,7 +289,6 @@ if __name__ == "__main__":
         help='cellsnp'
     )   
 
- 
     options = parser.parse_args()
     vcf = options.vcf
     cellsnp = options.cellsnp
@@ -292,14 +301,18 @@ if __name__ == "__main__":
     GT_Matched_variants = loader2.load_VCF_batch_paralel()
     donor_distinct_sites = donor_exclusive_sites(GT_Matched_variants)
     cellsnp = pd.read_csv(cellsnp,sep='\t',comment='#',header=None)
-    
+    cellsnp[0]=cellsnp[0].astype(str)
+    cellsnp[1]=cellsnp[1].astype(str)
+    donor_informaive_sites = GT_Matched_variants
     ##CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO
     # chr10	20733	.	T	A	.	.	AF_UKBB=.;AF_ELGH=.;AF_spike_in=0.594649
     # chr10	44822	.	A	C	.	.	AF_UKBB=0.0452576;AF_ELGH=.;AF_spike_in=0.159744
     # chr10	45402	.	T	C	.	.	AF_UKBB=.;AF_ELGH=0.654687;AF_spike_in=.
     exta_snps = pd.DataFrame()
-    for key1 in donor_distinct_sites.keys():
-        all_sites = pd.DataFrame(donor_distinct_sites[key1],columns=['f1'])
+    # in the folowing
+    iteration_dataframe = donor_informaive_sites #Here we provide either donor distinct sites or donor informative sites. 
+    for key1 in iteration_dataframe.keys():
+        all_sites = pd.DataFrame(iteration_dataframe[key1],columns=['f1'])
         splits = all_sites['f1'].str.split('_')
         all_sites['#CHROM']=splits.str[0]
         all_sites['POS']=splits.str[1]
@@ -311,11 +324,20 @@ if __name__ == "__main__":
         all_sites['INFO']=f'.'
         all_sites = all_sites.drop(columns=['f1'])
         exta_snps=pd.concat([exta_snps,all_sites])
-
+    # All_Extra_informative_Sites = exta_snps.drop_duplicates()
     exta_snps.columns = cellsnp.columns   
     cellsnp_exta_snps=pd.concat([cellsnp,exta_snps])
+    exta_snps.index=exta_snps[0]+'_'+exta_snps[1]
+    cellsnp.index=cellsnp[0]+'_'+cellsnp[1]
+    set1_uninformative_sites=set(cellsnp.index)-set(exta_snps.index)
+    informative_sites_covered_in_default_panel = set(exta_snps.index)-set(cellsnp.index)
+    
     cellsnp_exta_snps = cellsnp_exta_snps.drop_duplicates(subset=[0, 1])
+    set1_uninformative_sites = cellsnp_exta_snps.loc[set1_uninformative_sites]
+    set2_informative_sites = exta_snps
     cellsnp_exta_snps.to_csv('cellsnp_variants.tsv',sep='\t',index=False,header=False)
+    set1_uninformative_sites.to_csv('set1_uninformative_sites.tsv',sep='\t',index=False,header=False)
+    set2_informative_sites.to_csv('set2_informative_sites.tsv',sep='\t',index=False,header=False)
     print('Done')
     
     
