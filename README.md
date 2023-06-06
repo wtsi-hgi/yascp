@@ -54,7 +54,7 @@ The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool
 
 ## Documentation: Prepearing your own data and interpreting the results
 
-The nf-core/yascp pipeline comes with documentation about the pipeline [usage](https://nf-co.re/yascp/usage), [parameters](https://nf-co.re/yascp/parameters) and [output](https://nf-co.re/yascp/output). To understand how to prepeare your own data and how to interpret the results please refear to documents [HERE](https://github.com/wtsi-hgi/yascp/tree/main/docs)
+To understand how to prepeare your own data and how to interpret the results please refear to documents [HERE](https://github.com/wtsi-hgi/yascp/tree/main/docs)
 
 ## Quick Start
 Easyest to do is using a conda enviroment.
