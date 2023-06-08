@@ -69,6 +69,7 @@ process CELLSNP {
     input: 
         tuple val(samplename), path(bam_file), path(bai_file), path(barcodes_tsv_gz),val(n_pooled),path(region_vcf)
 
+
     output:
       tuple val(samplename), file("cellsnp_${samplename}"), emit: cellsnp_output_dir
       tuple val(samplename), path("cellsnp_${samplename}/cellSNP.cells.vcf.gz"), emit: cell_vcfs

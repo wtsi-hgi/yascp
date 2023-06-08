@@ -112,9 +112,9 @@ workflow  main_deconvolution {
         capture_cellsnp_files.out.cellsnp_loc.splitCsv(header: false, sep: ' ')
             .map{row->tuple(row[0], "${row[1]}")}
             .set{cellsnp_output_dir1}
-        cellsnp_output_dir1.join(cellsnp_with_npooled, remainder: true).set{filter_channel}
+        cellsnp_output_dir1.join(cellsnp_with_npooled2, remainder: true).set{filter_channel}
         filter_channel.subscribe { println "cellsnp_output_dir1 filter_channel: $it" }
-        filter_channel.filter{ it[1] == null }.map{row -> tuple(row[0], row[2],row[3],row[4],row[5])}.set{cellsnp_with_npooled}
+        filter_channel.filter{ it[1] == null }.map{row -> tuple(row[0], row[2],row[3],row[4],row[5],row[6])}.set{cellsnp_with_npooled}
         
         capture_cellsnp_files.out.cellsnp_loc.splitCsv(header: false, sep: ' ')
             .map{row->tuple(row[0], file("${row[1]}/cellSNP.cells.vcf.gz"))}
