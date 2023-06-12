@@ -4,7 +4,7 @@ nextflow.enable.dsl=2
 
 include { CELLSNP;capture_cellsnp_files;DYNAMIC_DONOR_EXCLUSIVE_SNP_SELECTION } from "$projectDir/modules/nf-core/modules/cellsnp/main"
 include { SUBSET_GENOTYPE } from "$projectDir/modules/nf-core/modules/subset_genotype/main"
-include { VIREO } from "$projectDir/modules/nf-core/modules/vireo/main"
+include { VIREO;VIREO_SUBSAMPLING;VIREO_SUBSAMPLING_PROCESSING } from "$projectDir/modules/nf-core/modules/vireo/main"
 include { GUZIP_VCF } from "$projectDir/modules/nf-core/modules/guzip_vcf/main"
 include { SOUPORCELL } from "$projectDir/modules/nf-core/modules/souporcell/main"
 include { SPLIT_DONOR_H5AD } from "$projectDir/modules/nf-core/modules/split_donor_h5ad/main"
@@ -104,7 +104,7 @@ workflow  main_deconvolution {
         }else{
             cellsnp_with_npooled2 = cellsnp_with_npooled.combine(Channel.fromPath(params.cellsnp.vcf_candidate_snps))
         }
-        cellsnp_with_npooled2.subscribe { println "cellsnp_with_npooled2: $it" }
+        // cellsnp_with_npooled2.subscribe { println "cellsnp_with_npooled2: $it" }
         
 
         log.info('Capturing some of the existing CELLSNP files')
@@ -164,7 +164,16 @@ workflow  main_deconvolution {
 
         //Vireo creates per pool vcf vit donor0 etc, or if genotypes are provided genotype IDs will be placed there.
         // full_vcf2.subscribe { println "full_vcf2: $it" }
+
+        Channel.of(1..params.vireo.subsample_times).set{itterations}
+
+        full_vcf2.combine(itterations).set{vireo_extra_repeats}
+        // vireo_extra_repeats.subscribe { println "vireo_extra_repeats is: $it" }
         VIREO(full_vcf2)
+        VIREO_SUBSAMPLING(vireo_extra_repeats)
+        VIREO_SUBSAMPLING.out.output_dir.concat(VIREO.out.output_dir).set{tuple_1}
+        tuple_1.groupTuple(by:0).set{vspp0}
+        VIREO_SUBSAMPLING_PROCESSING(vspp0)
         //But to make it consistent we still randomly assign donor IDs per pool for each of the names.
         VIREO.out.all_required_data.set{replacement_input}
         // replacement_input.subscribe { println "replacement_input: $it" }
@@ -179,6 +188,7 @@ workflow  main_deconvolution {
         // vir_repl_input.view()
         VIREO_GT_FIX_HEADER(REPLACE_GT_DONOR_ID2.out.infered_vcf,genome)
         VIREO_ADD_SAMPLE_PREFIX(VIREO_GT_FIX_HEADER.out.infered_vcf)
+        
         // VIREO_ADD_SAMPLE_PREFIX.out.infered_vcf.collect().subscribe { println "MERGE_GENOTYPES_IN_ONE_VCF_INFERED: $it" }
         // MERGE_GENOTYPES_IN_ONE_VCF_INFERED(VIREO_ADD_SAMPLE_PREFIX.out.infered_vcf.collect(),'infered')
         
