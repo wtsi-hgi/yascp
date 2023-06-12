@@ -39,7 +39,7 @@ process DYNAMIC_DONOR_EXCLUSIVE_SNP_SELECTION{
         echo ${samplename}
         echo ${vcf_file}
         echo ${cellsnp_primary_file}
-        bcftools view -i 'MAF > 0.0001 & R2>=1.00' -Oz -o dynamic_snps.vcf.gz ${vcf_file}
+        bcftools view -i 'MAF > 0.0001 & R2>=1.00' -Oz -o dynamic_snps.vcf.gz ${vcf_file} || echo 'R2 doesnt exist' && ln -s ${vcf_file} dynamic_snps.vcf.gz
         dynamic_donor_exclusive_snp_selection.py -cpus ${task.cpus} -vcf dynamic_snps.vcf.gz -cellsnp ${cellsnp_primary_file}
         echo test > output.csv
         bcftools view -h ${cellsnp_primary_file} > cellsnp_panel_${samplename}.vcf
@@ -68,6 +68,7 @@ process CELLSNP {
 
     input: 
         tuple val(samplename), path(bam_file), path(bai_file), path(barcodes_tsv_gz),val(n_pooled),path(region_vcf)
+
 
     output:
       tuple val(samplename), file("cellsnp_${samplename}"), emit: cellsnp_output_dir
