@@ -216,12 +216,12 @@ workflow YASCP {
         // ###################################
         // ###################################
 
-        if (!params.skip_handover){
-            data_handover(params.output_dir,
-                            process_finish_check_channel,
-                            ch_poolid_csv_donor_assignments,
-                            bam_split_channel) 
-        }
+        // if (!params.skip_handover){
+        //     data_handover(params.output_dir,
+        //                     process_finish_check_channel,
+        //                     ch_poolid_csv_donor_assignments,
+        //                     bam_split_channel) 
+        // }
                         
                         
 }
