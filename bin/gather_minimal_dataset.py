@@ -483,7 +483,9 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
     df_cellbender = df_cellbender.set_index('experiment_id')
     if df_cellbender is not None and (len(df_cellbender)!=0):
         f=df_cellbender.loc[expid, 'data_path_10x_format']
-        
+        if (type(f) == str):
+            print('yes')
+            f=[f]
         for id in f:
             print(id)
             try:
@@ -803,9 +805,9 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
             Median_UMIs_per_cell= statistics.median(pd.DataFrame(Donor_qc_files.X.sum(axis=1))[0])
 
             Cell_numbers = ''
-            for type in set(Donor_cell_assignments['predicted.celltype.l2']):
-                nr_cells_of_this_type = len(Donor_cell_assignments[Donor_cell_assignments['predicted.celltype.l2']==type])
-                Cell_numbers+=f"{type}:{nr_cells_of_this_type} ; "
+            for type1 in set(Donor_cell_assignments['predicted.celltype.l2']):
+                nr_cells_of_this_type = len(Donor_cell_assignments[Donor_cell_assignments['predicted.celltype.l2']==type1])
+                Cell_numbers+=f"{type1}:{nr_cells_of_this_type} ; "
 
 
             Donor_Stats = gather_donor(
@@ -1033,6 +1035,7 @@ if __name__ == '__main__':
     adqc.obs['cell_passes_qc-per:all_together::exclude:score']= adqc.obs['cell_passes_qc-per:all_together::exclude:score'].astype(float)
     
     for expid in df_raw.index:
+        print(expid)
         # try:
         # expid ='OTARscRNA12924807'
         s = adqc.obs['convoluted_samplename'] == expid
