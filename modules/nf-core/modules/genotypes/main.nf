@@ -32,7 +32,7 @@ process MERGE_GENOTYPES_IN_ONE_VCF{
 
       if [ \$(cat fofn_vcfs.txt | wc -l) -gt 1 ]; then
           echo 'yes'
-          bcftools merge --force-samples -file-list ${vireo_gt_vcf} -Ou | bcftools sort -T \$PWD -Oz -o ${mode}_merged_vcf_file_all_pools.vcf.gz
+          bcftools merge --force-samples -i MAF:join -file-list ${vireo_gt_vcf} -Ou | bcftools sort -T \$PWD -Oz -o ${mode}_merged_vcf_file_all_pools.vcf.gz
           bcftools index ${mode}_merged_vcf_file_all_pools.vcf.gz
       else
         echo 'no'
