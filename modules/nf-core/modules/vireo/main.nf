@@ -95,7 +95,9 @@ process VIREO_SUBSAMPLING {
 process VIREO_SUBSAMPLING_PROCESSING{
     tag "${samplename}"
     label 'process_medium'
-    publishDir "${params.outdir}/deconvolution/vireo/${samplename}/",  mode: "${params.vireo.copy_mode}", overwrite: true
+    publishDir  path: "${params.outdir}/concordances/${samplename}",
+                mode: "${params.copy_mode}",
+                overwrite: "true"
 
 
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
