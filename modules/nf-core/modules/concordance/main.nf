@@ -1,6 +1,6 @@
 process CONCORDANCE_CALCLULATIONS {
 
-    tag "${samplename}"
+    tag "${pool_id}"
     label 'process_medium'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_62bd56a-2021-12-15-4d1ec9312485.sif"
@@ -30,7 +30,10 @@ process CONCORDANCE_CALCLULATIONS {
         """
             echo ${pool_id}
             bcftools view ${vcf_exp} -R ${cell_vcf} -Oz -o sub_${pool_id}_Expected.vcf.gz
-            bcftools view ${vcf_gt_match} -R ${cell_vcf} -Oz -o sub_${pool_id}_GT_Matched.vcf.gz
+            if [ "${vcf_gt_match}" != "fake_file.fq" ]; then
+                bcftools view ${vcf_gt_match} -R ${cell_vcf} -Oz -o sub_${pool_id}_GT_Matched.vcf.gz
+            fi
+            
             bcftools view  -i 'FORMAT/DP > 3' ${cell_vcf} -Oz -o sub_${pool_id}_cellSNP_dp_filter.vcf.gz
             concordance_calculations_donor_exclusive_dp.py --cpus $task.cpus --cell_vcf ${cell_vcf} --cell_vcf_dp sub_${pool_id}_cellSNP_dp_filter.vcf.gz --donor_assignments ${donor_table} --gt_match_vcf sub_${pool_id}_GT_Matched.vcf.gz --expected_vcf sub_${pool_id}_Expected.vcf.gz --cell_assignments ${cell_assignments}
         """

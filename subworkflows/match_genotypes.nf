@@ -59,11 +59,24 @@ workflow match_genotypes {
     ou1.mix(ou2).set{ou3}
 
     // Now we calculate the concordance/discordance scores of each of the cells against the donors.
-    input3 = merged_GT_Matched_genotypes.combine(merged_expected_genotypes, by: 0)
-    input4 = input3.combine(cellsnp_cell_vcfs2, by: 0)
+    // merged_GT_Matched_genotypes.subscribe { println "merged_GT_Matched_genotypes: $it" }
+    // merged_expected_genotypes.subscribe { println "merged_expected_genotypes: $it" }
+    input3 = merged_GT_Matched_genotypes.join(merged_expected_genotypes, remainder: true)
+    input3.map { row -> 
+      if(row[1]==null){
+        tuple(row[0], "$projectDir/assets/fake_file.fq","$projectDir/assets/fake_file2.fq",row[2],row[[3]]) 
+      }else{
+         tuple(row[0], row[1],row[2],row[3],row[[4]]) 
+      }
+    }.set{input32}
+
+    // input32.subscribe { println "input32: $it" }
+    input4 = input32.combine(cellsnp_cell_vcfs2, by: 0)
+    // input4.subscribe { println "input4: $it" }
     input5 = input4.combine(MATCH_GT_VIREO.out.donor_match_table_with_pool_id, by:0)
+    // input5.subscribe { println "input5: $it" }
     input6 = input5.combine(cell_assignments, by:0)
-    input6.subscribe { println "input6: $it" }
+    // input6.subscribe { println "input6: $it" }
     CONCORDANCE_CALCLULATIONS(input6)
 
 

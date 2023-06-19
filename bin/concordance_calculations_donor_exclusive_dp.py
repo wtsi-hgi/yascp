@@ -526,12 +526,12 @@ parser.add_argument(
     help=''
 )
 
-cpus=10
-cell_vcf = '/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/qc/Cardinal_46291_Nov_29_2022/results_rsync2_copy/results/cellsnp/cellsnp_CRD_CMB13259712/cellSNP.cells.vcf.gz'
-donor_assignments = '/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/qc/Cardinal_46291_Nov_29_2022/results_rsync2_copy/results/gtmatch/CRD_CMB13259712/PiHAT_Stats_File_CRD_CMB13259712.csv'
-gt_match_vcf = '/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/qc/Cardinal_46291_Nov_29_2022/results_rsync2/results/subset_genotypes/Genotype_CRD_CMB13259712/InferedMerge_InferedGTMatched_CRD_CMB13259712.vcf.gz'
-expected_vcf = '/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/qc/Cardinal_46291_Nov_29_2022/results_rsync2/results/subset_genotypes/Genotype_CRD_CMB13259712/InferedMerge_InferedExpected_CRD_CMB13259712.vcf.gz'
-cell_assignments = '/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/qc/Cardinal_46291_Nov_29_2022/results_rsync2_copy/results/deconvolution/vireo_gt_fix/CRD_CMB13259712/GT_replace_donor_ids_false.tsv'
+# cpus=10
+# cell_vcf = '/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/qc/Cardinal_46291_Nov_29_2022/results_rsync2_copy/results/cellsnp/cellsnp_CRD_CMB13259712/cellSNP.cells.vcf.gz'
+# donor_assignments = '/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/qc/Cardinal_46291_Nov_29_2022/results_rsync2_copy/results/gtmatch/CRD_CMB13259712/PiHAT_Stats_File_CRD_CMB13259712.csv'
+# gt_match_vcf = '/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/qc/Cardinal_46291_Nov_29_2022/results_rsync2/results/subset_genotypes/Genotype_CRD_CMB13259712/InferedMerge_InferedGTMatched_CRD_CMB13259712.vcf.gz'
+# expected_vcf = '/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/qc/Cardinal_46291_Nov_29_2022/results_rsync2/results/subset_genotypes/Genotype_CRD_CMB13259712/InferedMerge_InferedExpected_CRD_CMB13259712.vcf.gz'
+# cell_assignments = '/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/qc/Cardinal_46291_Nov_29_2022/results_rsync2_copy/results/deconvolution/vireo_gt_fix/CRD_CMB13259712/GT_replace_donor_ids_false.tsv'
 
 
 options = parser.parse_args()
@@ -614,12 +614,16 @@ if __name__ == "__main__":
         with open('tmp_exclusive_cell_variants_dp.pkl', 'rb') as f:
             exclusive_cell_variants_dp = pickle.load(f) 
     else:  
-        print('---Genotype loader init----')    
-        loader2 = VCF_Loader(gt_match_vcf, biallelic_only=True,
-                        sparse=False, format_list=['GT'])
-        GT_Matched_variants = loader2.load_VCF_batch_paralel()
-        del loader2
-
+        print('---Genotype loader init----')   
+        if (os.path.exists(gt_match_vcf)):
+            loader2 = VCF_Loader(gt_match_vcf, biallelic_only=True,
+                            sparse=False, format_list=['GT'])
+            GT_Matched_variants = loader2.load_VCF_batch_paralel()
+            del loader2
+        else:
+            GT_Matched_variants = {}
+        
+        
         with open(f'tmp_GT_Matched_variants.pkl', 'wb') as f:
             pickle.dump(GT_Matched_variants, f)
         
