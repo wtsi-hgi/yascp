@@ -29,12 +29,14 @@ process DYNAMIC_DONOR_EXCLUSIVE_SNP_SELECTION{
     } else {
         container "mercury/scrna_deconvolution:62bd56a"
     }
-
+    publishDir  path: "${params.outdir}/concordances/${samplename}",
+                mode: "${params.copy_mode}",
+                overwrite: "true"
     input: 
         tuple val(samplename), path(vcf_file),path(csi),path(cellsnp_primary_file)
     output:
       tuple val(samplename), path("cellsnp_panel_${samplename}.vcf.gz"),emit:cellsnp_pool_panel
-      tuple val(samplename), path("set2_informative_sites_${samplename}.tsv"), path("set2_informative_sites_${samplename}.tsv"),emit:informative_uninformative_sites 
+      tuple val(samplename), path("set2_informative_sites_${samplename}.tsv"), path("set1_uninformative_sites_${samplename}.tsv"),emit:informative_uninformative_sites 
     script:       
       """
         echo ${samplename}
