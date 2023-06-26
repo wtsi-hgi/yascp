@@ -317,11 +317,13 @@ process JOIN_STUDIES_MERGE{
       """
         vcf_name=\$(python ${projectDir}/bin/random_id.py)
        
+       
         ${cmd__run}
         fofn_input_subset.sh "${study_vcf_files}"
         if [ \$(cat fofn_vcfs.txt | wc -l) -gt 1 ]; then
             echo 'yes'
-            bcftools merge -file-list ${study_vcf_files} -Ou | bcftools sort -T \$PWD -Oz -o pre_${mode}_${mode2}_\${vcf_name}__vcf.vcf.gz
+            ${cmd__run}
+            bcftools merge -i MAF:join -file-list ${study_vcf_files} -Ou | bcftools sort -T \$PWD -Oz -o pre_${mode}_${mode2}_\${vcf_name}__vcf.vcf.gz
             bcftools index pre_${mode}_${mode2}_\${vcf_name}__vcf.vcf.gz
             ${cmd}
         else
