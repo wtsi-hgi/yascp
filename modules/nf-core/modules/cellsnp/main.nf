@@ -36,7 +36,7 @@ process DYNAMIC_DONOR_EXCLUSIVE_SNP_SELECTION{
         tuple val(samplename), path(vcf_file),path(csi),path(cellsnp_primary_file)
     output:
       tuple val(samplename), path("cellsnp_panel_${samplename}.vcf.gz"),emit:cellsnp_pool_panel
-      tuple val(samplename), path("set2_informative_sites_${samplename}.tsv"), path("set1_uninformative_sites_${samplename}.tsv"),emit:informative_uninformative_sites 
+      tuple val(samplename), path("set2_informative_sites_${samplename}.tsv"), path("set1_uninformative_sites_${samplename}.tsv",path("variants_description.tsv")),emit:informative_uninformative_sites 
     script:       
       """
         echo ${samplename}

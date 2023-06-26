@@ -299,7 +299,7 @@ if __name__ == "__main__":
                     sparse=False, format_list=['GT'])
 
     GT_Matched_variants = loader2.load_VCF_batch_paralel()
-    donor_distinct_sites = donor_exclusive_sites(GT_Matched_variants)
+    # donor_distinct_sites = donor_exclusive_sites(GT_Matched_variants)
     cellsnp = pd.read_csv(cellsnp,sep='\t',comment='#',header=None)
     cellsnp[0]=cellsnp[0].astype(str)
     cellsnp[1]=cellsnp[1].astype(str)
@@ -326,6 +326,7 @@ if __name__ == "__main__":
         exta_snps=pd.concat([exta_snps,all_sites])
     # All_Extra_informative_Sites = exta_snps.drop_duplicates()
     exta_snps.columns = cellsnp.columns   
+    exta_snps=exta_snps.drop_duplicates(subset=[0, 1])
     cellsnp_exta_snps=pd.concat([cellsnp,exta_snps])
     exta_snps.index=exta_snps[0]+'_'+exta_snps[1]
     cellsnp.index=cellsnp[0]+'_'+cellsnp[1]
@@ -334,7 +335,9 @@ if __name__ == "__main__":
     
     cellsnp_exta_snps = cellsnp_exta_snps.drop_duplicates(subset=[0, 1])
     set1_uninformative_sites = cellsnp.loc[set1_uninformative_sites]
-    set2_informative_sites = exta_snps
+    set2_informative_sites =exta_snps
+    description = pd.DataFrame([{'total sites':len(cellsnp_exta_snps),'informative sites':len(set2_informative_sites),'uninformative sites':len(set1_uninformative_sites),'informative sites covered in initial panel':len(informative_sites_covered_in_default_panel)}])
+    description.to_csv('variants_description.tsv',sep='\t',index=False)
     cellsnp_exta_snps.to_csv('cellsnp_variants.tsv',sep='\t',index=False,header=False)
     set1_uninformative_sites.to_csv('set1_uninformative_sites.tsv',sep='\t',index=False,header=False)
     set2_informative_sites.to_csv('set2_informative_sites.tsv',sep='\t',index=False,header=False)
