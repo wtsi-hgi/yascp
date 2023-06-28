@@ -64,6 +64,7 @@ process COMBINE_FILES{
     output:
         path("*.png")
         tuple val(pool_id), path("*joined_df_for_plots.tsv"), emit: joined_df_for_plots
+        path("*joined_df_for_plots.tsv"), emit: file_joined_df_for_plots
 
     script:
 
@@ -74,7 +75,7 @@ process COMBINE_FILES{
 }
 
 
-process CONCORDANCE_PLOTS{
+process PLOT_CONCORDANCES_ALL{
 
     tag "${pool_id}"
     label 'process_low'
@@ -85,25 +86,20 @@ process CONCORDANCE_PLOTS{
         container "mercury/scrna_deconvolution:62bd56a"
     }
 
-    publishDir  path: "${params.outdir}/concordances/${pool_id}",
+    publishDir  path: "${params.outdir}/concordances",
                 mode: "${params.copy_mode}",
                 overwrite: "true"
 
+    output:
+        path("*.png")
 
     input:
-        tuple(val(pool_id), 
-        path(vcf_gt_match), 
-        path(vcf_gt_match_csi),
-        path(vcf_exp), 
-        path(vcf_exp_csi),
-        path(cell_vcf),
-        path(donor_table),path(cell_assignments))
-
+        path(input_file_all)
 
     script:
 
         """
-           echo plot_discordance.R
+            combined_concordance_plots.py -cc ${input_file_all} -name all
         """
 
 
