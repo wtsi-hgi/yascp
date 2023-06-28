@@ -53,12 +53,21 @@ name = options.name
 Cell_Concordance = pd.read_csv(cc,sep='\t')
 
 Joined_Df = Cell_Concordance
+Joined_Df['total number of sites']=Joined_Df['Nr_Concordant']+Joined_Df['Nr_Discordant']
+
 
 ax1 = sns.violinplot(data=Joined_Df, y="Percent_strict_discordant", x="Nr times becoming different donor in subsampling", cut=0)
 fig = ax1.get_figure()
 fig.savefig('becoming_different_donor.png')
 fig.clf()
 
+# Joined_Df = Joined_Df[Joined_Df["Nr times becoming different donor in subsampling"]!=0]
+ax1 = sns.violinplot(data=Joined_Df, y="total number of sites", x="Nr times becoming different donor in subsampling", cut=0)
+fig = ax1.get_figure()
+fig.savefig('sites_becoming_different_donor_no0.png')
+fig.clf()
+
+Joined_Df = Joined_Df[Joined_Df["Nr times becoming different donor in subsampling"]!=0]
 ax1 = sns.violinplot(data=Joined_Df, y="total number of sites", x="Nr times becoming different donor in subsampling", cut=0)
 fig = ax1.get_figure()
 fig.savefig('sites_becoming_different_donor.png')
