@@ -4,7 +4,7 @@ include { MATCH_GT_VIREO; GT_MATCH_POOL_IBD } from "$projectDir/modules/nf-core/
 include {COMBINE_MATCHES_IN_EXPECTED_FORMAT} from "$projectDir/modules/nf-core/modules/genotypes/main"
 include {Relationships_Between_Infered_Expected; Relationships_Between_Infered_Expected as Relationships_Between_Infered_GT_Matched} from '../modules/nf-core/modules/infered_expected_relationship/main'
 include {SUBSET_WORKF} from "$projectDir/modules/nf-core/modules/subset_genotype/main"
-include {CONCORDANCE_CALCLULATIONS} from "$projectDir/modules/nf-core/modules/concordance/main"
+include {CONCORDANCE_CALCLULATIONS; COMBINE_FILES} from "$projectDir/modules/nf-core/modules/concordance/main"
 
 workflow match_genotypes {
   take:
@@ -16,6 +16,7 @@ workflow match_genotypes {
     ch_ref_vcf
     cellsnp_cell_vcfs2
     cell_assignments
+    subsampling_donor_swap
   main:
 
        
@@ -78,7 +79,9 @@ workflow match_genotypes {
     input6 = input5.combine(cell_assignments, by:0)
     // input6.subscribe { println "input6: $it" }
     CONCORDANCE_CALCLULATIONS(input6)
-
+      
+    ch_combine = subsampling_donor_swap.combine(CONCORDANCE_CALCLULATIONS.out.concordances, by: 0)
+    COMBINE_FILES(ch_combine)
 
   emit:
     pool_id_donor_assignments_csv = MATCH_GT_VIREO.out.pool_id_donor_assignments_csv

@@ -28,7 +28,8 @@ include {collect_file as collect_file1;
         collect_file as collect_file5;
         collect_file as collect_file6;
         collect_file as collect_file7;
-        collect_file as collect_file8} from "$projectDir/modules/nf-core/modules/collect_file/main"
+        collect_file as collect_file8;
+        collect_file as collect_file9} from "$projectDir/modules/nf-core/modules/collect_file/main"
 
 workflow  main_deconvolution {
 
@@ -174,6 +175,7 @@ workflow  main_deconvolution {
         VIREO_SUBSAMPLING.out.output_dir.concat(VIREO.out.output_dir).set{tuple_1}
         tuple_1.groupTuple(by:0).set{vspp0}
         VIREO_SUBSAMPLING_PROCESSING(vspp0)
+        
         //But to make it consistent we still randomly assign donor IDs per pool for each of the names.
         VIREO.out.all_required_data.set{replacement_input}
         // replacement_input.subscribe { println "replacement_input: $it" }
@@ -189,6 +191,8 @@ workflow  main_deconvolution {
         VIREO_GT_FIX_HEADER(REPLACE_GT_DONOR_ID2.out.infered_vcf,genome)
         VIREO_ADD_SAMPLE_PREFIX(VIREO_GT_FIX_HEADER.out.infered_vcf)
         
+        // ch_vireo_donor_n_cells_tsv = collect_file9(VIREO_SUBSAMPLING_PROCESSING.out.subsampling_donor_swap.collect(),"vireo_donor_n_cells.tsv",params.outdir+'/deconvolution/filepaths',0,header_seed)
+
         // VIREO_ADD_SAMPLE_PREFIX.out.infered_vcf.collect().subscribe { println "MERGE_GENOTYPES_IN_ONE_VCF_INFERED: $it" }
         // MERGE_GENOTYPES_IN_ONE_VCF_INFERED(VIREO_ADD_SAMPLE_PREFIX.out.infered_vcf.collect(),'infered')
         
@@ -202,7 +206,7 @@ workflow  main_deconvolution {
                 .combine(ch_ref_vcf)
                 .set { gt_math_pool_against_panel_input }
 
-            match_genotypes(vireo_out_sample_donor_vcf,merged_expected_genotypes,VIREO_GT_FIX_HEADER.out.gt_pool,gt_math_pool_against_panel_input,genome,ch_ref_vcf,cellsnp_cell_vcfs2,cell_assignments)
+            match_genotypes(vireo_out_sample_donor_vcf,merged_expected_genotypes,VIREO_GT_FIX_HEADER.out.gt_pool,gt_math_pool_against_panel_input,genome,ch_ref_vcf,cellsnp_cell_vcfs2,cell_assignments,VIREO_SUBSAMPLING_PROCESSING.out.subsampling_donor_swap)
             gt_matches = match_genotypes.out.donor_match_table.collect()
 
             ENHANCE_STATS_GT_MATCH(match_genotypes.out.donor_match_table_enhanced)
