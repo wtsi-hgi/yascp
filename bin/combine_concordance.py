@@ -68,14 +68,26 @@ Joined_Df['pool id']= name
 Joined_Df = Joined_Df.reset_index()
 Joined_Df.to_csv(f'{name}__joined_df_for_plots.tsv',sep='\t',index=False)
 
+Joined_Df['total number of sites']=Joined_Df['Nr_Concordant']+Joined_Df['Nr_Discordant']
+
 ax1 = sns.violinplot(data=Joined_Df, y="Percent_strict_discordant", x="Nr times becoming different donor in subsampling", cut=0)
 fig = ax1.get_figure()
 fig.savefig('becoming_different_donor.png')
 fig.clf()
 
+ax1 = sns.violinplot(data=Joined_Df, y="total number of sites", x="Nr times becoming different donor in subsampling", cut=0)
+fig = ax1.get_figure()
+fig.savefig('sites_becoming_different_donor.png')
+fig.clf()
+
 ax1 = sns.violinplot(data=Joined_Df, y="Percent_strict_discordant", x="Nr times becoming Unassigned in subsampling", cut=0)
 fig = ax1.get_figure()
 fig.savefig('becoming_unassigned_donor.png')
+fig.clf()
+
+ax1 = sns.violinplot(data=Joined_Df, y="total number of sites", x="Nr times becoming different donor in subsampling", cut=0)
+fig = ax1.get_figure()
+fig.savefig('sites_becoming_unassigned_donor.png')
 fig.clf()
 
 fig, ax1 = plt.subplots()
@@ -85,7 +97,11 @@ fig.savefig('becoming_doublet_donor.png')
 ax1.hlines(y=0.2, xmin=0, xmax=20, linewidth=2, color='r')
 fig.clf()
 
-Joined_Df['total number of sites']=Joined_Df['Nr_Concordant']+Joined_Df['Nr_Discordant']
+ax1 = sns.violinplot(data=Joined_Df, y="total number of sites", x="Nr times becoming different donor in subsampling", cut=0)
+fig = ax1.get_figure()
+fig.savefig('sites_becoming_doublet_donor.png')
+fig.clf()
+
 fig, ax = plt.subplots(figsize=(6, 6))
 sns.scatterplot(
     data=Joined_Df,

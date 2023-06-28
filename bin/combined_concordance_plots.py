@@ -59,9 +59,19 @@ fig = ax1.get_figure()
 fig.savefig('becoming_different_donor.png')
 fig.clf()
 
+ax1 = sns.violinplot(data=Joined_Df, y="total number of sites", x="Nr times becoming different donor in subsampling", cut=0)
+fig = ax1.get_figure()
+fig.savefig('sites_becoming_different_donor.png')
+fig.clf()
+
 ax1 = sns.violinplot(data=Joined_Df, y="Percent_strict_discordant", x="Nr times becoming Unassigned in subsampling", cut=0)
 fig = ax1.get_figure()
 fig.savefig('becoming_unassigned_donor.png')
+fig.clf()
+
+ax1 = sns.violinplot(data=Joined_Df, y="total number of sites", x="Nr times becoming different donor in subsampling", cut=0)
+fig = ax1.get_figure()
+fig.savefig('sites_becoming_unassigned_donor.png')
 fig.clf()
 
 fig, ax1 = plt.subplots()
@@ -71,7 +81,11 @@ fig.savefig('becoming_doublet_donor.png')
 ax1.hlines(y=0.2, xmin=0, xmax=20, linewidth=2, color='r')
 fig.clf()
 
-Joined_Df['total number of sites']=Joined_Df['Nr_Concordant']+Joined_Df['Nr_Discordant']
+ax1 = sns.violinplot(data=Joined_Df, y="total number of sites", x="Nr times becoming different donor in subsampling", cut=0)
+fig = ax1.get_figure()
+fig.savefig('sites_becoming_doublet_donor.png')
+fig.clf()
+
 fig, ax = plt.subplots(figsize=(6, 6))
 sns.scatterplot(
     data=Joined_Df,
@@ -81,16 +95,7 @@ sns.scatterplot(
     ax=ax, alpha=0.5
 )
 
-sns.kdeplot(
-    data=Joined_Df,
-    x="Percent_strict_discordant",
-    y="total number of sites",
-    levels=5,
-    fill=True,
-    alpha=0.6,
-    cut=2,
-    ax=ax,
-)
+
 
 Joined_Df_swap = Joined_Df[Joined_Df['Nr times becoming Unassigned in subsampling']!=0]
 sns.scatterplot(
@@ -101,6 +106,19 @@ sns.scatterplot(
     ax=ax, alpha=0.5
 )
 
+sns.kdeplot(
+    data=Joined_Df_swap,
+    x="Percent_strict_discordant",
+    y="total number of sites",
+    levels=2,
+    color='b',
+    fill=True,
+    alpha=0.6,
+    cut=2,
+    ax=ax,
+)
+
+
 Joined_Df_swap = Joined_Df[Joined_Df['Nr times becoming Doublet in subsampling']!=0]
 sns.scatterplot(
     data=Joined_Df_swap,
@@ -110,12 +128,36 @@ sns.scatterplot(
     ax=ax, alpha=0.7
 )
 
+sns.kdeplot(
+    data=Joined_Df_swap,
+    x="Percent_strict_discordant",
+    y="total number of sites",
+    levels=2,
+    color='y',
+    fill=True,
+    alpha=0.6,
+    cut=2,
+    ax=ax,
+)
+
 Joined_Df_swap = Joined_Df[Joined_Df['Nr times becoming different donor in subsampling']!=0]
 sns.scatterplot(
     data=Joined_Df_swap,
     x="Percent_strict_discordant",
     y="total number of sites",
     color="r", label="becoming different donor",
+    ax=ax,
+)
+
+sns.kdeplot(
+    data=Joined_Df_swap,
+    x="Percent_strict_discordant",
+    y="total number of sites",
+    levels=2,
+    color='r',
+    fill=True,
+    alpha=0.6,
+    cut=2,
     ax=ax,
 )
 
