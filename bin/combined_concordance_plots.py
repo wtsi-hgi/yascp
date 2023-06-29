@@ -64,13 +64,13 @@ fig.clf()
 # Joined_Df = Joined_Df[Joined_Df["Nr times becoming different donor in subsampling"]!=0]
 ax1 = sns.violinplot(data=Joined_Df, y="total number of sites", x="Nr times becoming different donor in subsampling", cut=0)
 fig = ax1.get_figure()
-fig.savefig('sites_becoming_different_donor_no0.png')
+fig.savefig('sites_becoming_different_donor.png')
 fig.clf()
 
-Joined_Df = Joined_Df[Joined_Df["Nr times becoming different donor in subsampling"]!=0]
-ax1 = sns.violinplot(data=Joined_Df, y="total number of sites", x="Nr times becoming different donor in subsampling", cut=0)
+Joined_Df2 = Joined_Df[Joined_Df["Nr times becoming different donor in subsampling"]!=0]
+ax1 = sns.violinplot(data=Joined_Df2, y="total number of sites", x="Nr times becoming different donor in subsampling", cut=0)
 fig = ax1.get_figure()
-fig.savefig('sites_becoming_different_donor.png')
+fig.savefig('sites_becoming_different_donor_no0.png')
 fig.clf()
 
 ax1 = sns.violinplot(data=Joined_Df, y="Percent_strict_discordant", x="Nr times becoming Unassigned in subsampling", cut=0)
