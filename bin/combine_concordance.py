@@ -70,93 +70,207 @@ Joined_Df.to_csv(f'{name}__joined_df_for_plots.tsv',sep='\t',index=False)
 
 Joined_Df['total number of sites']=Joined_Df['Nr_Concordant']+Joined_Df['Nr_Discordant']
 
-ax1 = sns.violinplot(data=Joined_Df, y="Percent_strict_discordant", x="Nr times becoming different donor in subsampling", cut=0)
+ax1 = sns.violinplot(data=Joined_Df, y="Percent_strict_discordant", x="Nr times becoming different donor in subsampling", cut=0, scale='width')
 fig = ax1.get_figure()
 fig.savefig('becoming_different_donor.png')
 fig.clf()
 
-ax1 = sns.violinplot(data=Joined_Df, y="total number of sites", x="Nr times becoming different donor in subsampling", cut=0)
+ax1 = sns.violinplot(data=Joined_Df, y="total number of sites", x="Nr times becoming different donor in subsampling", cut=0, scale='width')
 fig = ax1.get_figure()
 fig.savefig('sites_becoming_different_donor.png')
 fig.clf()
 
-ax1 = sns.violinplot(data=Joined_Df, y="prob_max", x="Nr times becoming different donor in subsampling", cut=0)
+ax1 = sns.violinplot(data=Joined_Df, y="prob_max", x="Nr times becoming different donor in subsampling", cut=0, scale='width')
 # ax1 = sns.swarmplot(data=Joined_Df, y="prob_max", x="Nr times becoming different donor in subsampling",color= "white")
 fig = ax1.get_figure()
 fig.savefig('sites_becoming_different_donor_probs.png')
 fig.clf()
-ax1 = sns.violinplot(data=Joined_Df, y="Percent_strict_discordant", x="Nr times becoming Unassigned in subsampling", cut=0)
+ax1 = sns.violinplot(data=Joined_Df, y="Percent_strict_discordant", x="Nr times becoming Unassigned in subsampling", cut=0, scale='width')
 fig = ax1.get_figure()
 fig.savefig('becoming_unassigned_donor.png')
 fig.clf()
 
-ax1 = sns.violinplot(data=Joined_Df, y="total number of sites", x="Nr times becoming different donor in subsampling", cut=0)
+ax1 = sns.violinplot(data=Joined_Df, y="total number of sites", x="Nr times becoming different donor in subsampling", cut=0, scale='width')
 fig = ax1.get_figure()
 fig.savefig('sites_becoming_unassigned_donor.png')
 fig.clf()
 
 fig, ax1 = plt.subplots()
-ax1 = sns.violinplot(data=Joined_Df, y="Percent_strict_discordant", x="Nr times becoming Doublet in subsampling", cut=0)
+ax1 = sns.violinplot(data=Joined_Df, y="Percent_strict_discordant", x="Nr times becoming Doublet in subsampling", cut=0, scale='width')
 fig = ax1.get_figure()
 fig.savefig('becoming_doublet_donor.png')
 ax1.hlines(y=0.2, xmin=0, xmax=20, linewidth=2, color='r')
 fig.clf()
 
-ax1 = sns.violinplot(data=Joined_Df, y="total number of sites", x="Nr times becoming different donor in subsampling", cut=0)
+ax1 = sns.violinplot(data=Joined_Df, y="total number of sites", x="Nr times becoming different donor in subsampling", cut=0, scale='width')
 fig = ax1.get_figure()
 fig.savefig('sites_becoming_doublet_donor.png')
 fig.clf()
 
+def scatter(fig, ax):
+    
+    sns.scatterplot(
+        data=Joined_Df,
+        x="Percent_strict_discordant",
+        y="total number of sites",
+        color="k",
+        ax=ax, alpha=0.5
+    )
+
+    Joined_Df_swap = Joined_Df[Joined_Df['Nr times becoming Unassigned in subsampling']!=0]
+    sns.scatterplot(
+        data=Joined_Df_swap,
+        x="Percent_strict_discordant",
+        y="total number of sites",
+        color="b",label=f"becoming Unassigned; total={len(Joined_Df_swap)}",
+        ax=ax, alpha=0.5
+    )
+    try:
+        sns.kdeplot(
+            data=Joined_Df_swap,
+            x="Percent_strict_discordant",
+            y="total number of sites",
+            levels=2,
+            color='b',
+            fill=True,
+            alpha=0.6,
+            cut=2,
+            ax=ax,
+        )
+    except:
+        _='only two entris, so cant do a density'
+
+    Joined_Df_swap = Joined_Df[Joined_Df['Nr times becoming Doublet in subsampling']!=0]
+    sns.scatterplot(
+        data=Joined_Df_swap,
+        x="Percent_strict_discordant",
+        y="total number of sites",
+        color="y", label=f"becoming doublet; total={len(Joined_Df_swap)}",
+        ax=ax, alpha=0.7
+    )
+    try:
+        sns.kdeplot(
+            data=Joined_Df_swap,
+            x="Percent_strict_discordant",
+            y="total number of sites",
+            levels=2,
+            color='y',
+            fill=True,
+            alpha=0.6,
+            cut=2,
+            ax=ax,
+        )
+    except:
+        _='only two entris, so cant do a density'
+
+    Joined_Df_swap = Joined_Df[Joined_Df['Nr times becoming different donor in subsampling']!=0]
+    sns.scatterplot(
+        data=Joined_Df_swap,
+        x="Percent_strict_discordant",
+        y="total number of sites",
+        color="r", label=f"becoming different donor; total={len(Joined_Df_swap)}",
+        ax=ax,
+    )
+    try:
+        sns.kdeplot(
+            data=Joined_Df_swap,
+            x="Percent_strict_discordant",
+            y="total number of sites",
+            levels=3,
+            color='r',
+            fill=True,
+            alpha=0.6,
+            cut=2,
+            ax=ax,
+        )
+    except:
+        _='only two entris, so cant do a density'
+        
+
+    ax.legend()
+    return fig
+
 fig, ax = plt.subplots(figsize=(6, 6))
-sns.scatterplot(
-    data=Joined_Df,
-    x="Percent_strict_discordant",
-    y="total number of sites",
-    color="k",
-    ax=ax, alpha=0.5
-)
-
-sns.kdeplot(
-    data=Joined_Df,
-    x="Percent_strict_discordant",
-    y="total number of sites",
-    levels=5,
-    fill=True,
-    alpha=0.6,
-    cut=2,
-    ax=ax,
-)
-
-Joined_Df_swap = Joined_Df[Joined_Df['Nr times becoming Unassigned in subsampling']!=0]
-sns.scatterplot(
-    data=Joined_Df_swap,
-    x="Percent_strict_discordant",
-    y="total number of sites",
-    color="b",label="becoming Unassigned",
-    ax=ax, alpha=0.5
-)
-
-Joined_Df_swap = Joined_Df[Joined_Df['Nr times becoming Doublet in subsampling']!=0]
-sns.scatterplot(
-    data=Joined_Df_swap,
-    x="Percent_strict_discordant",
-    y="total number of sites",
-    color="y", label="becoming doublet",
-    ax=ax, alpha=0.7
-)
-
-Joined_Df_swap = Joined_Df[Joined_Df['Nr times becoming different donor in subsampling']!=0]
-sns.scatterplot(
-    data=Joined_Df_swap,
-    x="Percent_strict_discordant",
-    y="total number of sites",
-    color="r", label="becoming different donor",
-    ax=ax,
-)
-
-ax.legend()
+fig = scatter(fig, ax)
 fig.savefig('sites_vs_concordance.png')
 
 fig.clf()
 
+import math
+import numpy as np
+from mpl_toolkits.axes_grid1 import make_axes_locatable
+
+# Plot of plots, distinguish how many times the cell becomes a different donor
+all_sub_times = set(Joined_Df['Nr times becoming different donor in subsampling'])
+nr_plots=4
+fig, axs = plt.subplots(math.ceil(len(all_sub_times)/2),nr_plots, figsize=(6*2, 6*math.ceil(len(all_sub_times)/2)),gridspec_kw={'width_ratios': [6, 1,6,1]})
+
+st1=-1
+st2=-2
+for i in all_sub_times:
+    # print(i)
+
+    if i % 2 == 0:
+        # print(f"yes {i}")
+        st1+=1
+        # st2+=1
+        st2=-2   
+    st2+=2     
+    try:
+        ax1=axs[st1, st2]
+        ax2=axs[st1, st2+1]
+    except:
+        ax1=axs[st2]
+        ax2=axs[st2+1]
+
+    # print(f"yes [{st1},{st2}]")
+    # print(f"yes [{st1},{st2+1}]")
+    if i==0:
+        scatter(fig, ax1)
+        try:
+            Joined_Df_swap=Joined_Df[Joined_Df['Nr times becoming different donor in subsampling']!=0]
+            Joined_Df_swap['Nr times becoming different donor in subsampling']='at least once'
+            sns.violinplot(data=Joined_Df_swap, y="total number of sites", x="Nr times becoming different donor in subsampling", scale='width',ax=ax2,color='r')
+        except:
+            _='no cells that swap donors'
+        continue
+    sns.scatterplot(
+    data=Joined_Df,
+    x="Percent_strict_discordant",
+    y="total number of sites",
+    color="k",
+    ax=ax1, alpha=0.2
+    )
+    
+    Joined_Df_swap = Joined_Df[Joined_Df['Nr times becoming different donor in subsampling']==i]
+    
+    try:
+        sns.kdeplot(
+            data=Joined_Df_swap,
+            x="Percent_strict_discordant",
+            y="total number of sites",
+            levels=3,
+            color='r',
+            fill=True,
+            alpha=0.6,
+            cut=2,
+            ax=ax1,
+        )
+    except:
+        _='only two entris, so cant do a density'    
+    sns.scatterplot(
+        data=Joined_Df_swap,
+        x="Percent_strict_discordant",
+        y="total number of sites",
+        color="r",
+        ax=ax1, alpha=0.7,label=f"becoming different donor; n={i}, total={len(Joined_Df_swap)}"
+    )
+
+    sns.violinplot(data=Joined_Df_swap, y="total number of sites", x="Nr times becoming different donor in subsampling", scale='width',ax=ax2,color='r')
+
+        
+ax.legend()
+fig.tight_layout()
+fig.savefig('subplot_sites_vs_concordance.png')
+fig.clf()
 print('Done')
