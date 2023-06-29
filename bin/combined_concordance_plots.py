@@ -77,7 +77,7 @@ try:
 except:
     _='There are no cells becoming different donor here.'
 
-sns.set(style = 'whitegrid')
+
 
 ax1 = sns.violinplot(data=Joined_Df, y="prob_max", x="Nr times becoming different donor in subsampling", cut=0)
 # ax1 = sns.swarmplot(data=Joined_Df, y="prob_max", x="Nr times becoming different donor in subsampling",color= "white")
