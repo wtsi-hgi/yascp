@@ -113,7 +113,7 @@ def scatter(fig, ax):
         data=Joined_Df,
         x="Percent_strict_discordant",
         y="total number of sites",
-        color="k",
+        color="k",label=f"total nr cells={len(Joined_Df)}",
         ax=ax, alpha=0.5
     )
 
@@ -125,20 +125,20 @@ def scatter(fig, ax):
         color="b",label=f"becoming Unassigned; total={len(Joined_Df_swap)}",
         ax=ax, alpha=0.5
     )
-    try:
-        sns.kdeplot(
-            data=Joined_Df_swap,
-            x="Percent_strict_discordant",
-            y="total number of sites",
-            levels=2,
-            color='b',
-            fill=True,
-            alpha=0.6,
-            cut=2,
-            ax=ax,
-        )
-    except:
-        _='only two entris, so cant do a density'
+    # try:
+    #     sns.kdeplot(
+    #         data=Joined_Df_swap,
+    #         x="Percent_strict_discordant",
+    #         y="total number of sites",
+    #         levels=2,
+    #         color='b',
+    #         fill=True,
+    #         alpha=0.6,
+    #         cut=2,
+    #         ax=ax,
+    #     )
+    # except:
+    #     _='only two entris, so cant do a density'
 
     Joined_Df_swap = Joined_Df[Joined_Df['Nr times becoming Doublet in subsampling']!=0]
     sns.scatterplot(
@@ -148,20 +148,20 @@ def scatter(fig, ax):
         color="y", label=f"becoming doublet; total={len(Joined_Df_swap)}",
         ax=ax, alpha=0.7
     )
-    try:
-        sns.kdeplot(
-            data=Joined_Df_swap,
-            x="Percent_strict_discordant",
-            y="total number of sites",
-            levels=2,
-            color='y',
-            fill=True,
-            alpha=0.6,
-            cut=2,
-            ax=ax,
-        )
-    except:
-        _='only two entris, so cant do a density'
+    # try:
+    #     sns.kdeplot(
+    #         data=Joined_Df_swap,
+    #         x="Percent_strict_discordant",
+    #         y="total number of sites",
+    #         levels=2,
+    #         color='y',
+    #         fill=True,
+    #         alpha=0.6,
+    #         cut=2,
+    #         ax=ax,
+    #     )
+    # except:
+    #     _='only two entris, so cant do a density'
 
     Joined_Df_swap = Joined_Df[Joined_Df['Nr times becoming different donor in subsampling']!=0]
     sns.scatterplot(
@@ -207,9 +207,10 @@ fig, axs = plt.subplots(math.ceil(len(all_sub_times)/2),nr_plots, figsize=(6*2, 
 
 st1=-1
 st2=-2
-for i in all_sub_times:
-    # print(i)
-
+all_sub_times=list(all_sub_times)
+for i in range(len(all_sub_times)):
+    print(i)
+    i2=all_sub_times[i]
     if i % 2 == 0:
         # print(f"yes {i}")
         st1+=1
@@ -242,7 +243,7 @@ for i in all_sub_times:
     ax=ax1, alpha=0.2
     )
     
-    Joined_Df_swap = Joined_Df[Joined_Df['Nr times becoming different donor in subsampling']==i]
+    Joined_Df_swap = Joined_Df[Joined_Df['Nr times becoming different donor in subsampling']==i2]
     
     try:
         sns.kdeplot(
@@ -263,7 +264,7 @@ for i in all_sub_times:
         x="Percent_strict_discordant",
         y="total number of sites",
         color="r",
-        ax=ax1, alpha=0.7,label=f"becoming different donor; n={i}, total={len(Joined_Df_swap)}"
+        ax=ax1, alpha=0.7,label=f"becoming different donor; n={i2}, total={len(Joined_Df_swap)}"
     )
 
     sns.violinplot(data=Joined_Df_swap, y="total number of sites", x="Nr times becoming different donor in subsampling", scale='width',ax=ax2,color='r')
