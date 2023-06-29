@@ -113,7 +113,7 @@ def scatter(fig, ax):
         data=Joined_Df,
         x="Percent_strict_discordant",
         y="total number of sites",
-        color="k",label=f"total nr cells={len(Joined_Df)}",
+        color="k",label=f"total nr cells assigned to donor={len(Joined_Df)}",
         ax=ax, alpha=0.5
     )
 
