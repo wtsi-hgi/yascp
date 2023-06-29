@@ -67,11 +67,24 @@ fig = ax1.get_figure()
 fig.savefig('sites_becoming_different_donor.png')
 fig.clf()
 
+
 Joined_Df2 = Joined_Df[Joined_Df["Nr times becoming different donor in subsampling"]!=0]
-ax1 = sns.violinplot(data=Joined_Df2, y="total number of sites", x="Nr times becoming different donor in subsampling", cut=0)
+try:
+    ax1 = sns.violinplot(data=Joined_Df2, y="total number of sites", x="Nr times becoming different donor in subsampling", cut=0)
+    fig = ax1.get_figure()
+    fig.savefig('sites_becoming_different_donor_no0.png')
+    fig.clf()
+except:
+    _='There are no cells becoming different donor here.'
+
+sns.set(style = 'whitegrid')
+
+ax1 = sns.violinplot(data=Joined_Df, y="prob_max", x="Nr times becoming different donor in subsampling", cut=0)
+# ax1 = sns.swarmplot(data=Joined_Df, y="prob_max", x="Nr times becoming different donor in subsampling",color= "white")
 fig = ax1.get_figure()
-fig.savefig('sites_becoming_different_donor_no0.png')
+fig.savefig('sites_becoming_different_donor_probs.png')
 fig.clf()
+
 
 ax1 = sns.violinplot(data=Joined_Df, y="Percent_strict_discordant", x="Nr times becoming Unassigned in subsampling", cut=0)
 fig = ax1.get_figure()
