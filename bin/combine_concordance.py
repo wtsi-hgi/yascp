@@ -63,7 +63,7 @@ Swap_Quant = pd.read_csv(sq,sep='\t')
 Swap_Quant = Swap_Quant.set_index('cell')
 Cell_Concordance = Cell_Concordance.set_index('GT 1')
 
-Joined_Df = Swap_Quant.join(Cell_Concordance,how='right')
+Joined_Df = Swap_Quant.join(Cell_Concordance,how='inner')
 Joined_Df['pool id']= name
 Joined_Df = Joined_Df.reset_index()
 Joined_Df.to_csv(f'{name}__joined_df_for_plots.tsv',sep='\t',index=False)
