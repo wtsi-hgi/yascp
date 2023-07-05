@@ -251,7 +251,7 @@ process GT_MATCH_POOL_AGAINST_PANEL
       container "mercury/wtsihgi-nf_yascp_htstools-1.1"
   }
 
-  label 'process_low'
+  label 'process_tiny'
   //when: params.vireo.run_gtmatch_aposteriori
 
   input:
@@ -479,10 +479,6 @@ workflow MATCH_GT_VIREO {
 
 
   main:
-    // VIREO header causes problems downstream
-
-    // ch_gt_pool_ref_vcf.subscribe { println "match_genotypes: ch_gt_pool_ref_vcf = ${it}\n" }
-    // gt_math_pool_against_panel_input.subscribe { println "match_genotypes: gt_math_pool_against_panel_input = ${it}\n" }
     // now match genotypes against a panels
     GT_MATCH_POOL_AGAINST_PANEL(gt_math_pool_against_panel_input)
 
