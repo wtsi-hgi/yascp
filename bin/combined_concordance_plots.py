@@ -136,6 +136,12 @@ fig = ax1.get_figure()
 fig.savefig('sites_becoming_doublet_donor.png')
 fig.clf()
 
+ax1 = sns.violinplot(data=Joined_Df, y="Total_reads", x="Nr times becoming different donor in subsampling", cut=0, scale='width')
+fig = ax1.get_figure()
+fig.savefig('Total_reads_becoming_different_donor.png')
+fig.clf()
+
+
 def scatter(fig, ax):
     
     sns.scatterplot(
