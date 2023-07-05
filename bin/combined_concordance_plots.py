@@ -77,7 +77,35 @@ try:
 except:
     _='There are no cells becoming different donor here.'
 
+fig.clf()
+try:
+    ax1 = sns.violinplot(data=Joined_Df2, y="Discordant_reads", x="Nr times becoming different donor in subsampling", cut=0, scale='width')
+    fig = ax1.get_figure()
+    fig.savefig('Discordant_reads_becoming_different_donor_no0.png')
+    fig.clf()
+except:
+    _='There are no cells becoming different donor here.'
 
+fig.clf()
+ax1 = sns.violinplot(data=Joined_Df, y="Discordant_reads", x="Nr times becoming different donor in subsampling", cut=0, scale='width')
+fig = ax1.get_figure()
+fig.savefig('Discordant_reads_becoming_different_donor.png')
+fig.clf()
+
+fig.clf()
+ax1 = sns.violinplot(data=Joined_Df, y="Discordant_reads_by_n_sites", x="Nr times becoming different donor in subsampling", cut=0, scale='width')
+fig = ax1.get_figure()
+fig.savefig('Discordant_reads_by_n_sites_becoming_different_donor.png')
+fig.clf()
+
+try:
+    fig.clf()
+    ax1 = sns.violinplot(data=Joined_Df2, y="Discordant_reads_by_n_sites", x="Nr times becoming different donor in subsampling", cut=0, scale='width')
+    fig = ax1.get_figure()
+    fig.savefig('Discordant_reads_by_n_sites_becoming_different_donor_no0.png')
+    fig.clf()
+except:
+    _='There are no cells becoming different donor here.'
 
 ax1 = sns.violinplot(data=Joined_Df, y="prob_max", x="Nr times becoming different donor in subsampling", cut=0, scale='width')
 # ax1 = sns.swarmplot(data=Joined_Df, y="prob_max", x="Nr times becoming different donor in subsampling",color= "white")
