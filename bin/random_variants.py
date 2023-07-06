@@ -30,10 +30,17 @@ parser.add_argument(
     default=None,
 )
 
-options = parser.parse_args()
+parser.add_argument(
+    '-r', '--rate',
+    action='store',
+    dest='rate',
+    default=80,type=int
+)
 
+options = parser.parse_args()
+rate = options.rate/100
 VCF = pd.read_csv(options.vcf,sep='\t',comment='#',header=None)
-VCF2 = VCF.sample(frac =.80,random_state=options.random_state)
+VCF2 = VCF.sample(frac=rate,random_state=options.random_state)
 VCF2=VCF2.sort_index()
 VCF2.to_csv('random_variants.tsv',sep='\t',index=False,header=False)
 print('Done')

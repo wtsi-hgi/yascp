@@ -63,20 +63,20 @@ process VIREO_SUBSAMPLING {
     """
 
       # Produce 80% of SNPs panel 
-      random_variants.py --random_state ${itteration} --vcf ${cell_data}/cellSNP.base.vcf.gz
+      random_variants.py --random_state ${itteration} --vcf ${cell_data}/cellSNP.base.vcf.gz --rate ${params.vireo.rate}
 
       # Subset the VCF file
-      mkdir subset_80
-      zcat ${cell_data}/cellSNP.base.vcf.gz | head -n2 > subset_80/cellSNP.base.vcf && echo 'next'
-      cat random_variants.tsv >> subset_80/cellSNP.base.vcf
-      gzip subset_80/cellSNP.base.vcf
-      cp ${cell_data}/cellSNP.samples.tsv subset_80/
+      mkdir subset_${params.vireo.rate}
+      zcat ${cell_data}/cellSNP.base.vcf.gz | head -n2 > subset_${params.vireo.rate}/cellSNP.base.vcf && echo 'next'
+      cat random_variants.tsv >> subset_${params.vireo.rate}/cellSNP.base.vcf
+      gzip subset_${params.vireo.rate}/cellSNP.base.vcf
+      cp ${cell_data}/cellSNP.samples.tsv subset_${params.vireo.rate}/
       # Update the coordinates matrix
-      cellsnp_update.R ${cell_data} ./subset_80 ./subset_80/cellSNP.base.vcf.gz
+      cellsnp_update.R ${cell_data} ./subset_${params.vireo.rate} ./subset_${params.vireo.rate}/cellSNP.base.vcf.gz
 
       umask 2 # make files group_writable
       ${subset}
-      vireo -c ./subset_80 -N $n_pooled -o vireo_${samplename}___${itteration} ${vcf} -t GT --randSeed 1 -p $task.cpus --nInit 200
+      vireo -c ./subset_${params.vireo.rate} -N $n_pooled -o vireo_${samplename}___${itteration} ${vcf} -t GT --randSeed 1 -p $task.cpus --nInit 200
       # add samplename to summary.tsv,
       # to then have Nextflow concat summary.tsv of all samples into a single file:
       gzip vireo_${samplename}___${itteration}/GT_donors.vireo.vcf || echo 'vireo_${samplename}___${itteration}/GT_donors.vireo.vcf already gzip'
