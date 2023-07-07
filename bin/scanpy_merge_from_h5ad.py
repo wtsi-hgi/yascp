@@ -890,6 +890,11 @@ def scanpy_merge(
         *adatasets[1:],
         batch_categories=adatasets__experiment_ids
     )
+    try:
+        print(adata_merged.obs['batch'])
+    except:
+        _='only one variable, hence batch was not added'
+        adata_merged.obs['batch']=adatasets__experiment_ids[0]
     adata_merged = check_adata(adata_merged, 'adata_merged')
 
     # Re-calculate basic qc metrics of var (genes) for the whole dataset.
