@@ -18,14 +18,15 @@ import os
 
 
 class Concordances:
-        def __init__(self, donor_assignments_table,cell_assignments_table,exclusive_don_variants,exclusive_cell_variants,donor_distinct_sites):
+        def __init__(self, donor_assignments_table,cell_assignments_table,exclusive_don_variants,exclusive_cell_variants,donor_distinct_sites,informative_sites, uninformative_sites):
             self.reset()
             self.donor_assignments_table=donor_assignments_table
             self.cell_assignments_table=cell_assignments_table
             self.exclusive_don_variants=exclusive_don_variants
             self.exclusive_cell_variants=exclusive_cell_variants
-            # self.exclusive_cell_variants_dp=exclusive_cell_variants_dp
             self.donor_distinct_sites=donor_distinct_sites
+            self.informative_sites = informative_sites
+            self.uninformative_sites = uninformative_sites
             self.record_dict={}
 
         def norm_genotypes(self,expected_vars):
@@ -44,6 +45,20 @@ class Concordances:
         def reset(self):
             self.cell_concordance_table ={}
 
+        # def get_sites_from_tsv(self, sites_file):
+        #     """
+        #     get sites frm a tsv file where cols are chrom, pos, id, ref, alt
+        #     assumes no multiallelics
+        #     """
+        #     sites = set()
+        #     with open(sites_file, 'r') as f:
+        #         lines = f.readlines()
+        #         for l in lines:
+        #             linedata = l.split('\t')
+        #             var = ('_').join([linedata[0], linedata[1], linedata[3], linedata[4]])
+        #             sites.add(var)
+        #     return sites
+
 
         def get_strict_discordance(self, snp_gtypes, cellsnp_gtypes):
             '''
@@ -56,6 +71,8 @@ class Concordances:
             '''
             true_discordant = 0
             relaxed_concordant = 0
+            relaxed_concordant_informative = 0
+            true_discordant_uninformative = 0
 
             for i in range(0, len(snp_gtypes)):
                 discordant = False
@@ -65,6 +82,7 @@ class Concordances:
                 # the below will no longer work due to differing length of input strings
                 # snp_alleles = [snp_gtypes[i][-3], snp_gtypes[i][-1]]
                 # cellsnp_alleles = [cellsnp_gtypes[i][-3], cellsnp_gtypes[i][-1]]
+
 
                 snp_alleles = [snp_data[4][0], snp_data[4][2]]
                 cellsnp_alleles = [cellsnp_data[4][0], cellsnp_data[4][2]]
@@ -85,11 +103,16 @@ class Concordances:
                 
                 if discordant == True:
                     true_discordant+=1
+                    if snp_var in self.uninformative_sites:
+                        true_discordant_uninformative+=1
                 else:
                     relaxed_concordant+=1
+                    if snp_var in self.informative_sites:
+                        relaxed_concordant_informative+=1
 
-            return true_discordant, relaxed_concordant
-        
+            return true_discordant, relaxed_concordant, relaxed_concordant_informative, true_discordant_uninformative
+
+
         def read_condordance(self, expected_vars, cell_vars):
             '''
             get read level concordance using DP, AD and OTH format fields
@@ -163,7 +186,7 @@ class Concordances:
                 disc2['expected_retrieved'] = disc2['0_x']+'::'+disc2['0_y']
                 disc_sites = ';'.join(disc2['expected_retrieved'])
                 #find truly discordant sites
-                true_discordant_count, relaxed_concordant_count = self.get_strict_discordance(disc2['0_y'], disc2['0_x'])
+                true_discordant_count, relaxed_concordant_count, relaxed_concordant_informative_count, true_discordant_uninformative_count = self.get_strict_discordance(disc2['0_y'], disc2['0_x'])
                 #find discordant reads
                 total_sites, total_reads, discordant_reads = self.read_condordance(expected_vars2, cell_vars2)
             else:
@@ -177,7 +200,7 @@ class Concordances:
                 total_reads = 0
                 discordant_reads = 0
 
-            return Concordant_Sites, Discodrant_sites, Total_Overlappin_sites, disc_sites,cell_vars_norm, true_discordant_count, relaxed_concordant_count, total_sites, total_reads, discordant_reads
+            return Concordant_Sites, Discodrant_sites, Total_Overlappin_sites, disc_sites,cell_vars_norm, true_discordant_count, relaxed_concordant_count, relaxed_concordant_informative_count, true_discordant_uninformative_count, total_sites, total_reads, discordant_reads
         
 
         def set_results(self,to_set,id):
@@ -187,7 +210,7 @@ class Concordances:
             self.record_dict[id]=f'tmp_{id}.pkl'
         
         def append_results_cell_concordances(self,result):
-            count=result[9]
+            count=result[11]
             try:
                 percent_concordant = result[2]/(result[3]+result[2])*100
             except:
@@ -209,7 +232,7 @@ class Concordances:
                 percent_strict_discordant = 0
 
             try:
-                read_discordance = result[13]/result[11]
+                read_discordance = result[15]/result[13]
             except:
                 read_discordance = 0
 
@@ -224,13 +247,15 @@ class Concordances:
                                                                     'Percent Discordant':percent_discordant,
                                                                     'Percent_relaxed_concordant': percent_relaxed_concordant,
                                                                     'Percent_strict_discordant': percent_strict_discordant,
-                                                                    'NrTotal_Overlapping_sites_between_two_genotypes':result[6],
-                                                                    'Nr_donor_distinct_sites_within_pool_individuals':result[8],
-                                                                    'Number_of_sites_that_are_donor_concordant_and_exclusive':result[7],
-                                                                    'Discordant_Site_Identities':result[10],
-                                                                    'Total_sites': result[11],
-                                                                    'Total_reads': result[12],
-                                                                    'Discordant_reads': result[13],
+                                                                    'Nr_concordant_informative': result[6],
+                                                                    'Nr_discordant_uninformative': result[7],
+                                                                    'NrTotal_Overlapping_sites_between_two_genotypes':result[8],
+                                                                    'Nr_donor_distinct_sites_within_pool_individuals':result[10],
+                                                                    'Number_of_sites_that_are_donor_concordant_and_exclusive':result[9],
+                                                                    'Discordant_Site_Identities':result[12],
+                                                                    'Total_sites': result[13],
+                                                                    'Total_reads': result[14],
+                                                                    'Discordant_reads': result[15],
                                                                     'Discordant_reads_by_n_sites': read_discordance
                                                                     }   
             
@@ -285,7 +310,7 @@ class Concordances:
 
                     self.cell_concordance_table[f'{cell1} --- {donor_gt_match}']={}
                     # pool.apply_async(self.concordance_dable_production, args=([expected_vars_norm,cell_vars,cell1,donor_gt_match,dds,count]),callback=self.append_results_cell_concordances)          
-                    result1 = self.concordance_dable_production(expected_vars_norm,cell_vars,cell1,donor_gt_match,dds,count)
+                    result1 = self.concordance_table_production(expected_vars_norm,cell_vars,cell1,donor_gt_match,dds,count)
                     self.append_results_cell_concordances(result1)
                     
             pool.close()
@@ -293,9 +318,9 @@ class Concordances:
             output = self.combine_written_files()
             return output
         
-        def concordance_dable_production(self,expected_vars_norm,cell_vars,cell1,donor_gt_match,dds,count):
+        def concordance_table_production(self,expected_vars_norm,cell_vars,cell1,donor_gt_match,dds,count):
             Nr_donor_distinct_sites = len(dds)
-            Concordant_Sites, Discodrant_sites, Total_Overlappin_sites,discordant_sites,cell_vars_norm, Nr_strict_discordant, relaxed_concordant_count, total_sites, total_reads, discordant_reads = self.retrieve_concordant_discordant_sites(expected_vars_norm,cell_vars)
+            Concordant_Sites, Discodrant_sites, Total_Overlappin_sites,discordant_sites,cell_vars_norm, Nr_strict_discordant, relaxed_concordant_count, relaxed_concordant_informative_count, true_discordant_uninformative_count, total_sites, total_reads, discordant_reads = self.retrieve_concordant_discordant_sites(expected_vars_norm,cell_vars)
             Nr_Concordant = len(Concordant_Sites)
             Nr_Relaxed_concordant = Nr_Concordant + relaxed_concordant_count
             Nr_Discordant = len(Discodrant_sites)
@@ -303,7 +328,7 @@ class Concordances:
             Number_of_sites_that_are_donor_concordant_and_exclusive = len(set(dds).intersection(set(Concordant_Sites)))
             Number_of_sites_in_cellsnp_but_not_in_reference = set(cell_vars_norm['pos'])-set(expected_vars_norm['pos'])
 
-            return [cell1,donor_gt_match,Nr_Concordant,Nr_Discordant,Nr_Relaxed_concordant, Nr_strict_discordant, Nr_Total_Overlapping_sites,
+            return [cell1,donor_gt_match,Nr_Concordant,Nr_Discordant,Nr_Relaxed_concordant, Nr_strict_discordant, relaxed_concordant_informative_count, true_discordant_uninformative_count, Nr_Total_Overlapping_sites,
                     Number_of_sites_that_are_donor_concordant_and_exclusive, Nr_donor_distinct_sites,count,discordant_sites, total_sites, total_reads, discordant_reads]
         
         
@@ -504,81 +529,40 @@ class VCF_Loader:
 
 
 """Run CLI."""
-parser = argparse.ArgumentParser(
-    description="""
-        Merges all the Celltype information in one file for Azimuth and Celltypist.
-        """
-)
 
-parser.add_argument(
-    '-v', '--version',
-    action='version',
-    version='%(prog)s {version}'.format(version=__version__)
-)
+def get_options():
+    '''
+    Get options from the command line
+    '''
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--version', action='version', version='%(prog)s {version}'.format(version=__version__))
+    parser.add_argument('--cpus', action='store', required=True, type=int)
+    parser.add_argument('--cell_vcf', action='store', required=True)
+    parser.add_argument('--cell_assignments', action='store', required=True)
+    parser.add_argument('--donor_assignments', action='store', required=True)
+    parser.add_argument('--gt_match_vcf', action='store', required=True)
+    parser.add_argument('--expected_vcf', action='store', required=True)
+    parser.add_argument('--informative_sites', action='store', required=True)
+    parser.add_argument('--uninformative_sites', action='store', required=True)
+    args = parser.parse_args()
 
-parser.add_argument(
-    '-cpus', '--cpus',
-    action='store',
-    dest='cpus',
-    required=True,
-    help=''
-)
+    return args
 
-parser.add_argument(
-    '-cell_vcf', '--cell_vcf',
-    action='store',
-    dest='cell_vcf',
-    required=True,
-    help=''
-)
 
-# cell_assignments
-parser.add_argument(
-    '-cell_assignments', '--cell_assignments',
-    action='store',
-    dest='cell_assignments',
-    required=True,
-    help=''
-)
-
-parser.add_argument(
-    '-donor_assignments', '--donor_assignments',
-    action='store',
-    dest='donor_assignments',
-    required=True,
-    help=''
-)
-
-parser.add_argument(
-    '-gt_match_vcf', '--gt_match_vcf',
-    action='store',
-    dest='gt_match_vcf',
-    required=True,
-    help=''
-)
-
-parser.add_argument(
-    '-expected_vcf', '--expected_vcf',
-    action='store',
-    dest='expected_vcf',
-    required=True,
-    help=''
-)
-
-options = parser.parse_args()
-cpus=int(options.cpus)
-cell_vcf=options.cell_vcf
-# cell_vcf_dp=options.cell_vcf_dp#cell VCF data filtered by DP
-donor_assignments=options.donor_assignments
-gt_match_vcf=options.gt_match_vcf
-expected_vcf=options.expected_vcf
-cell_assignments=options.cell_assignments
-
-exclusive_donor_variants = {} #This is where results are populated when mp process i used.
-curently_pushing =[] #this is a lock value to check if rhe curent field is updated so to avaid the race for update
-All_Results={}
-cell_concordance_table = {}
-
+def get_sites_from_tsv(sites_file):
+    """
+    get sites frm a tsv file where cols are chrom, pos, id, ref, alt
+    assumes no multiallelics
+    """
+    sites = set()
+    with open(sites_file, 'r') as f:
+        lines = f.readlines()
+        for l in lines:
+            linedata = l.split('\t')
+            var = ('_').join([linedata[0], linedata[1], linedata[3], linedata[4]])
+            sites.add(var)
+    return sites
+    
 
 def find(lst, a):
     return [i for i, x in enumerate(lst) if x==a ]
@@ -629,6 +613,25 @@ def donor_exclusive_sites(exclusive_don_variants2):
 debug=False
 
 if __name__ == "__main__":
+
+    options = get_options()
+    cpus = options.cpus
+    cell_vcf=options.cell_vcf
+    donor_assignments=options.donor_assignments
+    gt_match_vcf=options.gt_match_vcf
+    expected_vcf=options.expected_vcf
+    cell_assignments=options.cell_assignments
+    informative_sites_file = options.informative_sites
+    uninformative_sites_file = options.uninformative_sites
+
+    informative_sites = get_sites_from_tsv(informative_sites_file)
+    uninformative_sites = get_sites_from_tsv(uninformative_sites_file)
+
+    exclusive_donor_variants = {} #This is where results are populated when mp process i used.
+    curently_pushing =[] #this is a lock value to check if rhe curent field is updated so to avaid the race for update
+    All_Results={}
+    cell_concordance_table = {}
+
     donor_assignments_table = pd.read_csv(donor_assignments)
     cell_assignments_table = pd.read_csv(cell_assignments,sep='\t')
     
@@ -643,10 +646,8 @@ if __name__ == "__main__":
             donor_distinct_sites = pickle.load(f)  
         with open('tmp_exclusive_don_variants.pkl', 'rb') as f:
             exclusive_don_variants = pickle.load(f) 
-        # with open('tmp_exclusive_cell_variants_dp.pkl', 'rb') as f:
-        #     exclusive_cell_variants_dp = pickle.load(f) 
     else:  
-        print('---Genotype loader init----')   
+        print('---Loading genotype VCF----')   
         if (os.path.exists(gt_match_vcf)):
             loader2 = VCF_Loader(gt_match_vcf, biallelic_only=True,
                             sparse=False, format_list=['GT'])
@@ -655,57 +656,31 @@ if __name__ == "__main__":
         else:
             GT_Matched_variants = {}
         
-        
         with open(f'tmp_GT_Matched_variants.pkl', 'wb') as f:
             pickle.dump(GT_Matched_variants, f)
         
-        print('---Lets load cell vcf----')
+        print('---Loading cell VCF----')
         tic = time.perf_counter()
         loader1 = VCF_Loader(cell_vcf, biallelic_only=True,
                             sparse=False, format_list=['GT', 'DP', 'AD', 'OTH'])
         exclusive_cell_variants = loader1.load_VCF_batch_paralel()
-        # print(exclusive_cell_variants)
-        # exit(0)
         del loader1
-
         toc = time.perf_counter()
             
         with open(f'tmp_exclusive_cell_variants.pkl', 'wb') as f:
             pickle.dump(exclusive_cell_variants, f)
         print(f"Loading took {toc - tic:0.4f} seconds")
 
-        # exclusive_cell_variants = load_VCF_batch_paralel(cell_vcf, biallelic_only=True,
-        #                     sparse=False, format_list=['GT'])
-        
-        print('---Cell VCF file loaded----')
-      
-        # print('---Lets load DP filtered cell vcf----')
-        # loader4 = VCF_Loader(cell_vcf_dp, biallelic_only=True,
-        #                     sparse=False, format_list=['GT'])
-        # exclusive_cell_variants_dp = loader4.load_VCF_batch_paralel()
-        # del loader4
-
-        # with open(f'tmp_exclusive_cell_variants_dp.pkl', 'wb') as f:
-        #     pickle.dump(exclusive_cell_variants_dp, f)
-
-        print('---Variant1 files loaded----')
+        print('---Loading expected VCF----')
         loader3 = VCF_Loader(expected_vcf, biallelic_only=True,
                         sparse=False, format_list=['GT'])
         GT_Expected_variants = loader3.load_VCF_batch_paralel()
-        # print(GT_Expected_variants)
-        # exit(0)
         del loader3
 
         with open(f'tmp_GT_Expected_variants.pkl', 'wb') as f:
             pickle.dump(GT_Expected_variants, f)
-        
-        # GT_Matched_variants2 = load_VCF_batch(gt_match_vcf, biallelic_only=True,
-        #                         sparse=False, format_list=['GT'])
-        # GT_Expected_variants = load_VCF_batch(expected_vcf, biallelic_only=True,
-        #                         sparse=False, format_list=['GT'])
-        print('---Variant2 files loaded----')
-        
-        
+ 
+        print('---Variant files loaded----')       
         
         exclusive_don_variants = GT_Expected_variants.keys()
         content = [x for x in exclusive_don_variants if not x.startswith('donor')]
@@ -730,7 +705,7 @@ if __name__ == "__main__":
         
     print('---donor_distinct_sites calculated----')
     
-    conc1 = Concordances(donor_assignments_table,cell_assignments_table,exclusive_don_variants,exclusive_cell_variants,donor_distinct_sites)
+    conc1 = Concordances(donor_assignments_table,cell_assignments_table,exclusive_don_variants,exclusive_cell_variants,donor_distinct_sites, informative_sites, uninformative_sites)
     cell_concordance_table = conc1.conc_table()
     
     # cell_concordance_table = conc_table(donor_assignments_table,cell_assignments_table,exclusive_don_variants,exclusive_cell_variants)
