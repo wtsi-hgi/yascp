@@ -76,7 +76,7 @@ workflow  main_deconvolution {
             GT_MATCH_POOL_IBD(SUBSET_WORKF.out.samplename_subsetvcf_ibd,'Withing_expected','Expected')
             DYNAMIC_DONOR_EXCLUSIVE_SNP_SELECTION(merged_expected_genotypes2)
             cellsnp_panels = DYNAMIC_DONOR_EXCLUSIVE_SNP_SELECTION.out.cellsnp_pool_panel
-
+            informative_uninformative_sites = DYNAMIC_DONOR_EXCLUSIVE_SNP_SELECTION.out.informative_uninformative_sites
 
             // // If we have selected that we want to use all the genotypes as an input in the VCF file we will use the output of the MERGE_GENOTYPES_IN_ONE_VCF_SUBSET
             // if (params.genotype_input.subset_vireo_genotypes){
@@ -212,7 +212,7 @@ workflow  main_deconvolution {
                 .combine(ch_ref_vcf)
                 .set { gt_math_pool_against_panel_input }
 
-            match_genotypes(vireo_out_sample_donor_vcf,merged_expected_genotypes,VIREO_GT_FIX_HEADER.out.gt_pool,gt_math_pool_against_panel_input,genome,ch_ref_vcf,cellsnp_cell_vcfs2,cell_assignments,VIREO_SUBSAMPLING_PROCESSING.out.subsampling_donor_swap)
+            match_genotypes(vireo_out_sample_donor_vcf,merged_expected_genotypes,VIREO_GT_FIX_HEADER.out.gt_pool,gt_math_pool_against_panel_input,genome,ch_ref_vcf,cellsnp_cell_vcfs2,cell_assignments,VIREO_SUBSAMPLING_PROCESSING.out.subsampling_donor_swap,informative_uninformative_sites)
             gt_matches = match_genotypes.out.donor_match_table.collect()
 
             ENHANCE_STATS_GT_MATCH(match_genotypes.out.donor_match_table_enhanced)
