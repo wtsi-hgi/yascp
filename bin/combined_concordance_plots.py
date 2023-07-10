@@ -66,7 +66,10 @@ ax1 = sns.violinplot(data=Joined_Df, y="total number of sites", x="Nr times beco
 fig = ax1.get_figure()
 fig.savefig('sites_becoming_different_donor.png')
 fig.clf()
-
+ax1 = sns.violinplot(data=Joined_Df, y="Total_reads", x="Nr times becoming different donor in subsampling", cut=0, scale='width')
+fig = ax1.get_figure()
+fig.savefig('Total_reads_becoming_different_donor.png')
+fig.clf()
 
 Joined_Df2 = Joined_Df[Joined_Df["Nr times becoming different donor in subsampling"]!=0]
 try:
@@ -96,6 +99,12 @@ fig.clf()
 ax1 = sns.violinplot(data=Joined_Df, y="Discordant_reads_by_n_sites", x="Nr times becoming different donor in subsampling", cut=0, scale='width')
 fig = ax1.get_figure()
 fig.savefig('Discordant_reads_by_n_sites_becoming_different_donor.png')
+fig.clf()
+
+fig, (ax1, ax2) = plt.subplots(1, 2,figsize=(13, 6))
+sns.violinplot(data=Joined_Df, y="Nr_concordant_informative", x="Nr times becoming different donor in subsampling", cut=0, scale='width',ax=ax1)
+sns.violinplot(data=Joined_Df, y="Nr_discordant_uninformative", x="Nr times becoming different donor in subsampling", cut=0, scale='width',ax=ax2)
+fig.savefig('Nr_discordant_uninformative_becoming_different_donor.png')
 fig.clf()
 
 try:
@@ -230,6 +239,28 @@ fig = scatter(fig, ax)
 fig.savefig('sites_vs_concordance.png')
 
 fig.clf()
+try:
+    fig, ax = plt.subplots(figsize=(6, 6))
+    sns.scatterplot(
+        data=Joined_Df,
+        x="Percent_strict_discordant",
+        y="cell ambientness",
+        color="k",label=f"total nr cells assigned to donor={len(Joined_Df)}",
+        ax=ax, alpha=0.5
+    )
+    Joined_Df_swap = Joined_Df[Joined_Df['Nr times becoming different donor in subsampling']!=0]
+    sns.scatterplot(
+        data=Joined_Df_swap,
+        x="Percent_strict_discordant",
+        y="cell ambientness",
+        color="r", label=f"becoming different donor; total={len(Joined_Df_swap)}",
+        ax=ax,
+    )
+
+    fig.savefig('ambientness_vs_concordance.png')
+    fig.clf()
+except:
+    _="Ambientness doesnt exist"
 
 import math
 import numpy as np

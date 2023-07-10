@@ -51,11 +51,22 @@ parser.add_argument(
     required=True,
     help='name.'
 )
+
+parser.add_argument(
+    '-run', '--run',
+    action='store',
+    dest='run',
+    required=False,
+    default=None,
+    help='run name'
+)
+
 options = parser.parse_args()
 
 cc = options.cc
 sq = options.sq
 name = options.name
+run = options.run
 
 Cell_Concordance = pd.read_csv(cc,sep='\t')
 Swap_Quant = pd.read_csv(sq,sep='\t')
@@ -65,8 +76,18 @@ Cell_Concordance = Cell_Concordance.set_index('GT 1')
 
 Joined_Df = Swap_Quant.join(Cell_Concordance,how='inner')
 Joined_Df['pool id']= name
+
+try:
+    cell_ambientness=pd.read_csv(f'/lustre/scratch123/hgi/projects/cardinal_analysis/qc/{run}/Donor_Quantification/{name}/ambientness_per_cell_{name}.tsv',sep='\t')
+    cell_ambientness=cell_ambientness.set_index('barcode')
+    Joined_Df = Joined_Df.join(cell_ambientness,how='inner')
+except:
+    _='No cell ambientless available'
+
 Joined_Df = Joined_Df.reset_index()
 Joined_Df.to_csv(f'{name}__joined_df_for_plots.tsv',sep='\t',index=False)
+
+
 
 Joined_Df['total number of sites']=Joined_Df['Nr_Concordant']+Joined_Df['Nr_Discordant']
 
@@ -114,6 +135,14 @@ fig.clf()
 ax1 = sns.violinplot(data=Joined_Df, y="Discordant_reads_by_n_sites", x="Nr times becoming different donor in subsampling", cut=0, scale='width')
 fig = ax1.get_figure()
 fig.savefig('Discordant_reads_by_n_sites_becoming_different_donor.png')
+fig.clf()
+
+
+fig.clf()
+fig, (ax1, ax2) = plt.subplots(1, 2,figsize=(13, 6))
+sns.violinplot(data=Joined_Df, y="Nr_concordant_informative", x="Nr times becoming different donor in subsampling", cut=0, scale='width',ax=ax1)
+sns.violinplot(data=Joined_Df, y="Nr_discordant_uninformative", x="Nr times becoming different donor in subsampling", cut=0, scale='width',ax=ax2)
+fig.savefig('Nr_discordant_uninformative_becoming_different_donor.png')
 fig.clf()
 
 try:
@@ -238,8 +267,30 @@ def scatter(fig, ax):
 fig, ax = plt.subplots(figsize=(6, 6))
 fig = scatter(fig, ax)
 fig.savefig('sites_vs_concordance.png')
-
 fig.clf()
+
+try:
+    fig, ax = plt.subplots(figsize=(6, 6))
+    sns.scatterplot(
+        data=Joined_Df,
+        x="Percent_strict_discordant",
+        y="cell ambientness",
+        color="k",label=f"total nr cells assigned to donor={len(Joined_Df)}",
+        ax=ax, alpha=0.5
+    )
+    Joined_Df_swap = Joined_Df[Joined_Df['Nr times becoming different donor in subsampling']!=0]
+    sns.scatterplot(
+        data=Joined_Df_swap,
+        x="Percent_strict_discordant",
+        y="cell ambientness",
+        color="r", label=f"becoming different donor; total={len(Joined_Df_swap)}",
+        ax=ax,
+    )
+
+    fig.savefig('ambientness_vs_concordance.png')
+    fig.clf()
+except:
+    _="Ambientness doesnt exist"
 
 import math
 import numpy as np

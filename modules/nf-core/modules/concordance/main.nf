@@ -68,7 +68,7 @@ process COMBINE_FILES{
     script:
 
         """
-           combine_concordance.py -cc ${concordance_table} -sq ${subsampling_table} -name ${pool_id}
+           combine_concordance.py -cc ${concordance_table} -sq ${subsampling_table} -name ${pool_id} --run ${params.RUN}
         """
 
 }
