@@ -243,16 +243,16 @@ try:
     fig, ax = plt.subplots(figsize=(6, 6))
     sns.scatterplot(
         data=Joined_Df,
-        x="Percent_strict_discordant",
-        y="cell ambientness",
+        y="Percent_strict_discordant",
+        x="cell ambientness",
         color="k",label=f"total nr cells assigned to donor={len(Joined_Df)}",
         ax=ax, alpha=0.5
     )
     Joined_Df_swap = Joined_Df[Joined_Df['Nr times becoming different donor in subsampling']!=0]
     sns.scatterplot(
         data=Joined_Df_swap,
-        x="Percent_strict_discordant",
-        y="cell ambientness",
+        y="Percent_strict_discordant",
+        x="cell ambientness",
         color="r", label=f"becoming different donor; total={len(Joined_Df_swap)}",
         ax=ax,
     )
@@ -261,6 +261,53 @@ try:
     fig.clf()
 except:
     _="Ambientness doesnt exist"
+
+try:
+    fig, ax = plt.subplots(figsize=(6, 6))
+    sns.scatterplot(
+        data=Joined_Df,
+        y="Discordant_reads",
+        x="cell ambientness",
+        color="k",label=f"total nr cells assigned to donor={len(Joined_Df)}",
+        ax=ax, alpha=0.5
+    )
+    Joined_Df_swap = Joined_Df[Joined_Df['Nr times becoming different donor in subsampling']!=0]
+    sns.scatterplot(
+        data=Joined_Df_swap,
+        y="Discordant_reads",
+        x="cell ambientness",
+        color="r", label=f"becoming different donor; total={len(Joined_Df_swap)}",
+        ax=ax,
+    )
+
+    fig.savefig('ambientness_vs_read_concordance.png')
+    fig.clf()
+except:
+    _="Ambientness doesnt exist"
+
+try:
+    fig, ax = plt.subplots(figsize=(6, 6))
+    sns.scatterplot(
+        data=Joined_Df,
+        y="Discordant_reads_by_n_sites",
+        x="cell ambientness",
+        color="k",label=f"total nr cells assigned to donor={len(Joined_Df)}",
+        ax=ax, alpha=0.5
+    )
+    Joined_Df_swap = Joined_Df[Joined_Df['Nr times becoming different donor in subsampling']!=0]
+    sns.scatterplot(
+        data=Joined_Df_swap,
+        y="Discordant_reads_by_n_sites",
+        x="cell ambientness",
+        color="r", label=f"becoming different donor; total={len(Joined_Df_swap)}",
+        ax=ax,
+    )
+
+    fig.savefig('ambientness_vs_readbysites_concordance.png')
+    fig.clf()
+except:
+    _="Ambientness doesnt exist"
+
 
 import math
 import numpy as np
