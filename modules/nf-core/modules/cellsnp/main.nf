@@ -55,6 +55,35 @@ process DYNAMIC_DONOR_EXCLUSIVE_SNP_SELECTION{
       """
 }
 
+process ASSESS_CALL_RATE{
+
+    tag "${samplename}"
+    label 'process_tiny'
+
+    if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
+        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_62bd56a-2021-12-15-4d1ec9312485.sif"
+    } else {
+        container "mercury/scrna_deconvolution:62bd56a"
+    }
+
+    input: 
+        tuple val(samplename),path(cellsnp), path(set2_informative_sites), path(set1_uninformative_sites),path(variants_description)
+
+    output:
+        tuple path("*_variants_description.tsv"), emit: variants_description
+
+    script:       
+      """
+      echo ${samplename}
+      bcftools query -f '%CHROM\t%POS\n' cellSNP.cells.vcf.gz > positions_called_on.tsv
+      quantify_piled_up_sites.py -s ${samplename} -v ${variants_description} -s1 ${set1_uninformative_sites} -s2 ${set2_informative_sites} -p positions_called_on.tsv
+      rm positions_called_on.tsv
+      """    
+
+
+}
+
+
 
 
 process CELLSNP {

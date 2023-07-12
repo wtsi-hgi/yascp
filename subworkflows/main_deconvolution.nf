@@ -2,7 +2,7 @@ nextflow.enable.dsl=2
 
 // main deconvolution modules, common to all input modes:
 
-include { CELLSNP;capture_cellsnp_files;DYNAMIC_DONOR_EXCLUSIVE_SNP_SELECTION } from "$projectDir/modules/nf-core/modules/cellsnp/main"
+include { CELLSNP;capture_cellsnp_files;DYNAMIC_DONOR_EXCLUSIVE_SNP_SELECTION; ASSESS_CALL_RATE } from "$projectDir/modules/nf-core/modules/cellsnp/main"
 include { SUBSET_GENOTYPE } from "$projectDir/modules/nf-core/modules/subset_genotype/main"
 include { VIREO;VIREO_SUBSAMPLING;VIREO_SUBSAMPLING_PROCESSING } from "$projectDir/modules/nf-core/modules/vireo/main"
 include { GUZIP_VCF } from "$projectDir/modules/nf-core/modules/guzip_vcf/main"
@@ -122,6 +122,14 @@ workflow  main_deconvolution {
             .set{cellsnp_cell_vcfs}           
 
         CELLSNP(cellsnp_with_npooled)
+        if (params.genotype_input.run_with_genotype_input) {
+            // Here we assess how many informative sites has been called on. 
+            CELLSNP.out.cell_vcfs.combine(DYNAMIC_DONOR_EXCLUSIVE_SNP_SELECTION.out.informative_uninformative_sites, by: 0).set{assess_call_rate_input}
+            ASSESS_CALL_RATE(assess_call_rate_input)
+            collect_file9(ASSESS_CALL_RATE.out.variants_description.collect(),"all_variants_description.tsv",params.outdir+'/concordances',1,'')
+        }
+        
+
 
         cellsnp_output_dir2 = CELLSNP.out.cellsnp_output_dir
         cellsnp_output_dir=cellsnp_output_dir1.concat(cellsnp_output_dir2)
