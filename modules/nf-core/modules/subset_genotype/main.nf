@@ -235,8 +235,11 @@ process JOIN_CHROMOSOMES{
         fofn_input_subset.sh "${study_vcf_files}"
         bcftools concat --threads ${task.threads} -f ./fofn_vcfs.txt -Ob -o pre_\${vcf_name}.bcf.gz
         bcftools index pre_\${vcf_name}.bcf.gz
-        bcftools +fixref pre_\${vcf_name}.bcf.gz -Ob -o \${vcf_name}_out.bcf.gz -- -d -f ${genome}/genome.fa -m flip
-        rm -r pre_*
+        bcftools +fixref pre_\${vcf_name}.bcf.gz -Ob -o fix_ref_\${vcf_name}_out.bcf.gz -- -d -f ${genome}/genome.fa -m flip
+        #ln -s pre_\${vcf_name}.bcf.gz \${vcf_name}_out.bcf.gz
+        #bcftools +fill-tags fix_ref_\${vcf_name}_out.bcf.gz -Ob -o \${vcf_name}_out.bcf.gz
+        bcftools annotate -x INFO fix_ref_\${vcf_name}_out.bcf.gz -Ob -o \${vcf_name}_out.bcf.gz
+        rm -r pre_* fix_ref_*
         bcftools index \${vcf_name}_out.bcf.gz
       """
 }
