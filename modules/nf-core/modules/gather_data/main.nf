@@ -13,7 +13,7 @@ process GATHER_DATA{
     }
 
     input:
-      val(outdir_prev)
+      path(outdir_prev)
       val(dummy_val)
       path(input_data_table)
 

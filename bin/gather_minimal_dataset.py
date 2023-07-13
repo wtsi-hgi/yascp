@@ -490,10 +490,10 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
             print(id)
             try:
                 cell_bender_path = id
-                try:
-                    cell_bender_path = f'{wd}/'+'/'.join(cell_bender_path.split('/')[-6:])
-                except:
-                    cell_bender_path = f"{args.results_dir}/{df_cellbender.loc[expid, 'data_path_10x_format']}"
+                # try:
+                #     cell_bender_path = f'{wd}/'+'/'.join(cell_bender_path.split('/')[-6:])
+                # except:
+                #     cell_bender_path = f"{args.results_dir}/{df_cellbender.loc[expid, 'data_path_10x_format']}"
                 cellbender_h5 = f"{cell_bender_path}/../cellbender_FPR_{Resolution}_filtered.h5"
                 ad_lane_filtered = scanpy.read_10x_mtx(cell_bender_path)
                 print('loaded')
@@ -1013,7 +1013,7 @@ if __name__ == '__main__':
         file_path2 = glob.glob(f'{args.results_dir}/nf-preprocessing/cellbender/*/*{args.resolution}*10x_mtx*')
         joined_file_paths = file_path+file_path2
         df_cellbender = pd.DataFrame(joined_file_paths,columns=['data_path_10x_format'])
-        df_cellbender['experiment_id']=df_cellbender['data_path_10x_format'].str.split('/').str[3]
+        df_cellbender['experiment_id']=df_cellbender['data_path_10x_format'].str.split('/').str[-3]
         df_cellbender= df_cellbender.set_index('experiment_id')
     Resolution = args.resolution
     try:
