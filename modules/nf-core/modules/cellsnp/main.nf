@@ -50,7 +50,7 @@ process DYNAMIC_DONOR_EXCLUSIVE_SNP_SELECTION{
         cat cellsnp_variants.tsv >> cellsnp_panel_${samplename}.vcf
         ln -s set1_uninformative_sites.tsv set1_uninformative_sites_${samplename}.tsv
         ln -s set2_informative_sites.tsv set2_informative_sites_${samplename}.tsv
-        gzip cellsnp_panel_${samplename}.vcf
+        bgzip cellsnp_panel_${samplename}.vcf
         rm -r dynamic_snps.vcf.gz
       """
 }
