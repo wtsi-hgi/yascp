@@ -29,7 +29,8 @@ include {collect_file as collect_file1;
         collect_file as collect_file6;
         collect_file as collect_file7;
         collect_file as collect_file8;
-        collect_file as collect_file9} from "$projectDir/modules/nf-core/modules/collect_file/main"
+        collect_file as collect_file9;
+        collect_file as collect_file10} from "$projectDir/modules/nf-core/modules/collect_file/main"
 
 workflow  main_deconvolution {
 
@@ -225,6 +226,7 @@ workflow  main_deconvolution {
 
             ENHANCE_STATS_GT_MATCH(match_genotypes.out.donor_match_table_enhanced)
             collect_file1(ENHANCE_STATS_GT_MATCH.out.assignments.collect(),"assignments_all_pools.tsv",params.outdir+'/deconvolution/vireo_gt_fix',1,'')
+            collect_file10(ENHANCE_STATS_GT_MATCH.out.assignments.collect(),"assignments_all_pools.tsv",params.outdir+'/gtmatch',1,'')
             assignments_all_pools = collect_file1.out.output_collection
 
         }else{

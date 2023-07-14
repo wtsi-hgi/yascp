@@ -127,11 +127,11 @@ process CELLSNP {
         ln -s ${barcodes_tsv_gz} bar_codes.txt
       fi
 
-
+      bcftools view ${region_vcf} -t ^6:28510120-33480577 -Oz -o region_vcf_no_MHC.vcf.gz
       cellsnp-lite -s ${bam_file} \\
         -b bar_codes.txt \\
         -O cellsnp_${samplename} \\
-        -R ${region_vcf} \\
+        -R region_vcf_no_MHC.vcf.gz \\
         -p ${task.cpus} \\
         --minMAF ${params.cellsnp.min_maf} \\
         --minCOUNT ${params.cellsnp.min_count} --gzip ${genotype_file}
