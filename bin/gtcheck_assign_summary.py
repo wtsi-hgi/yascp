@@ -21,7 +21,7 @@ class AssignmentTables:
         self.donors = []
         self.cell_lines = {}
         self.panels = {}
-        self.cell_line_panel = None
+        self.cell_line_panel = []
 
     def parse_assignment(self, infn):
         tabd = {}
@@ -72,10 +72,11 @@ class AssignmentTables:
                 if cm:
                     if is_cell_line is None:
                         is_cell_line = True
-                        if fnam_cell_line is not None and fnam_cell_line != nam:
-                            sys.exit("ERROR: there are multiple panels with cell line names in them, e.g. {:s} and {:s}."
-                                .format(fnam_cell_line, fnam))
+                        # if fnam_cell_line is not None and fnam_cell_line != nam:
+                        #     sys.exit("ERROR: there are multiple panels with cell line names in them, e.g. {:s} and {:s}."
+                        #         .format(fnam_cell_line, fnam))
                         fnam_cell_line = nam
+                        self.cell_line_panel.append(fnam_cell_line)
                     else:
                         is_error = not is_cell_line
                     cell_line = cm.group(1)
@@ -89,7 +90,7 @@ class AssignmentTables:
                     is_error = is_cell_line
                 if is_error:
                     sys.exit("ERROR: panel {:s} has cell lines mixed with non-cell line labels.".format(panel))
-        self.cell_line_panel = fnam_cell_line
+        
         return fnam_cell_line
 
     def make_cell_line_assignment(self, donor):
@@ -145,36 +146,47 @@ class AssignmentTables:
             assignment = donor_assigned
         else:
             assignment = None
-        return assignment
+        return z0,z1,assignment
 
     def assign_donors(self, oufh):
         oufh.write("donor_query,donor_gt,panel\n")
         df ={}
-        if self.cell_line_panel is None:
+        if (len(self.cell_line_panel) ==0):
             self.identify_cell_line_panel()
         for donor in self.donors:
             final_assignment = None
             panel_assignment = None
+            assigned_donors=[]
+            assigned_cellines=[]
             cell_line_assignment = None
             panel_ass_panel = None
             cell_line_panel = None
             final_panel = None
             n_assignments = 0
             for panel in self.panels:
-                if panel == self.cell_line_panel:
+                if panel in self.cell_line_panel:
                     cell_line_assignment = self.make_cell_line_assignment(donor)
-                    cell_line_panel = panel
-                    print("donor:", donor,"panel:", panel, "cell_line_assignment", cell_line_assignment)
+                    if cell_line_assignment is not None:
+                        cell_line_panel = cell_line_assignment
+                        print("donor:", donor,"panel:", panel, "cell_line_assignment", cell_line_assignment)
+                        assigned_cellines.append({'panel':panel,'assignment':cell_line_assignment})
                 else:
-                    assignment = self.make_panel_assignment(panel, donor)
+                    z0,z1,assignment = self.make_panel_assignment(panel, donor)
                     print("donor:", donor, ",panel:", panel, "assignment:", assignment)
                     if assignment is not None:
                         panel_assignment = assignment
                         panel_ass_panel = panel
                         n_assignments += 1
+                        assigned_donors.append({'panel':panel_ass_panel,'assignment':panel_assignment,'z0':z0,'z1':z1})
             if n_assignments == 1:
                 final_assignment = panel_assignment
                 final_panel = panel_ass_panel
+            elif (n_assignments >1):
+                # Here we pick the best of 2 matches
+                assignments = pd.DataFrame(assigned_donors)
+                assignments['z_diff']= assignments['z0'].astype(float)-assignments['z1'].astype(float)
+                final_assignment =assignments[assignments['z_diff']==max(assignments['z_diff'])]['assignment'].values[0]
+                final_panel=assignments[assignments['z_diff']==max(assignments['z_diff'])]['panel'].values[0]
             elif n_assignments == 0:
                 final_assignment = cell_line_assignment
                 final_panel = cell_line_panel
