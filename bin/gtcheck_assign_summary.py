@@ -80,10 +80,12 @@ class AssignmentTables:
                     else:
                         is_error = not is_cell_line
                     cell_line = cm.group(1)
-                    if cell_line in self.cell_lines:
-                        self.cell_lines[cell_line][donor] = (score, score1)
+                    if fnam_cell_line not in self.cell_lines:
+                        self.cell_lines[fnam_cell_line]={}
+                    if cell_line in self.cell_lines[fnam_cell_line]:
+                        self.cell_lines[fnam_cell_line][cell_line][donor] = (score, score1)
                     else:
-                        self.cell_lines[cell_line] = {donor: (score, score1)}
+                        self.cell_lines[fnam_cell_line][cell_line] = {donor: (score, score1)}
                 elif is_cell_line is None:
                     is_cell_line = False
                 else:
@@ -93,15 +95,16 @@ class AssignmentTables:
         
         return fnam_cell_line
 
-    def make_cell_line_assignment(self, donor):
+    def make_cell_line_assignment(self, donor,panel):
         # calculate mean of scores across donors with 1 donor removed
         assignment = None # dictionary of cell lines, values are true/false for a confiden assignment outcome
         n_confident = 0
-        for cl in self.cell_lines:
+        for cl in self.cell_lines[panel]:
+            print(cl)
             scores = []
             donor_score = 0
             donor_score1 = 0
-            scd = self.cell_lines[cl]
+            scd = self.cell_lines[panel][cl]
             is_present = False
             for d in self.donors:
                 if d not in scd:
@@ -137,7 +140,8 @@ class AssignmentTables:
 
         if n_confident != 1:
             assignment = None
-        return assignment
+            z=None
+        return z,assignment
 
     def make_panel_assignment(self, panel, donor):
         donor_assigned, score0, score1, z0, z1 ,score_n, n, mean, sd= self.panels[panel][donor]
@@ -165,11 +169,11 @@ class AssignmentTables:
             n_assignments = 0
             for panel in self.panels:
                 if panel in self.cell_line_panel:
-                    cell_line_assignment = self.make_cell_line_assignment(donor)
+                    z,cell_line_assignment = self.make_cell_line_assignment(donor,panel)
                     if cell_line_assignment is not None:
                         cell_line_panel = cell_line_assignment
                         print("donor:", donor,"panel:", panel, "cell_line_assignment", cell_line_assignment)
-                        assigned_cellines.append({'panel':panel,'assignment':cell_line_assignment})
+                        assigned_cellines.append({'panel':panel,'z':z,'assignment':cell_line_assignment})
                 else:
                     z0,z1,assignment = self.make_panel_assignment(panel, donor)
                     print("donor:", donor, ",panel:", panel, "assignment:", assignment)
@@ -188,8 +192,14 @@ class AssignmentTables:
                 final_assignment =assignments[assignments['z_diff']==max(assignments['z_diff'])]['assignment'].values[0]
                 final_panel=assignments[assignments['z_diff']==max(assignments['z_diff'])]['panel'].values[0]
             elif n_assignments == 0:
-                final_assignment = cell_line_assignment
-                final_panel = cell_line_panel
+                DF = pd.DataFrame(assigned_cellines)
+                if (len(DF))>0:
+                    Best_Match = DF[DF['z'].astype(float)==max(DF['z'].astype(float))]
+                    final_assignment = Best_Match['assignment'].values[0]
+                    final_panel = Best_Match['panel'].values[0]
+                else:
+                    final_assignment=cell_line_assignment
+                    final_panel=None
             if final_assignment is None:
                 final_assignment = 'NONE'
                 final_panel = 'NONE'
