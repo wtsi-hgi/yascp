@@ -91,7 +91,7 @@ class AssignmentTables:
                 else:
                     is_error = is_cell_line
                 if is_error:
-                    sys.exit("ERROR: panel {:s} has cell lines mixed with non-cell line labels.".format(panel))
+                    sys.exit(f"ERROR: panel {panel} has cell lines mixed with non-cell line labels.")
         
         return fnam_cell_line
 
