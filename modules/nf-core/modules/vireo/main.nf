@@ -157,16 +157,19 @@ process VIREO {
     script:
       vcf_file = ""
       if (params.genotype_input.vireo_with_gt){
-        vcf = " -d sub_${samplename}_Expected.vcf.gz --forceLearnGT"
+        vcf = " -d sub_Expected.vcf.gz --forceLearnGT"
         subset = "bcftools view ${donors_gt_vcf} -R ${cell_data}/cellSNP.cells.vcf.gz -Oz -o sub_${samplename}_Expected.vcf.gz"
         vcf_file = donors_gt_vcf
         com2 = "cd vireo_${samplename} && ln -s ../${donors_gt_vcf} GT_donors.vireo.vcf.gz"
         com2 = ""
+        // We need to make sure that the genotyes are only informative and not limmiting - for this reason we add in a subset all the variat sites that vireo currently doesnt contain.
+        reference_expansion_with_piled_up_positions = "bcftools view ${cell_data}/cellSNP.cells.vcf.gz -G -Oz -o cellsp_piled_up_sites.vcf.gz && bcftools sort cellsp_piled_up_sites.vcf.gz -Oz -o cellsp_piled_up_sites_srt.vcf.gz && bcftools index cellsp_piled_up_sites_srt.vcf.gz && bcftools index sub_${samplename}_Expected.vcf.gz && bcftools merge cellsp_piled_up_sites_srt.vcf.gz sub_${samplename}_Expected.vcf.gz -Oz -o sub_Expected.vcf.gz"
       }else{
          vcf = ""
          vcf_file = donors_gt_vcf
          com2 = ""
          subset=""
+         reference_expansion_with_piled_up_positions = ""
       }
 
     """
@@ -174,6 +177,7 @@ process VIREO {
       umask 2 # make files group_writable
 
       ${subset}
+      ${reference_expansion_with_piled_up_positions}
       vireo -c $cell_data -N $n_pooled -o vireo_${samplename} ${vcf} -t GT --randSeed 1 -p $task.cpus --nInit 200
       # add samplename to summary.tsv,
       # to then have Nextflow concat summary.tsv of all samples into a single file:
