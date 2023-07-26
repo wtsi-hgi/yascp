@@ -400,7 +400,7 @@ class Concordances:
                                                                 'Cohort': result[2],
                                                                 'Nr_Concordant':result[5],
                                                                 'Nr_Discordant':result[4],
-                                                                'Percent Discordant':percent_discordant,
+                                                                'Percent_Discordant':percent_discordant,
                                                                 'Total_sites': result[3],
                                                                 'Total_reads': result[6],
                                                                 'Discordant_reads': result[7],
