@@ -24,7 +24,7 @@ process CONCORDANCE_CALCLULATIONS {
 
     output:
         tuple val(pool_id), path("cell_concordance_table.tsv"), emit: concordances
-        tuple(pool_id), path('discordant_sites_in_other_donors.txt'), emit: read_concordances
+        tuple val(pool_id), path('discordant_sites_in_other_donors.txt'), emit: read_concordances
 
     script:
 
