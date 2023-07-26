@@ -84,7 +84,7 @@ process VIREO_SUBSAMPLING {
         com2 = "cd vireo_${samplename} && ln -s ../${donors_gt_vcf} GT_donors.vireo.vcf.gz"
         com2 = ""
         // We need to make sure that the genotyes are only informative and not limmiting - for this reason we add in a subset all the variat sites that vireo currently doesnt contain.
-        reference_expansion_with_piled_up_positions = "bcftools view subset_${params.vireo.rate}/cellSNP.cells.vcf.gz -G -Oz -o cellsp_piled_up_sites.vcf.gz && bcftools sort cellsp_piled_up_sites.vcf.gz -Oz -o pre_cellsp_piled_up_sites_srt.vcf.gz && bcftools index pre_cellsp_piled_up_sites_srt.vcf.gz &&  bcftools index -f ${donors_gt_vcf} && bcftools merge cellsp_piled_up_sites_srt.vcf.gz ${donors_gt_vcf} -Oz -o sub_Expected.vcf.gz"
+        reference_expansion_with_piled_up_positions = "bcftools view subset_${params.vireo.rate}/cellSNP.cells.vcf.gz -G -Oz -o cellsp_piled_up_sites.vcf.gz && bcftools sort cellsp_piled_up_sites.vcf.gz -Oz -o pre_cellsp_piled_up_sites_srt.vcf.gz && bcftools index pre_cellsp_piled_up_sites_srt.vcf.gz &&  bcftools index -f ${donors_gt_vcf} && bcftools merge pre_cellsp_piled_up_sites_srt.vcf.gz ${donors_gt_vcf} -Oz -o sub_Expected.vcf.gz"
         subset = "bcftools index -f sub_Expected.vcf.gz && bcftools view sub_Expected.vcf.gz -R subset_${params.vireo.rate}/cellSNP.cells.vcf.gz -Oz -o sub_${samplename}_Expected.vcf.gz"
         
       }else{
