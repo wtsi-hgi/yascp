@@ -80,7 +80,7 @@ process VIREO_SUBSAMPLING {
       vcf_file = ""
       if (params.genotype_input.vireo_with_gt){
         vcf = " -d sub_Expected.vcf.gz --forceLearnGT"
-        subset = "bcftools view ${donors_gt_vcf} -R ${cell_data}/cellSNP.cells.vcf.gz -Oz -o sub_${samplename}_Expected.vcf.gz"
+        subset = "bcftools view ${donors_gt_vcf} -R subset_${params.vireo.rate}/cellSNP.cells.vcf.gz -Oz -o sub_${samplename}_Expected.vcf.gz"
         vcf_file = donors_gt_vcf
         com2 = "cd vireo_${samplename} && ln -s ../${donors_gt_vcf} GT_donors.vireo.vcf.gz"
         com2 = ""
@@ -107,12 +107,13 @@ process VIREO_SUBSAMPLING {
       cp ${cell_data}/cellSNP.samples.tsv subset_${params.vireo.rate}/
       # Update the coordinates matrix
       cellsnp_update.R ${cell_data} ./subset_${params.vireo.rate} ./subset_${params.vireo.rate}/cellSNP.base.vcf.gz
-      bcftools sort -T $PWD ${cell_data}/cellSNP.cells.vcf.gz -Oz -o ${cell_data}/cellSNP.cells.str.vcf.gz && bcftools index -f ${cell_data}/cellSNP.cells.str.vcf.gz
-      bcftools view ${cell_data}/cellSNP.cells.vcf.gz -R ./subset_${params.vireo.rate}/cellSNP.base.vcf.gz -Oz -o ./subset_${params.vireo.rate}/cellSNP.cells.vcf.gz
+      bcftools view -G ${cell_data}/cellSNP.cells.vcf.gz -Oz -o cellSNP.cells.vcf.gz && bcftools sort -T $PWD cellSNP.cells.vcf.gz -Oz -o ./subset_${params.vireo.rate}/cellSNP.cells.vcf.gz && bcftools index -f ./subset_${params.vireo.rate}/cellSNP.cells.vcf.gz
+      #bcftools view ${cell_data}/cellSNP.cells.vcf.gz -R ./subset_${params.vireo.rate}/cellSNP.base.vcf.gz -Oz -o ./subset_${params.vireo.rate}/cellSNP.cells.vcf.gz
 
       umask 2 # make files group_writable
-      ${subset}
+      
       ${reference_expansion_with_piled_up_positions}
+      ${subset}
       vireo -c ./subset_${params.vireo.rate} -N $n_pooled -o vireo_${samplename}___${itteration} ${vcf} -t GT --randSeed 1 -p $task.cpus --nInit 200
       # add samplename to summary.tsv,
       # to then have Nextflow concat summary.tsv of all samples into a single file:
