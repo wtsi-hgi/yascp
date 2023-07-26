@@ -159,7 +159,7 @@ workflow  main_deconvolution {
             // Here we subset the genotypes. This happens if the input.nf contains subset_genotypes = true
             log.info "---We are using subset genotypes running Vireo----"
             // We need to make sure that the expected genotypes dont contain repeated genotypes - donors sequenced twice.
-            REMOVE_DUPLICATED_DONORS_FROM_GT(merged_expected_genotypes,params.genotype_phenotype_mapping_file)
+            REMOVE_DUPLICATED_DONORS_FROM_GT(merged_expected_genotypes,params.genotype_phenotype_mapping_file,params.input_data_table)
             merged_expected_genotypes = REMOVE_DUPLICATED_DONORS_FROM_GT.out.merged_expected_genotypes
             cellsnp_output_dir.combine(ch_experiment_npooled, by: 0)
                 .combine(merged_expected_genotypes, by: 0).set{full_vcf}

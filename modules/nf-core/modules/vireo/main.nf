@@ -10,6 +10,7 @@ process REMOVE_DUPLICATED_DONORS_FROM_GT{
   input:
     tuple val(samplename),path(subset_genotype),path(subset_genotype_csi)
     path(bridge_file)
+    path(input_data_table)
 
   output:
     // tuple val(pool_id), path("${vireo_fixed_vcf}"), path("${vireo_fixed_vcf}.tbi"), emit: gt_pool
@@ -21,7 +22,7 @@ process REMOVE_DUPLICATED_DONORS_FROM_GT{
     echo ${subset_genotype}
 
     bcftools query -l ${subset_genotype} > donors.tsv
-    remove_duplicated_genotypes.py -d donors.tsv -b ${bridge_file}
+    remove_duplicated_genotypes.py -d donors.tsv -b ${bridge_file} -i ${input_data_table} -n ${samplename}
     bcftools view -S t.tsv ${subset_genotype} -Oz -o dubs_removed__${subset_genotype}
     bcftools index dubs_removed__${subset_genotype}
     rm t.tsv
