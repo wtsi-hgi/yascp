@@ -107,7 +107,7 @@ process VIREO_SUBSAMPLING {
       cp ${cell_data}/cellSNP.samples.tsv subset_${params.vireo.rate}/
       # Update the coordinates matrix
       cellsnp_update.R ${cell_data} ./subset_${params.vireo.rate} ./subset_${params.vireo.rate}/cellSNP.base.vcf.gz
-      bcftools index -f ${cell_data}/cellSNP.cells.vcf.gz
+      bcftools sort -T $PWD ${cell_data}/cellSNP.cells.vcf.gz -Oz -o ${cell_data}/cellSNP.cells.str.vcf.gz && bcftools index -f ${cell_data}/cellSNP.cells.str.vcf.gz
       bcftools view ${cell_data}/cellSNP.cells.vcf.gz -R ./subset_${params.vireo.rate}/cellSNP.base.vcf.gz -Oz -o ./subset_${params.vireo.rate}/cellSNP.cells.vcf.gz
 
       umask 2 # make files group_writable
