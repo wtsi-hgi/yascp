@@ -1,3 +1,33 @@
+process REMOVE_DUPLICATED_DONORS_FROM_GT{
+    label 'process_tiny'
+    if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
+        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_62bd56a-2021-12-15-4d1ec9312485.sif"
+        //// container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_latest.img"
+    } else {
+        container "mercury/scrna_deconvolution:62bd56a"
+    }
+
+  input:
+    tuple val(samplename),path(subset_genotype),path(subset_genotype_csi)
+    path(bridge_file)
+
+  output:
+    // tuple val(pool_id), path("${vireo_fixed_vcf}"), path("${vireo_fixed_vcf}.tbi"), emit: gt_pool
+     tuple val(samplename),path("dubs_removed__${subset_genotype}"),path("dubs_removed__${subset_genotype}.csi"),emit:merged_expected_genotypes
+    script:
+  """
+    echo ${bridge_file} > output_vireo.csv
+    echo ${samplename}
+    echo ${subset_genotype}
+
+    bcftools query -l ${subset_genotype} > donors.tsv
+    remove_duplicated_genotypes.py -d donors.tsv -b ${bridge_file}
+    bcftools view -S t.tsv ${subset_genotype} -Oz -o dubs_removed__${subset_genotype}
+    bcftools index dubs_removed__${subset_genotype}
+    rm t.tsv
+  """
+}
+
 process CAPTURE_VIREO{
   label 'process_tiny'
   input:
@@ -133,7 +163,7 @@ process VIREO {
 
 
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_62bd56a-2021-12-15-4d1ec9312485.sif"
+        container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/qc_with_GT/scrna_deconvolution_v3.img"
         //// container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_latest.img"
     } else {
         container "mercury/scrna_deconvolution:62bd56a"

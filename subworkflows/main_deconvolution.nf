@@ -4,7 +4,7 @@ nextflow.enable.dsl=2
 
 include { CELLSNP;capture_cellsnp_files;DYNAMIC_DONOR_EXCLUSIVE_SNP_SELECTION; ASSESS_CALL_RATE } from "$projectDir/modules/nf-core/modules/cellsnp/main"
 include { SUBSET_GENOTYPE } from "$projectDir/modules/nf-core/modules/subset_genotype/main"
-include { VIREO;VIREO_SUBSAMPLING;VIREO_SUBSAMPLING_PROCESSING } from "$projectDir/modules/nf-core/modules/vireo/main"
+include { VIREO;REMOVE_DUPLICATED_DONORS_FROM_GT;VIREO_SUBSAMPLING;VIREO_SUBSAMPLING_PROCESSING } from "$projectDir/modules/nf-core/modules/vireo/main"
 include { GUZIP_VCF } from "$projectDir/modules/nf-core/modules/guzip_vcf/main"
 include { SOUPORCELL } from "$projectDir/modules/nf-core/modules/souporcell/main"
 include { SPLIT_DONOR_H5AD } from "$projectDir/modules/nf-core/modules/split_donor_h5ad/main"
@@ -158,6 +158,9 @@ workflow  main_deconvolution {
             // for each experiment_id to deconvolute, subset donors vcf to its donors and subset genomic regions.
             // Here we subset the genotypes. This happens if the input.nf contains subset_genotypes = true
             log.info "---We are using subset genotypes running Vireo----"
+            // We need to make sure that the expected genotypes dont contain repeated genotypes - donors sequenced twice.
+            REMOVE_DUPLICATED_DONORS_FROM_GT(merged_expected_genotypes,params.genotype_phenotype_mapping_file)
+            merged_expected_genotypes = REMOVE_DUPLICATED_DONORS_FROM_GT.out.merged_expected_genotypes
             cellsnp_output_dir.combine(ch_experiment_npooled, by: 0)
                 .combine(merged_expected_genotypes, by: 0).set{full_vcf}
         } else {
