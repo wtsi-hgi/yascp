@@ -79,16 +79,19 @@ process VIREO_SUBSAMPLING {
     script:
       vcf_file = ""
       if (params.genotype_input.vireo_with_gt){
-        vcf = " -d sub_${samplename}_Expected.vcf.gz --forceLearnGT"
+        vcf = " -d sub_Expected.vcf.gz --forceLearnGT"
         subset = "bcftools view ${donors_gt_vcf} -R ${cell_data}/cellSNP.cells.vcf.gz -Oz -o sub_${samplename}_Expected.vcf.gz"
         vcf_file = donors_gt_vcf
-        com2 = "cd vireo_${samplename}___${itteration} && ln -s ../${donors_gt_vcf} GT_donors.vireo.vcf.gz"
+        com2 = "cd vireo_${samplename} && ln -s ../${donors_gt_vcf} GT_donors.vireo.vcf.gz"
         com2 = ""
+        // We need to make sure that the genotyes are only informative and not limmiting - for this reason we add in a subset all the variat sites that vireo currently doesnt contain.
+        reference_expansion_with_piled_up_positions = "bcftools view subset_${params.vireo.rate}/cellSNP.cells.vcf.gz -G -Oz -o cellsp_piled_up_sites.vcf.gz && bcftools sort cellsp_piled_up_sites.vcf.gz -Oz -o cellsp_piled_up_sites_srt.vcf.gz && bcftools index cellsp_piled_up_sites_srt.vcf.gz && bcftools index sub_${samplename}_Expected.vcf.gz && bcftools merge cellsp_piled_up_sites_srt.vcf.gz sub_${samplename}_Expected.vcf.gz -Oz -o sub_Expected.vcf.gz"
       }else{
          vcf = ""
          vcf_file = donors_gt_vcf
          com2 = ""
          subset=""
+         reference_expansion_with_piled_up_positions = ""
       }
 
     """
@@ -104,9 +107,12 @@ process VIREO_SUBSAMPLING {
       cp ${cell_data}/cellSNP.samples.tsv subset_${params.vireo.rate}/
       # Update the coordinates matrix
       cellsnp_update.R ${cell_data} ./subset_${params.vireo.rate} ./subset_${params.vireo.rate}/cellSNP.base.vcf.gz
+      bcftools index -f ${cell_data}/cellSNP.cells.vcf.gz
+      bcftools view ${cell_data}/cellSNP.cells.vcf.gz -R ./subset_${params.vireo.rate}/cellSNP.base.vcf.gz -Oz -o ./subset_${params.vireo.rate}/cellSNP.cells.vcf.gz
 
       umask 2 # make files group_writable
       ${subset}
+      ${reference_expansion_with_piled_up_positions}
       vireo -c ./subset_${params.vireo.rate} -N $n_pooled -o vireo_${samplename}___${itteration} ${vcf} -t GT --randSeed 1 -p $task.cpus --nInit 200
       # add samplename to summary.tsv,
       # to then have Nextflow concat summary.tsv of all samples into a single file:
@@ -122,38 +128,6 @@ process VIREO_SUBSAMPLING {
     """
 }
 
-
-process VIREO_SUBSAMPLING_PROCESSING{
-    tag "${samplename}"
-    label 'process_medium'
-    publishDir  path: "${params.outdir}/concordances/${samplename}",
-                mode: "${params.copy_mode}",
-                overwrite: "true"
-
-
-    if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_62bd56a-2021-12-15-4d1ec9312485.sif"
-        //// container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_latest.img"
-    } else {
-        container "mercury/scrna_deconvolution:62bd56a"
-    }
-    input:
-      tuple val(samplename), path(vireo_subsampling_folders)
-
-    output:
-      tuple val(samplename), path("${samplename}_subsampling_donor_swap_quantification.tsv"), emit: subsampling_donor_swap
-
-    script:   
-    """
-      echo ${samplename}
-      echo ${vireo_subsampling_folders}
-      ln -s $projectDir/bin/fix_vireo_header.sh ./fix_vireo_header.sh
-      gt_check_and_report_cell_swaps.py
-      ln -s subsampling_donor_swap_quantification.tsv ${samplename}_subsampling_donor_swap_quantification.tsv
-    """
-
-
-}
 
 process VIREO {
     tag "${samplename}"
@@ -223,3 +197,36 @@ process VIREO {
       ${com2}
     """
 }
+
+process VIREO_SUBSAMPLING_PROCESSING{
+    tag "${samplename}"
+    label 'process_medium'
+    publishDir  path: "${params.outdir}/concordances/${samplename}",
+                mode: "${params.copy_mode}",
+                overwrite: "true"
+
+
+    if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
+        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_62bd56a-2021-12-15-4d1ec9312485.sif"
+        //// container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_latest.img"
+    } else {
+        container "mercury/scrna_deconvolution:62bd56a"
+    }
+    input:
+      tuple val(samplename), path(vireo_subsampling_folders)
+
+    output:
+      tuple val(samplename), path("${samplename}_subsampling_donor_swap_quantification.tsv"), emit: subsampling_donor_swap
+
+    script:   
+    """
+      echo ${samplename}
+      echo ${vireo_subsampling_folders}
+      ln -s $projectDir/bin/fix_vireo_header.sh ./fix_vireo_header.sh
+      gt_check_and_report_cell_swaps.py
+      ln -s subsampling_donor_swap_quantification.tsv ${samplename}_subsampling_donor_swap_quantification.tsv
+    """
+
+
+}
+
