@@ -79,61 +79,79 @@ process VIREO_SUBSAMPLING {
     script:
       vcf_file = ""
       if (params.genotype_input.vireo_with_gt){
-        vcf = " -d sub_${samplename}_Expected.vcf.gz --forceLearnGT"
+        // vcf = " -d ${donors_gt_vcf} --forceLearnGT"
         vcf_file = donors_gt_vcf
+        vcf = " -d sub_${samplename}_Expected.vcf.gz --forceLearnGT"
+        subset = "bcftools view ${donors_gt_vcf} -R ${cell_data}/cellSNP.cells.vcf.gz -Oz -o sub_${samplename}_Expected.vcf.gz"
         com2 = "cd vireo_${samplename} && ln -s ../${donors_gt_vcf} GT_donors.vireo.vcf.gz"
         com2 = ""
-        // We need to make sure that the genotyes are only informative and not limmiting - for this reason we add in a subset all the variat sites that vireo currently doesnt contain.
-        reference_expansion_with_piled_up_positions = "bcftools view subset_${params.vireo.rate}/cellSNP.cells.vcf.gz -G -Oz -o cellsp_piled_up_sites.vcf.gz && bcftools sort cellsp_piled_up_sites.vcf.gz -Oz -o pre_cellsp_piled_up_sites_srt.vcf.gz && bcftools index pre_cellsp_piled_up_sites_srt.vcf.gz &&  bcftools index -f ${donors_gt_vcf} && bcftools merge pre_cellsp_piled_up_sites_srt.vcf.gz ${donors_gt_vcf} -Oz -o sub_Expected.vcf.gz"
-        subset = "bcftools index -f sub_Expected.vcf.gz && bcftools view sub_Expected.vcf.gz -R subset_${params.vireo.rate}/cellSNP.cells.vcf.gz -Oz -o sub_${samplename}_Expected.vcf.gz"
-        
+        subset_processing="""
+            bcftools view ${donors_gt_vcf} -R ${cell_data}/cellSNP.base.vcf.gz  -Oz -o pre_Overlapping.vcf.gz
+            bcftools view -G ${cell_data}/cellSNP.cells.vcf.gz -Oz -o pre_cellSNP.cells.vcf.gz 
+            bcftools sort pre_cellSNP.cells.vcf.gz -Oz -o pre_cellSNP3.cells.vcf.gz
+            bcftools index pre_cellSNP3.cells.vcf.gz
+            bcftools view pre_cellSNP3.cells.vcf.gz -R pre_Overlapping.vcf.gz -Oz -o pre_cellSNP4.cells.vcf.gz
+            random_variants.py --random_state 9 --vcf pre_cellSNP4.cells.vcf.gz --rate 60
+            zcat ${cell_data}/cellSNP.base.vcf.gz | head -n2 > subset_${params.vireo.rate}/cellSNP.base.vcf 
+            cat random_variants.tsv >> subset_${params.vireo.rate}/cellSNP.base.vcf
+            gzip subset_${params.vireo.rate}/cellSNP.base.vcf
+
+            cp ${cell_data}/cellSNP.samples.tsv subset_${params.vireo.rate}/
+            # Update the coordinates matrix
+            cellsnp_update.R ${cell_data} ./subset_${params.vireo.rate} ./subset_${params.vireo.rate}/cellSNP.base.vcf.gz
+
+        """
+
       }else{
          vcf = ""
          vcf_file = donors_gt_vcf
          com2 = ""
          subset=""
          reference_expansion_with_piled_up_positions = ""
+
+          subset_processing="""
+              # Produce 80% of SNPs panel 
+            random_variants.py --random_state ${itteration} --vcf ${cell_data}/cellSNP.base.vcf.gz --rate ${params.vireo.rate}
+
+            # Subset the VCF file
+            mkdir subset_${params.vireo.rate}
+            zcat ${cell_data}/cellSNP.base.vcf.gz | head -n2 > subset_${params.vireo.rate}/cellSNP.base.vcf && echo 'next'
+            cat random_variants.tsv >> subset_${params.vireo.rate}/cellSNP.base.vcf
+            gzip subset_${params.vireo.rate}/cellSNP.base.vcf
+            cp ${cell_data}/cellSNP.samples.tsv subset_${params.vireo.rate}/
+            # Update the coordinates matrix
+            cellsnp_update.R ${cell_data} ./subset_${params.vireo.rate} ./subset_${params.vireo.rate}/cellSNP.base.vcf.gz
+              
+          """
+
       }
 
     """
 
-      # Produce 80% of SNPs panel 
-      random_variants.py --random_state ${itteration} --vcf ${cell_data}/cellSNP.base.vcf.gz --rate ${params.vireo.rate}
 
-      # Subset the VCF file
-      mkdir subset_${params.vireo.rate}
-      zcat ${cell_data}/cellSNP.base.vcf.gz | head -n2 > subset_${params.vireo.rate}/cellSNP.base.vcf && echo 'next'
-      cat random_variants.tsv >> subset_${params.vireo.rate}/cellSNP.base.vcf
-      gzip subset_${params.vireo.rate}/cellSNP.base.vcf
-      cp ${cell_data}/cellSNP.samples.tsv subset_${params.vireo.rate}/
-      # Update the coordinates matrix
-      cellsnp_update.R ${cell_data} ./subset_${params.vireo.rate} ./subset_${params.vireo.rate}/cellSNP.base.vcf.gz
-      bcftools view -G ${cell_data}/cellSNP.cells.vcf.gz -Oz -o cellSNP.cells.vcf.gz && bcftools sort cellSNP.cells.vcf.gz -Oz -o pre_cellSNP.cells.vcf.gz && bcftools index -f pre_cellSNP.cells.vcf.gz && bcftools view pre_cellSNP.cells.vcf.gz -R ./subset_${params.vireo.rate}/cellSNP.base.vcf.gz -Oz -o ./subset_${params.vireo.rate}/cellSNP.cells.vcf.gz && bcftools index -f ./subset_${params.vireo.rate}/cellSNP.cells.vcf.gz
-      #bcftools view ${cell_data}/cellSNP.cells.vcf.gz -R ./subset_${params.vireo.rate}/cellSNP.base.vcf.gz -Oz -o ./subset_${params.vireo.rate}/cellSNP.cells.vcf.gz
+        ${subset_processing}
+        ${subset}
+        umask 2 # make files group_writable
+        vireo -c ./subset_${params.vireo.rate} -N $n_pooled -o vireo_${samplename}___${itteration} ${vcf} -t GT --randSeed 1 -p $task.cpus --nInit 200
+        # add samplename to summary.tsv,
+        # to then have Nextflow concat summary.tsv of all samples into a single file:
+        gzip vireo_${samplename}___${itteration}/GT_donors.vireo.vcf || echo 'vireo_${samplename}___${itteration}/GT_donors.vireo.vcf already gzip'
+        cat vireo_${samplename}___${itteration}/summary.tsv | \\
+          tail -n +2 | \\
+          sed s\"/^/${samplename}\\t/\"g > vireo_${samplename}___${itteration}/${samplename}.sample_summary.txt
 
-      umask 2 # make files group_writable
-      
-      ${reference_expansion_with_piled_up_positions}
-      ${subset}
-      vireo -c ./subset_${params.vireo.rate} -N $n_pooled -o vireo_${samplename}___${itteration} ${vcf} -t GT --randSeed 1 -p $task.cpus --nInit 200
-      # add samplename to summary.tsv,
-      # to then have Nextflow concat summary.tsv of all samples into a single file:
-      gzip vireo_${samplename}___${itteration}/GT_donors.vireo.vcf || echo 'vireo_${samplename}___${itteration}/GT_donors.vireo.vcf already gzip'
-      cat vireo_${samplename}___${itteration}/summary.tsv | \\
-        tail -n +2 | \\
-        sed s\"/^/${samplename}\\t/\"g > vireo_${samplename}___${itteration}/${samplename}.sample_summary.txt
+        cat vireo_${samplename}___${itteration}/summary.tsv | \\
+          tail -n +2 | \\
+          sed s\"/^/${samplename}__/\"g > vireo_${samplename}___${itteration}/${samplename}__exp.sample_summary.txt
+        ${com2}
 
-      cat vireo_${samplename}___${itteration}/summary.tsv | \\
-        tail -n +2 | \\
-        sed s\"/^/${samplename}__/\"g > vireo_${samplename}___${itteration}/${samplename}__exp.sample_summary.txt
-      ${com2}
     """
 }
 
 
 process VIREO {
     tag "${samplename}"
-    label 'process_medium'
+    label 'medium_cpus'
     publishDir "${params.outdir}/deconvolution/vireo/${samplename}/",  mode: "${params.vireo.copy_mode}", overwrite: true,
 	  saveAs: {filename -> filename.replaceFirst("vireo_${samplename}/","") }
 
@@ -164,7 +182,7 @@ process VIREO {
     script:
       vcf_file = ""
       if (params.genotype_input.vireo_with_gt){
-        vcf = " -d sub_Expected.vcf.gz --forceLearnGT"
+        vcf = " -d sub_${samplename}_Expected.vcf.gz --forceLearnGT"
         subset = "bcftools view ${donors_gt_vcf} -R ${cell_data}/cellSNP.cells.vcf.gz -Oz -o sub_${samplename}_Expected.vcf.gz"
         vcf_file = donors_gt_vcf
         com2 = "cd vireo_${samplename} && ln -s ../${donors_gt_vcf} GT_donors.vireo.vcf.gz"
@@ -184,7 +202,6 @@ process VIREO {
       umask 2 # make files group_writable
 
       ${subset}
-      ${reference_expansion_with_piled_up_positions}
       vireo -c $cell_data -N $n_pooled -o vireo_${samplename} ${vcf} -t GT --randSeed 1 -p $task.cpus --nInit 200
       # add samplename to summary.tsv,
       # to then have Nextflow concat summary.tsv of all samples into a single file:
@@ -202,7 +219,7 @@ process VIREO {
 
 process VIREO_SUBSAMPLING_PROCESSING{
     tag "${samplename}"
-    label 'process_medium'
+    label 'medium_cpus'
     publishDir  path: "${params.outdir}/concordances/${samplename}",
                 mode: "${params.copy_mode}",
                 overwrite: "true"
