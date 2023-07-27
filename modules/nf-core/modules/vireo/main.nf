@@ -114,7 +114,7 @@ process VIREO_SUBSAMPLING {
             random_variants.py --random_state ${itteration} --vcf ${cell_data}/cellSNP.base.vcf.gz --rate ${params.vireo.rate}
 
             # Subset the VCF file
-            mkdir subset_${params.vireo.rate}
+            
             zcat ${cell_data}/cellSNP.base.vcf.gz | head -n2 > subset_${params.vireo.rate}/cellSNP.base.vcf && echo 'next'
             cat random_variants.tsv >> subset_${params.vireo.rate}/cellSNP.base.vcf
             gzip subset_${params.vireo.rate}/cellSNP.base.vcf
@@ -128,7 +128,7 @@ process VIREO_SUBSAMPLING {
 
     """
 
-
+        mkdir subset_${params.vireo.rate}
         ${subset_processing}
         ${subset}
         umask 2 # make files group_writable
