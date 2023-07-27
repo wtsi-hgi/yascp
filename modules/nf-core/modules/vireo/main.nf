@@ -133,7 +133,7 @@ process VIREO_SUBSAMPLING {
 
 process VIREO {
     tag "${samplename}"
-    label 'process_high'
+    label 'process_medium'
     publishDir "${params.outdir}/deconvolution/vireo/${samplename}/",  mode: "${params.vireo.copy_mode}", overwrite: true,
 	  saveAs: {filename -> filename.replaceFirst("vireo_${samplename}/","") }
 
