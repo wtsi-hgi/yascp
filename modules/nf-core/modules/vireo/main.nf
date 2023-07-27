@@ -55,7 +55,7 @@ process VIREO_SUBSAMPLING {
     // We subsample the cellsnp files to the 80% of random SNPs and run vireo with this.
 
     tag "${samplename}"
-    label 'process_medium'
+    label 'medium_cpus'
 
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_62bd56a-2021-12-15-4d1ec9312485.sif"
@@ -92,7 +92,7 @@ process VIREO_SUBSAMPLING {
             bcftools index pre_cellSNP3.cells.vcf.gz
             bcftools view pre_cellSNP3.cells.vcf.gz -R pre_Overlapping.vcf.gz -Oz -o pre_cellSNP4.cells.vcf.gz
             random_variants.py --random_state 9 --vcf pre_cellSNP4.cells.vcf.gz --rate 60
-            zcat ${cell_data}/cellSNP.base.vcf.gz | head -n2 > subset_${params.vireo.rate}/cellSNP.base.vcf 
+            zcat ${cell_data}/cellSNP.base.vcf.gz | head -n2 > subset_${params.vireo.rate}/cellSNP.base.vcf && echo 'next'
             cat random_variants.tsv >> subset_${params.vireo.rate}/cellSNP.base.vcf
             gzip subset_${params.vireo.rate}/cellSNP.base.vcf
 
