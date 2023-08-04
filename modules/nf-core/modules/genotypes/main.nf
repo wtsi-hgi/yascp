@@ -80,7 +80,7 @@ process VIREO_GT_FIX_HEADER
         overwrite: "true"
   if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
       // println "container: /software/hgi/containers/wtsihgi-nf_genotype_match-1.0.sif\n"
-      container "https://yascp.cog.sanger.ac.uk/public/singularity_images/wtsihgi-nf_yascp_htstools-1.1.sif"
+      container "https://yascp.cog.sanger.ac.uk/public/singularity_images/scrna_deconvolution_v3.img"
   } else {
       container "mercury/wtsihgi-nf_yascp_htstools-1.1"
   }
@@ -122,7 +122,7 @@ process VIREO_GT_FIX_HEADER
     bcftools reheader -h header.txt ${sorted_vcf} | \
     bcftools view -Oz -o pre_${vireo_fixed_vcf}
     tabix -p vcf pre_${vireo_fixed_vcf}
-    bcftools +fixref pre_${vireo_fixed_vcf} -Oz -o ${vireo_fixed_vcf} -- -d -f ${genome}/genome.fa -m flip
+    bcftools +fixref pre_${vireo_fixed_vcf} -Oz -o ${vireo_fixed_vcf} -- -d -f ${genome}/genome.fa -m flip-all
     tabix -p vcf ${vireo_fixed_vcf}
 
 

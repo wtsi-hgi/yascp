@@ -94,5 +94,7 @@ for don1 in donors[0]:
 donors = donors.sort_values('mapping')
 donors = donors.drop_duplicates(subset=['mapping'])
 donors[0].to_csv('t.tsv',index=False,header=None)
+expected = set(input_expected.replace("'",'').split(','))
+missing = expected-set(donors['mapping'])
 print('Done')
 
