@@ -369,6 +369,7 @@ class VCF_Loader:
         elif list_val[3] == 'A' and list_val[4] == 'G':#remove A>G
             pass
         elif list_val[3] == 'T' and list_val[4] == 'C':#also remove T>C
+            
             pass
         else:
             list_val2 = list_val[9:]
