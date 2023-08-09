@@ -153,7 +153,7 @@ workflow  main_deconvolution {
 
 //         // Here we run Vireo software to perform the donor deconvolution. Note that we have coded the pipeline to be capable in using
 //         // the full genotypes as an input and also subset to the individuals provided as an input in the donor_vcf_ids column.
-        if (params.genotype_input.vireo_with_gt) {
+        if (params.genotype_input.vireo_with_gt && params.genotype_input.run_with_genotype_input) {
             log.info "---running Vireo with genotype input----"
             // for each experiment_id to deconvolute, subset donors vcf to its donors and subset genomic regions.
             // Here we subset the genotypes. This happens if the input.nf contains subset_genotypes = true
