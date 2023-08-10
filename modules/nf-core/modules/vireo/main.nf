@@ -53,6 +53,17 @@ process CAPTURE_VIREO{
 process VIREO_SUBSAMPLING {
     // This module is used to make sure that no cells that there are no cells assigned to the wrong donor.
     // We subsample the cellsnp files to the 80% of random SNPs and run vireo with this.
+    publishDir "${params.outdir}/deconvolution/vireo_sub/${samplename}/vireo___${itteration}",  mode: "${params.vireo.copy_mode}", overwrite: true
+	  // saveAs: {filename -> filename.replaceFirst("vireo_${samplename}/","") }
+    // saveAs: {filename ->
+    //     if (filename.contains("subset_${params.vireo.rate}")) {
+    //         filename.replaceFirst("subset_${params.vireo.rate}","subset_${params.vireo.rate}/vireo_${samplename}")
+    //     }else if(filename.equalsIgnoreCase("${vcf}")) {
+    //         filename.replaceFirst("${vcf}","vireo_${samplename}___${itteration}/${vcf}")
+    //     } else {
+    //         filename.replaceAll("-----", "-----")
+    //     }
+    // }
 
     tag "${samplename}"
     label 'medium_cpus'
@@ -76,6 +87,7 @@ process VIREO_SUBSAMPLING {
       path("vireo_${samplename}___${itteration}/${samplename}__exp.sample_summary.txt"), emit: sample__exp_summary_tsv
       tuple  val(samplename), path("vireo_${samplename}___${itteration}/GT_donors.vireo.vcf.gz"), path("vireo_${samplename}___${itteration}/${samplename}.sample_summary.txt"),path("vireo_${samplename}___${itteration}/${samplename}__exp.sample_summary.txt"),path("vireo_${samplename}___${itteration}/donor_ids.tsv"),path(vcf_file),path(donor_gt_csi), emit: all_required_data
       tuple val(samplename), path("sub_${samplename}_Expected.vcf.gz"), emit: exp_sub_gt optional true
+      path("subset_${params.vireo.rate}"), emit: sub
     script:
       vcf_file = ""
       if (params.genotype_input.vireo_with_gt){
