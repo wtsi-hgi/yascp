@@ -78,13 +78,13 @@ for subsampling_file in subsampling_itterations['col']:
         New_Identities=New_Identities[New_Identities['donor_id']!='unassigned']
         Becoming_Doublet=New_Identities[New_Identities['donor_id']=='doublet']
         Becoming_Different_Donor=New_Identities[New_Identities['donor_id']!='doublet']
-        if len(Becoming_Different_Donor)>0
-            # here we want to check whether we have eliminated all the sites that support the particular cell.
-            # need cells and their sites that are not ./.
-            samples = set(Becoming_Different_Donor.index)
-            pd.DataFrame(samples).to_csv('samples.tsv',index=False,header=False)
-            sites_supporting_deconvolutions3 = len(sites_supporting_deconvolutions.loc[samples]['Concordant_Site_Identities'].str.split(';')[0])
-            os.system('bcftools view -S samples.tsv ')
+        # if len(Becoming_Different_Donor)>0
+        #     # here we want to check whether we have eliminated all the sites that support the particular cell.
+        #     # need cells and their sites that are not ./.
+        #     samples = set(Becoming_Different_Donor.index)
+        #     pd.DataFrame(samples).to_csv('samples.tsv',index=False,header=False)
+        #     sites_supporting_deconvolutions3 = len(sites_supporting_deconvolutions.loc[samples]['Concordant_Site_Identities'].str.split(';')[0])
+        #     os.system('bcftools view -S samples.tsv ')
             
         # Now we add up all of this for the cells in the dataframe, that can be used for further quantification downstream.
         
