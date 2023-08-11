@@ -32,6 +32,8 @@ Reference_cell_identities2['Nr times becoming Unassigned in subsampling']=0
 Reference_cell_identities2['Nr times becoming different donor in subsampling']=0
 Reference_cell_identities2['New Donor Identities'] = ''
 Reference_cell_identities2['Nr vireo subsampling itterations']=0
+sites_supporting_deconvolutions = pd.read_csv('/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/qc_with_GT/UKBB_ELGH_5th_July_2022/results_noMHC_1kgAF_dubsRemove_onlyOverlaping_bcftools118_AGremove/concordances/CRD_CMB12979968/site_identities_discordant_sites_in_other_donors.tsv',sep='\t')
+sites_supporting_deconvolutions.set_index(sites_supporting_deconvolutions['Unnamed: 0'].str.split(' --- ').str[0],inplace=True)
 
 for subsampling_file in subsampling_itterations['col']:
     print(subsampling_file)
@@ -76,7 +78,14 @@ for subsampling_file in subsampling_itterations['col']:
         New_Identities=New_Identities[New_Identities['donor_id']!='unassigned']
         Becoming_Doublet=New_Identities[New_Identities['donor_id']=='doublet']
         Becoming_Different_Donor=New_Identities[New_Identities['donor_id']!='doublet']
-        
+        if len(Becoming_Different_Donor)>0
+            # here we want to check whether we have eliminated all the sites that support the particular cell.
+            # need cells and their sites that are not ./.
+            samples = set(Becoming_Different_Donor.index)
+            pd.DataFrame(samples).to_csv('samples.tsv',index=False,header=False)
+            sites_supporting_deconvolutions3 = len(sites_supporting_deconvolutions.loc[samples]['Concordant_Site_Identities'].str.split(';')[0])
+            os.system('bcftools view -S samples.tsv ')
+            
         # Now we add up all of this for the cells in the dataframe, that can be used for further quantification downstream.
         
         Reference_cell_identities2.loc[set(Becoming_Doublet.index),'Nr times becoming Doublet in subsampling'] = Reference_cell_identities2.loc[set(Becoming_Doublet.index),'Nr times becoming Doublet in subsampling']+1
