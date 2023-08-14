@@ -368,7 +368,8 @@ class VCF_Loader:
             print(f'{idx} var not bialelic')
         elif list_val[3] == 'A' and list_val[4] == 'G':#remove A>G
             pass
-        elif list_val[3] == 'C' and list_val[4] == 'T':#also remove C>T
+        elif list_val[3] == 'T' and list_val[4] == 'C':#also remove T>C
+            
             pass
         else:
             list_val2 = list_val[9:]

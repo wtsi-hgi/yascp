@@ -60,10 +60,6 @@ class VCF_Loader:
         if len(list_val[3]) > 1 or len(list_val[4]) > 1:
             # CURRENTLY DEALS ONLY WITH BIALELIC
             print(f'{idx} var not bialelic')
-        elif list_val[3] == 'A' and list_val[4] == 'G':#remove A>G
-            pass
-        elif list_val[3] == 'T' and list_val[4] == 'C':#also remove T>C
-            pass
         else:
             list_val2 = list_val[9:]
             obs = pd.DataFrame(obs_ids)
@@ -317,7 +313,7 @@ class Concordances:
         true_discordant = 0
         relaxed_concordant = 0
         discordant_vars = []
-
+        concordant_vars = []
         for i in range(0, len(snp_gtypes)):
             discordant = False
             snp_data = snp_gtypes[i].split('_')
@@ -349,9 +345,10 @@ class Concordances:
                 true_discordant+=1
                 discordant_vars.append(cellsnp_var)
             else:
+                concordant_vars.append(cellsnp_var)
                 relaxed_concordant+=1
 
-        return true_discordant, relaxed_concordant, discordant_vars
+        return true_discordant, relaxed_concordant, discordant_vars,concordant_vars
     
 
     def retrieve_concordant_discordant_sites(self,expected_vars_norm,cell_vars):            
@@ -369,12 +366,12 @@ class Concordances:
             disc2['expected_retrieved'] = disc2['0_x']+'::'+disc2['0_y']
             #disc_sites = ';'.join(disc2['expected_retrieved'])
 
-            true_discordant_count, relaxed_concordant_count, discordant_vars = self.get_strict_discordance(disc2['0_y'], disc2['0_x'])
+            true_discordant_count, relaxed_concordant_count, discordant_vars, concordant_vars = self.get_strict_discordance(disc2['0_y'], disc2['0_x'])
             total_concordant_sites = len(Concordant_Sites) + relaxed_concordant_count
             #find discordant reads
             total_sites, total_reads, discordant_reads = self.read_condordance(expected_vars2, cell_vars2)
 
-            return total_sites, true_discordant_count, total_concordant_sites, total_reads, discordant_reads, discordant_vars
+            return total_sites, true_discordant_count, total_concordant_sites, total_reads, discordant_reads, discordant_vars, concordant_vars
 
 
     def set_results(self,to_set,id):
@@ -383,7 +380,7 @@ class Concordances:
             pickle.dump(to_set, f)
         self.record_dict[id]=f'tmp_{id}.pkl'
         
-    def append_results_cell_concordances(self,result):
+    def append_results_cell_concordances(self,result,cell_concordance_table):
         #[cell1, donor_gt_match, donor_gt_match_cohort, total_sites, true_discordant_count, total_concordant_sites, total_reads, 
         # discordant_reads, discordant_vars,discordant_vars_in_pool_str, count]
         count=result[10]
@@ -398,8 +395,9 @@ class Concordances:
         except:
             read_discordance = 0
 
-        print(count)
-        self.cell_concordance_table[f'{result[0]} --- {result[1]}'] = {'GT 1':result[0],
+        # print(count)
+        same_as_asigned_donor = result[12]==result[1]
+        cell_concordance_table[f'{result[0]} --- {result[1]}'] = {'GT 1':result[0],
                                                                 'GT 2':result[1],
                                                                 'Cohort': result[2],
                                                                 'Nr_Concordant':result[5],
@@ -410,15 +408,20 @@ class Concordances:
                                                                 'Discordant_reads': result[7],
                                                                 'Discordant_reads_by_n_sites': read_discordance,
                                                                 'Discordant_sites_in_pool': result[9],
-                                                                'Discordant_Site_Identities':(';').join(result[8])
+                                                                'Discordant_Site_Identities':(';').join(result[8]),
+                                                                'Lowest_Disconcordance_value_in_all_donors':result[11],
+                                                                'Donor_With_Lowest_DisConcordance':result[12],
+                                                                'Concordant_Site_Identities':result[13],
+                                                                'same_as_asigned_donor':same_as_asigned_donor
                                                                 }   
         
-        if (count % 200 == 0):
-            print(f'recording and resetting memory {count}')
-            # self.record_dict[count]=self.exclusive_donor_variants
-            self.set_results(self.cell_concordance_table,count)
-            self.reset()  
-        _=""
+        # if (count % 200 == 0):
+        #     print(f'recording and resetting memory {count}')
+        #     # self.record_dict[count]=self.exclusive_donor_variants
+        #     self.set_results(self.cell_concordance_table,count)
+        #     self.reset()  
+        # _=""
+        return cell_concordance_table
         
     def combine_written_files(self):#this one is for concordance class
         to_export = self.cell_concordance_table
@@ -432,6 +435,27 @@ class Concordances:
             os.remove(val1)
         return to_export
 
+    def analyse_donor(self,Cells_to_keep_pre,donor_gt_match,donor_gt_match_cohort,vars_per_donor_gt,donor_cohorts,count,all_donor_data,expected_vars_norm):
+        donor_concordance_table = {}
+        for cell1 in Cells_to_keep_pre:
+            count+=1
+            # if count>10:
+            #     break
+            cell_vars = exclusive_cell_variants[cell1]
+            # cell_vars_dp = exclusive_cell_variants_dp[cell1]
+
+            # self.cell_concordance_table[f'{cell1} --- {donor_gt_match}']={}
+            # pool.apply_async(self.concordance_dable_production, args=([expected_vars_norm,cell_vars,cell1,donor_gt_match,dds,count]),callback=self.append_results_cell_concordances)          
+            result1 = self.concordance_table_production(expected_vars_norm,cell_vars,cell1,donor_gt_match,donor_gt_match_cohort, vars_per_donor_gt, donor_cohorts, count,all_donor_data)
+            # if (result1==None):
+            #     _='test'
+            donor_concordance_table = self.append_results_cell_concordances(result1,donor_concordance_table)
+            # print('Done')
+        return donor_concordance_table
+
+    def combine_concordances(self,result):
+        # print('res')
+        self.cell_concordance_table = self.cell_concordance_table | result
 
     def conc_table(self):
         donor_assignments_table=self.donor_assignments_table
@@ -463,11 +487,21 @@ class Concordances:
                 cohort = 'ELGH'
             donor_cohorts[don_id] = cohort
 
+        all_donor_data={}
+        # here we calvculate all the expected donor datasets
+        for row1 in exclusive_don_variants.keys():
+            # donor_in_question = row1['donor_query']
+            donor_gt_match = row1
+            expected_vars_of_other_donor = self.exclusive_don_variants[donor_gt_match]
+            expected_vars_norm_of_other_donor = self.norm_genotypes(expected_vars_of_other_donor)
+            all_donor_data[donor_gt_match]=expected_vars_norm_of_other_donor
+
         for i,row1 in donor_assignments_table.iterrows():
             donor_in_question = row1['donor_query']
             donor_gt_match = row1['donor_gt']
             if (donor_gt_match=='NONE'):
                 continue
+            
             donor_gt_match_cohort = donor_cohorts[donor_gt_match]
             Cells_to_keep_pre = list(set(cell_assignments_table.loc[cell_assignments_table['donor_id']==donor_in_question,'cell']))
             expected_vars = exclusive_don_variants[donor_gt_match]
@@ -477,18 +511,11 @@ class Concordances:
                 dds = self.donor_distinct_sites[donor_gt_match]
             except:
                 continue
-            
-            for cell1 in Cells_to_keep_pre:
-                count+=1
-                # if count>800:
-                #     break
-                cell_vars = exclusive_cell_variants[cell1]
-                # cell_vars_dp = exclusive_cell_variants_dp[cell1]
-
-                self.cell_concordance_table[f'{cell1} --- {donor_gt_match}']={}
-                # pool.apply_async(self.concordance_dable_production, args=([expected_vars_norm,cell_vars,cell1,donor_gt_match,dds,count]),callback=self.append_results_cell_concordances)          
-                result1 = self.concordance_table_production(expected_vars_norm,cell_vars,cell1,donor_gt_match,donor_gt_match_cohort, vars_per_donor_gt, donor_cohorts, count)
-                self.append_results_cell_concordances(result1)
+            if cpus==1:
+                result_conc = self.analyse_donor(Cells_to_keep_pre,donor_gt_match,donor_gt_match_cohort,vars_per_donor_gt,donor_cohorts,count,all_donor_data,expected_vars_norm)
+                self.combine_concordances(result_conc)
+            else:
+                pool.apply_async(self.analyse_donor, args=([Cells_to_keep_pre,donor_gt_match,donor_gt_match_cohort,vars_per_donor_gt,donor_cohorts,count,all_donor_data,expected_vars_norm]),callback=self.combine_concordances)          
                 
         pool.close()
         pool.join()
@@ -496,9 +523,9 @@ class Concordances:
         return output
     
         
-    def concordance_table_production(self,expected_vars_norm,cell_vars,cell1,donor_gt_match, donor_gt_match_cohort, vars_per_donor_gt, donor_cohorts, count):
+    def concordance_table_production(self,expected_vars_norm,cell_vars,cell1,donor_gt_match, donor_gt_match_cohort, vars_per_donor_gt, donor_cohorts, count,all_donor_data):
         #Nr_donor_distinct_sites = len(dds)
-        total_sites, true_discordant_count, total_concordant_sites, total_reads, discordant_reads, discordant_vars = self.retrieve_concordant_discordant_sites(expected_vars_norm,cell_vars)
+        total_sites, true_discordant_count, total_concordant_sites, total_reads, discordant_reads, discordant_vars, concordant_vars = self.retrieve_concordant_discordant_sites(expected_vars_norm,cell_vars)
         #Nr_Concordant = len(Concordant_Sites)
         #Nr_Relaxed_concordant = Nr_Concordant + relaxed_concordant_count
         #Nr_Discordant = len(Discordant_sites)
@@ -507,6 +534,7 @@ class Concordances:
         #Number_of_sites_in_cellsnp_but_not_in_reference = set(cell_vars_norm['pos'])-set(expected_vars_norm['pos'])
         #find if the discordant vars are in any of the other donors
         discordant_vars_in_pool = []
+        donor_table_of_concordances = []
         for donor in vars_per_donor_gt:
             if not donor == donor_gt_match:
                 donor_cohort = donor_cohorts[donor]
@@ -515,9 +543,22 @@ class Concordances:
                 common_var_count = str(len(common_vars))
                 donor_cohort_common = donor + ":" + donor_cohort + ":" + common_var_count
                 discordant_vars_in_pool.append(donor_cohort_common)
+                
+            # Here we want to calculate the number of discordant sites in other donors and see if in terms of concordance the same donor is picked as per GT assignment.
+            # We do this to investigate the potential of a cell coming from this other donor.
+            
+            expected_vars_norm_of_other_donor = all_donor_data[donor]
+            total_sites_otherDonor, true_discordant_count_otherDonor, total_concordant_sites_otherDonor, total_reads_otherDonor, discordant_reads_otherDonor, discordant_vars_otherDonor, concordant_vars_otherDonor = self.retrieve_concordant_discordant_sites(expected_vars_norm_of_other_donor,cell_vars)
+            concordant_percent_in_other_donor= total_concordant_sites_otherDonor/total_sites_otherDonor*100
+            discordant_percent_in_other_donor= true_discordant_count_otherDonor/total_sites_otherDonor*100
+            donor_table_of_concordances.append({'donor':donor,'concordant_percent_in_other_donor':concordant_percent_in_other_donor,'discordant_percent_in_other_donor':discordant_percent_in_other_donor})
+                
         discordant_vars_in_pool_str = (";").join(discordant_vars_in_pool)
-
-        return [cell1, donor_gt_match, donor_gt_match_cohort, total_sites, true_discordant_count, total_concordant_sites, total_reads, discordant_reads, discordant_vars,discordant_vars_in_pool_str, count]
+        concordant_vars_in_pool_str = (";").join(concordant_vars)
+        DF = pd.DataFrame(donor_table_of_concordances)
+        Donor_With_Lowest_DisConcordance = DF[DF['discordant_percent_in_other_donor']==min(DF['discordant_percent_in_other_donor'])]['donor'].values[0]
+        Lowest_Disconcordance_value_in_all_donors= DF[DF['discordant_percent_in_other_donor']==min(DF['discordant_percent_in_other_donor'])]['discordant_percent_in_other_donor'].values[0]
+        return [cell1, donor_gt_match, donor_gt_match_cohort, total_sites, true_discordant_count, total_concordant_sites, total_reads, discordant_reads, discordant_vars,discordant_vars_in_pool_str, count,Lowest_Disconcordance_value_in_all_donors,Donor_With_Lowest_DisConcordance,concordant_vars_in_pool_str]
         #return [cell1,donor_gt_match,Nr_Concordant,Nr_Discordant,Nr_Relaxed_concordant, Nr_strict_discordant, relaxed_concordant_informative_count, true_discordant_uninformative_count, Nr_Total_Overlapping_sites,
         #        Number_of_sites_that_are_donor_concordant_and_exclusive, Nr_donor_distinct_sites,count,discordant_sites, total_sites, total_reads, discordant_reads]
     
@@ -682,4 +723,8 @@ if __name__ == "__main__":
     
     result = pd.DataFrame(cell_concordance_table).T
     result.to_csv(outfile,sep='\t')
+    site_identities = result[['Concordant_Site_Identities','Discordant_Site_Identities']]
+    result.drop(columns=['Concordant_Site_Identities'],inplace=True)
+    result.to_csv(outfile,sep='\t')
+    site_identities.to_csv(f"site_identities_{outfile}",sep='\t')
     print('Processing Done')

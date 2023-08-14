@@ -53,6 +53,8 @@ process CAPTURE_VIREO{
 process VIREO_SUBSAMPLING {
     // This module is used to make sure that no cells that there are no cells assigned to the wrong donor.
     // We subsample the cellsnp files to the 80% of random SNPs and run vireo with this.
+    publishDir "${params.outdir}/deconvolution/vireo_sub/${samplename}/vireo_____${itteration}/",  mode: "${params.vireo.copy_mode}", overwrite: true
+	  // saveAs: {filename -> filename.replaceFirst("vireo_${samplename}/","") }
 
     tag "${samplename}"
     label 'medium_cpus'
@@ -144,7 +146,7 @@ process VIREO_SUBSAMPLING {
           tail -n +2 | \\
           sed s\"/^/${samplename}__/\"g > vireo_${samplename}___${itteration}/${samplename}__exp.sample_summary.txt
         ${com2}
-
+        mv subset_${params.vireo.rate} vireo_${samplename}___${itteration}
     """
 }
 

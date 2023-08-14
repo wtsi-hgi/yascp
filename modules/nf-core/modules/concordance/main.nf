@@ -24,9 +24,11 @@ process CONCORDANCE_CALCLULATIONS {
 
     output:
         tuple val(pool_id), path("cell_concordance_table_noA2G.tsv"), emit: concordances_noAG
-        tuple val(pool_id), path('discordant_sites_in_other_donors_noA2G.txt'), emit: read_concordances_noAG
+        tuple val(pool_id), path('discordant_sites_in_other_donors_noA2G.tsv'), emit: read_concordances_noAG
         tuple val(pool_id), path("cell_concordance_table.tsv"), emit: concordances
-        tuple val(pool_id), path('discordant_sites_in_other_donors.txt'), emit: read_concordances
+        tuple val(pool_id), path('discordant_sites_in_other_donors.tsv'), emit: read_concordances
+        tuple val(pool_id), path('site_identities_discordant_sites_in_other_donors.tsv'), emit: site_identities_concordances
+        // tuple val(pool_id), path("${cell_vcf}"), path("${donor_table}"), path("sub_${pool_id}_GT_Matched.vcf.gz"),path("${cell_assignments}"),path("*.pkl"), emit: best_donor_match_search_input
 
     script:
 
@@ -38,11 +40,37 @@ process CONCORDANCE_CALCLULATIONS {
             fi
             
             concordance_calculations_donor_exclusive_read_level_noA2G.py --cpus $task.cpus --cell_vcf ${cell_vcf} --donor_assignments ${donor_table} --gt_match_vcf sub_${pool_id}_GT_Matched.vcf.gz --expected_vcf sub_${pool_id}_Expected.vcf.gz --cell_assignments ${cell_assignments} --informative_sites ${set2_informative_sites} --uninformative_sites ${set1_uninformative_sites}
-            find_discordant_sites_in_other_donors_noA2G.py --cpus $task.cpus --cell_vcf ${cell_vcf} --donor_assignments ${donor_table} --gt_match_vcf sub_${pool_id}_GT_Matched.vcf.gz --expected_vcf sub_${pool_id}_Expected.vcf.gz --cell_assignments ${cell_assignments} --outfile discordant_sites_in_other_donors_noA2G.txt --debug
+            find_discordant_sites_in_other_donors_noA2G.py --cpus $task.cpus --cell_vcf ${cell_vcf} --donor_assignments ${donor_table} --gt_match_vcf sub_${pool_id}_GT_Matched.vcf.gz --expected_vcf sub_${pool_id}_Expected.vcf.gz --cell_assignments ${cell_assignments} --outfile discordant_sites_in_other_donors_noA2G.tsv --debug
             concordance_calculations_donor_exclusive_read_level.py --cpus $task.cpus --cell_vcf ${cell_vcf} --donor_assignments ${donor_table} --gt_match_vcf sub_${pool_id}_GT_Matched.vcf.gz --expected_vcf sub_${pool_id}_Expected.vcf.gz --cell_assignments ${cell_assignments} --informative_sites ${set2_informative_sites} --uninformative_sites ${set1_uninformative_sites}
-            find_discordant_sites_in_other_donors.py --cpus $task.cpus --cell_vcf ${cell_vcf} --donor_assignments ${donor_table} --gt_match_vcf sub_${pool_id}_GT_Matched.vcf.gz --expected_vcf sub_${pool_id}_Expected.vcf.gz --cell_assignments ${cell_assignments} --outfile discordant_sites_in_other_donors.txt --debug
+            find_discordant_sites_in_other_donors_find_best_donor.py --cpus $task.cpus --cell_vcf ${cell_vcf} --donor_assignments ${donor_table} --gt_match_vcf sub_${pool_id}_GT_Matched.vcf.gz --expected_vcf sub_${pool_id}_Expected.vcf.gz --cell_assignments ${cell_assignments} --outfile discordant_sites_in_other_donors.tsv --debug
         """
 }
+
+// process CELL_BEST_DONOR_MATCH_BASED_ON_DISCORDANCES {
+
+//     tag "${pool_id}"
+//     label 'process_medium'
+//     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
+//         container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_62bd56a-2021-12-15-4d1ec9312485.sif"
+//         //// container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_latest.img"
+//     } else {
+//         container "mercury/scrna_deconvolution:62bd56a"
+//     }
+
+//     publishDir  path: "${params.outdir}/concordances/${pool_id}",
+//                 mode: "${params.copy_mode}",
+//                 overwrite: "true"
+
+//     input:
+//         path(donor_table),path(cell_assignments),path(set2_informative_sites), path(set1_uninformative_sites),path(variants_description))
+
+
+//     script:
+
+//         """
+//             find_discordant_sites_in_other_donors.py --cpus $task.cpus --cell_vcf ${cell_vcf} --donor_assignments ${donor_table} --gt_match_vcf sub_${pool_id}_GT_Matched.vcf.gz --expected_vcf sub_${pool_id}_Expected.vcf.gz --cell_assignments ${cell_assignments} --outfile discordant_sites_in_other_donors.txt --debug
+//         """
+// }
 
 
 process COMBINE_FILES{
