@@ -146,12 +146,14 @@ def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res
         os.mkdir(f'{name_dir}/GT Match___1000')
     except:
         print('exists')
-
+    
+    try:
     #NOW COPY THE GT OUTPUTS 
-    #folder1 = f'{directory}/deconvolution/vireo_gt_fix'
-    #if os.path.isdir(folder1):
-    #    copyfile(f'{folder1}/assignments_all_pools.tsv', f'{name_dir}/GT Match___1000/assignments_all_pools.tsv')
-        
+        folder1 = f'{directory}/deconvolution/vireo_gt_fix'
+        if os.path.isdir(folder1):
+            copyfile(f'{folder1}/assignments_all_pools.tsv', f'{name_dir}/GT Match___1000/assignments_all_pools.tsv')
+    except:
+        print('exists')        
 
     #if (pipeline=='Deconvolution'):
     folder1 = f'{directory}/deconvolution/split_donor_h5ad'

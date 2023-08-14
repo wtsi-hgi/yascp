@@ -397,22 +397,24 @@ class Concordances:
 
         # print(count)
         same_as_asigned_donor = result[12]==result[1]
-        cell_concordance_table[f'{result[0]} --- {result[1]}'] = {'GT 1':result[0],
-                                                                'GT 2':result[1],
-                                                                'Cohort': result[2],
-                                                                'Nr_Concordant':result[5],
-                                                                'Nr_Discordant':result[4],
-                                                                'Percent_Discordant':percent_discordant,
-                                                                'Total_sites': result[3],
-                                                                'Total_reads': result[6],
-                                                                'Discordant_reads': result[7],
-                                                                'Discordant_reads_by_n_sites': read_discordance,
-                                                                'Discordant_sites_in_pool': result[9],
-                                                                'Discordant_Site_Identities':(';').join(result[8]),
-                                                                'Lowest_Disconcordance_value_in_all_donors':result[11],
-                                                                'Donor_With_Lowest_DisConcordance':result[12],
-                                                                'Concordant_Site_Identities':result[13],
-                                                                'same_as_asigned_donor':same_as_asigned_donor
+        cell_concordance_table[f'{result[0]} --- {result[1]}'] = {  'GT 1':result[0],
+                                                                    'GT 2':result[1],
+                                                                    'Cohort': result[2],
+                                                                    'Nr_Concordant':result[5],
+                                                                    'Nr_Discordant':result[4],
+                                                                    'Percent_Discordant':percent_discordant,
+                                                                    'Total_sites': result[3],
+                                                                    'Total_reads': result[6],
+                                                                    'Discordant_reads': result[7],
+                                                                    'Discordant_reads_by_n_sites': read_discordance,
+                                                                    'Discordant_sites_in_pool': result[9],
+                                                                    'Discordant_Site_Identities':(';').join(result[8]),
+                                                                    'Lowest_Disconcordance_value_in_all_donors':result[11],
+                                                                    'Donor_With_Lowest_DisConcordance':result[12],
+                                                                    'Concordant_Site_Identities':result[13],
+                                                                    'same_as_asigned_donor':same_as_asigned_donor,
+                                                                    'Donor_With_Highest_Concordance':result[14],
+                                                                    'Highest_Concordance_value_in_all_donors':result[15]
                                                                 }   
         
         # if (count % 200 == 0):
@@ -558,7 +560,12 @@ class Concordances:
         DF = pd.DataFrame(donor_table_of_concordances)
         Donor_With_Lowest_DisConcordance = DF[DF['discordant_percent_in_other_donor']==min(DF['discordant_percent_in_other_donor'])]['donor'].values[0]
         Lowest_Disconcordance_value_in_all_donors= DF[DF['discordant_percent_in_other_donor']==min(DF['discordant_percent_in_other_donor'])]['discordant_percent_in_other_donor'].values[0]
-        return [cell1, donor_gt_match, donor_gt_match_cohort, total_sites, true_discordant_count, total_concordant_sites, total_reads, discordant_reads, discordant_vars,discordant_vars_in_pool_str, count,Lowest_Disconcordance_value_in_all_donors,Donor_With_Lowest_DisConcordance,concordant_vars_in_pool_str]
+        
+        Donor_With_Highest_Concordance = DF[DF['concordant_percent_in_other_donor']==max(DF['concordant_percent_in_other_donor'])]['donor'].values[0]
+        Highest_Concordance_value_in_all_donors= DF[DF['concordant_percent_in_other_donor']==max(DF['concordant_percent_in_other_donor'])]['concordant_percent_in_other_donor'].values[0]
+        
+        
+        return [cell1, donor_gt_match, donor_gt_match_cohort, total_sites, true_discordant_count, total_concordant_sites, total_reads, discordant_reads, discordant_vars,discordant_vars_in_pool_str, count,Lowest_Disconcordance_value_in_all_donors,Donor_With_Lowest_DisConcordance,concordant_vars_in_pool_str,Donor_With_Highest_Concordance,Highest_Concordance_value_in_all_donors]
         #return [cell1,donor_gt_match,Nr_Concordant,Nr_Discordant,Nr_Relaxed_concordant, Nr_strict_discordant, relaxed_concordant_informative_count, true_discordant_uninformative_count, Nr_Total_Overlapping_sites,
         #        Number_of_sites_that_are_donor_concordant_and_exclusive, Nr_donor_distinct_sites,count,discordant_sites, total_sites, total_reads, discordant_reads]
     
