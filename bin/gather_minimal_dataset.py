@@ -640,13 +640,8 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
         chromium_channel = 'Run_ID not vailable'
         
     
-
-    # Raw_counts_data_per_lane = ad_lane_raw
-    # Per_lane_QC_File_data = obsqc
     Azimuth_Cell_Assignments_data = azt
-    # Deconvoluted_Donor_Data_sheet = df_donors
-    # All_AnnData_QC_lane = adqc
-    # Adata_counts = adqc.to_df()
+
     def isNaN(num):
         return num!= num
     Donors = list(df_donors.donor_id)
