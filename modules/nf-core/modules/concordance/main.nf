@@ -68,7 +68,7 @@ process OTHER_DONOR_CONCORDANCE_CALCLULATIONS {
     script:
 
         """
-            find_discordant_sites_in_other_donors_find_best_donor_concordances.py --cpus $task.cpus --cell_vcf ${cell_vcf} --donor_assignments ${donor_table} --gt_match_vcf sub_${pool_id}_GT_Matched.vcf.gz --expected_vcf sub_${pool_id}_Expected.vcf.gz --cell_assignments ${cell_assignments} --outfile discordant_sites_in_other_donors.txt --debug
+            find_discordant_sites_in_other_donors_find_best_donor_concordances.py --cpus $task.cpus --cell_vcf ${cell_vcf} --donor_assignments ${donor_table} --gt_match_vcf sub_${pool_id}_GT_Matched.vcf.gz --expected_vcf sub_${pool_id}_Expected.vcf.gz --cell_assignments ${cell_assignments} --outfile discordant_sites_in_other_donors.tsv --debug
         """
 }
 

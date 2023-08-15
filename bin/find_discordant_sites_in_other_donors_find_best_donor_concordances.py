@@ -550,12 +550,12 @@ class Concordances:
                 
                 # Here we want to calculate the number of discordant sites in other donors and see if in terms of concordance the same donor is picked as per GT assignment.
                 # We do this to investigate the potential of a cell coming from this other donor.
-                
-                expected_vars_norm_of_other_donor = all_donor_data[donor]
-                total_sites_otherDonor, true_discordant_count_otherDonor, total_concordant_sites_otherDonor, total_reads_otherDonor, discordant_reads_otherDonor, discordant_vars_otherDonor, concordant_vars_otherDonor = self.retrieve_concordant_discordant_sites(expected_vars_norm_of_other_donor,cell_vars)
-                concordant_percent_in_other_donor= total_concordant_sites_otherDonor/total_sites_otherDonor*100
-                discordant_percent_in_other_donor= true_discordant_count_otherDonor/total_sites_otherDonor*100
-                donor_table_of_concordances.append({'donor':donor,'concordant_percent_in_other_donor':concordant_percent_in_other_donor,'discordant_percent_in_other_donor':discordant_percent_in_other_donor,'total_sites_otherDonor':total_sites_otherDonor,'total_reads_otherDonor':total_reads_otherDonor})
+            
+            expected_vars_norm_of_other_donor = all_donor_data[donor]
+            total_sites_otherDonor, true_discordant_count_otherDonor, total_concordant_sites_otherDonor, total_reads_otherDonor, discordant_reads_otherDonor, discordant_vars_otherDonor, concordant_vars_otherDonor = self.retrieve_concordant_discordant_sites(expected_vars_norm_of_other_donor,cell_vars)
+            concordant_percent_in_other_donor= total_concordant_sites_otherDonor/total_sites_otherDonor*100
+            discordant_percent_in_other_donor= true_discordant_count_otherDonor/total_sites_otherDonor*100
+            donor_table_of_concordances.append({'donor':donor,'concordant_percent_in_other_donor':concordant_percent_in_other_donor,'discordant_percent_in_other_donor':discordant_percent_in_other_donor,'total_sites_otherDonor':total_sites_otherDonor,'total_reads_otherDonor':total_reads_otherDonor})
                 
         discordant_vars_in_pool_str = (";").join(discordant_vars_in_pool)
         concordant_vars_in_pool_str = (";").join(concordant_vars)
