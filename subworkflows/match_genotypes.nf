@@ -4,7 +4,7 @@ include { MATCH_GT_VIREO; GT_MATCH_POOL_IBD } from "$projectDir/modules/nf-core/
 include {COMBINE_MATCHES_IN_EXPECTED_FORMAT} from "$projectDir/modules/nf-core/modules/genotypes/main"
 include {Relationships_Between_Infered_Expected; Relationships_Between_Infered_Expected as Relationships_Between_Infered_GT_Matched} from '../modules/nf-core/modules/infered_expected_relationship/main'
 include {SUBSET_WORKF} from "$projectDir/modules/nf-core/modules/subset_genotype/main"
-include {CONCORDANCE_CALCLULATIONS; COMBINE_FILES; PLOT_CONCORDANCES_ALL} from "$projectDir/modules/nf-core/modules/concordance/main"
+include {CONCORDANCE_CALCLULATIONS; COMBINE_FILES; PLOT_CONCORDANCES_ALL;OTHER_DONOR_CONCORDANCE_CALCLULATIONS} from "$projectDir/modules/nf-core/modules/concordance/main"
 include {collect_file as collect_file1;
         collect_file as collect_file2;
         collect_file as collect_file3;
@@ -91,7 +91,7 @@ workflow match_genotypes {
     input7 = input6.combine(informative_uninformative_sites, by:0)
     // input6.subscribe { println "input6: $it" }
     CONCORDANCE_CALCLULATIONS(input7)
-      
+    OTHER_DONOR_CONCORDANCE_CALCLULATIONS(CONCORDANCE_CALCLULATIONS.out.other_donor_input)  
     ch_combine = subsampling_donor_swap.combine(CONCORDANCE_CALCLULATIONS.out.concordances, by: 0)
     
     COMBINE_FILES(ch_combine) //This step plots scatter plots for each of the pools individually.
