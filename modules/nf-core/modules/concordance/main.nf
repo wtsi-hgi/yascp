@@ -64,7 +64,8 @@ process OTHER_DONOR_CONCORDANCE_CALCLULATIONS {
     input:
         // path(donor_table),path(cell_assignments),path(set2_informative_sites), path(set1_uninformative_sites),path(variants_description))
         tuple val(pool_id), path(cell_vcf), path(donor_table), path(sub_GT_Matched),path(cell_assignments),path(pkl)
-
+    output:
+        tuple val(pool_id), path('discordant_sites_in_other_donors.tsv'), emit: read_concordances
     script:
 
         """

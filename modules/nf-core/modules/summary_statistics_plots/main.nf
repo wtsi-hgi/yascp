@@ -26,8 +26,8 @@ process SUMMARY_STATISTICS_PLOTS {
           cellbender_input='cellbender'
         }
         outdir = "${outdir_prev}/handover"
-      """
-          echo "${gather_dummy_input}" >dummy.out
+      """ 
+          echo "${gather_dummy_input}" >dummy.out 
           transfer_data.py    --results_dir ${outdir_prev} \
                               --cb_res ${params.cellbender_resolution_to_use} \
                               --cellbender ${cellbender_input} \
