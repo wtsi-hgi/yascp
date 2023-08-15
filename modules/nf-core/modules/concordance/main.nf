@@ -28,7 +28,7 @@ process CONCORDANCE_CALCLULATIONS {
         tuple val(pool_id), path("cell_concordance_table.tsv"), emit: concordances
         tuple val(pool_id), path('discordant_sites_in_other_donors.tsv'), emit: read_concordances
         tuple val(pool_id), path('site_identities_discordant_sites_in_other_donors.tsv'), emit: site_identities_concordances
-        tuple val(pool_id), path("${cell_vcf}"), path("${donor_table}"), path("sub_${pool_id}_GT_Matched.vcf.gz"),path("${cell_assignments}"),path("*.pkl"), emit: other_donor_input
+        tuple val(pool_id), path("${cell_vcf}"), path("${donor_table}"), path("sub_${pool_id}*.vcf.gz"),path("${cell_assignments}"),path("*.pkl"), emit: other_donor_input
 
     script:
 
