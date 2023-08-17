@@ -302,6 +302,7 @@ class Concordances:
                 print(sdf)
             discordant_site_details['expect_hom_ref'][s2] = {}
             discordant_site_details['expect_hom_ref'][s2]['AD'] = sdf['AD'].sum()
+            discordant_site_details['expect_hom_ref'][s2]['OTH'] = sdf['OTH'].sum()
             discordant_site_details['expect_hom_ref'][s2]['found_in_other_donor'] = 'no'
         # print(cell_vars2_disc)
         # print(cell_vars2)
@@ -343,6 +344,7 @@ class Concordances:
                 print(sdf)
             discordant_site_details['expect_hom_alt'][s4] = {}
             discordant_site_details['expect_hom_alt'][s4]['REF'] = sdf['ref_reads'].sum()
+            discordant_site_details['expect_hom_alt'][s4]['OTH'] = sdf['OTH'].sum()
             discordant_site_details['expect_hom_alt'][s4]['found_in_other_donor'] = 'no' 
 
         discordant_reads =  discordant_hom_ref + discordant_het + discordant_hom_alt
@@ -434,6 +436,7 @@ class Concordances:
     def append_results_cell_concordances(self,result,cell_concordance_table):
         #[cell1, donor_gt_match, donor_gt_match_cohort, total_sites, true_discordant_count, total_concordant_sites, total_reads, 
         # discordant_reads, discordant_vars,discordant_vars_in_pool_str, count]
+        # print(result)
         count=result[10]
         
         try:
@@ -463,7 +466,11 @@ class Concordances:
                                                                 'Lowest_Disconcordance_value_in_all_donors':result[11],
                                                                 'Donor_With_Lowest_DisConcordance':result[12],
                                                                 'Concordant_Site_Identities':result[13],
-                                                                'same_as_asigned_donor':same_as_asigned_donor
+                                                                'same_as_asigned_donor':same_as_asigned_donor,
+                                                                'discordant_reads_error_expected_ref':result[14],
+                                                                'discordant_reads_error_expected_alt':result[15],
+                                                                'discordant_reads_contamination_expected_ref':result[16],
+                                                                'discordant_reads_contamination_expected_alt':result[17]
                                                                 }   
         
         # if (count % 200 == 0):
@@ -615,22 +622,17 @@ class Concordances:
             donor_table_of_concordances.append({'donor':donor,'concordant_percent_in_other_donor':concordant_percent_in_other_donor,'discordant_percent_in_other_donor':discordant_percent_in_other_donor})
             
             if not donor == donor_gt_match:
-                print(donor)
-                #print(expected_vars_norm_of_other_donor)
                 donor_cohort = donor_cohorts[donor]
                 donor_vars = vars_per_donor_gt[donor]
                 common_vars = list(set(discordant_vars) & set(donor_vars))
                 #common_var_count = str(len(common_vars))
                 common_var_count = 0
                 ####deal with expected hom alt
-                print('looking at home alts')
+                # print('looking at home alts')
                 expected_hom_alts = list(discordant_site_details['expect_hom_alt'].keys())
                 # print(expected_hom_alts)
-                # exit(0)
                 mask = expected_vars_norm_of_other_donor['ids'].isin(expected_hom_alts)
                 expected_hom_alts_in_other_donors = expected_vars_norm_of_other_donor[mask]
-                #expected_hom_alts_in_other_donors = expected_vars_norm_of_other_donor[expected_vars_norm_of_other_donor['ids'] in expected_hom_alts]
-                # print(expected_hom_alts_in_other_donors)
                 #can any other donors contribute a ref read?
                 refgts = ['0/0', '0/1', '1/0']
                 mask2 = expected_hom_alts_in_other_donors['vars'].isin(refgts)
@@ -641,37 +643,24 @@ class Concordances:
                         discordant_site_details['expect_hom_alt'][v]['found_in_other_donor'] = 'yes'
                         common_var_count += 1
                 ####deal with expected hom ref
-                print('looking at hom refs')
+                # print('looking at hom refs')
                 expected_hom_refs = list(discordant_site_details['expect_hom_ref'].keys())
-                # print(expected_hom_refs)
                 mask3 = expected_vars_norm_of_other_donor['ids'].isin(expected_hom_refs)
                 expected_hom_refs_in_other_donors = expected_vars_norm_of_other_donor[mask3]
-                # print(expected_hom_refs_in_other_donors)
                 #can any other donors contribute and alt read?
                 altgts = ['0/1', '1/0', '1/1']
                 mask4 = expected_hom_refs_in_other_donors['vars'].isin(altgts)
                 expected_hom_refs_in_other_donors_has_alt = expected_hom_refs_in_other_donors[mask4]
-                print(expected_hom_refs_in_other_donors_has_alt)
                 if (len(expected_hom_refs_in_other_donors_has_alt) > 0):
                     has_alt_vars = list(expected_hom_refs_in_other_donors_has_alt['ids'])
-                    # print(has_alt_vars)
                     for v in has_alt_vars:
                         discordant_site_details['expect_hom_ref'][v]['found_in_other_donor'] = 'yes'
                         common_var_count += 1
-                        # print(common_var_count)
-                ###deal with expected het: discordant = OTH
+                ###deal with expected het: discordant = OTH - leaving this for nnow
                 #skip hets for now
-                print('one')
-                print(donor)
-                print(common_var_count)
-                print(donor_cohort)
-                donor_cohort_common = donor + ":" + donor_cohort + ":" + common_var_count
-                print(donor_cohort_common)
-                print('two')
+                donor_cohort_common = (':').join([donor, donor_cohort, str(common_var_count)])
                 discordant_vars_in_pool.append(donor_cohort_common)
-                print('three')
                 #work out how many ref/alt reads could be contamination and how many must be errors
-        print(discordant_site_details)
         discordant_ref_expected_error = 0
         discordant_alt_expected_error = 0
         discordant_ref_expected_contamination = 0
@@ -684,27 +673,18 @@ class Concordances:
 
         for v2 in discordant_site_details['expect_hom_ref'].keys():
             if discordant_site_details['expect_hom_ref'][v2]['found_in_other_donor'] == 'no':
-                discordant_ref_expected_error = discordant_ref_expected_error + discordant_site_details['expect_hom_ref'][v2]['REF']
+                discordant_ref_expected_error = discordant_ref_expected_error + discordant_site_details['expect_hom_ref'][v2]['AD']
             else:
-                discordant_ref_expected_contamination = discordant_ref_expected_contamination + discordant_site_details['expect_hom_ref'][v2]['REF']
-
+                discordant_ref_expected_contamination = discordant_ref_expected_contamination + discordant_site_details['expect_hom_ref'][v2]['AD']
 
         discordant_vars_in_pool_str = (";").join(discordant_vars_in_pool)
         concordant_vars_in_pool_str = (";").join(concordant_vars)
-
-        #print(discordant_vars_in_pool_str)
-        print(discordant_ref_expected_error)
-        print(discordant_alt_expected_error)
-        print(discordant_ref_expected_contamination)
-        print(discordant_alt_expected_contamination)
-        print(discordant_site_details)
-        exit(0)
 
         DF = pd.DataFrame(donor_table_of_concordances)
         Donor_With_Lowest_DisConcordance = DF[DF['discordant_percent_in_other_donor']==min(DF['discordant_percent_in_other_donor'])]['donor'].values[0]
         Lowest_Disconcordance_value_in_all_donors= DF[DF['discordant_percent_in_other_donor']==min(DF['discordant_percent_in_other_donor'])]['discordant_percent_in_other_donor'].values[0]
         
-        return [cell1, donor_gt_match, donor_gt_match_cohort, total_sites, true_discordant_count, total_concordant_sites, total_reads, discordant_reads, discordant_vars,discordant_vars_in_pool_str, count,Lowest_Disconcordance_value_in_all_donors,Donor_With_Lowest_DisConcordance,concordant_vars_in_pool_str]
+        return [cell1, donor_gt_match, donor_gt_match_cohort, total_sites, true_discordant_count, total_concordant_sites, total_reads, discordant_reads, discordant_vars,discordant_vars_in_pool_str, count,Lowest_Disconcordance_value_in_all_donors,Donor_With_Lowest_DisConcordance,concordant_vars_in_pool_str, discordant_ref_expected_error, discordant_alt_expected_error, discordant_ref_expected_contamination, discordant_alt_expected_contamination]
         #return [cell1,donor_gt_match,Nr_Concordant,Nr_Discordant,Nr_Relaxed_concordant, Nr_strict_discordant, relaxed_concordant_informative_count, true_discordant_uninformative_count, Nr_Total_Overlapping_sites,
         #        Number_of_sites_that_are_donor_concordant_and_exclusive, Nr_donor_distinct_sites,count,discordant_sites, total_sites, total_reads, discordant_reads]
     
