@@ -83,7 +83,9 @@ def main():
     # # This will change X and adata.var.columns
     # adata = adata.raw.to_adata()
     # adata.X = np.expm1(adata.X)
-    adata.X = np.expm1(adata.layers['log1p_cp10k'])
+    
+    # adata.X = np.expm1(adata.layers['log1p_cp10k'])
+    adata.X = adata.layers['log1p_cp10k']
 
     # cellxgene works faster when the expression matrix is stored in CSC
     # (compressed sparse column) format instead of CSR
