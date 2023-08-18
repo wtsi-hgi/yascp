@@ -619,7 +619,7 @@ def donor_exclusive_sites(exclusive_don_variants2):
         # Perform the distinct set function.
     return donor_distinct_sites
 
-debug=True
+debug=False
 
 if __name__ == "__main__":
 
