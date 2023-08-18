@@ -732,9 +732,13 @@ if __name__ == "__main__":
     cell_concordance_table = conc1.conc_table()
     
     result = pd.DataFrame(cell_concordance_table).T
+    # result.to_csv(outfile,sep='\t')
+    try:
+        site_identities = result[['Concordant_Site_Identities','Discordant_Site_Identities']]
+        result.drop(columns=['Concordant_Site_Identities'],inplace=True)
+        site_identities.to_csv(f"site_identities_{outfile}",sep='\t')
+    except:
+        _='sample_hasnt_matched_any_gt --- most likely too little cells assigned'
     result.to_csv(outfile,sep='\t')
-    site_identities = result[['Concordant_Site_Identities','Discordant_Site_Identities']]
-    result.drop(columns=['Concordant_Site_Identities'],inplace=True)
-    result.to_csv(outfile,sep='\t')
-    site_identities.to_csv(f"site_identities_{outfile}",sep='\t')
+    
     print('Processing Done')

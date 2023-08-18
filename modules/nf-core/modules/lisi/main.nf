@@ -7,7 +7,6 @@ def random_hex(n) {
 process LISI{
     // Takes a list of reduced_dims and calculates lisi
     // ------------------------------------------------------------------------
-    //tag { output_dir }
     //cache false        // cache results from run
     scratch false      // use tmp directory
     // label 'process_high'

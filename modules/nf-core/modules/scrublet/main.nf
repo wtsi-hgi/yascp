@@ -11,7 +11,6 @@ if (binding.hasVariable("echo_mode") == false) {
 process SCRUBLET {
     // Runs scrublet for each sample.
     // ------------------------------------------------------------------------
-    //tag { output_dir }
     //cache false        // cache results from run
 
     tag "${experiment_id}"

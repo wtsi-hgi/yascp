@@ -11,7 +11,6 @@ if (binding.hasVariable("echo_mode") == false) {
 process cluster {
     // Clusters results.
     // ------------------------------------------------------------------------
-    //tag { output_dir }
     //cache false        // cache results from run
     scratch false      // use tmp directory
     label 'process_medium'
@@ -88,7 +87,6 @@ process cluster {
 process plot_phenotype_across_clusters {
     // Takes annData object, plots distribution of obs value across clusters
     // ------------------------------------------------------------------------
-    //tag { output_dir }
     //cache false        // cache results from run
     scratch false      // use tmp directory
     label 'process_medium'
@@ -177,7 +175,6 @@ process serialize_known_markers {
 process plot_known_markers {
     // Plots markers from previous studies as dotplots
     // ------------------------------------------------------------------------
-    //tag { output_dir }
     //cache false        // cache results from run
     scratch false        // use tmp directory
     label 'process_medium'
@@ -231,7 +228,6 @@ process plot_known_markers {
 process cluster_validate_resolution_sklearn {
     // Validate the resolution for clusters.
     // ------------------------------------------------------------------------
-    //tag { output_dir }
     //cache false        // cache results from run
     scratch false      // use tmp directory
     label 'process_medium'
@@ -343,7 +339,6 @@ process cluster_validate_resolution_sklearn {
 process cluster_validate_resolution_keras {
     // Validate the resolution for clusters.
     // ------------------------------------------------------------------------
-    //tag { output_dir }
     //cache false        // cache results from run
     //maxForks 2         // hard to control memory usage. limit to 3 concurrent
     label 'gpu'        // use GPU
@@ -452,7 +447,6 @@ process cluster_validate_resolution_keras {
 process plot_resolution_validate {
     // Plot the AUC from validation models across resolutions
     // ------------------------------------------------------------------------
-    //tag { output_dir }
     //cache false        // cache results from run
     scratch false      // use tmp directory
     label 'process_medium'
@@ -529,7 +523,6 @@ process plot_resolution_validate {
 process cluster_markers {
     // Find markers for clusters.
     // ------------------------------------------------------------------------
-    //tag { output_dir }
     //cache false        // cache results from run
     scratch false      // use tmp directory
     label 'process_medium'
@@ -621,7 +614,6 @@ process cluster_markers {
 process cellex_cluster_markers {
     // Find markers for clusters using CELLEX.
     // ------------------------------------------------------------------------
-    //tag { output_dir }
     //cache false        // cache results from run
     
     scratch false      // use tmp directory
@@ -678,7 +670,6 @@ process cellex_cluster_markers {
 process merge_clusters {
     // Merges clusters.
     // ------------------------------------------------------------------------
-    //tag { output_dir }
     //cache false        // cache results from run
     scratch false      // use tmp directory
     label 'process_medium'
@@ -737,7 +728,6 @@ process merge_clusters {
 process prep_cellxgene {
     // Preps adata file for cellxgene
     // ------------------------------------------------------------------------
-    //tag { output_dir }
     //cache false           // cache results from run
     scratch false           // use tmp directory
     label 'process_medium'
@@ -789,7 +779,6 @@ process convert_seurat {
     // Converts anndata h5 file to a Seurat data object.
     // TODO: automatically add reduced_dims to Seurat data object.
     // ------------------------------------------------------------------------
-    //tag { output_dir }
     //cache false        // cache results from run
     scratch false      // use tmp directory
     label 'process_medium'

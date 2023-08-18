@@ -1,7 +1,7 @@
 process SUMMARY_STATISTICS_PLOTS {
         
     label 'process_low'
-    publishDir  path: "${params.output_dir}/handover",
+    publishDir  path: "${params.outdir}/handover",
             mode: "${params.copy_mode}",
             overwrite: "true"
 

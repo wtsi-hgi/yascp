@@ -13,7 +13,6 @@ process BBKNN{
     
     // Calulates bbknn neighbors and saves UMAPS of these
     // ------------------------------------------------------------------------
-    //tag { output_dir }
     //cache false        // cache results from run
     scratch false      // use tmp directory
     label 'process_medium'

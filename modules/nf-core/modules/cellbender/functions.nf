@@ -232,7 +232,6 @@ process cellbender__preprocess_output{
 process cellbender__remove_background {
   // Remove ambient RNA
   // ------------------------------------------------------------------------
-  //tag { output_dir }
   //cache false    // cache results from run
   //maxForks 2   // hard to control memory usage. limit to 3 concurrent
 // cb_plot_input,out_paths,results_list,experimentid_outdir_cellbenderunfiltered_expectedcells_totaldropletsinclude

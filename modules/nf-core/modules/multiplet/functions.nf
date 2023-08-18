@@ -7,7 +7,6 @@ def random_hex(n) {
 process make_cellmetadata_pipeline_input {
     // Makes a input tsv file for the main pipeline.
     // ------------------------------------------------------------------------
-    //tag { output_dir }
     //cache false        // cache results from run
 
     publishDir  path: "${params.outdir}/multiplet.method=scrublet",

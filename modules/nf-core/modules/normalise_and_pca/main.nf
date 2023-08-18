@@ -8,7 +8,6 @@ process NORMALISE_AND_PCA {
     // NOTE: Once normalization is set, it would be faster to normalize per
     //       sample and then merge.
     // ------------------------------------------------------------------------
-    //tag { output_dir }
     //cache false        // cache results from run
     scratch false      // use tmp directory
     label 'process_medium'

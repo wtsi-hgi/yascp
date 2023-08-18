@@ -10,7 +10,6 @@ if (binding.hasVariable("echo_mode") == false) {
 process OUTLIER_FILTER {
     // Takes annData object, plots predicted outlier cells
     // ------------------------------------------------------------------------
-    //tag { output_dir }
     //cache false        // cache results from run
     tag "${samplename}"
 

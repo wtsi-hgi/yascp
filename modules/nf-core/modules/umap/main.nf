@@ -67,7 +67,7 @@ workflow UMAP {
         )
 
         if (params.run_celltype_assignment){
-            generate_final_UMAPS(umap_gather.out.anndata,params.output_dir)
+            generate_final_UMAPS(umap_gather.out.anndata,params.outdir)
         }
 
         // Make plots

@@ -15,8 +15,6 @@ include {CLUSTERING; CLUSTERING as CLUSTERING_HARMONY; CLUSTERING as CLUSTERING_
 include {CELL_HARD_FILTERS} from "$projectDir/modules/nf-core/modules/cell_hard_filters/main"
 
 
-params.output_dir = "nf-qc_cluster"
-    
 workflow qc {
     take:
         file__anndata_merged
@@ -53,7 +51,7 @@ workflow qc {
         if (params.sample_qc.cell_filters.filter_outliers.run_process) {
             log.info """---Running automatic outlier cell filtering.----"""
             OUTLIER_FILTER(
-                params.output_dir,
+                params.outdir,
                 file__anndata_merged,
                 file__cells_filtered,
                 params.sample_qc.cell_filters.filter_outliers.metadata_columns,
@@ -70,7 +68,7 @@ workflow qc {
 
         
 
-        NORMALISE_AND_PCA(params.output_dir+'/clustering',
+        NORMALISE_AND_PCA(params.outdir+'/clustering',
             file__anndata_merged,
             params.mode,
             params.layer,

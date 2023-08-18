@@ -15,7 +15,6 @@ process HARMONY{
         // Takes PCs (rows = cell barcodes) and metadata (rows = cell barcodes),
     // runs Harmony
     // ------------------------------------------------------------------------
-    //tag { output_dir }
     //cache false        // cache results from run
     scratch false      // use tmp directory
     // storeDir '/tmp'

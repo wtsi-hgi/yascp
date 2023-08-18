@@ -10,7 +10,6 @@ process SUBSET_PCS{
    
     // Takes PCs (rows = cell barcodes) and subsets down to a specified number.
     // ------------------------------------------------------------------------
-    //tag { output_dir }
     //cache false        // cache results from run
     scratch false      // use tmp directory
     echo echo_mode          // echo output from script

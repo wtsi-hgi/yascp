@@ -5,7 +5,6 @@ def random_hex(n) {
 process plot_filtered_cells {
     // Takes annData object, plots filtered cells
     // ------------------------------------------------------------------------
-    //tag { output_dir }
     //cache false        // cache results from run
     label 'process_low'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
@@ -44,7 +43,6 @@ process plot_filtered_cells {
 process plot_pcs {
     // Takes annData object with PCs and returns plots
     // ------------------------------------------------------------------------
-    //tag { output_dir }
     //cache false        // cache results from run
     scratch false      // use tmp directory
 
@@ -99,7 +97,6 @@ process plot_pcs {
 process plot_predicted_sex {
     // Takes annData object, plots the predicted sex fron gene expression
     // ------------------------------------------------------------------------
-    //tag { output_dir }
     //cache false        // cache results from run
     label 'process_low'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
@@ -136,7 +133,6 @@ process plot_predicted_sex {
 process plot_qc {
     // Takes annData object, generates basic qc plots
     // ------------------------------------------------------------------------
-    //tag { output_dir }
     //cache false        // cache results from run
     label 'process_low'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
@@ -203,7 +199,6 @@ process plot_qc {
 process plot_distributions {
     // Takes annData object, generates basic qc plots
     // ------------------------------------------------------------------------
-    //tag { output_dir }
     //cache false        // cache results from run
     tag "${samplename}"
     scratch true        // use tmp directory

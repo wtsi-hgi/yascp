@@ -10,7 +10,6 @@ if (binding.hasVariable("echo_mode") == false) {
 process ESTIMATE_PCA_ELBOW {
     // Takes annData object, estiamtes the elbow in PC var explained.
     // ------------------------------------------------------------------------
-    //tag { output_dir }
     //cache false        // cache results from run
     scratch false      // use tmp directory
     echo echo_mode          // echo output from script

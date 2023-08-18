@@ -43,6 +43,6 @@ workflow data_handover{
 
         // We also generate a report.
         // If we run it in sanger we transfer the data to the local website.
-        TRANSFER(SUMMARY_STATISTICS_PLOTS.out.summary_plots,params.rsync_to_web_file,params.output_dir)
+        TRANSFER(SUMMARY_STATISTICS_PLOTS.out.summary_plots,params.rsync_to_web_file,params.outdir)
 
 }

@@ -217,7 +217,7 @@ workflow YASCP {
         // ###################################
 
         if (!params.skip_handover){
-            data_handover(params.output_dir,
+            data_handover(params.outdir,
                             process_finish_check_channel,
                             ch_poolid_csv_donor_assignments,
                             bam_split_channel) 

@@ -8,7 +8,7 @@ include {
 } from "./functions.nf"
 
 // Set default parameters.
-outdir           = "${params.output_dir}/nf-preprocessing"
+outdir           = "${params.outdir}/nf-preprocessing"
 params.help                 = false
 
 params.cellbender_rb = [
@@ -90,9 +90,9 @@ workflow CELLBENDER {
         )
 
         // Make some basic plots
-        cellbender__remove_background__qc_plots(
-            cellbender__preprocess_output.out.cb_plot_input
-        )
+        // cellbender__remove_background__qc_plots(
+        //     cellbender__preprocess_output.out.cb_plot_input
+        // )
 
         cellbender__preprocess_output.out.experimentid_outdir_cellbenderunfiltered_expectedcells_totaldropletsinclude
             .combine(ch_experimentid_paths10x_raw, by: 0)

@@ -36,7 +36,7 @@ workflow CELL_TYPE_ASSIGNEMT{
         
 
         if (params.celltype_assignment.run_azimuth){
-            AZIMUTH(params.output_dir,ch_batch_files)
+            AZIMUTH(params.outdir,ch_batch_files)
             az_out = AZIMUTH.out.predicted_celltype_labels.collect()
         }else{
             az_out = Channel.of()

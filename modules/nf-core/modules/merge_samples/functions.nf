@@ -31,7 +31,6 @@ process dummy_filtered_channel{
 process merge_samples_from_h5ad {
     // Takes a list of h5ad files and merges them into one anndata object.
     // ------------------------------------------------------------------------
-    //tag { output_dir }
     //cache true        // cache results from run
     tag "${samplename}"
     
@@ -122,7 +121,6 @@ process merge_samples_from_h5ad {
 process merge_samples {
     // Takes a list of raw 10x files and merges them into one anndata object.
     // ------------------------------------------------------------------------
-    //tag { output_dir }
     //cache true        // cache results from run
     
     tag "${samplename}"

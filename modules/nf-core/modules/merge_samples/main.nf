@@ -25,7 +25,7 @@ workflow MERGE_SAMPLES{
             // This is currently not finished -- currently hard filters happen in the merging part next. We may want to keep this seperate so we can filter the stuff out after celltype assignments.
             // CELL_HARD_FILTERS(prep_merge_samples_from_h5ad.out.h5ad,params.hard_filters_file) //ad with all cells goes in and adata with removed cells comes out.
             merge_samples_from_h5ad(
-                    params.output_dir,
+                    params.outdir,
                     channel__file_paths_10x,
                     file_metadata,
                     params.file_cellmetadata,
@@ -44,7 +44,7 @@ workflow MERGE_SAMPLES{
             prep_merge_samples(channel__file_paths_10x)
             
             merge_samples(
-                params.output_dir,
+                params.outdir,
                 params.input_data_table,
                 file_metadata,
                 params.file_cellmetadata,

@@ -208,7 +208,7 @@ workflow REPORT_UPDATE{
     // match_genotypes.out.out_finish_val.set{o1}
     // // updating the Metadata if something new has been fetched,
     // // UKBB is sending us samples once a week and sometimes the sample mappings may be present at a later date, hence we update previously run samples accordingly.
-    Channel.from([["${params.RUN}","${params.output_dir}"]]).set{update_input_channel}
+    Channel.from([["${params.RUN}","${params.outdir}"]]).set{update_input_channel}
     // // We sometimes aslo chnge apporach in the data fetch and we need to add in some extra metadata
     metadata_posthoc(update_input_channel)
     metadata_posthoc.out.dummy_out.set{o3}
@@ -217,16 +217,16 @@ workflow REPORT_UPDATE{
     // o1.mix(o2).last().set{o3}
     // o3 = Channel.of('dummys')
     // Once everything is updated we need to make sure that the dataon the website and in the cardinal analysis foder is accurate and up to date, hence we rerun the data_handover scripts.
-    // data_handover(params.output_dir,
+    // data_handover(params.outdir,
     //             process_finish_check_channel,
     //             ch_poolid_csv_donor_assignments,
     //             bam_split_channel) 
-    data_handover(params.output_dir,
+    data_handover(params.outdir,
                 o3,
                 ch_poolid_csv_donor_assignments,
                 bam_split_channel) 
-    // SUMMARY_STATISTICS_PLOTS(params.output_dir,o3,params.input_data_table)
-    // TRANSFER(SUMMARY_STATISTICS_PLOTS.out.summary_plots,params.rsync_to_web_file,params.output_dir)
+    // SUMMARY_STATISTICS_PLOTS(params.outdir,o3,params.input_data_table)
+    // TRANSFER(SUMMARY_STATISTICS_PLOTS.out.summary_plots,params.rsync_to_web_file,params.outdir)
 }
 
 
@@ -257,15 +257,15 @@ workflow TEST {
     prepare_inputs(input_channel)
 
     if(params.cellbender_location==''){
-        cellbender_location = "${params.output_dir}/dummy"
+        cellbender_location = "${params.outdir}/dummy"
     }
 
-    capture_cellbender_files(cellbender_location,"${params.output_dir}/nf-preprocessing")
+    capture_cellbender_files(cellbender_location,"${params.outdir}/nf-preprocessing")
     DECONV_INPUTS(capture_cellbender_files.out.celbender_path,prepare_inputs)
     channel__file_paths_10x = DECONV_INPUTS.out.channel__file_paths_10x
     ch_experiment_filth5= DECONV_INPUTS.out.ch_experiment_filth5
     MULTIPLET(
-        params.output_dir,
+        params.outdir,
         channel__file_paths_10x,
         params.sample_qc.cell_filters.filter_multiplets.expected_multiplet_rate,
         params.sample_qc.cell_filters.filter_multiplets.n_simulated_multiplet,

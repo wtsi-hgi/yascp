@@ -11,7 +11,6 @@ if (binding.hasVariable("echo_mode") == false) {
 process umap_calculate {
     // UMAP from reduced_dims.
     // ------------------------------------------------------------------------
-    //tag { output_dir }
     //cache false        // cache results from run
     scratch false      // use tmp directory
     label 'process_medium'
@@ -117,7 +116,6 @@ process generate_final_UMAPS{
 process umap_gather {
     // Merge UMAP from reduced_dims (reduce or gather).
     // ------------------------------------------------------------------------
-    //tag { output_dir }
     //cache false        // cache results from run
     scratch false      // use tmp directory
     label 'process_medium'
@@ -176,7 +174,6 @@ process umap_gather {
 process umap_plot_swarm {
     // Plot UMAPs.
     // ------------------------------------------------------------------------
-    //tag { output_dir }
     //cache false        // cache results from run
     scratch false      // use tmp directory
     label 'process_medium'

@@ -14,7 +14,7 @@ workflow ambient_RNA {
         log.info """---Running Cellbender pipeline ---"""
 
 
-        capture_cellbender_files(params.cellbender_location,"${params.output_dir}/nf-preprocessing",params.input_data_table)
+        capture_cellbender_files(params.cellbender_location,"${params.outdir}/nf-preprocessing",params.input_data_table)
         capture_cellbender_files.out.alt_input.flatten().map{sample -> tuple("${sample}".replaceFirst(/.*\/captured\//,"").replaceFirst(/\/.*/,""),sample)}.set{alt_input}
         
         // capture_cellbender_files.out.cb_to_use_downstream.subscribe { println "cb_to_use_downstream2: $it" }

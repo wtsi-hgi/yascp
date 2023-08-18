@@ -414,7 +414,9 @@ class Concordances:
                                                                     'Concordant_Site_Identities':result[13],
                                                                     'same_as_asigned_donor':same_as_asigned_donor,
                                                                     'Donor_With_Highest_Concordance':result[14],
-                                                                    'Highest_Concordance_value_in_all_donors':result[15]
+                                                                    'Highest_Concordance_value_in_all_donors':result[15],
+                                                                    'Total_sites_other_donor':result[16],
+                                                                    'Total_reads_other_donor':result[17]
                                                                 }   
         
         # if (count % 200 == 0):
@@ -546,26 +548,27 @@ class Concordances:
                 donor_cohort_common = donor + ":" + donor_cohort + ":" + common_var_count
                 discordant_vars_in_pool.append(donor_cohort_common)
                 
-            # Here we want to calculate the number of discordant sites in other donors and see if in terms of concordance the same donor is picked as per GT assignment.
-            # We do this to investigate the potential of a cell coming from this other donor.
+                # Here we want to calculate the number of discordant sites in other donors and see if in terms of concordance the same donor is picked as per GT assignment.
+                # We do this to investigate the potential of a cell coming from this other donor.
             
             expected_vars_norm_of_other_donor = all_donor_data[donor]
             total_sites_otherDonor, true_discordant_count_otherDonor, total_concordant_sites_otherDonor, total_reads_otherDonor, discordant_reads_otherDonor, discordant_vars_otherDonor, concordant_vars_otherDonor = self.retrieve_concordant_discordant_sites(expected_vars_norm_of_other_donor,cell_vars)
             concordant_percent_in_other_donor= total_concordant_sites_otherDonor/total_sites_otherDonor*100
             discordant_percent_in_other_donor= true_discordant_count_otherDonor/total_sites_otherDonor*100
-            donor_table_of_concordances.append({'donor':donor,'concordant_percent_in_other_donor':concordant_percent_in_other_donor,'discordant_percent_in_other_donor':discordant_percent_in_other_donor})
+            donor_table_of_concordances.append({'donor':donor,'concordant_percent_in_other_donor':concordant_percent_in_other_donor,'discordant_percent_in_other_donor':discordant_percent_in_other_donor,'total_sites_otherDonor':total_sites_otherDonor,'total_reads_otherDonor':total_reads_otherDonor})
                 
         discordant_vars_in_pool_str = (";").join(discordant_vars_in_pool)
         concordant_vars_in_pool_str = (";").join(concordant_vars)
         DF = pd.DataFrame(donor_table_of_concordances)
-        Donor_With_Lowest_DisConcordance = DF[DF['discordant_percent_in_other_donor']==min(DF['discordant_percent_in_other_donor'])]['donor'].values[0]
+        Donor_With_Lowest_DisConcordance = ';'.join(DF[DF['discordant_percent_in_other_donor']==min(DF['discordant_percent_in_other_donor'])]['donor'].values)
         Lowest_Disconcordance_value_in_all_donors= DF[DF['discordant_percent_in_other_donor']==min(DF['discordant_percent_in_other_donor'])]['discordant_percent_in_other_donor'].values[0]
         
-        Donor_With_Highest_Concordance = DF[DF['concordant_percent_in_other_donor']==max(DF['concordant_percent_in_other_donor'])]['donor'].values[0]
+        Donor_With_Highest_Concordance = ';'.join(DF[DF['concordant_percent_in_other_donor']==max(DF['concordant_percent_in_other_donor'])]['donor'].values)
         Highest_Concordance_value_in_all_donors= DF[DF['concordant_percent_in_other_donor']==max(DF['concordant_percent_in_other_donor'])]['concordant_percent_in_other_donor'].values[0]
+        Total_sites_other_donor = ';'.join(DF[DF['concordant_percent_in_other_donor']==max(DF['concordant_percent_in_other_donor'])]['total_sites_otherDonor'].astype(str).values)
+        Total_reads_other_donor = ';'.join(DF[DF['concordant_percent_in_other_donor']==max(DF['concordant_percent_in_other_donor'])]['total_reads_otherDonor'].astype(str).values)
         
-        
-        return [cell1, donor_gt_match, donor_gt_match_cohort, total_sites, true_discordant_count, total_concordant_sites, total_reads, discordant_reads, discordant_vars,discordant_vars_in_pool_str, count,Lowest_Disconcordance_value_in_all_donors,Donor_With_Lowest_DisConcordance,concordant_vars_in_pool_str,Donor_With_Highest_Concordance,Highest_Concordance_value_in_all_donors]
+        return [cell1, donor_gt_match, donor_gt_match_cohort, total_sites, true_discordant_count, total_concordant_sites, total_reads, discordant_reads, discordant_vars,discordant_vars_in_pool_str, count,Lowest_Disconcordance_value_in_all_donors,Donor_With_Lowest_DisConcordance,concordant_vars_in_pool_str,Donor_With_Highest_Concordance,Highest_Concordance_value_in_all_donors,Total_sites_other_donor,Total_reads_other_donor]
         #return [cell1,donor_gt_match,Nr_Concordant,Nr_Discordant,Nr_Relaxed_concordant, Nr_strict_discordant, relaxed_concordant_informative_count, true_discordant_uninformative_count, Nr_Total_Overlapping_sites,
         #        Number_of_sites_that_are_donor_concordant_and_exclusive, Nr_donor_distinct_sites,count,discordant_sites, total_sites, total_reads, discordant_reads]
     
@@ -729,9 +732,13 @@ if __name__ == "__main__":
     cell_concordance_table = conc1.conc_table()
     
     result = pd.DataFrame(cell_concordance_table).T
+    # result.to_csv(outfile,sep='\t')
+    try:
+        site_identities = result[['Concordant_Site_Identities','Discordant_Site_Identities']]
+        result.drop(columns=['Concordant_Site_Identities'],inplace=True)
+        site_identities.to_csv(f"site_identities_{outfile}",sep='\t')
+    except:
+        _='sample_hasnt_matched_any_gt --- most likely too little cells assigned'
     result.to_csv(outfile,sep='\t')
-    site_identities = result[['Concordant_Site_Identities','Discordant_Site_Identities']]
-    result.drop(columns=['Concordant_Site_Identities'],inplace=True)
-    result.to_csv(outfile,sep='\t')
-    site_identities.to_csv(f"site_identities_{outfile}",sep='\t')
+    
     print('Processing Done')

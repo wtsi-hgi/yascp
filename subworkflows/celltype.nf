@@ -38,7 +38,7 @@ workflow celltype{
         
 
         if (params.celltype_assignment.run_azimuth){
-            AZIMUTH(params.output_dir,ch_batch_files)
+            AZIMUTH(params.outdir,ch_batch_files)
             REMAP_AZIMUTH(AZIMUTH.out.predicted_celltype_labels,params.mapping_file)
             az_out = REMAP_AZIMUTH.out.predicted_celltype_labels.collect()
         }else{
