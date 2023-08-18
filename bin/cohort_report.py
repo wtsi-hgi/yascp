@@ -325,7 +325,7 @@ if (os.path.exists(f"{path}/deconvolution/vireo_gt_fix")):
 
                 Total_Report.to_csv(f'Summary_plots/{project_name}/Summary/{pan}_REPORT/{project_name}_{pan}_Report.tsv',sep='\t')
             
-        Donor_Report2.to_csv(f"{prefix}/handover/Donor_Quantification_summary/{project_name}_Donor_Report.tsv",sep='\t',index=True)
+        Donor_Report2.to_csv(f"{path}/handover/Donor_Quantification_summary/{project_name}_Donor_Report.tsv",sep='\t',index=True)
         Donor_Report2.to_csv(f"Summary_plots/{project_name}/Summary/{project_name}_Donor_Report.tsv",sep='\t',index=True)
 
         print('Done')
