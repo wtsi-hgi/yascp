@@ -293,7 +293,11 @@ class Concordances:
                 if (donor_gt_match=='NONE'):
                     continue
                 Cells_to_keep_pre = list(set(cell_assignments_table.loc[cell_assignments_table['donor_id']==donor_in_question,'cell']))
-                expected_vars = exclusive_don_variants[donor_gt_match]
+                try:
+                    expected_vars = exclusive_don_variants[donor_gt_match]
+                except:
+                    _='here we have specifically excluded the donor that has been assigned as it is not expected genotype, because of this we can not calculate the concordances'
+                    continue
                 expected_vars_norm = self.norm_genotypes(expected_vars)
                 try:
                     # Now we subset this down to each of the uniqie variants per donor and check which of the concordant sites are exclusive to donor.
@@ -615,7 +619,7 @@ def donor_exclusive_sites(exclusive_don_variants2):
         # Perform the distinct set function.
     return donor_distinct_sites
 
-debug=False
+debug=True
 
 if __name__ == "__main__":
 
