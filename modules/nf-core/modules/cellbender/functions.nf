@@ -469,6 +469,7 @@ process cellbender__remove_background__qc_plots {
 }
 
 process capture_cellbender_files{
+
   publishDir  path: "${outdir}/cellbender",
   saveAs: {filename ->
         if (filename.contains("captured")) {
@@ -483,6 +484,16 @@ process capture_cellbender_files{
         mode: "${params.copy_mode}",
     overwrite: "true"
   label 'process_tiny'
+
+
+
+  if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
+    container "https://yascp.cog.sanger.ac.uk/public/singularity_images/wtsihgi_nf_scrna_qc_6bb6af5-2021-12-23-3270149cf265.sif"
+    //// container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/wtsihgi_nf_cellbender_v1.2.img"
+  } else {
+    container "wtsihgi/nf_scrna_qc:6bb6af5"
+  }
+
   // cache false
   input:
     path(cellbender_location) //cant use path here - needs a full path
