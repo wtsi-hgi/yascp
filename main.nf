@@ -11,6 +11,7 @@
 nextflow.enable.dsl = 2
 include { YASCP } from "$projectDir/workflows/yascp"
 include { RETRIEVE_RECOURSES;RETRIEVE_RECOURSES_TEST_DATASET } from "$projectDir/subworkflows/local/retrieve_recourses"
+include {RSYNC_RESULTS_REMOVE_WORK_DIR} from "$projectDir/modules/local/rsync_results_remove_work_dir/main"
 ////// WORKFLOW: Run main nf-core/yascp analysis pipeline
 // This is the default entry point, we have others to update ceirtain parts of the results. 
 // Please go to ./workflows/yascp to see the main Yascp workflow.
@@ -90,6 +91,13 @@ workflow FREEZE1_GENERATION{
     }
     
     YASCP (GENOTYPE_UPDATE.out.assignments_all_pools,input_channel,vcf_inputs)
+
+}
+
+workflow WORK_DIR_REMOVEL{
+    // This process should be run with caution as it will remove the work directory and copy the results as an actual files
+    RSYNC_RESULTS_REMOVE_WORK_DIR(params.outdir,params.tmpdir)
+
 
 }
 
