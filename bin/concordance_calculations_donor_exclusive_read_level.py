@@ -710,6 +710,7 @@ if __name__ == "__main__":
     
     # cell_concordance_table = conc_table(donor_assignments_table,cell_assignments_table,exclusive_don_variants,exclusive_cell_variants)
     result = pd.DataFrame(cell_concordance_table).T
-    result.to_csv('cell_concordance_table.tsv',sep='\t')
+    if len(result)>0:
+        result.to_csv('cell_concordance_table_noA2G.tsv',sep='\t')
     print('Processing Done')
     
