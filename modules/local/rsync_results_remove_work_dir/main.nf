@@ -26,7 +26,7 @@ process RSYNC_RESULTS_REMOVE_WORK_DIR {
         rsync -vrL \$dir \${dir}_rsync
         echo \$work_dir
         echo \${dir}_rsync
-        #rm -r \$work_dir
-        #rm -r \${dir}
+        rm -r \$work_dir
+        rm -r \${dir}
         """
 }
