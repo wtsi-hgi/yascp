@@ -94,9 +94,10 @@ workflow FREEZE1_GENERATION{
 
 }
 
-workflow WORK_DIR_REMOVEL{
+workflow WORK_DIR_REMOVAL{
     // This process should be run with caution as it will remove the work directory and copy the results as an actual files
     RSYNC_RESULTS_REMOVE_WORK_DIR(params.outdir,params.tmpdir)
+
 
 
 }
@@ -384,6 +385,26 @@ workflow TEST {
     SPLIT_DONOR_H5AD(split_channel5)
     if (params.run_with_genotype_input) {
         match_genotypes(vireo_out_sample_donor_vcf,merged_expected_genotypes)
+    }
+
+}
+
+
+
+workflow.onComplete{
+
+    log.info "Pipeline completed at: $workflow.complete"
+    log.info "Command line: $workflow.commandLine"
+    log.info "Execution status: ${ workflow.success ? 'OK' : 'failed' }"
+    if (params.remove_work_dir){
+        println "lets remove ${params.tmpdir}"
+        log.info "You have selected \"remove_work_dir = true\"; will therefore remove work dirs of all tasks"
+        // work dir and other paths are hardcoded here ... :
+        def proc = "bash ${projectDir}/bin/del_work_dirs.sh ${params.tmpdir}".execute()
+        def b = new StringBuffer()
+        proc.consumeProcessErrorStream(b)
+        log.info proc.text
+        log.info b.toString() 
     }
 
 }
