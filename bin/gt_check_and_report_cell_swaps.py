@@ -32,8 +32,8 @@ Reference_cell_identities2['Nr times becoming Unassigned in subsampling']=0
 Reference_cell_identities2['Nr times becoming different donor in subsampling']=0
 Reference_cell_identities2['New Donor Identities'] = ''
 Reference_cell_identities2['Nr vireo subsampling itterations']=0
-sites_supporting_deconvolutions = pd.read_csv('/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/qc_with_GT/UKBB_ELGH_5th_July_2022/results_noMHC_1kgAF_dubsRemove_onlyOverlaping_bcftools118_AGremove/concordances/CRD_CMB12979968/site_identities_discordant_sites_in_other_donors.tsv',sep='\t')
-sites_supporting_deconvolutions.set_index(sites_supporting_deconvolutions['Unnamed: 0'].str.split(' --- ').str[0],inplace=True)
+# sites_supporting_deconvolutions = pd.read_csv('/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/qc_with_GT/UKBB_ELGH_5th_July_2022/results_noMHC_1kgAF_dubsRemove_onlyOverlaping_bcftools118_AGremove/concordances/CRD_CMB12979968/site_identities_discordant_sites_in_other_donors.tsv',sep='\t')
+# sites_supporting_deconvolutions.set_index(sites_supporting_deconvolutions['Unnamed: 0'].str.split(' --- ').str[0],inplace=True)
 
 for subsampling_file in subsampling_itterations['col']:
     print(subsampling_file)

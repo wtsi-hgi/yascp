@@ -396,16 +396,20 @@ workflow.onComplete{
     log.info "Pipeline completed at: $workflow.complete"
     log.info "Command line: $workflow.commandLine"
     log.info "Execution status: ${ workflow.success ? 'OK' : 'failed' }"
-    if (params.remove_work_dir){
-        println "lets remove ${params.tmpdir}"
-        log.info "You have selected \"remove_work_dir = true\"; will therefore remove work dirs of all tasks"
-        // work dir and other paths are hardcoded here ... :
-        def proc = "bash ${projectDir}/bin/del_work_dirs.sh ${params.tmpdir}".execute()
-        def b = new StringBuffer()
-        proc.consumeProcessErrorStream(b)
-        log.info proc.text
-        log.info b.toString() 
+    if (workflow.success){
+        println "Execution successful"
+        if (params.remove_work_dir){
+            println "lets remove ${params.tmpdir}"
+            log.info "You have selected \"remove_work_dir = true\"; will therefore remove work dirs of all tasks"
+            // work dir and other paths are hardcoded here ... :
+            // def proc = "bash ${projectDir}/bin/del_work_dirs.sh ${params.tmpdir}".execute()
+            // def b = new StringBuffer()
+            // proc.consumeProcessErrorStream(b)
+            // log.info proc.text
+            // log.info b.toString() 
+        }
     }
+
 
 }
 
