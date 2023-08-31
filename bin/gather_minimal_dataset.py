@@ -504,7 +504,8 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
 
         if write_h5:
             try:
-                os.symlink(cellbender_h5, f"./{outdir}/Cellbender_filtered_{Resolution}__{expid}.h5")
+                path2 = os.path.realpath(cellbender_h5)
+                os.symlink(path2, f"./{outdir}/Cellbender_filtered_{Resolution}__{expid}.h5")
                 # Here link also mtx files
             except:
                 print('File already linked')
