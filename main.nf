@@ -401,12 +401,12 @@ workflow.onComplete{
         if (params.remove_work_dir){
             println "lets remove ${params.tmpdir}"
             log.info "You have selected \"remove_work_dir = true\"; will therefore remove work dirs of all tasks"
-            // work dir and other paths are hardcoded here ... :
-            // def proc = "bash ${projectDir}/bin/del_work_dirs.sh ${params.tmpdir}".execute()
-            // def b = new StringBuffer()
-            // proc.consumeProcessErrorStream(b)
-            // log.info proc.text
-            // log.info b.toString() 
+            
+            def proc = "bash ${projectDir}/bin/del_work_dirs.sh ${params.tmpdir}".execute()
+            def b = new StringBuffer()
+            proc.consumeProcessErrorStream(b)
+            log.info proc.text
+            log.info b.toString() 
         }
     }
 
