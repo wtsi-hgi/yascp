@@ -3,10 +3,7 @@ params {
     extra_metadata = '/path/to/extra_metadata.tsv'   //Sometimes users may want to merge extra known metadata for a pool in the h5ad files prior to qc
     extra_sample_metadata ="/path/to/donor_extra_metadata.tsv"  //Sometimes users may want to merge extra known metadata for a donor within pool prior to qc
     input_data_table = '/full/path/to/input_table.tsv' //Required!! This points to all the cellranger files and pool definition files.
-    split_ad_per_bach=true //if not splitting the celltype assignment will be run on full tranche
-    cellbender_location='' //!!!!! if cellbender is run already then can skip this by selecting  input = 'existing_cellbender' instead input = 'cellbender'
-    existing_cellsnp="" // if we have run cellsnp before we can skip this process by letting yascp capture the files
-	genotype_input {
+    genotype_input {
         run_with_genotype_input=true //if false do not need the genotype_input parameters.
         vireo_with_gt=false // Vireo is capable in runing both with genotypes and without. Here we define in which mode we want to run it.
         posterior_assignment = false //if this is set to true, we will perform the genotype donor matching after the deconvolution is performed.
