@@ -98,7 +98,7 @@ workflow qc {
             NORMALISE_AND_PCA.out.param_details,
             n_pcs
         )
-
+        file__anndata_merged.subscribe { println "PLOT_STATS input: $it" }
         PLOT_STATS(file__anndata_merged,
                     file__cells_filtered,
                     SUBSET_PCS.out.outdir,
