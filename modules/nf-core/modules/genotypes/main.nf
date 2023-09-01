@@ -273,7 +273,7 @@ process ASSIGN_DONOR_FROM_PANEL
 {
   // sum gtcheck discrepancy scores from multiple ouputput files of the same panel
   tag "${pool_panel_id}"
-  label 'process_low'
+  label 'process_medium'
   publishDir  path: "${params.outdir}/gtmatch/${pool_id}",
           pattern: "*.csv",
           mode: "${params.copy_mode}",

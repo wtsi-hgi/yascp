@@ -209,7 +209,7 @@ process SUBSET_GENOTYPE2 {
 
 process JOIN_CHROMOSOMES{
     tag "${samplename}"
-    label 'process_small'
+    label 'process_medium'
     publishDir "${params.outdir}/subset_genotypes/", mode: "${params.copy_mode}", pattern: "${samplename}.${sample_subset_file}.subset.vcf.gz"
 
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
