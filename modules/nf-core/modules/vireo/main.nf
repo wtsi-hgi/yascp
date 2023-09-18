@@ -93,7 +93,7 @@ process VIREO_SUBSAMPLING {
             bcftools sort pre_cellSNP.cells.vcf.gz -Oz -o pre_cellSNP3.cells.vcf.gz
             bcftools index pre_cellSNP3.cells.vcf.gz
             bcftools view pre_cellSNP3.cells.vcf.gz -R pre_Overlapping.vcf.gz -Oz -o pre_cellSNP4.cells.vcf.gz
-            random_variants.py --random_state ${itteration} --vcf pre_cellSNP4.cells.vcf.gz --rate 60 --order ${cell_data}/cellSNP.base.vcf.gz
+            random_variants.py --random_state ${itteration} --vcf pre_cellSNP4.cells.vcf.gz --rate ${params.vireo.rate} --order ${cell_data}/cellSNP.base.vcf.gz
             zcat ${cell_data}/cellSNP.base.vcf.gz | head -n2 > subset_${params.vireo.rate}/cellSNP.base.vcf && echo 'next'
             cat random_variants.tsv >> subset_${params.vireo.rate}/cellSNP.base.vcf
             gzip subset_${params.vireo.rate}/cellSNP.base.vcf
@@ -113,7 +113,7 @@ process VIREO_SUBSAMPLING {
 
           subset_processing="""
               # Produce 80% of SNPs panel 
-            random_variants.py --random_state ${itteration} --vcf ${cell_data}/cellSNP.base.vcf.gz --rate ${params.vireo.rate}
+            random_variants.py --random_state ${itteration} --vcf ${cell_data}/cellSNP.base.vcf.gz --rate ${params.vireo.rate} --order ${cell_data}/cellSNP.base.vcf.gz
 
             # Subset the VCF file
             
