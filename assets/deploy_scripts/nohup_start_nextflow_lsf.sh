@@ -17,11 +17,6 @@ parentdir="$(dirname "$CWD1")"
 export RUN_ID="${PWD##*/}"
 mkdir $PWD/work || echo 'exists'
 mkdir $PWD/work/tmp || echo 'exists'
-export SINGULARITY_TMPDIR=$PWD/work/tmp
-export TEMP=$PWD/work/tmp
-export TMP_DIR=$PWD/work/tmp
-export NXF_SINGULARITY_CACHEDIR='/software/hgi/containers/yascp'
-export SINGULARITY_DISABLE_CACHE=0
 echo $RUN_ID | nextflow run /software/hgi/pipelines/yascp -profile sanger -c $INPUT_FILE --nf_ci_loc $PWD -resume > nextflow.nohup.log 2>&1 & 
 
 # get process PID 
