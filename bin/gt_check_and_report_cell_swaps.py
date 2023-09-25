@@ -54,12 +54,13 @@ for subsampling_file in subsampling_itterations['col']:
     for donor1 in set(GT_Data['[2]Query Sample']):
         don_data = GT_Data[GT_Data['[2]Query Sample']==donor1]
         # Need to drop these cells from output if the donor id contains donor.
-        if 'donor' in donor1:
-            # If we do perform a posthoc gt check then this would need be ok.
-            _='this donor was not in bridging file and hence was not exected'
-            _='for this reason instead of performing posthoc gt check we drop these from subsequent analysis as these wouldnt be returned anyways.'
-            Reference_cell_identities2 = Reference_cell_identities2[Reference_cell_identities2['donor_id']!=donor1]
-            continue
+        # if 'donor' in donor1:
+        #     # If we do perform a posthoc gt check then this would need be ok.
+        #     _='this donor was not in bridging file and hence was not exected'
+        #     _='for this reason instead of performing posthoc gt check we drop these from subsequent analysis as these wouldnt be returned anyways.'
+        #     Reference_cell_identities2 = Reference_cell_identities2[Reference_cell_identities2['donor_id']!=donor1]
+        #     continue
+        
         Best_match = list(don_data[don_data['[4]Discordance'] == min(don_data['[4]Discordance'])]['[2]Query Sample'])[0]
         
         
