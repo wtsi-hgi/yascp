@@ -1,4 +1,4 @@
-# nf-core/yascp: Citations
+# yascp: Citations
 Mention the use of this repo in manuscript.
 
 ## Pipeline tools
