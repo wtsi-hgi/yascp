@@ -13,7 +13,9 @@ import time
 import multiprocessing as mp
 from multiprocessing import Lock
 import os
-
+add_noninformative=True
+    
+    
 use_only_informative_snps=True #When this is set to True we ignore any sites that have no difference between all the individuals.
 class VCF_Loader:
     
@@ -68,15 +70,20 @@ class VCF_Loader:
             random.shuffle(c)
             obs_with_gt, list_val_with_gt = zip(*c)
             test_if_there_is_difference = set(pd.DataFrame(list_val_with_gt)[0].str.split(":").str[0])
+            test_if_there_is_difference.discard('./.')
+            test_if_there_is_difference.discard('.|.')
+            test_if_there_is_difference.discard('.')
+            
             nr_genotypes = len(test_if_there_is_difference)
-            if use_only_informative_snps==True:
-                if nr_genotypes>1:
-                    return [obs_with_gt,list_val_with_gt,idx,list_val,count,coment_fields]
-                else:
-                    _='Site is not informative'
-                    # print('Site is not informative')
+            if nr_genotypes==0:
+                _='here we only have missing genotypes' #here we only have missing genotypes
             else:
-                return [obs_with_gt,list_val_with_gt,idx,list_val,count,coment_fields]
+                if nr_genotypes>1:
+                    return [obs_with_gt,list_val_with_gt,idx,list_val,count,coment_fields,'informative']
+                else:
+                    return [obs_with_gt,list_val_with_gt,idx,list_val,count,coment_fields,'constant']
+                        # print('Site is not informative')
+
         
 
     def set_results(self,to_set,id):
@@ -116,7 +123,7 @@ class VCF_Loader:
                 alleles = list_val_with_gt[donor_loc_in_list].split(':')[idx]
                 if alleles!='.':
                     ids = "_".join([list_val[x] for x in [0, 1, 3, 4]])
-                    donor_var = f"{ids}_{alleles}"
+                    donor_var = f"{result[6]}_{ids}_{alleles}"
                     while ob_id in self.curently_pushing:
                         time.sleep(r*0.01)
                     self.curently_pushing.append(ob_id)           
@@ -314,32 +321,50 @@ if __name__ == "__main__":
     for key1 in iteration_dataframe.keys():
         all_sites = pd.DataFrame(iteration_dataframe[key1],columns=['f1'])
         splits = all_sites['f1'].str.split('_')
-        all_sites['#CHROM']=splits.str[0]
-        all_sites['POS']=splits.str[1]
+        all_sites['informative']=splits.str[0]
+        all_sites['#CHROM']=splits.str[1]
+        all_sites['POS']=splits.str[2]
         all_sites['ID']=f'.'
-        all_sites['REF']=splits.str[2]
-        all_sites['ALT']=splits.str[3]
+        all_sites['REF']=splits.str[3]
+        all_sites['ALT']=splits.str[4]
         all_sites['QUAL']=f'.'
         all_sites['FILTER']=f'.'
         all_sites['INFO']=f'.'
         all_sites = all_sites.drop(columns=['f1'])
         exta_snps=pd.concat([exta_snps,all_sites])
     # All_Extra_informative_Sites = exta_snps.drop_duplicates()
+    informative_sites = exta_snps[exta_snps['informative']=='informative'].drop('informative',axis=1)
+    constant_sites = exta_snps[exta_snps['informative']=='constant'].drop('informative',axis=1)
+    constant_sites = constant_sites.drop_duplicates(subset=['#CHROM', 'POS'])
+    constant_sites.index=constant_sites['#CHROM']+'_'+constant_sites['POS']
+    
+    exta_snps_back = exta_snps.copy()
+    exta_snps = informative_sites
     exta_snps.columns = cellsnp.columns   
     exta_snps=exta_snps.drop_duplicates(subset=[0, 1])
-    cellsnp_exta_snps=pd.concat([cellsnp,exta_snps])
+    
     exta_snps.index=exta_snps[0]+'_'+exta_snps[1]
     cellsnp.index=cellsnp[0]+'_'+cellsnp[1]
-    set1_uninformative_sites=set(cellsnp.index)-set(exta_snps.index)
-    informative_sites_covered_in_default_panel = set(exta_snps.index)-set(cellsnp.index)
     
+
+    informative_sites_covered_in_default_panel = set(exta_snps.index)-set(cellsnp.index)
+    constant_sites_covered_in_default_panel = set(constant_sites.index)-set(cellsnp.index)
+    
+
+    if add_noninformative:
+        constant_sites.columns = cellsnp.columns
+        cellsnp_exta_snps=pd.concat([cellsnp,exta_snps,constant_sites])
+    else:
+        cellsnp_exta_snps=pd.concat([cellsnp,exta_snps])
+        
     cellsnp_exta_snps = cellsnp_exta_snps.drop_duplicates(subset=[0, 1])
-    set1_uninformative_sites = cellsnp.loc[set1_uninformative_sites]
+    
     set2_informative_sites =exta_snps
-    description = pd.DataFrame([{'total sites':len(cellsnp_exta_snps),'informative sites':len(set2_informative_sites),'uninformative sites':len(set1_uninformative_sites),'informative sites covered in initial panel':len(informative_sites_covered_in_default_panel)}])
+    set1_uninformative_sites=constant_sites
+    description = pd.DataFrame([{'total sites':len(cellsnp_exta_snps),'informative sites':len(set2_informative_sites),'uninformative sites':len(set1_uninformative_sites),'informative sites covered in initial panel':len(informative_sites_covered_in_default_panel), 'constant_sites_covered_in_default_panel':len(constant_sites_covered_in_default_panel)}])
     description.to_csv('variants_description.tsv',sep='\t',index=False)
     cellsnp_exta_snps.to_csv('cellsnp_variants.tsv',sep='\t',index=False,header=False)
-    set1_uninformative_sites.to_csv('set1_uninformative_sites.tsv',sep='\t',index=False,header=False)
+    constant_sites.to_csv('set1_uninformative_sites.tsv',sep='\t',index=False,header=False)
     set2_informative_sites.to_csv('set2_informative_sites.tsv',sep='\t',index=False,header=False)
     print('Done')
     
