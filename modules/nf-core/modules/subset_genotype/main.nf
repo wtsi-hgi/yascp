@@ -234,12 +234,18 @@ process JOIN_CHROMOSOMES{
         vcf_name=\$(python ${projectDir}/bin/random_id.py)
         fofn_input_subset.sh "${study_vcf_files}"
         bcftools concat --threads ${task.threads} -f ./fofn_vcfs.txt -Ob -o pre_\${vcf_name}.bcf.gz
-        bcftools index pre_\${vcf_name}.bcf.gz
-        bcftools +fixref pre_\${vcf_name}.bcf.gz -Ob -o fix_ref_\${vcf_name}_out.bcf.gz -- -d -f ${genome}/genome.fa -m flip-all
+
+        bcftools view pre_\${vcf_name}.bcf.gz | awk '{gsub(/^chr/,""); print}' | awk '{gsub(/ID=chr/,"ID="); print}' > no_prefix_pre_\${vcf_name}.vcf
+        bgzip no_prefix_pre_\${vcf_name}.vcf
+        bcftools index no_prefix_pre_\${vcf_name}.vcf.gz
+
+        #bcftools index pre_\${vcf_name}.bcf.gz
+        bcftools +fixref no_prefix_pre_\${vcf_name}.vcf.gz -Ob -o fix_ref_\${vcf_name}_out.bcf.gz -- -d -f ${genome}/genome.fa -m flip-all
         #ln -s pre_\${vcf_name}.bcf.gz \${vcf_name}_out.bcf.gz
         #bcftools +fill-tags fix_ref_\${vcf_name}_out.bcf.gz -Ob -o \${vcf_name}_out.bcf.gz
         bcftools annotate -x INFO fix_ref_\${vcf_name}_out.bcf.gz -Ob -o \${vcf_name}_out.bcf.gz
-        rm -r pre_* fix_ref_*
+        rm -r pre_* fix_ref_* no_prefix_*
+
         bcftools index \${vcf_name}_out.bcf.gz
       """
 }
@@ -310,10 +316,13 @@ process JOIN_STUDIES_MERGE{
       path("*_out.vcf.gz",emit:study_merged_vcf)
     script:
 
-        cmd__run = "overlapping_positions_vcfs.py -vcfs '${study_vcf_files}'"
+        
+        
         if (params.just_overlapping_positions_for_study_merge){
+          cmd__run = "overlapping_positions_vcfs.py -vcfs '${study_vcf_files}'"
           cmd="bcftools view -R Bed_File_record.bed pre_${mode}_${mode2}_\${vcf_name}__vcf.vcf.gz -Oz -o ${mode}_${mode2}_\${vcf_name}_out.vcf.gz && bcftools index ${mode}_${mode2}_\${vcf_name}_out.vcf.gz"
         }else{
+          cmd__run = ''
           cmd="mv pre_${mode}_${mode2}_\${vcf_name}__vcf.vcf.gz ${mode}_${mode2}_\${vcf_name}_out.vcf.gz && mv pre_${mode}_${mode2}_\${vcf_name}__vcf.vcf.gz.csi ${mode}_${mode2}_\${vcf_name}_out.vcf.gz.csi"
         }
 
