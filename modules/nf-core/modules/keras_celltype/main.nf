@@ -41,7 +41,7 @@ process KERAS_CELLTYPE {
             --keras_weights_df \"${params.celltype_prediction.keras.keras_weights_df}\" \\
             --keras_model_cluster_labels \"${params.celltype_prediction.keras.keras_model_cluster_labels}\" \\
             --filter_top_cell_probabilities \"${params.celltype_prediction.keras.filter_top_cell_probabilities}\" \\
-            \"${params.celltype_prediction.keras.save_all_probabilities}\" \\
+            ${params.celltype_prediction.keras.save_all_probabilities} \\
             --output_file \"${experiment_id}___cellbender_fpr${params.cellbender_resolution_to_use}-scrublet-ti_freeze003_prediction\" 
         """
 }
