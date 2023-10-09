@@ -1,50 +1,50 @@
 cluster,category,label,category__machine,label__machine
-0,T Cell,T cell CD8 (1),T_Cell,T_cell_CD8_1
+0,T Cell,T cell CD8+ tissue-resident,T_Cell,T_cell_CD8plus_tissueminusresident
 1,B Cell,B cell naive,B_Cell,B_cell_naive
-2,B Cell plasma,B cell plasma IgA CD38++,B_Cell_plasma,B_cell_plasma_IgA_CD38plusplus
+2,B Cell plasma,B cell plasma IgA (2),B_Cell_plasma,B_cell_plasma_IgA_2
 3,B Cell,B cell memory (1),B_Cell,B_cell_memory_1
-4,T Cell,T cell CD4 CD40LG+ (1),T_Cell,T_cell_CD4_CD40LGplus_1
+4,T Cell,T cell CD4+ memory,T_Cell,T_cell_CD4plus_memory
 5,T Cell,T cell CD4 naive,T_Cell,T_cell_CD4_naive
-6,T Cell,T cell CD4 CD40LG+ (2),T_Cell,T_cell_CD4_CD40LGplus_2
+6,T Cell,T cell CD4+ PASK+ CCR7+,T_Cell,T_cell_CD4plus_PASKplus_CCR7plus
 7,Stem cells,Stem cell LGR5+,Stem_cells,Stem_cell_LGR5plus
 8,B Cell,B cell memory (2),B_Cell,B_cell_memory_2
-9,T Cell,T cell CD4 CD40LG+ (3),T_Cell,T_cell_CD4_CD40LGplus_3
+9,T Cell,T cell CD4+ CXCR6+ memory,T_Cell,T_cell_CD4plus_CXCR6plus_memory
 10,Secretory,Goblet cell middle villus,Secretory,Goblet_cell_middle_villus
-11,B Cell plasma,B cell plasma IgA CD38+++,B_Cell_plasma,B_cell_plasma_IgA_CD38plusplusplus
-12,B Cell plasma,B cell plasma IgA CD38+,B_Cell_plasma,B_cell_plasma_IgA_CD38plus
+11,B Cell plasma,B cell plasma IgA (3),B_Cell_plasma,B_cell_plasma_IgA_3
+12,B Cell plasma,B cell plasma IgA (1),B_Cell_plasma,B_cell_plasma_IgA_1
 13,Stem cells,Stem cell MKI67+ (1),Stem_cells,Stem_cell_MKI67plus_1
-14,Myeloid,Mac resident IL10RA-,Myeloid,Mac_resident_IL10RAminus
+14,Myeloid,Mac (2),Myeloid,Mac_2
 15,Enterocyte,Enterocyte middle villus (1),Enterocyte,Enterocyte_middle_villus_1
 16,Enterocyte,Enterocyte progenitor crypt OLFM4++ KRT20+ (1),Enterocyte,Enterocyte_progenitor_crypt_OLFM4plusplus_KRT20plus_1
 17,Enterocyte,Enterocyte precursor crypt OLFM4+ KRT20++,Enterocyte,Enterocyte_precursor_crypt_OLFM4plus_KRT20plusplus
-18,T Cell,T cell CD4 Treg,T_Cell,T_cell_CD4_Treg
+18,T Cell,T cell CD4+ Treg,T_Cell,T_cell_CD4plus_Treg
 19,Secretory,Goblet cell top villus,Secretory,Goblet_cell_top_villus
 20,Enterocyte,Enterocyte middle villus (2),Enterocyte,Enterocyte_middle_villus_2
 21,Secretory,Paneth cell,Secretory,Paneth_cell
 22,Enterocyte,Enterocyte progenitor crypt OLFM4++ KRT20+ (2),Enterocyte,Enterocyte_progenitor_crypt_OLFM4plusplus_KRT20plus_2
-23,T Cell,T cell CD8 (2),T_Cell,T_cell_CD8_2
+23,T Cell,T cell CD8+ GZMK+,T_Cell,T_cell_CD8plus_GZMKplus
 24,Stem cells,Stem cell MKI67+ (2),Stem_cells,Stem_cell_MKI67plus_2
 25,Enterocyte,Enterocyte top villus,Enterocyte,Enterocyte_top_villus
-26,Myeloid,MoMac IL10RA+,Myeloid,MoMac_IL10RAplus
+26,Myeloid,Mac intermediate (1),Myeloid,Mac_intermediate_1
 27,B Cell,B cell,B_Cell,B_cell
 28,T Cell,T cell gd,T_Cell,T_cell_gd
 29,Myeloid,Dendritic cell,Myeloid,Dendritic_cell
 30,T Cell,T cell CD4- CD8-,T_Cell,T_cell_CD4minus_CD8minus
 31,B Cell,B cell germinal centre/plasmablasts,B_Cell,B_cell_germinal_centre_slash_plasmablasts
-32,Myeloid,Mac resident IL10RA+,Myeloid,Mac_resident_IL10RAplus
-33,T Cell,T cell CD8 (3),T_Cell,T_cell_CD8_3
+32,Myeloid,Mac (1),Myeloid,Mac_1
+33,T Cell,T cell CD8+ FGFBP2+ effector,T_Cell,T_cell_CD8plus_FGFBP2plus_effector
 34,B Cell,B cell activated,B_Cell,B_cell_activated
-35,Mast,Mast,Mast,Mast
-36,Myeloid,MoMac IL10RA-,Myeloid,MoMac_IL10RAminus
-37,Tuft cell,Tuft cell,Tuft_cell,Tuft_cell
+35,Myeloid,Mast,Myeloid,Mast
+36,Myeloid,Mac intermediate (2),Myeloid,Mac_intermediate_2
+37,Secretory,Tuft cell,Secretory,Tuft_cell
 38,Secretory,Goblet cell crypt MKI67+,Secretory,Goblet_cell_crypt_MKI67plus
 39,Myeloid,Monocytes,Myeloid,Monocytes
-40,T Cell,ILC1 CD3D- NCAM1+,T_Cell,ILC1_CD3Dminus_NCAM1plus
-41,Mesenchymal,Fibroblast/Myofibroblasts,Mesenchymal,Fibroblast_slash_myofibroblasts
+40,T Cell,ILC1/NKs,T_Cell,ILC1_slash_NKs
+41,Mesenchymal,Fibroblast/Myofibroblasts,Mesenchymal,Fibroblast_slash_Myofibroblasts
 42,Secretory,Endocrine cell,Secretory,Endocrine_cell
 43,Enterocyte,Enterocytes BEST4,Enterocyte,Enterocytes_BEST4
 44,T Cell,T cell CD4 proliferating,T_Cell,T_cell_CD4_proliferating
 45,Mesenchymal,Endothelial cell,Mesenchymal,Endothelial_cell
-46,T Cell,ILC3 CD3D- IL23R+,T_Cell,ILC3_CD3Dminus_IL23Rplus
+46,T Cell,ILC3,T_Cell,ILC3
 47,Mesenchymal,Pericytes,Mesenchymal,Pericytes
 48,Mesenchymal,Smooth muscle cell,Mesenchymal,Smooth_muscle_cell
