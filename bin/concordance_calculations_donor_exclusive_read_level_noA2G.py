@@ -72,6 +72,8 @@ class Concordances:
             true_discordant = 0
             relaxed_concordant = 0
             relaxed_concordant_informative = 0
+            relaxed_concordant_uninformative = 0
+            true_discordant_informative = 0
             true_discordant_uninformative = 0
 
             for i in range(0, len(snp_gtypes)):
@@ -105,12 +107,16 @@ class Concordances:
                     true_discordant+=1
                     if snp_var in self.uninformative_sites:
                         true_discordant_uninformative+=1
+                    elif snp_var in self.informative_sites:
+                        true_discordant_informative+=1
                 else:
                     relaxed_concordant+=1
-                    if snp_var in self.informative_sites:
+                    if snp_var in self.uninformative_sites:
+                        relaxed_concordant_uninformative+=1
+                    elif snp_var in self.informative_sites:
                         relaxed_concordant_informative+=1
 
-            return true_discordant, relaxed_concordant, relaxed_concordant_informative, true_discordant_uninformative
+            return true_discordant, relaxed_concordant, relaxed_concordant_informative, relaxed_concordant_uninformative, true_discordant_informative, true_discordant_uninformative
 
 
         def read_condordance(self, expected_vars, cell_vars):
@@ -129,38 +135,76 @@ class Concordances:
             cell_vars['DP'] = cell_vars[0].str.split("_").str[5].astype(int)
             cell_vars['AD'] = cell_vars[0].str.split("_").str[6].astype(int)
             cell_vars['OTH'] = cell_vars[0].str.split("_").str[7].astype(int)
+            #split to informative and uninformative sites
+            mask_i = cell_vars['ids'].isin(self.informative_sites)
+            cell_vars_informative = cell_vars[mask_i]
+            mask_u = cell_vars['ids'].isin(self.uninformative_sites)
+            cell_vars_uninformative = cell_vars[mask_u]
+            informative_sites = len(cell_vars_informative)
+            uninformative_sites = len(cell_vars_uninformative)
+
             total_dp = cell_vars['DP'].sum()
             total_oth = cell_vars['OTH'].sum()
             total_reads = total_dp + total_oth
+            total_dp_inf = cell_vars_informative['DP'].sum()
+            total_oth_inf = cell_vars_informative['OTH'].sum()
+            total_reads_informative = total_dp_inf + total_oth_inf
+            total_dp_uninf = cell_vars_uninformative['DP'].sum()
+            total_oth_uninf = cell_vars_uninformative['OTH'].sum()
+            total_reads_uninformative = total_dp_uninf + total_oth_uninf            
 
             # expected genotype 0/0
             expected_hom_ref = expected_vars[expected_vars['vars'] == '0/0']
             hom_ref_sites = set(expected_hom_ref['ids'])
             cell_vars2 = cell_vars[cell_vars['ids'].isin(hom_ref_sites)]
+            cell_vars_inf_2 = cell_vars_informative[cell_vars_informative['ids'].isin(hom_ref_sites)]
+            cell_vars_uninf_2 = cell_vars_uninformative[cell_vars_uninformative['ids'].isin(hom_ref_sites)]
             ad_hom_ref = cell_vars2['AD'].sum()
             oth_hom_ref = cell_vars2['OTH'].sum() 
             discordant_hom_ref = ad_hom_ref + oth_hom_ref
+            ad_hom_ref_inf = cell_vars_inf_2['AD'].sum()
+            oth_hom_ref_inf = cell_vars_inf_2['OTH'].sum() 
+            discordant_hom_ref_informative = ad_hom_ref_inf + oth_hom_ref_inf
+            ad_hom_ref_uninf = cell_vars_uninf_2['AD'].sum()
+            oth_hom_ref_uninf = cell_vars_uninf_2['OTH'].sum() 
+            discordant_hom_ref_uninformative = ad_hom_ref_uninf + oth_hom_ref_uninf
 
             # expected genotype 0/1 or 1/0
             hets = ['0/1', '1/0']
             expected_het = expected_vars[expected_vars['vars'].isin(hets)]
             het_sites = set(expected_het['ids'])
             cell_vars3 = cell_vars[cell_vars['ids'].isin(het_sites)]
+            cell_vars_inf_3 = cell_vars_informative[cell_vars_informative['ids'].isin(het_sites)]
+            cell_vars_uninf_3 = cell_vars_uninformative[cell_vars_uninformative['ids'].isin(het_sites)]
             discordant_het = cell_vars3['OTH'].sum()
+            discordant_het_informative = cell_vars_inf_3['OTH'].sum()
+            discordant_het_uninformative = cell_vars_uninf_3['OTH'].sum()
 
             # expected genotype 1/1
             expected_hom_alt = expected_vars[expected_vars['vars'] == '1/1']
             hom_alt_sites = set(expected_hom_alt['ids'])
             cell_vars4 = cell_vars[cell_vars['ids'].isin(hom_alt_sites)]
+            cell_vars_inf_4 = cell_vars_informative[cell_vars_informative['ids'].isin(hom_alt_sites)]
+            cell_vars_uninf_4 = cell_vars_uninformative[cell_vars_uninformative['ids'].isin(hom_alt_sites)]
             # DP + OTH - AD
             ad_hom_alt = cell_vars4['AD'].sum()
             dp_hom_alt = cell_vars4['DP'].sum()
             oth_hom_alt = cell_vars4['OTH'].sum()
             discordant_hom_alt = (dp_hom_alt + oth_hom_alt) - ad_hom_alt
+            ad_hom_alt_inf = cell_vars_inf_4['AD'].sum()
+            dp_hom_alt_inf = cell_vars_inf_4['DP'].sum()
+            oth_hom_alt_inf = cell_vars_inf_4['OTH'].sum()
+            discordant_hom_alt_informative = (dp_hom_alt_inf + oth_hom_alt_inf) - ad_hom_alt_inf
+            ad_hom_alt_uninf = cell_vars_uninf_4['AD'].sum()
+            dp_hom_alt_uninf = cell_vars_uninf_4['DP'].sum()
+            oth_hom_alt_uninf = cell_vars_uninf_4['OTH'].sum()
+            discordant_hom_alt_uninformative = (dp_hom_alt_uninf + oth_hom_alt_uninf) - ad_hom_alt_uninf
 
             discordant_reads =  discordant_hom_ref + discordant_het + discordant_hom_alt
+            discordant_reads_informative =  discordant_hom_ref_informative + discordant_het_informative + discordant_hom_alt_informative
+            discordant_reads_uninformative =  discordant_hom_ref_uninformative + discordant_het_uninformative + discordant_hom_alt_uninformative
 
-            return total_sites, total_reads, discordant_reads
+            return total_sites, informative_sites, uninformative_sites, total_reads, discordant_reads, total_reads_informative, discordant_reads_informative, total_reads_uninformative, discordant_reads_uninformative
         
 
         def retrieve_concordant_discordant_sites(self,expected_vars_norm,cell_vars):
@@ -171,28 +215,28 @@ class Concordances:
             cell_vars_norm = self.norm_genotypes(cell_vars)
 
             if len(cell_vars_norm) > 0:
-                Total_Overlappin_sites = set(expected_vars_norm['ids']).intersection(set(cell_vars_norm['ids']))
-                expected_vars2 = expected_vars_norm[expected_vars_norm['ids'].isin(Total_Overlappin_sites)]
-                cell_vars2 = cell_vars_norm[cell_vars_norm['ids'].isin(Total_Overlappin_sites)]
+                Total_Overlapping_sites = set(expected_vars_norm['ids']).intersection(set(cell_vars_norm['ids']))
+                expected_vars2 = expected_vars_norm[expected_vars_norm['ids'].isin(Total_Overlapping_sites)]
+                cell_vars2 = cell_vars_norm[cell_vars_norm['ids'].isin(Total_Overlapping_sites)]
                 # print(cell_vars_norm)
                 # print(expected_vars2)
                 # print(cell_vars2)
                 # exit(0)
                 Concordant_Sites = set(cell_vars2['combo']).intersection(set(expected_vars2['combo']))
-                Discodrant_sites = set(cell_vars2['combo'])-set(expected_vars2['combo'])
-                disc = pd.DataFrame(Discodrant_sites,columns=['combo_x'])
+                Discordant_sites = set(cell_vars2['combo'])-set(expected_vars2['combo'])
+                disc = pd.DataFrame(Discordant_sites,columns=['combo_x'])
                 df_cd = pd.merge(cell_vars2, expected_vars2, how='inner', on = 'pos')
                 disc2= pd.merge(disc, df_cd, how='inner', on = 'combo_x')
                 disc2['expected_retrieved'] = disc2['0_x']+'::'+disc2['0_y']
                 disc_sites = ';'.join(disc2['expected_retrieved'])
                 #find truly discordant sites
-                true_discordant_count, relaxed_concordant_count, relaxed_concordant_informative_count, true_discordant_uninformative_count = self.get_strict_discordance(disc2['0_y'], disc2['0_x'])
+                true_discordant_count, relaxed_concordant_count, relaxed_concordant_informative_count, relaxed_concordant_uninformative_count, true_discordant_informative_count, true_discordant_uninformative_count = self.get_strict_discordance(disc2['0_y'], disc2['0_x'])
                 #find discordant reads
-                total_sites, total_reads, discordant_reads = self.read_condordance(expected_vars2, cell_vars2)
+                total_sites, informative_sites, uninformative_sites, total_reads, discordant_reads, total_reads_informative, discordant_reads_informative, total_reads_uninformative, discordant_reads_uninformative = self.read_condordance(expected_vars2, cell_vars2)
             else:
-                Total_Overlappin_sites = set()
+                Total_Overlapping_sites = set()
                 Concordant_Sites = set()
-                Discodrant_sites = set()
+                Discordant_sites = set()
                 disc_sites = ''
                 true_discordant_count = 0
                 relaxed_concordant_count = 0
@@ -200,7 +244,7 @@ class Concordances:
       
                 discordant_reads = 0
 
-            return Concordant_Sites, Discodrant_sites, Total_Overlappin_sites, disc_sites,cell_vars_norm, true_discordant_count, relaxed_concordant_count, relaxed_concordant_informative_count, true_discordant_uninformative_count, total_sites, total_reads, discordant_reads
+            return Concordant_Sites, Discordant_sites, Total_Overlapping_sites, disc_sites,cell_vars_norm, true_discordant_count, relaxed_concordant_count, relaxed_concordant_informative_count, relaxed_concordant_uninformative_count, true_discordant_informative_count, true_discordant_uninformative_count, total_sites, informative_sites, uninformative_sites, total_reads, total_reads_informative, total_reads_uninformative, discordant_reads, discordant_reads_informative, discordant_reads_uninformative
         
 
         def set_results(self,to_set,id):
@@ -210,7 +254,7 @@ class Concordances:
             self.record_dict[id]=f'tmp_{id}.pkl'
         
         def append_results_cell_concordances(self,result):
-            count=result[11]
+            count=result[13]
             try:
                 percent_concordant = result[2]/(result[3]+result[2])*100
             except:
@@ -232,13 +276,22 @@ class Concordances:
                 percent_strict_discordant = 0
 
             try:
-                read_discordance = result[15]/result[13]
+                read_discordance = result[21]/result[15]
             except:
                 read_discordance = 0
+
+            donor = result[1]
+            cohort = 'UNKNOWN'
+            donor_split = donor.split("_")
+            if (len(donor_split) == 2) and (donor_split[0] == donor_split[1]):
+                cohort = 'UKB'
+            elif (len(donor_split) == 3) and (len(donor_split[0]) == 14):
+                cohort = 'ELGH'
 
             print(count)
             self.cell_concordance_table[f'{result[0]} --- {result[1]}'] = {'GT 1':result[0],
                                                                     'GT 2':result[1],
+                                                                    'cohort': cohort,
                                                                     'Nr_Concordant':result[2],
                                                                     'Nr_Discordant':result[3],
                                                                     'Nr_Relaxed_concordant':result[4],
@@ -248,14 +301,22 @@ class Concordances:
                                                                     'Percent_relaxed_concordant': percent_relaxed_concordant,
                                                                     'Percent_strict_discordant': percent_strict_discordant,
                                                                     'Nr_concordant_informative': result[6],
-                                                                    'Nr_discordant_uninformative': result[7],
-                                                                    'NrTotal_Overlapping_sites_between_two_genotypes':result[8],
-                                                                    'Nr_donor_distinct_sites_within_pool_individuals':result[10],
-                                                                    'Number_of_sites_that_are_donor_concordant_and_exclusive':result[9],
-                                                                    'Discordant_Site_Identities':result[12],
-                                                                    'Total_sites': result[13],
-                                                                    'Total_reads': result[14],
-                                                                    'Discordant_reads': result[15],
+                                                                    'Nr_concordant_uninformative': result[7],
+                                                                    'Nr_discordant_informative': result[8],
+                                                                    'Nr_discordant_uninformative': result[9],
+                                                                    'NrTotal_Overlapping_sites_between_two_genotypes':result[10],
+                                                                    'Nr_donor_distinct_sites_within_pool_individuals':result[12],
+                                                                    'Number_of_sites_that_are_donor_concordant_and_exclusive':result[11],
+                                                                    'Discordant_Site_Identities':result[14],
+                                                                    'Total_sites': result[15],
+                                                                    'Total_informative_sites': result[16],
+                                                                    'Total_uninformative_sites': result[17],
+                                                                    'Total_reads': result[18],
+                                                                    'Total_reads_informative': result[19],
+                                                                    'Total_reads_uninformative': result[20],
+                                                                    'Discordant_reads': result[21],
+                                                                    'Discordant_reads_informtive': result[22],
+                                                                    'Discordant_reads_uninformtive': result[23],
                                                                     'Discordant_reads_by_n_sites': read_discordance
                                                                     }   
             
@@ -324,16 +385,18 @@ class Concordances:
         
         def concordance_table_production(self,expected_vars_norm,cell_vars,cell1,donor_gt_match,dds,count):
             Nr_donor_distinct_sites = len(dds)
-            Concordant_Sites, Discodrant_sites, Total_Overlappin_sites,discordant_sites,cell_vars_norm, Nr_strict_discordant, relaxed_concordant_count, relaxed_concordant_informative_count, true_discordant_uninformative_count, total_sites, total_reads, discordant_reads = self.retrieve_concordant_discordant_sites(expected_vars_norm,cell_vars)
+            Concordant_Sites, Discordant_sites, Total_Overlapping_sites, disc_sites, cell_vars_norm, true_discordant_count, relaxed_concordant_count, relaxed_concordant_informative_count, relaxed_concordant_uninformative_count, true_discordant_informative_count, true_discordant_uninformative_count, total_sites, informative_sites, uninformative_sites, total_reads, total_reads_informative, total_reads_uninformative, discordant_reads, discordant_reads_informative, discordant_reads_uninformative = self.retrieve_concordant_discordant_sites(expected_vars_norm,cell_vars)
             Nr_Concordant = len(Concordant_Sites)
             Nr_Relaxed_concordant = Nr_Concordant + relaxed_concordant_count
-            Nr_Discordant = len(Discodrant_sites)
-            Nr_Total_Overlapping_sites = len(Total_Overlappin_sites)
+            Nr_Discordant = len(Discordant_sites)
+            Nr_Total_Overlapping_sites = len(Total_Overlapping_sites)
             Number_of_sites_that_are_donor_concordant_and_exclusive = len(set(dds).intersection(set(Concordant_Sites)))
             Number_of_sites_in_cellsnp_but_not_in_reference = set(cell_vars_norm['pos'])-set(expected_vars_norm['pos'])
 
-            return [cell1,donor_gt_match,Nr_Concordant,Nr_Discordant,Nr_Relaxed_concordant, Nr_strict_discordant, relaxed_concordant_informative_count, true_discordant_uninformative_count, Nr_Total_Overlapping_sites,
-                    Number_of_sites_that_are_donor_concordant_and_exclusive, Nr_donor_distinct_sites,count,discordant_sites, total_sites, total_reads, discordant_reads]
+            return [cell1,donor_gt_match,Nr_Concordant,Nr_Discordant,Nr_Relaxed_concordant, true_discordant_count, relaxed_concordant_informative_count, 
+                    relaxed_concordant_uninformative_count, true_discordant_informative_count, true_discordant_uninformative_count, Nr_Total_Overlapping_sites,
+                    Number_of_sites_that_are_donor_concordant_and_exclusive, Nr_donor_distinct_sites,count,disc_sites, total_sites, informative_sites, 
+                    uninformative_sites, total_reads, total_reads_informative, total_reads_uninformative, discordant_reads, discordant_reads_informative, discordant_reads_uninformative]
         
         
 class VCF_Loader:
@@ -553,6 +616,7 @@ def get_options():
     parser.add_argument('--expected_vcf', action='store', required=True)
     parser.add_argument('--informative_sites', action='store', required=True)
     parser.add_argument('--uninformative_sites', action='store', required=True)
+    parser.add_argument('--outfile', action='store', required=True)
     args = parser.parse_args()
 
     return args
@@ -625,6 +689,7 @@ if __name__ == "__main__":
 
     options = get_options()
     cpus = options.cpus
+    outfile = options.outfile
     cell_vcf=options.cell_vcf
     donor_assignments=options.donor_assignments
     gt_match_vcf=options.gt_match_vcf
@@ -719,7 +784,8 @@ if __name__ == "__main__":
     
     # cell_concordance_table = conc_table(donor_assignments_table,cell_assignments_table,exclusive_don_variants,exclusive_cell_variants)
     result = pd.DataFrame(cell_concordance_table).T
+
     if len(result)>0:
-        result.to_csv('cell_concordance_table_noA2G.tsv',sep='\t')
+        result.to_csv(outfile,sep='\t')
     print('Processing Done')
     
