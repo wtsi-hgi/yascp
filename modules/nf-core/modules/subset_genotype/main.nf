@@ -363,6 +363,7 @@ workflow SUBSET_WORKF{
       // all_GT_pannels_and_pools.subscribe {println "all_GT_pannels_and_pools:= ${it}\n"}
       // If nothing is provided then there are no genotypes emmited, hence nothing is passed down to the chromosome merge.
       combined_pool_subset.groupTuple(by: 0).set{grouped_chrs_poolComps}
+      grouped_chrs_poolComps.subscribe {println "grouped_chrs_poolComps:= ${it}\n"}
       if (!params.genotype_input.subset_vireo_genotypes && mode=='AllExpectedGT'){
         // Here we have joned the shards of the same cohort together without subsetting down to the individuals since we want to use all the genotypes as an input file in the vcf.
         // While this will work, if the same cohort is used multiple times its better to provide already merged genotype, to avoid all the shard processing every time.
