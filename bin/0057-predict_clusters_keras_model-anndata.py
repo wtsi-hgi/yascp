@@ -1136,8 +1136,17 @@ def main():
     # Add top predictions to the anndata matrix
     for col in df_top_prediction.columns:
         adata.obs[col] = df_top_prediction.loc[adata.obs.index, col]
-    df_top_prediction=df_top_prediction.add_prefix('Keras:')
-    df_top_prediction.to_csv(f'{out_file_base}_celltypes.tsv',sep='\t')
+
+    if save_all_probabilities == True:
+        df_all_prediction=df_prediction_classes.copy()
+        df_all_prediction['predicted_celltype'] = df_top_prediction['predicted_celltype']
+        df_all_prediction['predicted_celltype_probability'] = df_top_prediction['predicted_celltype_probability']
+        df_all_prediction=df_all_prediction.add_prefix('Keras:')
+        df_all_prediction.to_csv(f'{out_file_base}_celltypes.tsv',sep='\t')
+    else:
+        df_top_prediction=df_top_prediction.add_prefix('Keras:')
+        df_top_prediction.to_csv(f'{out_file_base}_celltypes.tsv',sep='\t')
+    
     # Filter out genes
     if genes_exclude != 'None':
         df_genes_exclude = pd.read_csv(genes_exclude, sep='\t')
