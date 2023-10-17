@@ -55,9 +55,6 @@ workflow UMAP {
                                      // the 'flatMap' emits each of these
                                      // aggregation list as a single item
    
-        Channel.of('key',outdir,anndata,metadata,pcs,reduced_dims,all_umaps).set{all_umaps2}               
-        umap_gather_input.view()
-        all_umaps2.view()
         // Gather step.
         // Gather by tuple ... if we just to a collect, then will get all
         // umap_calculate calls, not split by reduced_dims. See link below:
