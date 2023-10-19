@@ -73,10 +73,7 @@ Easyest to do is using a conda enviroment.
 
 ## Credits
 
-Yascp was originally written by Matiss Ozols as part of the Cardinal project with contributions from Leland Taylor, Guillaume Noell, Hannes Ponstingl, Vivek Iyer,  Henry Taylor, Tobi Alegbe.
-
-We thank the following people for their extensive assistance in the development of this pipeline:
-Monika Krzak
+Yascp was originally written by Matiss Ozols as part of the Cardinal project with contributions from Leland Taylor, Guillaume Noell, Hannes Ponstingl, Vivek Iyer,  Henry Taylor, Tobi Alegbe, Monika Krzak
 <!-- TODO nf-core: If applicable, make list of people who have also contributed -->
 
 ## Contributions and Support
