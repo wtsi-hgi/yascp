@@ -5,10 +5,14 @@
 ## Introduction
 
 **nf-core/yascp** is a bioinformatics best-practice analysis pipeline for deconvolution, qc, clustering of a single cell datasets.
-This is a large scale single-cell pipeline developed initially for processing Cardinal project samples, however it is applicable to any other scRNA analysis. The pipeline has been inspired by deconvolution (https://github.com/wtsi-hgi/nf_scrna_deconvolution.git ), cellbender (https://github.com/wtsi-hgi/nf_cellbender ) and qc (https://github.com/wtsi-hgi/nf_qc_cluster/tree/main ) pipelines. Input requires a tsv seperated file with paths to the Cellranger 6.11 outputs (however we will shortly add a Cellranger module to make this pipeline more transferable) and if running in an genotype  additional input is required to be provided in an input.nf file pointing to the vcf location. This pipeline is designed to be used for multiple large scale single cell experiments.
+This is a large scale single-cell pipeline developed initially for processing Cardinal project samples, however it is applicable to any other scRNA analysis. The pipeline has been inspired by deconvolution (https://github.com/wtsi-hgi/nf_scrna_deconvolution.git ), cellbender (https://github.com/wtsi-hgi/nf_cellbender ) and qc (https://github.com/wtsi-hgi/nf_qc_cluster/tree/main ) pipelines initially developed in Dr C. Anderson lab. 
+
+Input requires a tsv seperated file with paths to the Cellranger 6.11 outputs (If you have cellranger 7 outputs please use (this python scipt)[https://github.com/wtsi-hgi/yascp/blob/main/assets/extra_scripts/mengle_samples_in_right_format_cr7_to_cr6.py] to mengle the files in right format for Yascp) (however we will shortly add a Cellranger module to make this pipeline more transferable). and if running in an genotype  additional input is required to be provided in an input.nf file pointing to the vcf location. This pipeline is designed to be used for multiple large scale single cell experiments.
 
 The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool to run tasks across multiple compute infrastructures in a very portable manner. It uses Docker/Singularity containers making installation trivial and results highly reproducible. The [Nextflow DSL2](https://www.nextflow.io/docs/latest/dsl2.html) implementation of this pipeline uses one container per process which makes it much easier to maintain and update software dependencies. Where possible, these processes have been submitted to and installed from [nf-core/modules](https://github.com/nf-core/modules) in order to make them available to all nf-core pipelines, and to everyone within the Nextflow community!
-
+<p align="center">
+  <img src="https://github.com/wtsi-hgi/yascp/blob/main/assets/images/Yascp_workflow-03.jpg" width="100%"/>
+</p>
 <!-- TODO nf-core: Add full-sized test dataset and amend the paragraph below if applicable -->
 <!-- On release, automated continuous integration tests run the pipeline on a full-sized dataset on the AWS cloud infrastructure. This ensures that the pipeline runs on AWS, has sensible resource allocation defaults set to run on real-world datasets, and permits the persistent storage of results to benchmark between pipeline releases and other analysis sources. The results obtained from the full-sized test can be viewed on the [nf-core website](https://nf-co.re/yascp/results). -->
 
@@ -69,21 +73,18 @@ Easyest to do is using a conda enviroment.
 
 ## Credits
 
-Yascp was originally written by Matiss Ozols as part of the Cardinal project with contributions from Leland Taylor, Guillaume Noell, Hannes Ponstingl, Vivek Iyer,  Henry Taylor, Tobi Alegbe.
-
-We thank the following people for their extensive assistance in the development of this pipeline:
-Monika Krzak
+Yascp was originally written by Matiss Ozols as part of the Cardinal project with contributions from Leland Taylor, Guillaume Noell, Hannes Ponstingl, Vivek Iyer,  Henry Taylor, Tobi Alegbe, Monika Krzak
 <!-- TODO nf-core: If applicable, make list of people who have also contributed -->
 
 ## Contributions and Support
 
-If you would like to contribute to this pipeline, please see the [contributing guidelines](.github/CONTRIBUTING.md).
-
-For further information or help, don't hesitate to get in touch on the [Slack `#yascp` channel](https://nfcore.slack.com/channels/yascp) (you can join with [this invite](https://nf-co.re/join/slack)).
+We wellcome all contributions. If you would like to contribute to this pipeline, please create a fork and then create a pull request, and inform Matiss (mo11@sanger.ac.uk) re the changes made and additions added.
 
 ## Citations
 
-Currently pipeline has not been published but we would appreciate if you coul please acknowlage the use of this pipeline in your work.
+Currently pipeline has not been published but we would really appreciate if you could please acknowlage the use of this pipeline in your work:
+
+> Ozols, M. et al. 2023. YASCP (Yet Another Single Cell Pipeline): GitHub. https://github.com/wtsi-hgi/yascp. 
 
 <!-- TODO nf-core: Add citation for pipeline after first release. Uncomment lines below and update Zenodo doi and badge at the top of this file. -->
 <!-- If you use  nf-core/yascp for your analysis, please cite it using the following doi: [10.5281/zenodo.XXXXXX](https://doi.org/10.5281/zenodo.XXXXXX) -->
@@ -91,7 +92,7 @@ Currently pipeline has not been published but we would appreciate if you coul pl
 
 An extensive list of references for the tools used by the pipeline can be found in the [`CITATIONS.md`](CITATIONS.md) file.
 
-You can cite the `nf-core` publication as follows:
+We have used nf-cores template to develop this pipeline. You can cite the `nf-core` publication as follows:
 
 > **The nf-core framework for community-curated bioinformatics pipelines.**
 > Philip Ewels, Alexander Peltzer, Sven Fillinger, Harshil Patel, Johannes Alneberg, Andreas Wilm, Maxime Ulysse Garcia, Paolo Di Tommaso & Sven Nahnsen.
