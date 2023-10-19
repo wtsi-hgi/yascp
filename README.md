@@ -79,9 +79,7 @@ Monika Krzak
 
 ## Contributions and Support
 
-If you would like to contribute to this pipeline, please see the [contributing guidelines](.github/CONTRIBUTING.md).
-
-For further information or help, don't hesitate to get in touch on the [Slack `#yascp` channel](https://nfcore.slack.com/channels/yascp) (you can join with [this invite](https://nf-co.re/join/slack)).
+We wellcome all contributions. If you would like to contribute to this pipeline, please create a fork and then create a pull request, and inform Matiss (mo11@sanger.ac.uk) re the changes made and additions added.
 
 ## Citations
 
