@@ -1,5 +1,6 @@
 # yascp: Citations
-Mention the use of this repo in manuscript.
+    > Would appreciate if you mention the use of this repo in manuscript:
+Ozols, M. et al. 2023. YASCP (Yet Another Single Cell Pipeline): GitHub. https://github.com/wtsi-hgi/yascp
 
 ## Pipeline tools
 

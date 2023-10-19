@@ -83,7 +83,7 @@ We wellcome all contributions. If you would like to contribute to this pipeline,
 
 ## Citations
 
-Currently pipeline has not been published but we would appreciate if you could please acknowlage the use of this pipeline in your work:
+Currently pipeline has not been published but we would really appreciate if you could please acknowlage the use of this pipeline in your work:
 
 > Ozols, M. et al. 2023. YASCP (Yet Another Single Cell Pipeline): GitHub. https://github.com/wtsi-hgi/yascp. 
 
