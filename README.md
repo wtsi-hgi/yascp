@@ -83,7 +83,9 @@ We wellcome all contributions. If you would like to contribute to this pipeline,
 
 ## Citations
 
-Currently pipeline has not been published but we would appreciate if you coul please acknowlage the use of this pipeline in your work.
+Currently pipeline has not been published but we would appreciate if you could please acknowlage the use of this pipeline in your work:
+
+> Ozols, M. et al. 2023. YASCP (Yet Another Single Cell Pipeline): GitHub. https://github.com/wtsi-hgi/yascp. 
 
 <!-- TODO nf-core: Add citation for pipeline after first release. Uncomment lines below and update Zenodo doi and badge at the top of this file. -->
 <!-- If you use  nf-core/yascp for your analysis, please cite it using the following doi: [10.5281/zenodo.XXXXXX](https://doi.org/10.5281/zenodo.XXXXXX) -->
