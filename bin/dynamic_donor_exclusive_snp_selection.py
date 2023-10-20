@@ -13,7 +13,7 @@ import time
 import multiprocessing as mp
 from multiprocessing import Lock
 import os
-add_noninformative=True
+add_noninformative=False
     
     
 use_only_informative_snps=True #When this is set to True we ignore any sites that have no difference between all the individuals.
