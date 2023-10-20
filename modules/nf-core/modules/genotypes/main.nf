@@ -269,11 +269,11 @@ process GT_MATCH_POOL_AGAINST_PANEL
     SUB='chr'
     if [[ "\$STR" == *"\$SUB"* ]]; then
         echo -e "1 chr1\\n2 chr2\\n3 chr3\\n4 chr4\\n5 chr5\\n6 chr6\\n7 chr7\\n8 chr8\\n9 chr9\\n10 chr10\\n11 chr11\\n12 chr12\\n13 chr13\\n14 chr14\\n15 chr15\\n16 chr16\\n17 chr17\\n18 chr18\\n19 chr19\\n20 chr20\\n21 chr21\\n22 chr22\\n23 chr23" >> chr_name2_conv.txt
-        bcftools annotate --rename-chrs chr_name2_conv.txt  ${vireo_gt_vcf} -Oz -o renamed.vcf.gz
+        bcftools annotate --rename-chrs chr_name2_conv.txt  ${ref_gt_vcf} -Oz -o renamed.vcf.gz
     else
-        ls -s  ${vireo_gt_vcf} renamed.vcf.gz
+        ln -s ${ref_gt_vcf} renamed.vcf.gz
     fi
-
+    bcftools index renamed.vcf.gz
     bcftools gtcheck --no-HWE-prob -g ${ref_gt_vcf} ${vireo_gt_vcf} > ${gt_check_output_txt}
   """
 }
