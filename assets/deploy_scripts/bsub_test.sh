@@ -11,10 +11,10 @@ export SINGULARITY_TMPDIR=$PWD/work/tmp
 export TEMP=$PWD/work/tmp
 export TMP_DIR=$PWD/work/tmp
 
-echo press ENTER to not fetch containers, otherwise provide writable path:
+echo press ENTER to NOT fetch containers, otherwise provide writable path:
 read varname
 
-if "$varname"==''
+if ["$varname" = ''];
     then
         export NXF_SINGULARITY_CACHEDIR='/software/hgi/containers/yascp'
         export SINGULARITY_DISABLE_CACHE=0
