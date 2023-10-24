@@ -47,7 +47,7 @@ process RETRIEVE_RECOURSES_TEST_DATASET{
     // }
 
     if (params.profile='test_full'){
-        get_full_test_data = 'mkdir full_test_dataset && cd full_test_dataset && wget https://yascp.cog.sanger.ac.uk/public/test_datasets/full_test_dataset/smaller_dataset.tar.gz && tar -xf smaller_dataset.tar.gz && rm smaller_dataset.tar.gz'
+        get_full_test_data = 'mkdir full_test_dataset && cd full_test_dataset && wget https://yascp.cog.sanger.ac.uk/public/test_datasets/full_test_dataset/smaller_dataset2.tar.gz -O smaller_dataset.tar.gz && tar -xf smaller_dataset.tar.gz && rm smaller_dataset.tar.gz'
         
     }else{
         get_full_test_data = ""

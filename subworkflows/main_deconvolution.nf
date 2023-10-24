@@ -75,8 +75,10 @@ workflow  main_deconvolution {
             merged_expected_genotypes2 = merged_expected_genotypes.combine(Channel.fromPath(params.cellsnp.vcf_candidate_snps))
             // merged_expected_genotypes2.subscribe { println "merged_expected_genotypes2: $it" }
             GT_MATCH_POOL_IBD(SUBSET_WORKF.out.samplename_subsetvcf_ibd,'Withing_expected','Expected')
+
             DYNAMIC_DONOR_EXCLUSIVE_SNP_SELECTION(merged_expected_genotypes2)
             cellsnp_panels = DYNAMIC_DONOR_EXCLUSIVE_SNP_SELECTION.out.cellsnp_pool_panel
+            
             informative_uninformative_sites = DYNAMIC_DONOR_EXCLUSIVE_SNP_SELECTION.out.informative_uninformative_sites
 
             // // If we have selected that we want to use all the genotypes as an input in the VCF file we will use the output of the MERGE_GENOTYPES_IN_ONE_VCF_SUBSET
