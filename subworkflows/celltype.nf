@@ -5,11 +5,11 @@ include {SPLIT_BATCH_H5AD} from "$projectDir/modules/nf-core/modules/split_batch
 include {KERAS_CELLTYPE} from "$projectDir/modules/nf-core/modules/keras_celltype/main"
 include {CELLTYPE_FILE_MERGE} from "$projectDir/modules/nf-core/modules/cell_type_assignment/functions"
 
+
 workflow celltype{
     
     take:
         file__anndata_merged
-        file__cells_filtered
         
     main:
         // if (params.split_ad_per_bach){
@@ -30,7 +30,9 @@ workflow celltype{
 
         SPLIT_BATCH_H5AD.out.files_anndata_batch.flatMap().set{ch_batch_files}
         if (params.celltype_assignment.run_keras){
-            KERAS_CELLTYPE(ch_experiment_filth5) 
+            //             keras_model = 'https://yascp.cog.sanger.ac.uk/public/celltype/keras/keras_606D0E926847C0A1_clustered.h5'
+            // keras_weights_df = 'https://yascp.cog.sanger.ac.uk/public/celltype/keras/keras_606D0E926847C0A1_weights.tsv.gz'
+            KERAS_CELLTYPE(ch_experiment_filth5,params.celltype_prediction.keras.keras_model,params.celltype_prediction.keras.keras_weights_df) 
             all_extra_fields = KERAS_CELLTYPE.out.predicted_celltype_labels.collect()
         }else{
             all_extra_fields = Channel.from("$projectDir/assets/fake_file.fq")

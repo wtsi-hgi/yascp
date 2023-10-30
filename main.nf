@@ -12,6 +12,7 @@ nextflow.enable.dsl = 2
 include { YASCP } from "$projectDir/workflows/yascp"
 include { RETRIEVE_RECOURSES;RETRIEVE_RECOURSES_TEST_DATASET } from "$projectDir/subworkflows/local/retrieve_recourses"
 include {RSYNC_RESULTS_REMOVE_WORK_DIR} from "$projectDir/modules/local/rsync_results_remove_work_dir/main"
+include {celltype} from "$projectDir/subworkflows/celltype"
 ////// WORKFLOW: Run main nf-core/yascp analysis pipeline
 // This is the default entry point, we have others to update ceirtain parts of the results. 
 // Please go to ./workflows/yascp to see the main Yascp workflow.
@@ -44,6 +45,10 @@ workflow {
 // END OF MAIN ENTRANCE IN WORKFLOWS
 
 
+workflow JUST_CELLTYPES{
+    file__anndata_merged = Channel.from(params.skip_preprocessing.file__anndata_merged)
+    celltype(file__anndata_merged)
+}
 
 
 

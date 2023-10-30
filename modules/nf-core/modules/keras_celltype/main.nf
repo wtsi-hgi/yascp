@@ -18,6 +18,8 @@ process KERAS_CELLTYPE {
             val(experiment_id),
             path(keras_input_h5ad) // from cellbender into scrublet
         )
+        path(keras_model)
+        path(keras_weights_df)
     
     output:
         tuple(
@@ -37,8 +39,8 @@ process KERAS_CELLTYPE {
             0057-predict_clusters_keras_model-anndata.py \\
             --h5_anndata \"${keras_input_h5ad}\" \\
             --h5_layer \"${params.celltype_prediction.keras.h5_layer}\" \\
-            --keras_model \"${params.celltype_prediction.keras.keras_model}\" \\
-            --keras_weights_df \"${params.celltype_prediction.keras.keras_weights_df}\" \\
+            --keras_model \"${keras_model}\" \\
+            --keras_weights_df \"${keras_weights_df}\" \\
             --keras_model_cluster_labels \"${params.celltype_prediction.keras.keras_model_cluster_labels}\" \\
             --filter_top_cell_probabilities \"${params.celltype_prediction.keras.filter_top_cell_probabilities}\" \\
             ${params.celltype_prediction.keras.save_all_probabilities} \\

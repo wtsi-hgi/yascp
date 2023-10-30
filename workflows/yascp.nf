@@ -161,7 +161,7 @@ workflow YASCP {
             // ###################################
 
             if (params.celltype_assignment.run_celltype_assignment){
-                celltype(file__anndata_merged,file__cells_filtered)
+                celltype(file__anndata_merged)
                 file__anndata_merged=celltype.out.file__anndata_merged2
                 
             }
