@@ -15,18 +15,23 @@ import scanpy
 def combine_reports(all_alternitive,mode):
     all_indexes_full=set({})
     for d1 in all_alternitive:
-        
-        Dataset = pd.read_csv(d1,sep='\t',index_col=0)
-        if(len(Dataset.columns)==0):
-            Dataset = pd.read_csv(d1,sep=',',index_col=0)
+        if d1=='fake_file.fq':
+            Dataset = pd.DataFrame()
+        else:
+            Dataset = pd.read_csv(d1,sep='\t',index_col=0)
+            if(len(Dataset.columns)==0):
+                Dataset = pd.read_csv(d1,sep=',',index_col=0)
         Dataset=Dataset.add_prefix(mode)
         all_indexes = set(Dataset.index)
         all_indexes_full = all_indexes_full.union(all_indexes)
     Data_All_alt=pd.DataFrame(index=list(set(all_indexes_full)))    
     for d1 in all_alternitive:
-        Dataset = pd.read_csv(d1,sep='\t',index_col=0)
-        if(len(Dataset.columns)==0):
-            Dataset = pd.read_csv(d1,sep=',',index_col=0)
+        if d1=='fake_file.fq':
+            Dataset = pd.DataFrame()
+        else:
+            Dataset = pd.read_csv(d1,sep='\t',index_col=0)
+            if(len(Dataset.columns)==0):
+                Dataset = pd.read_csv(d1,sep=',',index_col=0)
         Dataset=Dataset.add_prefix(mode)
         for col1 in Dataset.columns:
             try:
