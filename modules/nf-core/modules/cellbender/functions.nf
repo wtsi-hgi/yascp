@@ -264,8 +264,8 @@ process cellbender__remove_background {
     gpu_text_info = ''
   }
   
-  scratch false    // use tmp directory
-  echo false   // echo output from script
+  // scratch false    // use tmp directory
+  // echo false   // echo output from script
 
   publishDir  path: "${outdir}",
       saveAs: {filename ->
@@ -412,8 +412,8 @@ process cellbender__remove_background__qc_plots {
   //tag { output_dir }
   //cache false    // cache results from run
   //maxForks 2   // hard to control memory usage. limit to 3 concurrent
-  scratch false    // use tmp directory
-  echo echo_mode   // echo output from script
+  // scratch false    // use tmp directory
+  // echo echo_mode   // echo output from script
 
   publishDir  path: "${outdir}",
       saveAs: {filename ->
@@ -552,8 +552,8 @@ process cellbender__remove_background__qc_plots_2 {
   
   //cache false    // cache results from run
   //maxForks 2   // hard to control memory usage. limit to 3 concurrent
-  scratch false    // use tmp directory
-  echo echo_mode   // echo output from script
+  // scratch false    // use tmp directory
+  // echo echo_mode   // echo output from script
   input:
     tuple val(experiment_id), val(outdir), path(cellbender_unfiltered_h5s), path(expectedcells), path(totaldropletsinclude), path(raw_cellranger_mtx), path(filtered_cellranger_mtx), val(fpr)
     val(outdir2)
