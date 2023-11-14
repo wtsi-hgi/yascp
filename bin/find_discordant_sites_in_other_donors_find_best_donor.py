@@ -221,6 +221,22 @@ class VCF_Loader:
         output = self.combine_written_files()
         return output
     
+def get_options():
+    '''
+    Get options from the command line
+    '''
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--cpus', action='store', required=True, type=int)
+    parser.add_argument('--cell_vcf', action='store', required=True)
+    parser.add_argument('--cell_assignments', action='store', required=True)
+    parser.add_argument('--donor_assignments', action='store', required=True)
+    parser.add_argument('--gt_match_vcf', action='store', required=True)
+    parser.add_argument('--expected_vcf', action='store', required=True)
+    parser.add_argument('--outfile', action='store', required=True)
+    parser.add_argument('--debug', action='store_true')
+    args = parser.parse_args()
+
+    return args
 
 class Concordances:
     def __init__(self, donor_assignments_table,cell_assignments_table,exclusive_don_variants,exclusive_cell_variants,donor_distinct_sites):
@@ -231,7 +247,6 @@ class Concordances:
         self.exclusive_cell_variants=exclusive_cell_variants
         self.donor_distinct_sites=donor_distinct_sites
         self.record_dict={}
-
 
     def norm_genotypes(self,expected_vars):
         expected_vars = pd.DataFrame(expected_vars)
@@ -245,7 +260,6 @@ class Concordances:
             expected_vars.loc[expected_vars['vars']=='0/1','vars']='1/0'
             expected_vars['combo']= expected_vars['ids']+'_'+expected_vars['vars']
         return expected_vars
-        
 
     def reset(self):
         self.cell_concordance_table ={}
@@ -580,8 +594,6 @@ class Concordances:
 
 def find(lst, a):
     return [i for i, x in enumerate(lst) if x==a ]
-    
-    
 def norm_genotypes(expected_vars):
     expected_vars = pd.DataFrame(expected_vars)
     split_str=expected_vars[0].str.split("_")
@@ -625,22 +637,7 @@ def donor_exclusive_sites(exclusive_don_variants2):
     return donor_distinct_sites   
 
 
-def get_options():
-    '''
-    Get options from the command line
-    '''
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--cpus', action='store', required=True, type=int)
-    parser.add_argument('--cell_vcf', action='store', required=True)
-    parser.add_argument('--cell_assignments', action='store', required=True)
-    parser.add_argument('--donor_assignments', action='store', required=True)
-    parser.add_argument('--gt_match_vcf', action='store', required=True)
-    parser.add_argument('--expected_vcf', action='store', required=True)
-    parser.add_argument('--outfile', action='store', required=True)
-    parser.add_argument('--debug', action='store_true')
-    args = parser.parse_args()
 
-    return args
 
 
 if __name__ == "__main__":
@@ -731,13 +728,11 @@ if __name__ == "__main__":
             pickle.dump(donor_distinct_sites, f)
         
     print('---donor_distinct_sites calculated----')
-
-
+    
     conc1 = Concordances(donor_assignments_table,cell_assignments_table,exclusive_don_variants,exclusive_cell_variants,donor_distinct_sites)
     cell_concordance_table = conc1.conc_table()
     
     result = pd.DataFrame(cell_concordance_table).T
-    # result.to_csv(outfile,sep='\t')
     try:
         site_identities = result[['Concordant_Site_Identities','Discordant_Site_Identities']]
         result.drop(columns=['Concordant_Site_Identities'],inplace=True)
