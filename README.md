@@ -4,7 +4,7 @@
 
 ## Introduction
 
-**nf-core/yascp** is a bioinformatics best-practice analysis pipeline for deconvolution, qc, clustering of a single cell datasets.
+**nf-core/yascp** is a bioinformatics best-practice analysis pipeline for deconvolution, qc, clustering, integration of a single cell datasets.
 This is a large scale single-cell pipeline developed initially for processing Cardinal project samples, however it is applicable to any other scRNA analysis. The pipeline has been inspired by deconvolution (https://github.com/wtsi-hgi/nf_scrna_deconvolution.git ), cellbender (https://github.com/wtsi-hgi/nf_cellbender ) and qc (https://github.com/wtsi-hgi/nf_qc_cluster/tree/main ) pipelines initially developed in Dr C. Anderson lab. 
 
 Input requires a tsv seperated file with paths to the Cellranger 6.11 outputs (If you have cellranger 7 outputs please use (this python scipt)[https://github.com/wtsi-hgi/yascp/blob/main/assets/extra_scripts/mengle_samples_in_right_format_cr7_to_cr6.py] to mengle the files in right format for Yascp) (however we will shortly add a Cellranger module to make this pipeline more transferable). and if running in an genotype  additional input is required to be provided in an input.nf file pointing to the vcf location. This pipeline is designed to be used for multiple large scale single cell experiments.
