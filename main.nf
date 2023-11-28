@@ -13,6 +13,9 @@ include { YASCP } from "$projectDir/workflows/yascp"
 include { RETRIEVE_RECOURSES;RETRIEVE_RECOURSES_TEST_DATASET } from "$projectDir/subworkflows/local/retrieve_recourses"
 include {RSYNC_RESULTS_REMOVE_WORK_DIR} from "$projectDir/modules/local/rsync_results_remove_work_dir/main"
 include {celltype} from "$projectDir/subworkflows/celltype"
+include {qc} from "$projectDir/subworkflows/qc"
+include {dummy_filtered_channel} from "$projectDir/modules/nf-core/modules/merge_samples/functions"
+
 ////// WORKFLOW: Run main nf-core/yascp analysis pipeline
 // This is the default entry point, we have others to update ceirtain parts of the results. 
 // Please go to ./workflows/yascp to see the main Yascp workflow.
@@ -46,11 +49,19 @@ workflow {
 
 
 workflow JUST_CELLTYPES{
-    file__anndata_merged = Channel.from(params.skip_preprocessing.file__anndata_merged)
+    file__anndata_merged = Channel.from(params.file__anndata_merged)
     celltype(file__anndata_merged)
 }
 
 
+workflow JUST_RECLUSTER{
+    file__anndata_merged = Channel.from(params.file__anndata_merged)
+    gt_outlier_input = Channel.from("$projectDir/assets/fake_file.fq")
+    dummy_filtered_channel(file__anndata_merged,params.id_in)
+    file__cells_filtered = dummy_filtered_channel.out.anndata_metadata
+    qc(file__anndata_merged,file__cells_filtered,gt_outlier_input) //This runs the Clusterring and qc assessments of the datasets.
+                
+}
 
 
 ////// You do not need to concern about the workflows bellow as these are Cardinal Specific and used for development

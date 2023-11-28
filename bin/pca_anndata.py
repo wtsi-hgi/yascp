@@ -168,14 +168,6 @@ def pca(
 
     return adata if copy else None
 
-    # if return_info:
-    #     return (
-    #         X_pca,
-    #         pca_.components_,
-    #         pca_.explained_variance_ratio_,
-    #         pca_.explained_variance_,
-    #     )
-
 
 def score_cells(
     adata,
@@ -296,10 +288,9 @@ def score_cells(
     return adata, score_genes_df
 
 
-def scanpy_normalize_and_pca(
+def pca_analysis(
     adata,
     output_file,
-    vars_to_regress,
     variable_feature_batch_key='experiment_id',
     n_variable_features=2000,
     exclude_hv_gene_df=[],
@@ -308,275 +299,96 @@ def scanpy_normalize_and_pca(
     plot=True,
     anndata_compression_opts=4
 ):
-    """Normalize data and calculate PCs.
 
-    Parameters
-    ----------
-    adata : AnnData
-        Input AnnData file.
-    output_file : string
-        Basename of output_file, will have -normalized_pca.h5ad appended to it.
-    vars_to_regress : list
-        List of metadata variables to regress. If empty no regression.
-    variable_feature_batch_key : string
-        Batch key for variable gene detection.
-        The default is "experiment_id".
-    n_variable_features : int
-        Number of variable features to select.
-    exclude_hv_gene_df : pd.DataFrame
-        Dataframe of genes to exclude from highly variable gene selection.
-    score_genes_df : pd.DataFrame
-        Dataframe of marker genes. Needs to have score_genes_df_column and
-        score_id column. If one score_id == 'cell_cycle', then requires a
-        grouping_id column with 'G2/M' and 'S'.
-    verbose : boolean
-        Write extra info to standard out.
-    plot : boolean
-        Generate plots.
+    # Calculate PCs.
+    seed_value = 0
+    # 0. Set `PYTHONHASHSEED` environment variable at a fixed value
+    os.environ['PYTHONHASHSEED'] = str(seed_value)
+    # 1. Set `python` built-in pseudo-random generator at a fixed value
+    random.seed(seed_value)
+    # 2. Set `numpy` pseudo-random generator at a fixed value
+    np.random.seed(seed_value)
 
+    sc.tl.pca(
+        adata,
+        n_comps=min(200, adata.var['highly_variable'].sum()),
+        zero_center=True,  # Set to true for standard PCA
+        svd_solver='arpack',  # arpack reproducible when zero_center = True
+        use_highly_variable=True,
+        copy=False,
+        random_state=np.random.RandomState(0),
+        chunked=False
+    )
 
-    Returns
-    -------
-    output_file : string
-        output_file
-    """
-    # Get compression opts for pandas
+    # Save PCs to a seperate file for Harmony.
+    pca_df = pd.DataFrame(
+        adata.obsm['X_pca'],
+        index=adata.obs_names,
+        columns=[
+            'PC{}'.format(x) for x in range(1, adata.obsm['X_pca'].shape[1]+1)
+        ]
+    )
+    
     compression_opts = 'gzip'
     if LooseVersion(pd.__version__) > '1.0.0':
         compression_opts = dict(
             method='gzip',
             compresslevel=9
         )
-
-    # Check that any vars to regress occur in adata
-    if len(vars_to_regress) > 0:
-        for i in vars_to_regress:
-            if i not in adata.obs.columns:
-                raise Exception(
-                    '{} in vars_to_regress missing from metadata'.format(
-                        i
-                    )
-                )
-    # Set zero center all scaling calls (makes sparse matrix dense)
-    scale_zero_center = False
-
-    # Add a raw counts layer.
-    # NOTE: This stays with the main AnnData and is not stashed when we
-    #       later save the ln(CPM+1) data to raw (raw only stores X without
-    #       layers).
-    adata.layers['counts'] = adata.X.copy()
-
-    # NOTE: prior to running normalization, low quality cells should be
-    # filtered. Example:
-    # sc.pp.filter_cells(adata, min_genes=200)
-    sc.pp.filter_genes(adata, min_cells=5)
-    # Only consider genes expressed in more than 0.5% of cells:
-    # sc.pp.filter_genes(adata, min_cells=0.005*len(adata.obs.index))
-    # Total-count normalize (library-size correct) the data matrix X to
-    # counts per million, so that counts become comparable among cells.
-    sc.pp.normalize_total(
-        adata,
-        target_sum=1e4,
-        exclude_highly_expressed=False,
-        key_added='normalization_factor',  # add to adata.obs
-        inplace=True
-    )
-    # Logarithmize the data: X = log(X + 1) where log = natural logorithm.
-    # Numpy has a nice function to undo this np.expm1(adata.X).
-    sc.pp.log1p(adata)
-    adata.layers['log1p_cp10k'] = adata.X.copy()
-    adata.uns['log1p_cp10k'] = {'transformation': 'ln(CP10k+1)'}
-    adata.raw = adata
-    # adata_raw = adata.raw.to_adata()
-
-    if plot:
-        # Plot top expressed genes.
-        _ = sc.pl.highest_expr_genes(
-            # adata.raw.to_adata(),  # same as adata at this point.
-            adata,
-            n_top=25,
-            gene_symbols='gene_symbols',
-            show=False,
-            save='-{}.pdf'.format(output_file)
-        )
-
-    # Calculate the highly variable genes on the log1p(norm) data.
-    # Do so for each sample and then merge - this avoids the selection of
-    # batch-specific, highly variable genes.
-    print('---- Calculating highly variable genes ----')
-    sc.pp.highly_variable_genes(
-        adata,
-        # min_mean=0.0125,
-        # max_mean=3,
-        # min_disp=0.5,
-        flavor='seurat',
-        n_top_genes=n_variable_features,  # 2000 = SeuratFindVariableFeatures
-        batch_key=variable_feature_batch_key,
-        inplace=True
+    
+    pca_df.to_csv(
+        '{}-pcs.tsv.gz'.format(output_file),
+        sep='\t',
+        index=True,
+        index_label='cell_barcode',
+        na_rep='',
+        compression=compression_opts
     )
 
+    # Save the metadata to a seperate file for Harmony.
+    adata.obs.to_csv(
+        '{}-metadata.tsv.gz'.format(output_file),
+        sep='\t',
+        index=True,
+        quoting=csv.QUOTE_NONNUMERIC,
+        index_label='cell_barcode',
+        na_rep='',
+        compression=compression_opts
+    )
 
+    # Save the data.
+    adata.write(
+        '{}-normalized_pca.h5ad'.format(output_file),
+        compression='gzip'
+    )
+    # Plot the PC info.
     if plot:
-        # Plot highly variable genes.
-        _ = sc.pl.highly_variable_genes(
+        # Plot the vanilla PCs.
+        sc.pl.pca_variance_ratio(
             adata,
+            n_pcs=adata.obsm['X_pca'].shape[1],
             log=False,
             show=False,
             save='-{}.pdf'.format(output_file)
         )
-        # _ = sc.pl.highly_variable_genes(
-        #     adata,
-        #     log=True,
-        #     show=False,
-        #     save='-{}-log.pdf'.format(output_file)
-        # )
-
-    # After calculating highly variable genes, we subsquently remove any custom
-    # for highly variable gene selection. This way we retain the normalized
-    # values for each one of these genes even though they will not be used
-    # for dimensionality reduction. NOTE: If there are loads of genes
-    # to exclude and there are only a handful of n_variable_features, then
-    # one could end up with very few variable genes for dimensionality
-    # reduction in the end.
-    #
-    # Exclude mitocondrial genes from highly variable gene set.
-    # if exclude_mito_highly_variable_genes:
-    #     n_highly_variable_mito = adata.var.loc[
-    #         adata.var['gene_group__mito_transcript'],
-    #         ['highly_variable']
-    #     ].sum()
-    #     if verbose:
-    #         print('Within highly variable genes, {} are mito genes'.format(
-    #             n_highly_variable_mito
-    #         ))
-    #     adata.var.loc[
-    #         adata.var['gene_group__mito_transcript'],
-    #         ['highly_variable']
-    #     ] = False
-    # Exclude other genes from highly variable gene set.
-    if len(exclude_hv_gene_df) > 0:
-        # Annotate the exclusion dataframe with the genes that are highly
-        # variable.
-        exclude_hv_gene_df['highly_variable'] = exclude_hv_gene_df[
-            'ensembl_gene_id'
-        ].isin(adata.var.loc[adata.var.highly_variable, :].index)
-
-        # Exclude these genes.
-        adata.var.loc[
-            exclude_hv_gene_df.loc[
-                exclude_hv_gene_df.highly_variable, :
-            ]['ensembl_gene_id'],
-            ['highly_variable']
-        ] = False
-
-        # Add record of gene exclustions
-        adata.uns['df_highly_variable_gene_filter'] = exclude_hv_gene_df
-
-        # Print out the number of genes excluded
-        if verbose:
-            print('Within highly variable genes, {} genes are {}'.format(
-                exclude_hv_gene_df['highly_variable'].sum(),
-                'in the list of genes to exclude.'
-            ))
-
-    if len(vars_to_regress) == 0:
-        # Scale the data to unit variance.
-        # This effectively weights each gene evenly. Otherwise
-        # genes with higher expression values will naturally have higher
-        # variation that will be captured by PCA
-        print('---- Regressing variables ----')
-        sc.pp.scale(
+        
+        sc.pl.pca_variance_ratio(
             adata,
-            zero_center=scale_zero_center,  # If true, sparse becomes dense
-            max_value=None,
-            copy=False
-        )
-        # Calculate gene scores on each cell.
-        # Perform this two ways:
-        # (1) All genes [that pass basic 0 filters]. As done in sc tutorial:
-        # https://github.com/theislab/scanpy_usage/blob/master/180209_cell_cycle/cell_cycle.ipynb
-        # (2) Only highly variable genes. As done in:
-        # https://www.biorxiv.org/content/10.1101/2020.04.03.024075v1
-        if score_genes_df is not None:
-            adata, score_genes_df_updated = score_cells(
-                adata,
-                score_genes_df,
-                score_genes_df_column='ensembl_gene_id',
-                only_use_variable_genes=False
-            )
-            adata, _ = score_cells(
-                adata,
-                score_genes_df,
-                score_genes_df_column='ensembl_gene_id',
-                only_use_variable_genes=True
-            )
-    else:  # Regress out any continuous variables.
-        # Before regressing calculate the gene scores on a copy of the data.
-        if score_genes_df is not None:
-            adata_scored = sc.pp.scale(
-                adata,
-                zero_center=scale_zero_center,  # If true, sparse becomes dense
-                max_value=None,
-                copy=True
-            )
-            adata_scored, score_genes_df_updated = score_cells(
-                adata_scored,
-                score_genes_df,
-                score_genes_df_column='ensembl_gene_id',
-                only_use_variable_genes=False
-            )
-            adata_scored, _ = score_cells(
-                adata_scored,
-                score_genes_df,
-                score_genes_df_column='ensembl_gene_id',
-                only_use_variable_genes=True
-            )
-
-            # Add scores back into the main dataframe.
-            new_cols = np.setdiff1d(
-                adata_scored.obs.columns,
-                adata.obs.columns
-            )
-            adata.obs = pd.concat(
-                [adata.obs, adata_scored.obs.loc[adata.obs.index, new_cols]],
-                axis=1
-            )
-
-        # NOTE: if the same value is repeated (e.g., 0) for all cells this will
-        #       fail. https://github.com/theislab/scanpy/issues/230
-        # if verbose:
-        #     print('For regress_out, calling {}'.format(
-        #         'pp.filter_genes(adata, min_cells=5)'
-        #     ))
-        # sc.pp.filter_genes(adata, min_cells=5)
-        # NOTE: sc.pp.regress_out out should default to sc.settings.n_jobs
-        # NOTE: this will make a dense array
-        sc.pp.regress_out(
-            adata,
-            keys=vars_to_regress,
-            copy=False
-        )
-        # Scale the data to unit variance.
-        # This effectively weights each gene evenly.
-        sc.pp.scale(
-            adata,
-            zero_center=scale_zero_center,  # If true, sparse becomes dense
-            max_value=None,
-            copy=False
+            n_pcs=adata.obsm['X_pca'].shape[1],
+            log=True,
+            show=False,
+            save='-{}-log.pdf'.format(output_file)
         )
 
-
-    # Keep a record of the different gene scores
-    if score_genes_df is not None:
-        adata.uns['df_score_genes'] = score_genes_df_updated
-
-    # Save the data.
+    # Save the filtered count matrix for input to other software like scVI
+    adata.X = adata.layers['counts']
+    del adata.layers['counts']
+    del adata.raw
     adata.write(
-        '{}-normalized.h5ad'.format(output_file),
+        '{}-normalized_pca-counts.h5ad'.format(output_file),
         compression='gzip'
+        #compression_opts=anndata_compression_opts
     )
-
-    return(output_file)
 
 
 def main():
@@ -717,90 +529,24 @@ def main():
     drop_cell_passes_qc_from_clustering=options.drop_cell_passes_qc_from_clustering
     # Load the AnnData file
     adata = sc.read_h5ad(filename=options.h5)
-    # adata_comp = sc.read_h5ad(filename='/lustre/scratch123/hgi/teams/hgi/mo11/tmp_projects/harriet/test_recluster/work/6f/e30114c18a6dc6f620da63e187f348/f9d037b7109a2a7f96cb3ad63b97ff/outlier_filtered_adata.h5ad')
-    # if this is the subclustering analysis, the count matrix should be used
-    # by default, the analysis is "conventional" and thus will be skipped
-    if options.layer != "none":
-        layer = options.layer
-        adata.X = adata.layers[layer]
-        # remove the previous dimensionality reduction, etc.
-        del adata.obsm
-        del adata.varm
-        del adata.layers
-        del adata.obsp
+    try:
         del adata.uns
-
-    # If we have a flag for cells that pass QC then filter down to them
-    if (drop_cell_passes_qc_from_clustering=='False' or drop_cell_passes_qc_from_clustering=='false'):
-        drop_cell_passes_qc_from_clustering=False
-        
-    if drop_cell_passes_qc_from_clustering:
-        if 'cell_passes_qc' in adata.obs:
-            cells_prior_filters = adata.n_obs
-            adata = adata[adata.obs['cell_passes_qc'], :]
-            del adata.obs['cell_passes_qc']
-            print(
-                'filtered down to cell_passes_qc: {} old {} new adata'.format(
-                    cells_prior_filters,
-                    adata.n_obs
-                )
-            )
-            # Re-calculate basic qc metrics of var (genes) for the whole dataset
-            # after filters.
-            # NOTE: we are only changing adata.var
-            obs_prior = adata.obs.copy()
-            sc.pp.calculate_qc_metrics(
-                adata,
-                qc_vars=[
-                    'gene_group__mito_transcript',
-                    'gene_group__mito_protein',
-                    'gene_group__ribo_protein',
-                    'gene_group__ribo_rna'
-                ],
-                inplace=True
-            )
-            adata.obs = obs_prior
-
-    # Removing any donors with less than 3 cells as these must be outliers - the batch key needs at least 3 entires to calculate highly variable genes
-    x=np.array(adata.obs[options.bk])
-    unique, counts = np.unique(x, return_counts=True)
-    freqs = pd.DataFrame({'unique':unique,'counts':counts})
-    freqs=freqs.set_index(unique)
-    to_keep = list(freqs[freqs['counts']>3]['unique'])
-    d2= pd.DataFrame(adata.obs[options.bk])
-    to_keep_ix = [i for i,row1 in d2.iterrows() if row1[options.bk] in to_keep]
-    adata = adata[to_keep_ix, :]
+    except:
+        _='still there'
+    # adata_comp = sc.read_h5ad(filename='/lustre/scratch123/hgi/teams/hgi/mo11/tmp_projects/harriet/test_recluster/work/6f/e30114c18a6dc6f620da63e187f348/f9d037b7109a2a7f96cb3ad63b97ff/outlier_filtered_adata.h5ad')
+        # adata_comp = sc.read_h5ad(filename='/lustre/scratch123/hgi/teams/hgi/mo11/tmp_projects/harriet/test_recluster/work/91/676237d4521fd78b293a8c4e548394/adata-normalized_pca.h5ad')
     
-
-    # Split the vars to regress list
-    vars_to_regress = []
-    if options.vr != '':
-        vars_to_regress = options.vr.split(',')
-
-    # Load list of genes to filter
-    genes_filter = []
-    if options.vge != '':
-        genes_filter = pd.read_csv(options.vge, sep='\t')
-
-    # Load the gene scores
-    score_genes_df = None
-    if options.sg != '':
-        score_genes_df = pd.read_csv(options.sg, sep='\t')
-
     start_time = time.time()
-    _ = scanpy_normalize_and_pca(
+    
+    pca_analysis(
         adata,
         output_file=options.of,
-        vars_to_regress=vars_to_regress,
         variable_feature_batch_key=options.bk,
         n_variable_features=options.nvf,
-        exclude_hv_gene_df=genes_filter,
-        score_genes_df=score_genes_df,
-        verbose=True,
         anndata_compression_opts=options.anndata_compression_opts
     )
     execution_summary = "Analysis execution time [{}]:\t{}".format(
-        "scanpy_normalize_and_pca.py",
+        "pca.py",
         str(timedelta(seconds=time.time()-start_time))
     )
     print(execution_summary)

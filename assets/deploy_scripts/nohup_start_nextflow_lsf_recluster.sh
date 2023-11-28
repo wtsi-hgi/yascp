@@ -15,13 +15,9 @@ CWD1="$PWD"
 parentdir="$(dirname "$CWD1")"
 # export RUN_ID="${parentdir##*/}"
 export RUN_ID="${PWD##*/}"
-# export SINGULARITY_TMPDIR=$PWD/tmp
-# export SINGULARITY_CACHEDIR=$PWD/singularity
-# export NXF_SINGULARITY_CACHEDIR=$PWD/singularity
-# export TEMP=$PWD/tmp
-# export TMP_DIR=$PWD/tmp
-
-echo $RUN_ID | nextflow run /software/hgi/pipelines/yascp_versions/yascp_v1.3__work -profile sanger  -c $INPUT_FILE --nf_ci_loc $PWD -entry WORK_DIR_REMOVAL --remove_work_dir -resume > nextflow.nohup.log 2>&1 & 
+mkdir $PWD/work || echo 'exists'
+mkdir $PWD/work/tmp || echo 'exists'
+echo $RUN_ID | nextflow run /software/hgi/pipelines/yascp_versions/yascp_v1.3__work -profile sanger -entry JUST_RECLUSTER -c /software/hgi/pipelines/yascp_versions/yascp_v1.3__work/assets/deploy_scripts/input_setups/recluster_profile.nf -c $INPUT_FILE  --nf_ci_loc $PWD -resume > nextflow.nohup.log 2>&1 & 
 
 # get process PID 
 sleep 1 && export PID=$(pgrep -f "\\-\\-nf_ci_loc $RUN_DIR")

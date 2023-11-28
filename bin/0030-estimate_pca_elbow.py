@@ -78,7 +78,10 @@ def main():
 
     # Read in the dataframe
     adata = sc.read_h5ad(filename=options.h5)
-
+    try:
+        adata.X=adata.layers['counts']
+    except:
+        _='counts may be already set'
     kneedle_dict = {}
     output_dict = {}
 

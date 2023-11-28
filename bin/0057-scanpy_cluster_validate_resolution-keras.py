@@ -519,7 +519,8 @@ def main():
             # Virtual devices must be set before GPUs have been initialized
             print(e)
     else:
-        raise Exception('ERROR: no GPUs detected.')
+        _ = 'running without gpus'
+        # raise Exception('ERROR: no GPUs detected.')
 
     # Get additional data we are going to append to the output model info
     dict_add = {}

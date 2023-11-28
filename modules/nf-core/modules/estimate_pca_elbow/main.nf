@@ -43,10 +43,7 @@ process ESTIMATE_PCA_ELBOW {
     script:
         
         outdir = "${outdir_prev}"
-        log.info("""outdir = ${outdir}""")
-        // from the file__anndata job.
         outfile = "${file__anndata}".minus(".h5ad")
-            .split("-").drop(1).join("-")
         outfile = "${outfile}-knee"
         """
             rm -fr plots
