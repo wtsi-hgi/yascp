@@ -176,7 +176,7 @@ workflow YASCP {
 
             if (!params.skip_qc){
 
-                if(params.skip_preprocessing.gt_match_based_adaptive_qc_exclusion_pattern !=''){
+                if(params.gt_match_based_adaptive_qc_exclusion_pattern !=''){
                     gt_outlier_input = assignments_all_pools
                 }else{
                     gt_outlier_input = Channel.from("$projectDir/assets/fake_file.fq")
