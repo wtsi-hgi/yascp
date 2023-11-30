@@ -67,13 +67,16 @@ def main():
     # Check if any difference between before and after filters.	If not,
     # return early.
     df_after_filters = df[df.filter_type.isin(['after_filters'])]
-    filt = df_after_filters.n_cells_left_in_adata == df_before_filters.loc[
-        df_after_filters.experiment_id,
-        'n_cells_left_in_adata'
-    ].values
-    if all(filt):
-        print("No difference detected before and after filters. No plots.")
-        return()
+    try:
+        filt = df_after_filters.n_cells_left_in_adata == df_before_filters.loc[
+            df_after_filters.experiment_id,
+            'n_cells_left_in_adata'
+        ].values
+        if all(filt):
+            print("No difference detected before and after filters. No plots.")
+            return()
+    except:
+            return()
 
     # Set some plotting parameters
     plt_height = 16  # 1.5 * df.experiment_id.nunique()

@@ -1,36 +1,22 @@
 #!/usr/bin/env python3
 
-#take cellSNP VCF and genotype VCF for the donors in a pool
-# for each cell in the cellSNP VCF identify discordant sites (using the relaxed concordance)
-# look for these sites in genotypes of all members of the pool
-# output:
-#   cell id
-#   assigned donor
-#   cohort of assigned donor
-#   number of discordant sites
-#   total AD over discordant sites
-#   list of donors in the pool, how many of the discordant sites are found in the donor, cohort each belongs to
-#   list of discordant sites
-
-__date__ = '2023-07-24'
+__date__ = '2023-05-10'
 __version__ = '0.0.1'
 import argparse
 import sys
 import importlib.util
+import random
 import pickle 
 import pandas as pd
 import gzip
-import random
 import numpy as np
 import time
 import multiprocessing as mp
 from multiprocessing import Lock
 import logging
 import os
-import gzip
-import time
 
-remove_ag=True
+
 class Concordances:
     def __init__(self, donor_assignments_table,cell_assignments_table,exclusive_don_variants,exclusive_cell_variants,donor_distinct_sites,informative_sites, uninformative_sites):
         self.reset()
@@ -59,99 +45,25 @@ class Concordances:
     def reset(self):
         self.cell_concordance_table ={}
 
-
-    def read_condordance(self, expected_vars, cell_vars):
-        '''
-        get read level concordance using DP, AD and OTH format fields
-        ##FORMAT=<ID=DP,Number=1,Type=Integer,Description="total counts for ALT and REF">
-        ##FORMAT=<ID=AD,Number=1,Type=Integer,Description="total counts for ALT">
-        ##FORMAT=<ID=OTH,Number=1,Type=Integer,Description="total counts for other bases from REF and ALT">
-        '''
-        if not len(expected_vars) == len(cell_vars):
-            print("length mismatch between expected vars and cell vars")
-            exit(1)
-
-        total_sites = len(expected_vars)
-        #add cols for DP, AD< OTH
-        cell_vars['DP'] = cell_vars[0].str.split("_").str[5].astype(int)
-        cell_vars['AD'] = cell_vars[0].str.split("_").str[6].astype(int)
-        cell_vars['OTH'] = cell_vars[0].str.split("_").str[7].astype(int)
-        #split to informative and uninformative sites
-        mask_i = cell_vars['ids'].isin(self.informative_sites)
-        cell_vars_informative = cell_vars[mask_i]
-        mask_u = cell_vars['ids'].isin(self.uninformative_sites)
-        cell_vars_uninformative = cell_vars[mask_u]
-        informative_sites = len(cell_vars_informative)
-        uninformative_sites = len(cell_vars_uninformative)
-
-        total_dp = cell_vars['DP'].sum()
-        total_oth = cell_vars['OTH'].sum()
-        total_reads = total_dp + total_oth
-        total_dp_inf = cell_vars_informative['DP'].sum()
-        total_oth_inf = cell_vars_informative['OTH'].sum()
-        total_reads_informative = total_dp_inf + total_oth_inf
-        total_dp_uninf = cell_vars_uninformative['DP'].sum()
-        total_oth_uninf = cell_vars_uninformative['OTH'].sum()
-        total_reads_uninformative = total_dp_uninf + total_oth_uninf            
-
-        # expected genotype 0/0
-        expected_hom_ref = expected_vars[expected_vars['vars'] == '0/0']
-        hom_ref_sites = set(expected_hom_ref['ids'])
-        cell_vars2 = cell_vars[cell_vars['ids'].isin(hom_ref_sites)]
-        cell_vars_inf_2 = cell_vars_informative[cell_vars_informative['ids'].isin(hom_ref_sites)]
-        cell_vars_uninf_2 = cell_vars_uninformative[cell_vars_uninformative['ids'].isin(hom_ref_sites)]
-        ad_hom_ref = cell_vars2['AD'].sum()
-        oth_hom_ref = cell_vars2['OTH'].sum() 
-        discordant_hom_ref = ad_hom_ref + oth_hom_ref
-        ad_hom_ref_inf = cell_vars_inf_2['AD'].sum()
-        oth_hom_ref_inf = cell_vars_inf_2['OTH'].sum() 
-        discordant_hom_ref_informative = ad_hom_ref_inf + oth_hom_ref_inf
-        ad_hom_ref_uninf = cell_vars_uninf_2['AD'].sum()
-        oth_hom_ref_uninf = cell_vars_uninf_2['OTH'].sum() 
-        discordant_hom_ref_uninformative = ad_hom_ref_uninf + oth_hom_ref_uninf
-
-        # expected genotype 0/1 or 1/0
-        hets = ['0/1', '1/0']
-        expected_het = expected_vars[expected_vars['vars'].isin(hets)]
-        het_sites = set(expected_het['ids'])
-        cell_vars3 = cell_vars[cell_vars['ids'].isin(het_sites)]
-        cell_vars_inf_3 = cell_vars_informative[cell_vars_informative['ids'].isin(het_sites)]
-        cell_vars_uninf_3 = cell_vars_uninformative[cell_vars_uninformative['ids'].isin(het_sites)]
-        discordant_het = cell_vars3['OTH'].sum()
-        discordant_het_informative = cell_vars_inf_3['OTH'].sum()
-        discordant_het_uninformative = cell_vars_uninf_3['OTH'].sum()
-
-        # expected genotype 1/1
-        expected_hom_alt = expected_vars[expected_vars['vars'] == '1/1']
-        hom_alt_sites = set(expected_hom_alt['ids'])
-        cell_vars4 = cell_vars[cell_vars['ids'].isin(hom_alt_sites)]
-        cell_vars_inf_4 = cell_vars_informative[cell_vars_informative['ids'].isin(hom_alt_sites)]
-        cell_vars_uninf_4 = cell_vars_uninformative[cell_vars_uninformative['ids'].isin(hom_alt_sites)]
-        # DP + OTH - AD
-        ad_hom_alt = cell_vars4['AD'].sum()
-        dp_hom_alt = cell_vars4['DP'].sum()
-        oth_hom_alt = cell_vars4['OTH'].sum()
-        discordant_hom_alt = (dp_hom_alt + oth_hom_alt) - ad_hom_alt
-        ad_hom_alt_inf = cell_vars_inf_4['AD'].sum()
-        dp_hom_alt_inf = cell_vars_inf_4['DP'].sum()
-        oth_hom_alt_inf = cell_vars_inf_4['OTH'].sum()
-        discordant_hom_alt_informative = (dp_hom_alt_inf + oth_hom_alt_inf) - ad_hom_alt_inf
-        ad_hom_alt_uninf = cell_vars_uninf_4['AD'].sum()
-        dp_hom_alt_uninf = cell_vars_uninf_4['DP'].sum()
-        oth_hom_alt_uninf = cell_vars_uninf_4['OTH'].sum()
-        discordant_hom_alt_uninformative = (dp_hom_alt_uninf + oth_hom_alt_uninf) - ad_hom_alt_uninf
-
-        discordant_reads =  discordant_hom_ref + discordant_het + discordant_hom_alt
-        discordant_reads_informative =  discordant_hom_ref_informative + discordant_het_informative + discordant_hom_alt_informative
-        discordant_reads_uninformative =  discordant_hom_ref_uninformative + discordant_het_uninformative + discordant_hom_alt_uninformative
-
-        return total_sites, informative_sites, uninformative_sites, total_reads, discordant_reads, total_reads_informative, discordant_reads_informative, total_reads_uninformative, discordant_reads_uninformative
+    # def get_sites_from_tsv(self, sites_file):
+    #     """
+    #     get sites frm a tsv file where cols are chrom, pos, id, ref, alt
+    #     assumes no multiallelics
+    #     """
+    #     sites = set()
+    #     with open(sites_file, 'r') as f:
+    #         lines = f.readlines()
+    #         for l in lines:
+    #             linedata = l.split('\t')
+    #             var = ('_').join([linedata[0], linedata[1], linedata[3], linedata[4]])
+    #             sites.add(var)
+    #     return sites
 
 
     def get_strict_discordance(self, snp_gtypes, cellsnp_gtypes):
         '''
         take a list of SNP array genotypes and a list of cellSNP genotypes, return counts of truly discordant 
-        sites and relaxed concordant sites and list of discordant sites1
+        sites and relaxed concordant sites
         1) If you have 1/1 on SNP array you can not get a 0/1 or 0/0 genotype
         2) if you have a 0/0 you can not get a 1/1 or 0/1
         3) if you genotype is 0/1 you can get all copies: 0/0 . 0/1. 1/1
@@ -163,13 +75,61 @@ class Concordances:
         relaxed_concordant_uninformative = 0
         true_discordant_informative = 0
         true_discordant_uninformative = 0
-        discordant_vars = []
-        concordant_vars = []
+        subset_informative_concordant = 0
+        subset_informative_discordant = 0
 
-        for i in range(0, len(snp_gtypes)):
+        #print(self.uninformative_sites)
+        #print(self.informative_sites)
+
+        #create sets of the ids (chrom, pos, ref, alt) in each set of genotypes. Filter to the ids present in both 
+        #then filter to informative and uninformative. If uninformative >0 then create a subset of informative
+        # with the same number of vars (at random)
+        split_snp_gts=snp_gtypes.str.split("_")
+        snp_gtypes_ids = set(split_snp_gts.str[0]+'_'+split_snp_gts.str[1]+'_'+split_snp_gts.str[2]+'_'+split_snp_gts.str[3])
+
+        split_cellsnp_gts=cellsnp_gtypes.str.split("_")
+        cellsnp_gtypes_ids = set(split_cellsnp_gts.str[0]+'_'+split_cellsnp_gts.str[1]+'_'+split_cellsnp_gts.str[2]+'_'+split_cellsnp_gts.str[3])
+
+        shared_gts = snp_gtypes_ids.intersection(cellsnp_gtypes_ids)
+
+        shared_informative = shared_gts.intersection(self.informative_sites)
+        shared_uninformative = shared_gts.intersection(self.uninformative_sites)
+        # print("shared informative " + str(len(shared_informative)))
+        # print("shared uninformative " + str(len(shared_uninformative)))
+
+        #store the numbers of informative and uninformative sites shared between cellSNP and gt data as these
+        #are the sites used for concordance
+        self.informative_covered = len(shared_informative)
+        self.uninformative_covered = len(shared_uninformative)
+
+        if len(shared_uninformative) > 0:
+            #print(len(shared_uninformative))
+            # print(len(shared_informative))
+            if len(shared_uninformative) <= len(shared_informative):
+                informative_subset = set(random.sample(shared_informative, len(shared_uninformative)))
+            else:
+                informative_subset = set()#if there are more shared uninformative than shared informative we will not subset
+            # print(informative_subset)
+            # exit(0)
+        else:
+            informative_subset = set()
+
+        # print(informative_subset)
+        self.informative_subset = informative_subset
+
+        snp_gtypes_set = set(snp_gtypes)
+        snp_gtypes_set = sorted(snp_gtypes_set)
+
+        cellsnp_gtypes_set = set(cellsnp_gtypes)
+        cellsnp_gtypes_set = sorted(cellsnp_gtypes_set)
+
+        #for i in range(0, len(snp_gtypes)):
+        for i in range(0, len(snp_gtypes_set)):
             discordant = False
-            snp_data = snp_gtypes[i].split('_')
-            cellsnp_data = cellsnp_gtypes[i].split('_')
+            # snp_data = snp_gtypes[i].split('_')
+            # cellsnp_data = cellsnp_gtypes[i].split('_')
+            snp_data = snp_gtypes_set[i].split('_')
+            cellsnp_data = cellsnp_gtypes_set[i].split('_')
 
             # the below will no longer work due to differing length of input strings
             # snp_alleles = [snp_gtypes[i][-3], snp_gtypes[i][-1]]
@@ -195,22 +155,149 @@ class Concordances:
             
             if discordant == True:
                 true_discordant+=1
-                discordant_vars.append(cellsnp_var)
                 if snp_var in self.uninformative_sites:
                     true_discordant_uninformative+=1
                 elif snp_var in self.informative_sites:
                     true_discordant_informative+=1
             else:
                 relaxed_concordant+=1
-                concordant_vars.append(cellsnp_var)
                 if snp_var in self.uninformative_sites:
                     relaxed_concordant_uninformative+=1
                 elif snp_var in self.informative_sites:
                     relaxed_concordant_informative+=1
 
-        return true_discordant, relaxed_concordant, relaxed_concordant_informative, relaxed_concordant_uninformative, true_discordant_informative, true_discordant_uninformative,discordant_vars
+            
+            if len(shared_uninformative) > 0:
+                if snp_var in informative_subset:
+                    if discordant == True:
+                        subset_informative_discordant+=1
+                    else:
+                        subset_informative_concordant+=1
+
+        # print("conc inf " + str(relaxed_concordant_informative))
+        # print("disc inf " + str(true_discordant_informative))
+
+        return true_discordant, relaxed_concordant, relaxed_concordant_informative, relaxed_concordant_uninformative, true_discordant_informative, true_discordant_uninformative, subset_informative_concordant, subset_informative_discordant
 
 
+    def read_condordance(self, expected_vars, cell_vars):
+        '''
+        get read level concordance using DP, AD and OTH format fields
+        ##FORMAT=<ID=DP,Number=1,Type=Integer,Description="total counts for ALT and REF">
+        ##FORMAT=<ID=AD,Number=1,Type=Integer,Description="total counts for ALT">
+        ##FORMAT=<ID=OTH,Number=1,Type=Integer,Description="total counts for other bases from REF and ALT">
+        '''
+        # print(len(expected_vars))
+        # print(len(cell_vars))
+
+        if not len(expected_vars) == len(cell_vars):
+            print("length mismatch between expected vars and cell vars")
+            exit(1)
+
+        total_sites = len(expected_vars)
+        #add cols for DP, AD< OTH
+        cell_vars['DP'] = cell_vars[0].str.split("_").str[5].astype(int)
+        cell_vars['AD'] = cell_vars[0].str.split("_").str[6].astype(int)
+        cell_vars['OTH'] = cell_vars[0].str.split("_").str[7].astype(int)
+        #split to informative and uninformative sites
+        mask_i = cell_vars['ids'].isin(self.informative_sites)
+        cell_vars_informative = cell_vars[mask_i]
+        mask_u = cell_vars['ids'].isin(self.uninformative_sites)
+        cell_vars_uninformative = cell_vars[mask_u]
+        informative_sites = len(cell_vars_informative)
+        uninformative_sites = len(cell_vars_uninformative)
+        mask_s = cell_vars['ids'].isin(self.informative_subset)
+        cell_vars_informative_subset = cell_vars[mask_s]
+        informative_subset_sites = len(cell_vars_informative_subset)
+        # print("Informative sites " + str(len(self.informative_sites)))
+        # print("uninformative sites " + str(len(self.uninformative_sites)))
+        # print("informative sites in cell vars " + str(len(cell_vars_informative)))
+        # print("uninformative sites in cell vars " + str(len(cell_vars_uninformative)))
+        # print("Informative subset " + str(informative_subset_sites))
+        # print(cell_vars_informative_subset)
+        # exit(0)
+
+        total_dp = cell_vars['DP'].sum()
+        total_oth = cell_vars['OTH'].sum()
+        total_reads = total_dp + total_oth
+        total_dp_inf = cell_vars_informative['DP'].sum()
+        total_oth_inf = cell_vars_informative['OTH'].sum()
+        total_reads_informative = total_dp_inf + total_oth_inf
+        total_dp_uninf = cell_vars_uninformative['DP'].sum()
+        total_oth_uninf = cell_vars_uninformative['OTH'].sum()
+        total_reads_uninformative = total_dp_uninf + total_oth_uninf
+        total_dp_inf_subset = cell_vars_informative_subset['DP'].sum()
+        total_oth_inf_subset = cell_vars_informative_subset['OTH'].sum()
+        total_reads_informative_subset = total_dp_inf_subset + total_oth_inf_subset
+          
+
+        # expected genotype 0/0
+        expected_hom_ref = expected_vars[expected_vars['vars'] == '0/0']
+        hom_ref_sites = set(expected_hom_ref['ids'])
+        cell_vars2 = cell_vars[cell_vars['ids'].isin(hom_ref_sites)]
+        cell_vars_inf_2 = cell_vars_informative[cell_vars_informative['ids'].isin(hom_ref_sites)]
+        cell_vars_uninf_2 = cell_vars_uninformative[cell_vars_uninformative['ids'].isin(hom_ref_sites)]
+        cell_vars_inf_subset_2 = cell_vars_informative_subset[cell_vars_informative_subset['ids'].isin(hom_ref_sites)]
+        ad_hom_ref = cell_vars2['AD'].sum()
+        oth_hom_ref = cell_vars2['OTH'].sum() 
+        discordant_hom_ref = ad_hom_ref + oth_hom_ref
+        ad_hom_ref_inf = cell_vars_inf_2['AD'].sum()
+        oth_hom_ref_inf = cell_vars_inf_2['OTH'].sum() 
+        discordant_hom_ref_informative = ad_hom_ref_inf + oth_hom_ref_inf
+        ad_hom_ref_uninf = cell_vars_uninf_2['AD'].sum()
+        oth_hom_ref_uninf = cell_vars_uninf_2['OTH'].sum() 
+        discordant_hom_ref_uninformative = ad_hom_ref_uninf + oth_hom_ref_uninf
+        ad_hom_ref_inf_subset = cell_vars_inf_subset_2['AD'].sum()
+        oth_hom_ref_inf_subset = cell_vars_inf_subset_2['OTH'].sum()
+        discordant_hom_ref_informative_subset = ad_hom_ref_inf_subset + oth_hom_ref_inf_subset 
+
+        # expected genotype 0/1 or 1/0
+        hets = ['0/1', '1/0']
+        expected_het = expected_vars[expected_vars['vars'].isin(hets)]
+        het_sites = set(expected_het['ids'])
+        cell_vars3 = cell_vars[cell_vars['ids'].isin(het_sites)]
+        cell_vars_inf_3 = cell_vars_informative[cell_vars_informative['ids'].isin(het_sites)]
+        cell_vars_uninf_3 = cell_vars_uninformative[cell_vars_uninformative['ids'].isin(het_sites)]
+        cell_vars_inf_subset_3 = cell_vars_informative_subset[cell_vars_informative_subset['ids'].isin(het_sites)]
+        discordant_het = cell_vars3['OTH'].sum()
+        discordant_het_informative = cell_vars_inf_3['OTH'].sum()
+        discordant_het_uninformative = cell_vars_uninf_3['OTH'].sum()
+        discordant_het_informative_subset = cell_vars_inf_subset_3['OTH'].sum()
+
+        # expected genotype 1/1
+        expected_hom_alt = expected_vars[expected_vars['vars'] == '1/1']
+        hom_alt_sites = set(expected_hom_alt['ids'])
+        cell_vars4 = cell_vars[cell_vars['ids'].isin(hom_alt_sites)]
+        cell_vars_inf_4 = cell_vars_informative[cell_vars_informative['ids'].isin(hom_alt_sites)]
+        cell_vars_uninf_4 = cell_vars_uninformative[cell_vars_uninformative['ids'].isin(hom_alt_sites)]
+        cell_vars_inf_subset_4 = cell_vars_informative_subset[cell_vars_informative_subset['ids'].isin(hom_alt_sites)]
+        # DP + OTH - AD
+        ad_hom_alt = cell_vars4['AD'].sum()
+        dp_hom_alt = cell_vars4['DP'].sum()
+        oth_hom_alt = cell_vars4['OTH'].sum()
+        discordant_hom_alt = (dp_hom_alt + oth_hom_alt) - ad_hom_alt
+        ad_hom_alt_inf = cell_vars_inf_4['AD'].sum()
+        dp_hom_alt_inf = cell_vars_inf_4['DP'].sum()
+        oth_hom_alt_inf = cell_vars_inf_4['OTH'].sum()
+        discordant_hom_alt_informative = (dp_hom_alt_inf + oth_hom_alt_inf) - ad_hom_alt_inf
+        ad_hom_alt_uninf = cell_vars_uninf_4['AD'].sum()
+        dp_hom_alt_uninf = cell_vars_uninf_4['DP'].sum()
+        oth_hom_alt_uninf = cell_vars_uninf_4['OTH'].sum()
+        discordant_hom_alt_uninformative = (dp_hom_alt_uninf + oth_hom_alt_uninf) - ad_hom_alt_uninf
+        ad_hom_alt_inf_subset = cell_vars_inf_subset_4['AD'].sum()
+        dp_hom_alt_inf_subset = cell_vars_inf_subset_4['DP'].sum()
+        oth_hom_alt_inf_subset = cell_vars_inf_subset_4['OTH'].sum()
+        discordant_hom_alt_informative_subset = (dp_hom_alt_inf_subset + oth_hom_alt_inf_subset) - ad_hom_alt_inf_subset
+
+
+        discordant_reads =  discordant_hom_ref + discordant_het + discordant_hom_alt
+        discordant_reads_informative =  discordant_hom_ref_informative + discordant_het_informative + discordant_hom_alt_informative
+        discordant_reads_uninformative =  discordant_hom_ref_uninformative + discordant_het_uninformative + discordant_hom_alt_uninformative
+        discordant_reads_informative_subset = discordant_hom_ref_informative_subset + discordant_het_informative_subset + discordant_hom_alt_informative_subset
+
+        return total_sites, self.informative_covered, self.uninformative_covered, total_reads, discordant_reads, total_reads_informative, discordant_reads_informative, total_reads_uninformative, discordant_reads_uninformative, informative_subset_sites, total_reads_informative_subset, discordant_reads_informative_subset
+    
+    
 
     def retrieve_concordant_discordant_sites(self,expected_vars_norm,cell_vars):
         # This function has been inspired by Hails Concordance implementations, however hail has a pitfall that it performs a lot of other stuff under hood and requires intermediate sorting operations.
@@ -223,21 +310,56 @@ class Concordances:
             Total_Overlapping_sites = set(expected_vars_norm['ids']).intersection(set(cell_vars_norm['ids']))
             expected_vars2 = expected_vars_norm[expected_vars_norm['ids'].isin(Total_Overlapping_sites)]
             cell_vars2 = cell_vars_norm[cell_vars_norm['ids'].isin(Total_Overlapping_sites)]
+            # print(cell_vars_norm)
+            # print(expected_vars2)
+            # print(cell_vars2)
+            # exit(0)
             Concordant_Sites = set(cell_vars2['combo']).intersection(set(expected_vars2['combo']))
             Discordant_sites = set(cell_vars2['combo'])-set(expected_vars2['combo'])
             disc = pd.DataFrame(Discordant_sites,columns=['combo_x'])
             df_cd = pd.merge(cell_vars2, expected_vars2, how='inner', on = 'pos')
             disc2= pd.merge(disc, df_cd, how='inner', on = 'combo_x')
+            # print(len(disc2))
+            # exit(0)
             disc2['expected_retrieved'] = disc2['0_x']+'::'+disc2['0_y']
-            #disc_sites = ';'.join(disc2['expected_retrieved'])
-
-            true_discordant_count, relaxed_concordant_count, discordant_vars, concordant_vars = self.get_strict_discordance(disc2['0_y'], disc2['0_x'])
-            total_concordant_sites = len(Concordant_Sites) + relaxed_concordant_count
+            disc_sites = ';'.join(disc2['expected_retrieved'])
+            #find truly discordant sites
+            true_discordant_count, relaxed_concordant_count, relaxed_concordant_informative_count, relaxed_concordant_uninformative_count, true_discordant_informative_count, true_discordant_uninformative_count, subset_informative_sites_concordant_count, subset_informative_sites_discordant_count = self.get_strict_discordance(expected_vars2[0], cell_vars2[0])
             #find discordant reads
-            total_sites, total_reads, discordant_reads = self.read_condordance(expected_vars2, cell_vars2)
+            total_sites, informative_sites, uninformative_sites, total_reads, discordant_reads, total_reads_informative, discordant_reads_informative, total_reads_uninformative, discordant_reads_uninformative, informative_subset_sites, total_reads_informative_subset, discordant_reads_informative_subset = self.read_condordance(expected_vars2, cell_vars2)
+        else:
+            Total_Overlapping_sites = set()
+            Concordant_Sites = set()
+            Discordant_sites = set()
+            disc_sites = ''
+            true_discordant_count = 0
+            relaxed_concordant_count = 0
+            total_sites = 0
+            discordant_reads = 0
 
-            return total_sites, true_discordant_count, total_concordant_sites, total_reads, discordant_reads, discordant_vars, concordant_vars
+            informative_subset_sites = 0
+            subset_informative_sites_concordant_count = 0
+            subset_informative_sites_discordant_count = 0
+            total_reads_informative_subset = 0
+            discordant_reads_informative_subset = 0
+            relaxed_concordant_informative_count = 0
+            relaxed_concordant_uninformative_count = 0
+            true_discordant_informative_count = 0
+            true_discordant_uninformative_count = 0
+            total_reads = 0
+            total_reads_informative = 0
+            total_reads_uninformative = 0
+            discordant_reads = 0
+            discordant_reads_informative = 0
+            discordant_reads_uninformative = 0
+            informative_sites = 0
+            uninformative_sites = 0
+            
+        #print(total_sites, informative_sites, uninformative_sites,  relaxed_concordant_informative_count, true_discordant_informative_count, self.informative_covered, self.uninformative_covered)
+        #exit(0)
 
+        return Concordant_Sites, Discordant_sites, Total_Overlapping_sites, disc_sites,cell_vars_norm, true_discordant_count, relaxed_concordant_count, relaxed_concordant_informative_count, relaxed_concordant_uninformative_count, true_discordant_informative_count, true_discordant_uninformative_count, total_sites, informative_sites, uninformative_sites, total_reads, total_reads_informative, total_reads_uninformative, discordant_reads, discordant_reads_informative, discordant_reads_uninformative, informative_subset_sites, subset_informative_sites_concordant_count, subset_informative_sites_discordant_count, total_reads_informative_subset, discordant_reads_informative_subset
+    
 
     def set_results(self,to_set,id):
         # Recod to disk to save the loading mmeory time.
@@ -245,52 +367,84 @@ class Concordances:
             pickle.dump(to_set, f)
         self.record_dict[id]=f'tmp_{id}.pkl'
     
-    def append_results_cell_concordances(self,result,cell_concordance_table):
-        #[cell1, donor_gt_match, donor_gt_match_cohort, total_sites, true_discordant_count, total_concordant_sites, total_reads, 
-        # discordant_reads, discordant_vars,discordant_vars_in_pool_str, count]
-        count=result[10]
+    def append_results_cell_concordances(self,result):
+        count=result[13]
+        try:
+            percent_concordant = result[2]/(result[3]+result[2])*100
+        except:
+            percent_concordant = 0
         
         try:
-            percent_discordant = result[4]/(result[4]+result[5])*100
+            percent_discordant = result[3]/(result[3]+result[2])*100
         except:
             percent_discordant = 0
 
         try:
-            read_discordance = result[7]/result[3]
+            percent_relaxed_concordant = result[4]/(result[4]+result[5])*100
+        except:
+            percent_relaxed_concordant = 0
+        
+        try:
+            percent_strict_discordant = result[5]/(result[4]+result[5])*100
+        except:
+            percent_strict_discordant = 0
+
+        try:
+            read_discordance = result[21]/result[15]
         except:
             read_discordance = 0
 
-        # print(count)
-        same_as_asigned_donor = result[12]==result[1]
-        cell_concordance_table[f'{result[0]} --- {result[1]}'] = {  'GT 1':result[0],
-                                                                    'GT 2':result[1],
-                                                                    'Cohort': result[2],
-                                                                    'Nr_Concordant':result[5],
-                                                                    'Nr_Discordant':result[4],
-                                                                    'Percent_Discordant':percent_discordant,
-                                                                    'Total_sites': result[3],
-                                                                    'Total_reads': result[6],
-                                                                    'Discordant_reads': result[7],
-                                                                    'Discordant_reads_by_n_sites': read_discordance,
-                                                                    'Discordant_sites_in_pool': result[9],
-                                                                    'Discordant_Site_Identities':(';').join(result[8]),
-                                                                    'Lowest_Disconcordance_value_in_all_donors':result[11],
-                                                                    'Donor_With_Lowest_DisConcordance':result[12],
-                                                                    'Concordant_Site_Identities':result[13],
-                                                                    'same_as_asigned_donor':same_as_asigned_donor,
-                                                                    'Donor_With_Highest_Concordance':result[14],
-                                                                    'Highest_Concordance_value_in_all_donors':result[15],
-                                                                    'Total_sites_other_donor':result[16],
-                                                                    'Total_reads_other_donor':result[17]
+        donor = result[1]
+        cohort = 'UNKNOWN'
+        donor_split = donor.split("_")
+        if (len(donor_split) == 2) and (donor_split[0] == donor_split[1]):
+            cohort = 'UKB'
+        elif (len(donor_split) == 3) and (len(donor_split[0]) == 14):
+            cohort = 'ELGH'
+
+        print(count)
+        self.cell_concordance_table[f'{result[0]} --- {result[1]}'] = {'GT 1':result[0],
+                                                                'GT 2':result[1],
+                                                                'cohort': cohort,
+                                                                'Nr_Concordant':result[2],
+                                                                'Nr_Discordant':result[3],
+                                                                'Nr_Relaxed_concordant':result[4],
+                                                                'Nr_strict_discordant':result[5],
+                                                                'Percent Concordant':percent_concordant,
+                                                                'Percent Discordant':percent_discordant,
+                                                                'Percent_relaxed_concordant': percent_relaxed_concordant,
+                                                                'Percent_strict_discordant': percent_strict_discordant,
+                                                                'Nr_concordant_informative': result[6],
+                                                                'Nr_concordant_uninformative': result[7],
+                                                                'Nr_discordant_informative': result[8],
+                                                                'Nr_discordant_uninformative': result[9],
+                                                                'NrTotal_Overlapping_sites_between_two_genotypes':result[10],
+                                                                'Nr_donor_distinct_sites_within_pool_individuals':result[12],
+                                                                'Number_of_sites_that_are_donor_concordant_and_exclusive':result[11],
+                                                                'Discordant_Site_Identities':result[14],
+                                                                'Total_sites': result[15],
+                                                                'Total_informative_sites': result[16],
+                                                                'Total_uninformative_sites': result[17],
+                                                                'Total_reads': result[18],
+                                                                'Total_reads_informative': result[19],
+                                                                'Total_reads_uninformative': result[20],
+                                                                'Discordant_reads': result[21],
+                                                                'Discordant_reads_informtive': result[22],
+                                                                'Discordant_reads_uninformtive': result[23],
+                                                                'Discordant_reads_by_n_sites': read_discordance,
+                                                                'informative_subset_sites': result[24],
+                                                                'subset_informative_sites_concordant_count': result[25],
+                                                                'subset_informative_sites_discordant_count': result[26],
+                                                                'total_reads_informative_subset': result[27],
+                                                                'discordant_reads_informative_subset': result[28]
                                                                 }   
-        
-        # if (count % 200 == 0):
-        #     print(f'recording and resetting memory {count}')
-        #     # self.record_dict[count]=self.exclusive_donor_variants
-        #     self.set_results(self.cell_concordance_table,count)
-        #     self.reset()  
-        # _=""
-        return cell_concordance_table
+#informative_subset_sites, subset_informative_sites_concordant_count, subset_informative_sites_discordant_count, total_reads_informative_subset, discordant_reads_informative_subset]        
+        if (count % 200 == 0):
+            print(f'recording and resetting memory {count}')
+            # self.record_dict[count]=self.exclusive_donor_variants
+            self.set_results(self.cell_concordance_table,count)
+            self.reset()  
+        _=""
     
     def combine_written_files(self):#this one is for concordance class
         to_export = self.cell_concordance_table
@@ -303,147 +457,68 @@ class Concordances:
                     to_export[k1]=loaded_dict[k1]
             os.remove(val1)
         return to_export
-
-    def analyse_donor(self,Cells_to_keep_pre,donor_gt_match,donor_gt_match_cohort,vars_per_donor_gt,donor_cohorts,count,all_donor_data,expected_vars_norm):
-        donor_concordance_table = {}
-        for cell1 in Cells_to_keep_pre:
-            count+=1
-            # if count>10:
-            #     break
-            cell_vars = exclusive_cell_variants[cell1]
-            # cell_vars_dp = exclusive_cell_variants_dp[cell1]
-
-            # self.cell_concordance_table[f'{cell1} --- {donor_gt_match}']={}
-            # pool.apply_async(self.concordance_dable_production, args=([expected_vars_norm,cell_vars,cell1,donor_gt_match,dds,count]),callback=self.append_results_cell_concordances)          
-            result1 = self.concordance_table_production(expected_vars_norm,cell_vars,cell1,donor_gt_match,donor_gt_match_cohort, vars_per_donor_gt, donor_cohorts, count,all_donor_data)
-            # if (result1==None):
-            #     _='test'
-            donor_concordance_table = self.append_results_cell_concordances(result1,donor_concordance_table)
-            # print('Done')
-        return donor_concordance_table
-
-    def combine_concordances(self,result):
-        # print('res')
-        self.cell_concordance_table = self.cell_concordance_table | result
-
+    
+    
     def conc_table(self):
         donor_assignments_table=self.donor_assignments_table
         cell_assignments_table=self.cell_assignments_table
         exclusive_don_variants=self.exclusive_don_variants
         exclusive_cell_variants= self.exclusive_cell_variants
-        donor_list = exclusive_don_variants.keys()
         
         pool = mp.Pool(cpus)
         count = 0
-
-        #create a list of variants that are on each donor genotype file
-        vars_per_donor_gt = {}
-        for don_id in donor_list:
-            donor_gt_vars = list(exclusive_don_variants[don_id])
-            donor_gt_vars = pd.DataFrame(donor_gt_vars)
-            donor_gt_vars = self.norm_genotypes(donor_gt_vars)
-            donor_gt_vars = donor_gt_vars[donor_gt_vars['vars'] != '0/0']
-            donor_gt_varids = list(donor_gt_vars['ids'])
-            vars_per_donor_gt[don_id] = donor_gt_varids
-        #work out what cohort each donor belongs to
-        donor_cohorts = {}
-        for don_id in donor_list:
-            cohort = 'UNKNOWN'
-            donor_split = don_id.split("_")
-            if (len(donor_split) == 2) and (donor_split[0] == donor_split[1]):
-                cohort = 'UKB'
-            elif (len(donor_split) == 3) and (len(donor_split[0]) == 14):
-                cohort = 'ELGH'
-            donor_cohorts[don_id] = cohort
-
-        all_donor_data={}
-        # here we calvculate all the expected donor datasets
-        for row1 in exclusive_don_variants.keys():
-            # donor_in_question = row1['donor_query']
-            donor_gt_match = row1
-            expected_vars_of_other_donor = self.exclusive_don_variants[donor_gt_match]
-            expected_vars_norm_of_other_donor = self.norm_genotypes(expected_vars_of_other_donor)
-            all_donor_data[donor_gt_match]=expected_vars_norm_of_other_donor
-
         for i,row1 in donor_assignments_table.iterrows():
             donor_in_question = row1['donor_query']
             donor_gt_match = row1['donor_gt']
             if (donor_gt_match=='NONE'):
                 continue
-            try:
-                donor_gt_match_cohort = donor_cohorts[donor_gt_match]
-            except:
-                continue
             Cells_to_keep_pre = list(set(cell_assignments_table.loc[cell_assignments_table['donor_id']==donor_in_question,'cell']))
-            expected_vars = exclusive_don_variants[donor_gt_match]
+            try:
+                expected_vars = exclusive_don_variants[donor_gt_match]
+            except:
+                _='here we have specifically excluded the donor that has been assigned as it is not expected genotype, because of this we can not calculate the concordances'
+                continue
             expected_vars_norm = self.norm_genotypes(expected_vars)
             try:
                 # Now we subset this down to each of the uniqie variants per donor and check which of the concordant sites are exclusive to donor.
                 dds = self.donor_distinct_sites[donor_gt_match]
             except:
                 continue
-            if cpus==1:
-                result_conc = self.analyse_donor(Cells_to_keep_pre,donor_gt_match,donor_gt_match_cohort,vars_per_donor_gt,donor_cohorts,count,all_donor_data,expected_vars_norm)
-                self.combine_concordances(result_conc)
-            else:
-                pool.apply_async(self.analyse_donor, args=([Cells_to_keep_pre,donor_gt_match,donor_gt_match_cohort,vars_per_donor_gt,donor_cohorts,count,all_donor_data,expected_vars_norm]),callback=self.combine_concordances)          
+            
+            for cell1 in Cells_to_keep_pre:
+                count+=1
+                # if count>800:
+                #     break
+                cell_vars = exclusive_cell_variants[cell1]
+                # cell_vars_dp = exclusive_cell_variants_dp[cell1]
+
+                self.cell_concordance_table[f'{cell1} --- {donor_gt_match}']={}
+                # pool.apply_async(self.concordance_dable_production, args=([expected_vars_norm,cell_vars,cell1,donor_gt_match,dds,count]),callback=self.append_results_cell_concordances)          
+                result1 = self.concordance_table_production(expected_vars_norm,cell_vars,cell1,donor_gt_match,dds,count)
+                self.append_results_cell_concordances(result1)
                 
         pool.close()
         pool.join()
         output = self.combine_written_files()
         return output
-
     
-    def concordance_table_production(self,expected_vars_norm,cell_vars,cell1,donor_gt_match, donor_gt_match_cohort, vars_per_donor_gt, donor_cohorts, count,all_donor_data):
-        #Nr_donor_distinct_sites = len(dds)
-        total_sites, true_discordant_count, total_concordant_sites, total_reads, discordant_reads, discordant_vars, concordant_vars = self.retrieve_concordant_discordant_sites(expected_vars_norm,cell_vars)
+    def concordance_table_production(self,expected_vars_norm,cell_vars,cell1,donor_gt_match,dds,count):
+        Nr_donor_distinct_sites = len(dds)
+        Concordant_Sites, Discordant_sites, Total_Overlapping_sites, disc_sites, cell_vars_norm, true_discordant_count, relaxed_concordant_count, relaxed_concordant_informative_count, relaxed_concordant_uninformative_count, true_discordant_informative_count, true_discordant_uninformative_count, total_sites, informative_sites, uninformative_sites, total_reads, total_reads_informative, total_reads_uninformative, discordant_reads, discordant_reads_informative, discordant_reads_uninformative, informative_subset_sites, subset_informative_sites_concordant_count, subset_informative_sites_discordant_count, total_reads_informative_subset, discordant_reads_informative_subset = self.retrieve_concordant_discordant_sites(expected_vars_norm,cell_vars)
         Nr_Concordant = len(Concordant_Sites)
-        Nr_Relaxed_concordant = Nr_Concordant + relaxed_concordant_count
+        #Nr_Relaxed_concordant = Nr_Concordant + relaxed_concordant_count
         Nr_Discordant = len(Discordant_sites)
         Nr_Total_Overlapping_sites = len(Total_Overlapping_sites)
         Number_of_sites_that_are_donor_concordant_and_exclusive = len(set(dds).intersection(set(Concordant_Sites)))
-        Number_of_sites_in_cellsnp_but_not_in_reference = set(cell_vars_norm['pos'])-set(expected_vars_norm['pos'])
-        #find if the discordant vars are in any of the other donors
-        discordant_vars_in_pool = []
-        donor_table_of_concordances = []
-        for donor in vars_per_donor_gt:
-            if not donor == donor_gt_match:
-                try:
-                    donor_cohort = donor_cohorts[donor]
-                    donor_vars = vars_per_donor_gt[donor]
-                except:
-                    continue
-                common_vars = list(set(discordant_vars) & set(donor_vars))
-                common_var_count = str(len(common_vars))
-                donor_cohort_common = donor + ":" + donor_cohort + ":" + common_var_count
-                discordant_vars_in_pool.append(donor_cohort_common)
-                
-                # Here we want to calculate the number of discordant sites in other donors and see if in terms of concordance the same donor is picked as per GT assignment.
-                # We do this to investigate the potential of a cell coming from this other donor.
-            
-            expected_vars_norm_of_other_donor = all_donor_data[donor]
-            total_sites_otherDonor, true_discordant_count_otherDonor, total_concordant_sites_otherDonor, total_reads_otherDonor, discordant_reads_otherDonor, discordant_vars_otherDonor, concordant_vars_otherDonor = self.retrieve_concordant_discordant_sites(expected_vars_norm_of_other_donor,cell_vars)
-            concordant_percent_in_other_donor= total_concordant_sites_otherDonor/total_sites_otherDonor*100
-            discordant_percent_in_other_donor= true_discordant_count_otherDonor/total_sites_otherDonor*100
-            donor_table_of_concordances.append({'donor':donor,'concordant_percent_in_other_donor':concordant_percent_in_other_donor,'discordant_percent_in_other_donor':discordant_percent_in_other_donor,'total_sites_otherDonor':total_sites_otherDonor,'total_reads_otherDonor':total_reads_otherDonor})
-                
-        discordant_vars_in_pool_str = (";").join(discordant_vars_in_pool)
-        concordant_vars_in_pool_str = (";").join(concordant_vars)
-        DF = pd.DataFrame(donor_table_of_concordances)
-        Donor_With_Lowest_DisConcordance = ';'.join(DF[DF['discordant_percent_in_other_donor']==min(DF['discordant_percent_in_other_donor'])]['donor'].values)
-        Lowest_Disconcordance_value_in_all_donors= DF[DF['discordant_percent_in_other_donor']==min(DF['discordant_percent_in_other_donor'])]['discordant_percent_in_other_donor'].values[0]
-        
-        Donor_With_Highest_Concordance = ';'.join(DF[DF['concordant_percent_in_other_donor']==max(DF['concordant_percent_in_other_donor'])]['donor'].values)
-        Highest_Concordance_value_in_all_donors= DF[DF['concordant_percent_in_other_donor']==max(DF['concordant_percent_in_other_donor'])]['concordant_percent_in_other_donor'].values[0]
-        Total_sites_other_donor = ';'.join(DF[DF['concordant_percent_in_other_donor']==max(DF['concordant_percent_in_other_donor'])]['total_sites_otherDonor'].astype(str).values)
-        Total_reads_other_donor = ';'.join(DF[DF['concordant_percent_in_other_donor']==max(DF['concordant_percent_in_other_donor'])]['total_reads_otherDonor'].astype(str).values)
-        
-        return [cell1, donor_gt_match, donor_gt_match_cohort, total_sites, true_discordant_count, total_concordant_sites, total_reads, discordant_reads, discordant_vars,discordant_vars_in_pool_str, count,Lowest_Disconcordance_value_in_all_donors,Donor_With_Lowest_DisConcordance,concordant_vars_in_pool_str,Donor_With_Highest_Concordance,Highest_Concordance_value_in_all_donors,Total_sites_other_donor,Total_reads_other_donor]
-        #return [cell1,donor_gt_match,Nr_Concordant,Nr_Discordant,Nr_Relaxed_concordant, Nr_strict_discordant, relaxed_concordant_informative_count, true_discordant_uninformative_count, Nr_Total_Overlapping_sites,
-        #        Number_of_sites_that_are_donor_concordant_and_exclusive, Nr_donor_distinct_sites,count,discordant_sites, total_sites, total_reads, discordant_reads]
+        #Number_of_sites_in_cellsnp_but_not_in_reference = set(cell_vars_norm['pos'])-set(expected_vars_norm['pos'])
+
+        return [cell1,donor_gt_match,Nr_Concordant,Nr_Discordant,relaxed_concordant_count, true_discordant_count, relaxed_concordant_informative_count, 
+                relaxed_concordant_uninformative_count, true_discordant_informative_count, true_discordant_uninformative_count, Nr_Total_Overlapping_sites,
+                Number_of_sites_that_are_donor_concordant_and_exclusive, Nr_donor_distinct_sites,count,disc_sites, total_sites, informative_sites, 
+                uninformative_sites, total_reads, total_reads_informative, total_reads_uninformative, discordant_reads, discordant_reads_informative, discordant_reads_uninformative,
+                informative_subset_sites, subset_informative_sites_concordant_count, subset_informative_sites_discordant_count, total_reads_informative_subset, discordant_reads_informative_subset]
     
-
-
+    
 class VCF_Loader:
     
     def __init__(self, vcf_file, biallelic_only=True,
@@ -478,11 +553,11 @@ class VCF_Loader:
         if len(list_val[3]) > 1 or len(list_val[4]) > 1:
             # CURRENTLY DEALS ONLY WITH BIALELIC
             print(f'{idx} var not bialelic')
-            if remove_ag:
-                if list_val[3] == 'A' and list_val[4] == 'G':#remove A>G
-                    pass
-                elif list_val[3] == 'T' and list_val[4] == 'C':#also remove T>C
-                    pass
+        elif list_val[3] == 'A' and list_val[4] == 'G':#remove A>G
+            pass
+        elif list_val[3] == 'T' and list_val[4] == 'C':#also remove T>C
+            
+            pass
         else:
             list_val2 = list_val[9:]
             obs = pd.DataFrame(obs_ids)
@@ -643,7 +718,8 @@ class VCF_Loader:
         
         output = self.combine_written_files()
         return output
-    
+
+
 """Run CLI."""
 
 def get_options():
@@ -661,7 +737,6 @@ def get_options():
     parser.add_argument('--informative_sites', action='store', required=True)
     parser.add_argument('--uninformative_sites', action='store', required=True)
     parser.add_argument('--outfile', action='store', required=True)
-    parser.add_argument('--debug', action='store_true')
     args = parser.parse_args()
 
     return args
@@ -684,6 +759,8 @@ def get_sites_from_tsv(sites_file):
 
 def find(lst, a):
     return [i for i, x in enumerate(lst) if x==a ]
+
+
 def norm_genotypes(expected_vars):
     expected_vars = pd.DataFrame(expected_vars)
     split_str=expected_vars[0].str.split("_")
@@ -724,10 +801,9 @@ def donor_exclusive_sites(exclusive_don_variants2):
         distinct_donor_sites = to_compare - comparisons_all
         donor_distinct_sites[col1]=distinct_donor_sites
         # Perform the distinct set function.
-    return donor_distinct_sites   
+    return donor_distinct_sites
 
-
-
+debug=False
 
 if __name__ == "__main__":
 
@@ -752,8 +828,8 @@ if __name__ == "__main__":
 
     donor_assignments_table = pd.read_csv(donor_assignments)
     cell_assignments_table = pd.read_csv(cell_assignments,sep='\t')
-
-    if options.debug:
+    
+    if debug:
         with open('tmp_GT_Expected_variants.pkl', 'rb') as f:
             GT_Expected_variants = pickle.load(f)
         with open('tmp_GT_Matched_variants.pkl', 'rb') as f:
@@ -778,12 +854,16 @@ if __name__ == "__main__":
             pickle.dump(GT_Matched_variants, f)
         
         print('---Loading cell VCF----')
+        tic = time.perf_counter()
         loader1 = VCF_Loader(cell_vcf, biallelic_only=True,
                             sparse=False, format_list=['GT', 'DP', 'AD', 'OTH'])
         exclusive_cell_variants = loader1.load_VCF_batch_paralel()
         del loader1
+        toc = time.perf_counter()
+            
         with open(f'tmp_exclusive_cell_variants.pkl', 'wb') as f:
             pickle.dump(exclusive_cell_variants, f)
+        print(f"Loading took {toc - tic:0.4f} seconds")
 
         print('---Loading expected VCF----')
         loader3 = VCF_Loader(expected_vcf, biallelic_only=True,
@@ -816,15 +896,16 @@ if __name__ == "__main__":
         donor_distinct_sites = donor_exclusive_sites(exclusive_don_variants)
         with open(f'tmp_donor_distinct_sites.pkl', 'wb') as f:
             pickle.dump(donor_distinct_sites, f)
-
-    cell_concordance_table = Concordances(donor_assignments_table,cell_assignments_table,exclusive_don_variants,exclusive_cell_variants,donor_distinct_sites, informative_sites, uninformative_sites).conc_table()
-    result = pd.DataFrame(cell_concordance_table).T
-    try:
-        site_identities = result[['Concordant_Site_Identities','Discordant_Site_Identities']]
-        result.drop(columns=['Concordant_Site_Identities'],inplace=True)
-        site_identities.to_csv(f"site_identities_{outfile}",sep='\t')
-    except:
-        _='sample_hasnt_matched_any_gt --- most likely too little cells assigned'
-    result.to_csv(outfile,sep='\t')
+        
+    print('---donor_distinct_sites calculated----')
     
+    conc1 = Concordances(donor_assignments_table,cell_assignments_table,exclusive_don_variants,exclusive_cell_variants,donor_distinct_sites, informative_sites, uninformative_sites)
+    cell_concordance_table = conc1.conc_table()
+    
+    # cell_concordance_table = conc_table(donor_assignments_table,cell_assignments_table,exclusive_don_variants,exclusive_cell_variants)
+    result = pd.DataFrame(cell_concordance_table).T
+
+    if len(result)>0:
+        result.to_csv(outfile,sep='\t')
     print('Processing Done')
+    

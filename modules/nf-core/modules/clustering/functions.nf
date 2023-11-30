@@ -341,7 +341,7 @@ process cluster_validate_resolution_keras {
     // ------------------------------------------------------------------------
     //cache false        // cache results from run
     //maxForks 2         // hard to control memory usage. limit to 3 concurrent
-    label 'gpu'        // use GPU
+    label 'process_low'        // use GPU
     scratch false      // use tmp directory
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "https://yascp.cog.sanger.ac.uk/public/singularity_images/wtsihgi_nf_scrna_qc_6bb6af5-2021-12-23-3270149cf265.sif"

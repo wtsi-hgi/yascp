@@ -60,7 +60,10 @@ def main():
 
     # Load the AnnData file
     adata = sc.read_h5ad(filename=options.h5)
-
+    try:
+        adata.X=adata.layers['counts']
+    except:
+        _='counts may be already set'
     # If we have a flag for cells that pass QC then filter down to them
     if 'cell_passes_qc' in adata.obs:
         adata = adata[adata.obs['cell_passes_qc'], :]

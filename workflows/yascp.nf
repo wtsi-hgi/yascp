@@ -57,7 +57,7 @@ workflow YASCP {
                 
         if(!params.just_reports){
             // sometimes we just want to rerun report generation as a result of alterations, hence if we set params.just_reports =True pipeline will use the results directory and generate a new reports.
-            if (!params.skip_preprocessing.value){
+            if (!params.skip_preprocessing){
                 // The input table should contain the folowing columns - experiment_id	n_pooled	donor_vcf_ids	data_path_10x_format
                 // prepearing the inputs from a standard 10x dataset folders.
                 prepare_inputs(input_channel)
@@ -125,23 +125,23 @@ workflow YASCP {
             }else{
                 // This option skips all the deconvolution and and takes a preprocessed yascp h5ad file to run the downstream clustering and celltype annotation.
                 log.info '''----Skipping Preprocessing since we already have prepeared h5ad input file----'''
-                file__anndata_merged = Channel.from(params.skip_preprocessing.file__anndata_merged)
+                file__anndata_merged = Channel.from(params.file__anndata_merged)
 
 
                 if("${mode}"!='default'){
                     // Here we have rerun GT matching upstream - done for freeze1
                     assignments_all_pools = mode
                 }else{
-                    if (params.skip_preprocessing.file__anndata_merged !=''){
-                        assignments_all_pools = Channel.from(params.skip_preprocessing.gt_match_file)
+                    if (params.file__anndata_merged !=''){
+                        assignments_all_pools = Channel.from(params.gt_match_file)
                     }else{
                         assignments_all_pools = Channel.from("$projectDir/assets/fake_file.fq")
                     }
                 }
                 
-                if (params.skip_preprocessing.file__cells_filtered ==''){
+                if (params.file__cells_filtered ==''){
                     log.info '''--- No cells filtered input ----'''
-                    dummy_filtered_channel(file__anndata_merged,params.skip_preprocessing.id_in)
+                    dummy_filtered_channel(file__anndata_merged,params.id_in)
                     file__cells_filtered = dummy_filtered_channel.out.anndata_metadata
                 }else{
                     file__cells_filtered = Channel.from(params.skip_preprocessing.file__cells_filtered)
@@ -175,7 +175,14 @@ workflow YASCP {
             // ###################################
 
             if (!params.skip_qc){
-                qc(file__anndata_merged,file__cells_filtered,assignments_all_pools) //This runs the Clusterring and qc assessments of the datasets.
+
+                if(params.gt_match_based_adaptive_qc_exclusion_pattern !=''){
+                    gt_outlier_input = assignments_all_pools
+                }else{
+                    gt_outlier_input = Channel.from("$projectDir/assets/fake_file.fq")
+                }
+
+                qc(file__anndata_merged,file__cells_filtered,gt_outlier_input) //This runs the Clusterring and qc assessments of the datasets.
                 process_finish_check_channel = qc.out.LI
                 file__anndata_merged = qc.out.file__anndata_merged
             }else{

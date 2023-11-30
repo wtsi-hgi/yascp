@@ -5,7 +5,7 @@ include {OUTLIER_FILTER} from "$projectDir/modules/nf-core/modules/outlier_filte
 include {PLOT_STATS} from "$projectDir/modules/nf-core/modules/plot_stats/main"
 include {ESTIMATE_PCA_ELBOW} from "$projectDir/modules/nf-core/modules/estimate_pca_elbow/main"
 include {SUBSET_PCS} from "$projectDir/modules/nf-core/modules/subset_pcs/main"
-include {NORMALISE_AND_PCA} from "$projectDir/modules/nf-core/modules/normalise_and_pca/main"
+include {NORMALISE_AND_PCA; PCA} from "$projectDir/modules/nf-core/modules/normalise_and_pca/main"
 include {HARMONY} from "$projectDir/modules/nf-core/modules/harmony/main"
 include {BBKNN} from "$projectDir/modules/nf-core/modules/bbknn/main"
 include {ADD_EXTRA_METADATA_TO_H5AD} from "$projectDir/modules/nf-core/modules/adata_manipulations/main"
@@ -19,7 +19,7 @@ workflow qc {
     take:
         file__anndata_merged
         file__cells_filtered
-        assignments_all_pools
+        gt_outlier_input
     main:
         log.info "--- Running QC metrics --- "
         // if(params.extra_metadata!=''){
@@ -29,23 +29,14 @@ workflow qc {
         // }else{
         //     log.info '''--- No extra metadata to add to h5ad ---'''
         // }
-        file__anndata_merged.map{val1 -> tuple('full', val1)}.set{out1}
 
         CELL_HARD_FILTERS(file__anndata_merged,params.hard_filters_file,params.hard_filters_drop)
         if(params.hard_filters_file != "no_file__file_sample_qc"){
             file__anndata_merged = CELL_HARD_FILTERS.out.anndata
         }
         
-        // Next we define an input channel to outlier filtering strategy in case if params.skip_preprocessing.gt_match_based_adaptive_qc_exclusion_pattern !=''
-        // i.e - if we want to exclude a particular cohort that has been matched by gt match from the adaptive qc we feed this in the outlier_filter()
-        if(params.skip_preprocessing.gt_match_based_adaptive_qc_exclusion_pattern !=''){
-            gt_outlier_input = assignments_all_pools
-        }else{
-            gt_outlier_input = Channel.from("$projectDir/assets/fake_file.fq")
-        }
-
         //FILTERING OUTLIER CELLS
-        if (params.sample_qc.cell_filters.filter_outliers.run_process) {
+        if (params.filter_outliers) {
             log.info """---Running automatic outlier cell filtering.----"""
             OUTLIER_FILTER(
                 params.outdir,
@@ -64,18 +55,28 @@ workflow qc {
         }
 
         
+        if (params.normalise_andata){
+            NORMALISE_AND_PCA(
+                file__anndata_merged,
+                params.mode,
+                params.layer,
+                params.genes_exclude_hvg,
+                params.genes_score,
+                params.reduced_dims.vars_to_regress.value)
+            andata = NORMALISE_AND_PCA.out.anndata
+            outdir = NORMALISE_AND_PCA.out.outdir
 
-        NORMALISE_AND_PCA(params.outdir+'/clustering',
-            file__anndata_merged,
-            params.mode,
-            params.layer,
-            params.genes_exclude_hvg,
-            params.genes_score,
-            params.reduced_dims.vars_to_regress.value)
+        }else{
+            andata = file__anndata_merged
+            outdir = "${params.outdir}"
+            LI4 = Channel.of([1, 'dummy_lisi'])
+        }
+
+        PCA(andata,params.outdir,params.layer)
 
         ESTIMATE_PCA_ELBOW(
-            NORMALISE_AND_PCA.out.outdir,
-            NORMALISE_AND_PCA.out.anndata,
+            PCA.out.outdir,
+            PCA.out.anndata,
             params.reduced_dims.n_dims.add_n_to_estimate
         )
 
@@ -88,21 +89,21 @@ workflow qc {
         }
 
         SUBSET_PCS(
-            NORMALISE_AND_PCA.out.outdir,
-            NORMALISE_AND_PCA.out.anndata,
-            NORMALISE_AND_PCA.out.metadata,
-            NORMALISE_AND_PCA.out.pcs,
-            NORMALISE_AND_PCA.out.param_details,
+            PCA.out.outdir,
+            PCA.out.anndata,
+            PCA.out.metadata,
+            PCA.out.pcs,
+            PCA.out.param_details,
             n_pcs
         )
-        file__anndata_merged.subscribe { println "PLOT_STATS input: $it" }
+        PCA.out.outdir.subscribe { println "outdir input: $it" }
         PLOT_STATS(file__anndata_merged,
                     file__cells_filtered,
                     SUBSET_PCS.out.outdir,
                     SUBSET_PCS.out.anndata,
                     n_pcs)
 
-        file__anndata_merged = NORMALISE_AND_PCA.out.anndata
+        file__anndata_merged = PCA.out.anndata
         
         LI4 = PLOT_STATS.out.LI
 
@@ -117,11 +118,11 @@ workflow qc {
         // "Correct" PCs using Harmony or BBKNN
         if (params.harmony.run_process) {
             HARMONY(
-                NORMALISE_AND_PCA.out.outdir,
-                NORMALISE_AND_PCA.out.anndata,
-                NORMALISE_AND_PCA.out.metadata,
-                NORMALISE_AND_PCA.out.pcs,
-                NORMALISE_AND_PCA.out.param_details,
+                PCA.out.outdir,
+                PCA.out.anndata,
+                PCA.out.metadata,
+                PCA.out.pcs,
+                PCA.out.param_details,
                 n_pcs,
                 Channel.fromList( params.harmony.variables_and_thetas.value)
             )
@@ -184,11 +185,11 @@ workflow qc {
 
         if (params.bbknn.run_process) {
             BBKNN(
-                NORMALISE_AND_PCA.out.outdir,
-                NORMALISE_AND_PCA.out.anndata,
-                NORMALISE_AND_PCA.out.metadata,
-                NORMALISE_AND_PCA.out.pcs,
-                NORMALISE_AND_PCA.out.param_details,
+                PCA.out.outdir,
+                PCA.out.anndata,
+                PCA.out.metadata,
+                PCA.out.pcs,
+                PCA.out.param_details,
                 n_pcs,
                 params.bbknn.batch_variable.value
             )
@@ -253,8 +254,8 @@ workflow qc {
             lisi_input_second = lisi_input_first.mix(lisi_input3)
 
             LISI(
-                NORMALISE_AND_PCA.out.outdir,
-                NORMALISE_AND_PCA.out.metadata,
+                PCA.out.outdir,
+                PCA.out.metadata,
                 params.lisi.variables.value,
                 lisi_input_second.collect()
             )

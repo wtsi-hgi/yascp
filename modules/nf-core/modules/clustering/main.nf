@@ -71,36 +71,33 @@ workflow CLUSTERING {
         //     cluster_validate_resolution__sparsity,
         //     cluster_validate_resolution__train_size_cells
         // )
-        if (params.utilise_gpu){
-            if (params.cluster_validate_resolution_keras){
+        
+    if (params.cluster_validate_resolution_keras){
 
-            
-            cluster_validate_resolution_keras( 
-                cluster.out.outdir,
-                cluster.out.anndata,
-                cluster.out.metadata,
-                cluster.out.pcs,
-                cluster.out.reduced_dims,
-                cluster.out.clusters,
-                cluster_validate_resolution__sparsity,
-                cluster_validate_resolution__train_size_cells,
-                cluster.out.outdir__reduced_dims
-            )
+        
+        cluster_validate_resolution_keras( 
+            cluster.out.outdir,
+            cluster.out.anndata,
+            cluster.out.metadata,
+            cluster.out.pcs,
+            cluster.out.reduced_dims,
+            cluster.out.clusters,
+            cluster_validate_resolution__sparsity,
+            cluster_validate_resolution__train_size_cells,
+            cluster.out.outdir__reduced_dims
+        )
 
-            plot_resolution_validate(
-                cluster_validate_resolution_keras.out.plot_input.groupTuple()
-            )
-            }
-            
+        plot_resolution_validate(
+            cluster_validate_resolution_keras.out.plot_input.groupTuple()
+        )
         }
+            
+        
 
         SCCAF(cluster.out.outdir,
           cluster.out.anndata,
           cluster.out.clusters,
           sccaf_minacc)
-
-
-
 
         // // Generate UMAPs of the results.
         umap_calculate_and_plot(
@@ -118,28 +115,29 @@ workflow CLUSTERING {
         )
         dummy_output=umap_calculate_and_plot.out.dummy_output
         // // Find marker genes for clusters
-        cluster_markers(
-            cluster.out.outdir,
-            cluster.out.anndata,
-            cluster.out.metadata,
-            cluster.out.pcs,
-            cluster.out.reduced_dims,
-            cluster.out.clusters,
-            cluster_marker__methods
-        )
+        if (params.cluster_markers){
+            cluster_markers(
+                cluster.out.outdir,
+                cluster.out.anndata,
+                cluster.out.metadata,
+                cluster.out.pcs,
+                cluster.out.reduced_dims,
+                cluster.out.clusters,
+                cluster_marker__methods
+            )
 
-        // // Find marker genes for clusters using CELLEX
-        cellex_cluster_markers(
-            cluster.out.outdir,
-            cluster.out.anndata
-        )
+            // // Find marker genes for clusters using CELLEX
+            cellex_cluster_markers(
+                cluster.out.outdir,
+                cluster.out.anndata
+            )
 
-        // Prep adata file for cellxgene website
-        prep_cellxgene(
-            cluster.out.outdir,
-            cluster.out.anndata
-        )
-
+            // Prep adata file for cellxgene website
+            prep_cellxgene(
+                cluster.out.outdir,
+                cluster.out.anndata
+            )
+        }
         emit:
             dummy_output
 
