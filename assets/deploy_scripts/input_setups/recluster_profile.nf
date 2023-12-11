@@ -6,8 +6,6 @@ params {
     replace_genotype_ids=false
     write_h5=true
     cluster_validate_resolution_keras = true
-    // run_celltype_assignment = true
-    project_name = 'T_Cell_Bio_Response'
     filter_outliers = false
     extra_sample_metadata =""
     output_dir = outdir= "${launchDir}/recluster_resolutions"
@@ -15,17 +13,8 @@ params {
     cluster_markers = false
     normalise_andata = false
     skip_handover = true
-    // output_dir = outdir= "${launchDir}/results"
-    // run_celltype_assignment=true
     split_ad_per_bach=true //if not splitting the celltype assignment will be run on full tranche
-    // input_data_table = "$outdir/handover/Summary_plots/$RUN_ID/Fetch Pipeline/Input/input_table.tsv"
-    // cellbender_location="${output_dir}/nf-preprocessing/cellbender" //!!!!! if cellbender is run already then can skip this by selecting  input = 'existing_cellbender' instead input = 'cellbender'
-    // existing_cellsnp="${output_dir}/cellsnp"
-    cellbender_location="/lustre/scratch123/hgi/teams/hgi/mo11/tmp_projects/harriet/qc/results_11_09_2023/nf-preprocessing/cellbender" //!!!!! if cellbender is run already then can skip this by selecting  input = 'existing_cellbender' instead input = 'cellbender'
-    existing_cellsnp="/lustre/scratch123/hgi/teams/hgi/mo11/tmp_projects/harriet/qc/results/cellsnp"
-
     skip_preprocessing = true
-    // file__anndata_merged = '/lustre/scratch126/humgen/projects/sc-eqtl-ibd/analysis/harriet_analysis/230313_hb58_yascp_analysis/231114_h5ad_files_for_MCC/231120_TCs_only_regressed_counts_HVGs.h5ad'
 
     harmony{
         run_process= true

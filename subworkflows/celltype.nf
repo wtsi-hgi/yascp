@@ -4,7 +4,7 @@ include {CELLTYPIST} from "$projectDir/modules/nf-core/modules/celltypist/main"
 include {SPLIT_BATCH_H5AD} from "$projectDir/modules/nf-core/modules/split_batch_h5ad/main"
 include {KERAS_CELLTYPE} from "$projectDir/modules/nf-core/modules/keras_celltype/main"
 include {CELLTYPE_FILE_MERGE} from "$projectDir/modules/nf-core/modules/cell_type_assignment/functions"
-
+include {SCPRED} from "$projectDir/modules/nf-core/modules/scpred/main"
 
 workflow celltype{
     
@@ -38,7 +38,7 @@ workflow celltype{
             all_extra_fields = Channel.from("$projectDir/assets/fake_file.fq")
         }
         
-
+        // AZIMUTH
         if (params.celltype_assignment.run_azimuth){
             AZIMUTH(params.outdir,ch_batch_files)
             REMAP_AZIMUTH(AZIMUTH.out.predicted_celltype_labels,params.mapping_file)
@@ -46,16 +46,26 @@ workflow celltype{
         }else{
             az_out = Channel.from("$projectDir/assets/fake_file.fq")
         }
-
+        
+        // CELLTYPIST
         if (params.celltype_assignment.run_celltypist){
             Channel.fromList(params.celltypist.models)
                 .set{ch_celltypist_models}
             CELLTYPIST(az_ch_experiment_filth5.combine(ch_celltypist_models))
             ct_out = CELLTYPIST.out.predicted_labels.collect()
-
         }else{
             ct_out = Channel.from("$projectDir/assets/fake_file.fq")
         }
+
+        // SCPRED
+        // if (params.celltype_assignment.run_scpred){
+        //     SCPRED(params.outdir,ch_batch_files)
+        //     // sc_out = SCPRED.out.predicted_celltype_labels.collect()
+        // }else{
+        //     sc_out = Channel.from("$projectDir/assets/fake_file.fq")
+        //     sc_out = 't'
+        // }        
+
         
         CELLTYPE_FILE_MERGE(az_out,ct_out,all_extra_fields,SPLIT_BATCH_H5AD.out.keras_outfile)
         

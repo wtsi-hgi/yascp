@@ -14,9 +14,8 @@ include { prepare_inputs } from "$projectDir/subworkflows/prepare_inputs"
 include { DECONV_INPUTS } from "$projectDir/subworkflows/prepare_inputs/deconvolution_inputs"
 include { CREATE_ARTIFICIAL_BAM_CHANNEL } from "$projectDir/modules/local/create_artificial_bam_channel/main"
 include {MERGE_SAMPLES} from "$projectDir/modules/nf-core/modules/merge_samples/main"
-include {MULTIPLET} from "$projectDir/modules/nf-core/modules/multiplet/main"
 include {dummy_filtered_channel} from "$projectDir/modules/nf-core/modules/merge_samples/functions"
-
+include {MULTIPLET} from "$projectDir/subworkflows/doublet_detection"
 /*
 ========================================================================================
     RUN MAIN WORKFLOW
@@ -88,6 +87,21 @@ workflow YASCP {
                 else{
                     log.info '--- input mode is not selected - please choose --- (existing_cellbender cellranger)'
                 }
+
+
+
+                // ###################################
+                // ###################################
+                // Step: DOUBLET DETECTION
+                // Curently contains only Scrublet, but we are also adding DoubletDetect
+                // ###################################
+                // ###################################
+
+                MULTIPLET(
+                    channel__file_paths_10x,
+                )
+                scrublet_paths = MULTIPLET.out.scrublet_paths
+
                 // ###################################
                 // ################################### Readme
                 // Step2. DECONVOLUTION
@@ -102,7 +116,7 @@ workflow YASCP {
                         prepare_inputs.out.ch_experiment_npooled,
                         ch_experiment_filth5,
                         prepare_inputs.out.ch_experiment_donorsvcf_donorslist,
-                        channel__file_paths_10x,
+                        scrublet_paths,
                         vcf_input)
                     ch_poolid_csv_donor_assignments = main_deconvolution.out.ch_poolid_csv_donor_assignments
                     bam_split_channel = main_deconvolution.out.sample_possorted_bam_vireo_donor_ids

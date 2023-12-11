@@ -72,28 +72,24 @@ workflow CLUSTERING {
         //     cluster_validate_resolution__train_size_cells
         // )
         
-    if (params.cluster_validate_resolution_keras){
+        if (params.cluster_validate_resolution_keras){
+            cluster_validate_resolution_keras( 
+                cluster.out.outdir,
+                cluster.out.anndata,
+                cluster.out.metadata,
+                cluster.out.pcs,
+                cluster.out.reduced_dims,
+                cluster.out.clusters,
+                cluster_validate_resolution__sparsity,
+                cluster_validate_resolution__train_size_cells,
+                cluster.out.outdir__reduced_dims
+            )
 
-        
-        cluster_validate_resolution_keras( 
-            cluster.out.outdir,
-            cluster.out.anndata,
-            cluster.out.metadata,
-            cluster.out.pcs,
-            cluster.out.reduced_dims,
-            cluster.out.clusters,
-            cluster_validate_resolution__sparsity,
-            cluster_validate_resolution__train_size_cells,
-            cluster.out.outdir__reduced_dims
-        )
-
-        plot_resolution_validate(
-            cluster_validate_resolution_keras.out.plot_input.groupTuple()
-        )
+            plot_resolution_validate(
+                cluster_validate_resolution_keras.out.plot_input.groupTuple()
+            )
         }
             
-        
-
         SCCAF(cluster.out.outdir,
           cluster.out.anndata,
           cluster.out.clusters,

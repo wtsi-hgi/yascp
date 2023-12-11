@@ -31,6 +31,9 @@ import gzip
 import time
 pd.options.mode.chained_assignment = None
 
+mode = 'no_het'  #We can not determine whether hets are concordant or discordant in terms of reads. 
+
+
 class Concordances:
     
     def reset(self):
@@ -233,8 +236,14 @@ class Concordances:
             total_dp = cell_vars['DP'].sum()
             total_oth = cell_vars['OTH'].sum()
             total_reads = total_dp + total_oth
+            discordantRead_ratio = discordant_reads/total_reads
             
-            return total_reads,total_dp,total_oth,discordant_reads
+            # No het analysis - they are not discordant or concordant - we cannot make any call at those sites
+            discordant_reads_noHet =  discordant_hom_ref + discordant_hom_alt
+            total_reads_noHet = total_reads - discordant_het
+            discordantRead_ratio_noHet = discordant_reads_noHet/total_reads_noHet
+            
+            return total_reads,total_dp,total_oth,discordant_reads,discordantRead_ratio,discordant_reads_noHet,total_reads_noHet,discordantRead_ratio_noHet
 
     def read_condordance(self, expected_vars, cell_vars,discordant_vars, concordant_vars):
         '''
@@ -256,29 +265,49 @@ class Concordances:
 
         
         # Total
-        total_reads,total_dp,total_oth,discordant_reads = self.read_concordance_calc(expected_vars,cell_vars)
+        total_reads,total_dp,total_oth,discordant_reads, \
+            discordantRead_ratio,discordant_reads_noHet,total_reads_noHet,discordantRead_ratio_noHet = self.read_concordance_calc(expected_vars,cell_vars)
         
         # uninformative
         cell_vars_uninformative = cell_vars[cell_vars['ids'].isin(self.uninformative_sites)]
-        total_reads_uninformative,total_dp_uninformative,total_oth_uninformative,discordant_reads_uninformative = self.read_concordance_calc(expected_vars,cell_vars_uninformative)
+        total_reads_uninformative,total_dp_uninformative,total_oth_uninformative,discordant_reads_uninformative, \
+            discordantRead_ratio_uninformative,discordant_reads_uninformative_noHet,total_reads_uninformative_noHet,discordantRead_ratio_uninformative_noHet= self.read_concordance_calc(expected_vars,cell_vars_uninformative)
         
         # informative 
         cell_vars_informative = cell_vars[cell_vars['ids'].isin(self.informative_sites)]
-        total_reads_informative,total_dp_informative,total_oth_informative,discordant_reads_informative = self.read_concordance_calc(expected_vars,cell_vars_informative)
+        total_reads_informative,total_dp_informative,total_oth_informative,discordant_reads_informative, \
+            discordantRead_ratio_informative,discordant_reads_informative_noHet,total_reads_informative_noHet,discordantRead_ratio_informative_noHet = self.read_concordance_calc(expected_vars,cell_vars_informative)
         
         # Split into concordant and discordant sites
         # concordant
         concordant_sites = cell_vars[cell_vars['ids'].isin(set(concordant_vars))]
-        total_reads_for_concordant_sites,total_dp_for_concordant_sites,total_oth_for_concordant_sites,discordant_reads_for_concordant_sites = self.read_concordance_calc(expected_vars,concordant_sites)
+        total_reads_for_concordant_sites,total_dp_for_concordant_sites,total_oth_for_concordant_sites,discordant_reads_for_concordant_sites, \
+            discordantRead_ratio_for_concordant_sites,discordant_reads_for_concordant_sites_noHet,total_reads_for_concordant_sites_noHet,discordantRead_ratio_for_concordant_sites_noHet = self.read_concordance_calc(expected_vars,concordant_sites)
         
         # discordant
         discordant_sites = cell_vars[cell_vars['ids'].isin(set(discordant_vars))]
-        total_reads_for_discconcordant_sites,total_dp_for_discconcordant_sites,total_oth_for_discconcordant_sites,discordant_reads_for_discconcordant_sites = self.read_concordance_calc(expected_vars,discordant_sites)
+        total_reads_for_discconcordant_sites,total_dp_for_discconcordant_sites,total_oth_for_discconcordant_sites,discordant_reads_for_discconcordant_sites, \
+            discordantRead_ratio_for_discconcordant_sites,discordant_reads_for_discconcordant_sites_noHet,total_reads_for_discconcordant_sites_noHet,discordantRead_ratio_for_discconcordant_sites_noHet = self.read_concordance_calc(expected_vars,discordant_sites)
               
         # Subset analysis
         cell_vars_informative_subset = cell_vars[cell_vars['ids'].isin(self.informative_subset)]
-        total_reads_informative_subset,total_dp_informative_subset,total_oth_informative_subset,discordant_reads_informative_subset = self.read_concordance_calc(expected_vars,cell_vars_informative_subset)
-  
+        total_reads_informative_subset,total_dp_informative_subset,total_oth_informative_subset,discordant_reads_informative_subset, \
+            discordantRead_ratio_informative_subset,discordant_reads_informative_subset_noHet,total_reads_informative_subset_noHet,discordantRead_ratio_informative_subset_noHet = self.read_concordance_calc(expected_vars,cell_vars_informative_subset)
+
+        if mode == 'no_het':
+            total_reads = total_reads_noHet
+            discordant_reads = discordant_reads_noHet
+            total_reads_informative = total_reads_informative_noHet
+            discordant_reads_informative = discordant_reads_informative_noHet
+            total_reads_uninformative =total_reads_uninformative_noHet
+            discordant_reads_uninformative = discordant_reads_uninformative_noHet
+            total_reads_informative_subset = total_reads_informative_subset_noHet
+            discordant_reads_informative_subset = discordant_reads_informative_subset_noHet
+            total_reads_for_concordant_sites = total_reads_for_concordant_sites_noHet
+            discordant_reads_for_concordant_sites = discordant_reads_for_concordant_sites_noHet
+            total_reads_for_discconcordant_sites = total_reads_for_discconcordant_sites_noHet
+            discordant_reads_for_discconcordant_sites = discordant_reads_for_discconcordant_sites_noHet
+        
         return total_sites, \
             self.informative_covered, \
                 self.uninformative_covered, \
@@ -316,6 +345,11 @@ class Concordances:
         cell_vars_norm = self.norm_genotypes(cell_vars)
 
         if len(cell_vars_norm) > 0:
+            
+            if mode == 'no_het':
+                hets = ['0/1', '1/0']
+                expected_vars_norm = expected_vars_norm[~expected_vars_norm['vars'].isin(hets)]
+                
             Total_Overlapping_sites = set(expected_vars_norm['ids']).intersection(set(cell_vars_norm['ids']))
             expected_vars2 = expected_vars_norm[expected_vars_norm['ids'].isin(Total_Overlapping_sites)]
             cell_vars2 = cell_vars_norm[cell_vars_norm['ids'].isin(Total_Overlapping_sites)]
@@ -389,7 +423,11 @@ class Concordances:
             discordant_vars, \
             concordant_vars, \
             discordant_read_fraction_in_concordant_sites, \
-            discordant_read_fraction_in_discordant_sites, discordant_reads_uninformative_fraction, discordant_reads_informative_fraction
+            discordant_read_fraction_in_discordant_sites, \
+            discordant_reads_uninformative_fraction, \
+            discordant_reads_informative_fraction, \
+            discordant_reads_informative_subset
+            
     
 
     def set_results(self,to_set,id):
@@ -467,6 +505,7 @@ class Concordances:
                                                                 'Discordant_reads': result['discordant_reads'],
                                                                 'Discordant_reads_informtive': result['discordant_reads_informative'],
                                                                 'Discordant_reads_uninformtive': result['discordant_reads_uninformative'],
+                                                                'discordant_reads_informative_subset':result['discordant_reads_informative_subset'],
                                                                 'Discordant_reads_by_n_sites': read_discordance,
                                                                 'Discordant_sites_in_pool': len(result['Discordant_sites_in_pool']),
                                                                 'Lowest_Disconcordance_value_in_all_donors':result['Lowest_Disconcordance_value_in_all_donors'],
@@ -483,7 +522,15 @@ class Concordances:
                                                                 'Whithin_Cohort__total_number_of_potential_contaminent_reads':result['Whithin_Cohort__total_number_of_potential_contaminent_reads'],
                                                                 'Out_of_Cohort__total_number_of_potential_contaminent_reads':result['Out_of_Cohort__total_number_of_potential_contaminent_reads'], 
                                                                 'NrDonors_contributing_to_out_of_cohort':result['NrDonors_contributing_to_out_of_cohort'], 
-                                                                'NrDonors_contributing_to_Whithin_Cohort':result['NrDonors_contributing_to_Whithin_Cohort']
+                                                                'NrDonors_contributing_to_Whithin_Cohort':result['NrDonors_contributing_to_Whithin_Cohort'],
+                                                                
+                                                                'Out_of_Cohort__discordant_sites_that_are_concordant_with_other_donors_in_pool':result['Out_of_Cohort__discordant_sites_that_are_concordant_with_other_donors_in_pool'],
+                                                                'Whithin_Cohort__discordant_sites_that_are_concordant_with_other_donors_in_pool':result['Whithin_Cohort__discordant_sites_that_are_concordant_with_other_donors_in_pool'],
+                                                                'shared_sites_between_Out_of_Cohort_and_Within_Cohort':result['shared_sites_between_Out_of_Cohort_and_Within_Cohort'],
+                                                                'Within_Cohort__unique_discordant_sites_that_are_concordant_with_other_donors_in_pool':result['Within_Cohort__unique_sites_discordant_sites_that_are_concordant_with_other_donors_in_pool'],
+                                                                'Out_of_Cohort__unique_discordant_sites_that_are_concordant_with_other_donors_in_pool':result['Out_of_Cohort__unique_sites_discordant_sites_that_are_concordant_with_other_donors_in_pool'],
+                                                                'Out_of_Cohort__unique_sites_total_reads':result['Out_of_Cohort__unique_sites_total_reads'],
+                                                                'Total__discordant_sites_that_are_concordant_with_other_donors_in_pool':result['Total__discordant_sites_that_are_concordant_with_other_donors_in_pool']
                                                                 } 
         
         return [cell_concordance_table,other_donor_concordance_table]
@@ -647,9 +694,12 @@ class Concordances:
         cell_vars2['DP'] = cell_vars2[0].str.split("_").str[5].astype(int)
         cell_vars2['AD'] = cell_vars2[0].str.split("_").str[6].astype(int)
         cell_vars2['OTH'] = cell_vars2[0].str.split("_").str[7].astype(int)
-        total_reads,_,_,discordant_reads = self.read_concordance_calc(expected_vars2,cell_vars2)
+        total_reads,_,_,discordant_reads, \
+            discordantRead_ratio,discordant_reads_noHet,total_reads_noHet,discordantRead_ratio_noHet= self.read_concordance_calc(expected_vars2,cell_vars2)
         concordant_reads = total_reads - discordant_reads
-        return total_reads,discordant_reads,concordant_reads
+        concordant_reads_noHet = total_reads_noHet-discordant_reads_noHet
+        return total_reads,discordant_reads,concordant_reads,\
+            total_reads_noHet,discordant_reads_noHet,concordant_reads_noHet
     
     def concordance_table_production(self,expected_vars_norm,cell_vars,cell1,donor_gt_match, donor_gt_match_cohort, vars_per_donor_gt, donor_cohorts, count,all_donor_data,donor_assignments_table):
 
@@ -678,13 +728,13 @@ class Concordances:
             discordant_read_fraction_in_concordant_sites, \
             discordant_read_fraction_in_discordant_sites, \
             discordant_reads_uninformative_fraction, \
-            discordant_reads_informative_fraction  = self.retrieve_concordant_discordant_sites(expected_vars_norm,cell_vars)
+            discordant_reads_informative_fraction, discordant_reads_informative_subset  = self.retrieve_concordant_discordant_sites(expected_vars_norm,cell_vars)
             
         total_concordant_sites = len(Concordant_Sites) + relaxed_concordant_count
         dds = self.donor_distinct_sites[donor_gt_match]
         Nr_donor_distinct_sites = len(dds)
         Nr_Concordant = len(Concordant_Sites)
-        Nr_Relaxed_concordant = Nr_Concordant + relaxed_concordant_count
+        Nr_Relaxed_concordant = relaxed_concordant_count
         Nr_Discordant = len(Discordant_sites)
         Nr_Total_Overlapping_sites = len(Total_Overlapping_sites)
         Number_of_sites_that_are_donor_concordant_and_exclusive = len(set(dds).intersection(set(Discordant_sites)))
@@ -694,13 +744,25 @@ class Concordances:
         donor_table_of_concordances = []
         total_discordant_sites_that_are_concordant_with_other_donors_in_pool = set()
         total_discordant_sites_that_are_concordant_with_other_donors_in_pool__cohortBreakdown = {}
+        total_discordant_sites_that_are_concordant_with_other_donors_in_pool__cohortBreakdown['Whithin_Cohort']={}
+        total_discordant_sites_that_are_concordant_with_other_donors_in_pool__cohortBreakdown['Out_of_Cohort']={}
+      
+        total_sites_that_are_concordant_with_other_donors_in_pool__cohortBreakdown_totalReads = {}
+        total_sites_that_are_concordant_with_other_donors_in_pool__cohortBreakdown_totalReads['Whithin_Cohort']={}
+        total_sites_that_are_concordant_with_other_donors_in_pool__cohortBreakdown_totalReads['Out_of_Cohort']={}      
+      
+        total_sites_that_are_concordant_with_other_donors_in_pool__cohortBreakdown = {}
+        total_sites_that_are_concordant_with_other_donors_in_pool__cohortBreakdown['Whithin_Cohort']={}
+        total_sites_that_are_concordant_with_other_donors_in_pool__cohortBreakdown['Out_of_Cohort']={}      
+      
         
         informative__total_discordant_sites_that_are_concordant_with_other_donors_in_pool = set()
         total_cordant_sites_that_are_concordant_with_other_donors_in_pool = set()
         donor_gt_match_cohort = donor_cohorts[donor_gt_match]
         donors_contributing_to_out_of_cohort= []
         donors_contributing_to_Whithin_Cohort=[]
-        
+        sites_contributing_to_out_of_cohort= []
+        sites_contributing_to_Whithin_Cohort=[]
         for donor in set(donor_assignments_table['donor_gt']):
             try:
                 expected_vars_norm_of_other_donor = all_donor_data[donor]
@@ -737,34 +799,19 @@ class Concordances:
                 discordant_read_fraction_in_concordant_sites_otherDonor, \
                 discordant_read_fraction_in_discordant_sites_otherDonor, \
                 discordant_reads_uninformative_fraction_otherDonor, \
-                discordant_reads_informative_fraction_otherDonor  = self.retrieve_concordant_discordant_sites(expected_vars_norm_of_other_donor,cell_vars,donor_cohort=donor_cohort)
+                discordant_reads_informative_fraction_otherDonor, discordant_reads_informative_subset_otherDonor  = self.retrieve_concordant_discordant_sites(expected_vars_norm_of_other_donor,cell_vars,donor_cohort=donor_cohort)
             
-            # here we also need to know :
-            #   how many reads of the desired donor discordant sites could be yielded
-   
-
             total_concordant_sites_otherDonor = relaxed_concordant_count_otherDonor
             concordant_percent_in_other_donor= total_concordant_sites_otherDonor/total_sites_otherDonor*100
             discordant_percent_in_other_donor= true_discordant_count_otherDonor/total_sites_otherDonor*100
             DonorDiscordant_Sites_that_are_atributed_to_other_donor = set(discordant_vars).intersection(set(concordant_vars_otherDonor))
+            TotalSites_that_are_atributed_to_other_donor = set(discordant_vars).union(set(concordant_vars)).intersection(set(concordant_vars_otherDonor))
+
             Informative__DonorDiscordant_Sites_that_are_atributed_to_other_donor = set(true_discordant_informative_count).intersection(set(relaxed_concordant_informative_count_otherDonor))
             DonorCordant_Sites_that_are_atributed_to_other_donor = set(concordant_vars).intersection(set(concordant_vars_otherDonor))
            
-            # We now count the concordant reads  that may contribute to  particular cell at this cell.
-            # to do this we take the discordant sites that have been deamed to be concordant with the other donor and quantify the reads thta are concordant.
-            # Total_Overlapping_sites = set(DonorDiscordant_Sites_that_are_atributed_to_other_donor)
-            # expected_vars2 = expected_vars_norm[expected_vars_norm_of_other_donor['ids'].isin(Total_Overlapping_sites)]
-            # cell_vars2 = cell_vars_norm[cell_vars_norm['ids'].isin(Total_Overlapping_sites)]        
-            # cell_vars2['DP'] = cell_vars2[0].str.split("_").str[5].astype(int)
-            # cell_vars2['AD'] = cell_vars2[0].str.split("_").str[6].astype(int)
-            # cell_vars2['OTH'] = cell_vars2[0].str.split("_").str[7].astype(int)
-            
-            # total_reads_for_discordant_sites_that_are_concordant_with_other_donor,_,_,discordant_reads_for_discordant_sites_that_are_concordant_with_other_donor = self.read_concordance_calc(expected_vars2,cell_vars2)
-            # concordant_reads_for_discordant_sites_that_are_concordant_with_other_donor = total_reads_for_discordant_sites_that_are_concordant_with_other_donor - discordant_reads_for_discordant_sites_that_are_concordant_with_other_donor
-            
-            total_reads_for_discordant_sites_that_are_concordant_with_other_donor,discordant_reads_for_discordant_sites_that_are_concordant_with_other_donor,concordant_reads_for_discordant_sites_that_are_concordant_with_other_donor = self.read_extraction(DonorDiscordant_Sites_that_are_atributed_to_other_donor,expected_vars_norm_of_other_donor,cell_vars_norm_otherDonor)
-            # if discordant_reads_for_discordant_sites_that_are_concordant_with_other_donor>0:
-            #     print('yes1')
+            total_reads_for_discordant_sites_that_are_concordant_with_other_donor,discordant_reads_for_discordant_sites_that_are_concordant_with_other_donor,concordant_reads_for_discordant_sites_that_are_concordant_with_other_donor,\
+                _,_,_= self.read_extraction(DonorDiscordant_Sites_that_are_atributed_to_other_donor,expected_vars_norm_of_other_donor,cell_vars_norm_otherDonor)
 
             if not donor == donor_gt_match:
                 # We want to kow how many of these discordant site
@@ -775,21 +822,42 @@ class Concordances:
                 
                 if donor_gt_match_cohort == donor_cohort:
                     coh = 'Whithin_Cohort'
+                    sites_contributing_to_Whithin_Cohort.extend(list(TotalSites_that_are_atributed_to_other_donor))
                     if len(DonorDiscordant_Sites_that_are_atributed_to_other_donor)>0:
                         donors_contributing_to_Whithin_Cohort.append(donor)
+                        
                 else:
                     coh = 'Out_of_Cohort'
+                    sites_contributing_to_out_of_cohort.extend(list(TotalSites_that_are_atributed_to_other_donor))
                     if len(DonorDiscordant_Sites_that_are_atributed_to_other_donor)>0:
                         donors_contributing_to_out_of_cohort.append(donor)
+                        
                 
                 total_discordant_sites_that_are_concordant_with_other_donors_in_pool = total_discordant_sites_that_are_concordant_with_other_donors_in_pool.union(set(DonorDiscordant_Sites_that_are_atributed_to_other_donor))
                 # now we addit for a cohort since the biggest issue comes from cohort cross-contamination
                 # for each of these sites now we calculate the number of reads that it accounts:
                 # tree level set: cohort: site: counts
-
-                
                 for site in DonorDiscordant_Sites_that_are_atributed_to_other_donor:
-                    total_reads_for_site,discordant_reads_for_site,concordant_for_site = self.read_extraction([site],expected_vars_norm_of_other_donor,cell_vars_norm_otherDonor)
+                    total_reads_for_site,discordant_reads_for_site,concordant_for_site,\
+                        total_reads_noHet,discordant_reads_noHet,concordant_reads_noHet= self.read_extraction([site],expected_vars_norm_of_other_donor,cell_vars_norm_otherDonor)
+                    if concordant_for_site==0:
+                        pass
+                    try:
+                        total_sites_that_are_concordant_with_other_donors_in_pool__cohortBreakdown[coh][site].append(concordant_reads_noHet)
+
+                    except:
+                        try:
+                            total_sites_that_are_concordant_with_other_donors_in_pool__cohortBreakdown[coh][site]=[]
+                            total_sites_that_are_concordant_with_other_donors_in_pool__cohortBreakdown[coh][site].append(concordant_reads_noHet)
+                            
+                        except:
+                            total_sites_that_are_concordant_with_other_donors_in_pool__cohortBreakdown[coh]={}
+                            total_sites_that_are_concordant_with_other_donors_in_pool__cohortBreakdown[coh][site]=[]
+                            total_sites_that_are_concordant_with_other_donors_in_pool__cohortBreakdown[coh][site].append(concordant_reads_noHet)
+
+                for site in DonorDiscordant_Sites_that_are_atributed_to_other_donor:
+                    total_reads_for_site,discordant_reads_for_site,concordant_for_site,\
+                        _,_,_= self.read_extraction([site],expected_vars_norm_of_other_donor,cell_vars_norm_otherDonor)
                     # if discordant_reads_for_site>0:
                     #     print('here')
                     if concordant_for_site==0:
@@ -800,6 +868,7 @@ class Concordances:
                         try:
                             total_discordant_sites_that_are_concordant_with_other_donors_in_pool__cohortBreakdown[coh][site]=[]
                             total_discordant_sites_that_are_concordant_with_other_donors_in_pool__cohortBreakdown[coh][site].append(concordant_for_site)
+                        
                         except:
                             total_discordant_sites_that_are_concordant_with_other_donors_in_pool__cohortBreakdown[coh]={}
                             total_discordant_sites_that_are_concordant_with_other_donors_in_pool__cohortBreakdown[coh][site]=[]
@@ -819,6 +888,13 @@ class Concordances:
                 
                 # Here we want to calculate the number of discordant sites in other donors and see if in terms of concordance the same donor is picked as per GT assignment.
                 # We do this to investigate the potential of a cell coming from this other donor.
+            else:
+                _='check'
+                percent_relaxed_concordant = Nr_Relaxed_concordant/(Nr_Relaxed_concordant+true_discordant_count)*100
+                # g2 = total_concordant_sites_otherDonor/total_sites_otherDonor*100
+                if not (percent_relaxed_concordant == concordant_percent_in_other_donor):
+                    _='something not right'
+                    break
             
             donor_table_of_concordances.append({'donor':donor, 'cell':cell1, 'donor_cohort':donor_cohort, \
                                                 'gt matched donor':donor == donor_gt_match, \
@@ -841,48 +917,100 @@ class Concordances:
         
         
         #here now we want to see overall how many reads potentially come from different cohorts.
-        cohort_specific_site_quant_string=""
-        cohort_specific_read_quant_string=""
+        # cohort_specific_site_quant_string=""
+        # cohort_specific_read_quant_string=""
         
         Whithin_Cohort__total_number_of_potential_contaminent_reads=0
         Whithin_Cohort__discordant_sites_that_are_concordant_with_other_donors_in_pool=0
         Out_of_Cohort__discordant_sites_that_are_concordant_with_other_donors_in_pool=0
         try:
             Whithin_Cohort__discordant_sites_that_are_concordant_with_other_donors_in_pool = len(total_discordant_sites_that_are_concordant_with_other_donors_in_pool__cohortBreakdown['Whithin_Cohort'].keys())
-            for k1 in total_discordant_sites_that_are_concordant_with_other_donors_in_pool__cohortBreakdown['Whithin_Cohort'].keys():
-                Whithin_Cohort__total_number_of_potential_contaminent_reads+= max(total_discordant_sites_that_are_concordant_with_other_donors_in_pool__cohortBreakdown['Whithin_Cohort'][k1])
+            # for k1 in total_discordant_sites_that_are_concordant_with_other_donors_in_pool__cohortBreakdown['Whithin_Cohort'].keys():
+            #     Whithin_Cohort__total_number_of_potential_contaminent_reads+= max(total_discordant_sites_that_are_concordant_with_other_donors_in_pool__cohortBreakdown['Whithin_Cohort'][k1])
         except:
             _='Doesnt Exist'
         
         Out_of_Cohort__total_number_of_potential_contaminent_reads=0
         try:
             Out_of_Cohort__discordant_sites_that_are_concordant_with_other_donors_in_pool = len(total_discordant_sites_that_are_concordant_with_other_donors_in_pool__cohortBreakdown['Out_of_Cohort'].keys())
-            for k1 in total_discordant_sites_that_are_concordant_with_other_donors_in_pool__cohortBreakdown['Out_of_Cohort'].keys():
-                Out_of_Cohort__total_number_of_potential_contaminent_reads+= max(total_discordant_sites_that_are_concordant_with_other_donors_in_pool__cohortBreakdown['Out_of_Cohort'][k1])
+            # for k1 in total_discordant_sites_that_are_concordant_with_other_donors_in_pool__cohortBreakdown['Out_of_Cohort'].keys():
+            #     Out_of_Cohort__total_number_of_potential_contaminent_reads+= max(total_discordant_sites_that_are_concordant_with_other_donors_in_pool__cohortBreakdown['Out_of_Cohort'][k1])
         except:
             _='Doesnt Exist'
+    
+    
+    
+    
+    
+    
+    
+    
+        # No het total calcs
         
+        # Since we can not tell just from the cellsnp file if the discordant read at concordant site is actually concordant with another donor in a pool
+        # we assume the worse case scenario and add idscordant reads at concordant sites to the total.
+        # Number of reads on the sites that are concordant, but has discordant reads with another donor
+        Whithin_Cohort__total_number_of_potential_contaminent_reads=0
+        try:
+            concordant_sites_atributed_to_other_donor = list(set(sites_contributing_to_Whithin_Cohort))
+            if not total_sites >= len(concordant_sites_atributed_to_other_donor):
+                raise Exception("Sorry, the number of sites atributed can not be larger than total sites")
+            
+            _,_,_,\
+                _,Whithin_Cohort__total_number_of_potential_contaminent_reads, \
+                    _= self.read_extraction(concordant_sites_atributed_to_other_donor,expected_vars_norm,cell_vars_norm)
+                    
+            if not discordant_reads >= len(Whithin_Cohort__total_number_of_potential_contaminent_reads):
+                raise Exception("Total discordant reads can not be less than within cohort discordant reads.")            
+            
+            
+        except:
+            _='Doesnt Exist'
+
+
+        Out_of_Cohort__total_number_of_potential_contaminent_reads=0
+        try:
+            concordant_sites_atributed_to_other_donor =  list(set(sites_contributing_to_out_of_cohort))
+            if not total_sites >= len(concordant_sites_atributed_to_other_donor):
+                raise Exception("Sorry, the number of sites atributed can not be larger than total sites")
+            
+            _,_,_,_,Out_of_Cohort__total_number_of_potential_contaminent_reads, _= self.read_extraction(concordant_sites_atributed_to_other_donor,expected_vars_norm,cell_vars_norm)
+            
+            if not discordant_reads >= len(Out_of_Cohort__total_number_of_potential_contaminent_reads):
+                raise Exception("Total discordant reads can not be less than out of cohort discordant reads.")                       
+
+        except:
+            _='Doesnt Exist'
+                
+    
         
         try:
             Out_of_Cohort__sites = set(total_discordant_sites_that_are_concordant_with_other_donors_in_pool__cohortBreakdown['Out_of_Cohort'].keys())
+        except:
+            Out_of_Cohort__sites = set()
+            
+        try:
             Out_of_Cohort__unique_sites_discordant_sites_that_are_concordant_with_other_donors_in_pool = set(total_discordant_sites_that_are_concordant_with_other_donors_in_pool__cohortBreakdown['Out_of_Cohort'].keys()) - set(total_discordant_sites_that_are_concordant_with_other_donors_in_pool__cohortBreakdown['Whithin_Cohort'].keys()) 
+            shared_sites_between_out_of_cohort_and_within_cohort = set(total_discordant_sites_that_are_concordant_with_other_donors_in_pool__cohortBreakdown['Out_of_Cohort'].keys()).intersection(set(total_discordant_sites_that_are_concordant_with_other_donors_in_pool__cohortBreakdown['Whithin_Cohort'].keys()) )
         except:
             Out_of_Cohort__unique_sites_discordant_sites_that_are_concordant_with_other_donors_in_pool = set()
-            Out_of_Cohort__sites = set()
+            shared_sites_between_out_of_cohort_and_within_cohort = set()
+            
+        try:
+            Within_Cohort__unique_sites_discordant_sites_that_are_concordant_with_other_donors_in_pool = set(total_discordant_sites_that_are_concordant_with_other_donors_in_pool__cohortBreakdown['Whithin_Cohort'].keys()) - set(total_discordant_sites_that_are_concordant_with_other_donors_in_pool__cohortBreakdown['Out_of_Cohort'].keys()) 
+        except:
+            Within_Cohort__unique_sites_discordant_sites_that_are_concordant_with_other_donors_in_pool = set(total_discordant_sites_that_are_concordant_with_other_donors_in_pool__cohortBreakdown['Whithin_Cohort'].keys())
 
-        Out_of_Cohort__unique_sites_discordant_sites_that_are_concordant_with_other_donors_in_pool = total_reads_for_site,_,_ = self.read_extraction(Out_of_Cohort__unique_sites_discordant_sites_that_are_concordant_with_other_donors_in_pool,expected_vars_norm,cell_vars_norm)
+        Out_of_Cohort__unique_sites_total_reads,_,_,_,_,_ = self.read_extraction(Out_of_Cohort__unique_sites_discordant_sites_that_are_concordant_with_other_donors_in_pool,expected_vars_norm,cell_vars_norm)
             
         try:
             Whithin_Cohort__sites = set(total_discordant_sites_that_are_concordant_with_other_donors_in_pool__cohortBreakdown['Whithin_Cohort'].keys())
-            Whithin_Cohort__unique_sites_discordant_sites_that_are_concordant_with_other_donors_in_pool = set(total_discordant_sites_that_are_concordant_with_other_donors_in_pool__cohortBreakdown['Whithin_Cohort'].keys()) - set(total_discordant_sites_that_are_concordant_with_other_donors_in_pool__cohortBreakdown['Out_of_Cohort'].keys())
         except:
-            Whithin_Cohort__sites = set()
-            Whithin_Cohort__unique_sites_discordant_sites_that_are_concordant_with_other_donors_in_pool = set()
+            Whithin_Cohort__sites = set()  
+            
+
           
         Total__discordant_sites_that_are_concordant_with_other_donors_in_pool = Whithin_Cohort__sites.union(Out_of_Cohort__sites)
-        # total_reads_for_site,discordant_reads_for_site,concordant_for_site = self.read_extraction(set(total_discordant_sites_that_are_concordant_with_other_donors_in_pool__cohortBreakdown['Whithin_Cohort'].keys()),expected_vars_norm_of_other_donor,cell_vars_norm_otherDonor)   
-         
-        # discordant_vars_in_pool_str = (";").join(discordant_vars_in_pool)
         concordant_vars_in_pool_str = (";").join(concordant_vars)
         DF = pd.DataFrame(donor_table_of_concordances)
         
@@ -913,10 +1041,8 @@ class Concordances:
             'total_sites':total_sites,
             'informative_sites':informative_sites,
             'uninformative_sites':uninformative_sites,
-            'total_reads':total_reads,
             'total_reads_informative':total_reads_informative,
             'total_reads_uninformative':total_reads_uninformative,
-            'discordant_reads':discordant_reads,
             'discordant_reads_informative':discordant_reads_informative,
             'discordant_reads_uninformative':discordant_reads_uninformative,
             'Discordant_sites_in_pool': discordant_vars,
@@ -929,18 +1055,22 @@ class Concordances:
             'Total_reads_other_donor':Total_reads_other_donor,
             'total_discordant_sites_that_are_concordant_with_other_donors_in_pool':f"{len(total_discordant_sites_that_are_concordant_with_other_donors_in_pool)}/{len(discordant_vars)}",
             'informative__total_discordant_sites_that_are_concordant_with_other_donors_in_pool':f"{len(total_discordant_sites_that_are_concordant_with_other_donors_in_pool)}/{len(true_discordant_informative_count)}",
+            'total_reads':total_reads,
+            'discordant_reads':discordant_reads,
+            'discordant_reads_informative_subset':discordant_reads_informative_subset, \
             'discordant_read_fraction_in_concordant_sites':discordant_read_fraction_in_concordant_sites, \
             'discordant_read_fraction_in_discordant_sites':discordant_read_fraction_in_discordant_sites, \
             'Whithin_Cohort__total_number_of_potential_contaminent_reads':Whithin_Cohort__total_number_of_potential_contaminent_reads, \
             'Out_of_Cohort__total_number_of_potential_contaminent_reads':Out_of_Cohort__total_number_of_potential_contaminent_reads, \
             'NrDonors_contributing_to_out_of_cohort':len(set(donors_contributing_to_out_of_cohort)), \
             'NrDonors_contributing_to_Whithin_Cohort':len(set(donors_contributing_to_Whithin_Cohort)), \
-                 
+                
             'Out_of_Cohort__discordant_sites_that_are_concordant_with_other_donors_in_pool':Out_of_Cohort__discordant_sites_that_are_concordant_with_other_donors_in_pool, \
             'Whithin_Cohort__discordant_sites_that_are_concordant_with_other_donors_in_pool':Whithin_Cohort__discordant_sites_that_are_concordant_with_other_donors_in_pool, \
+            'shared_sites_between_Out_of_Cohort_and_Within_Cohort':len(shared_sites_between_out_of_cohort_and_within_cohort), \
+            'Within_Cohort__unique_sites_discordant_sites_that_are_concordant_with_other_donors_in_pool':len(Within_Cohort__unique_sites_discordant_sites_that_are_concordant_with_other_donors_in_pool), \
             'Out_of_Cohort__unique_sites_discordant_sites_that_are_concordant_with_other_donors_in_pool':len(Out_of_Cohort__unique_sites_discordant_sites_that_are_concordant_with_other_donors_in_pool), \
-            'Whithin_Cohort__unique_sites_discordant_sites_that_are_concordant_with_other_donors_in_pool':len(Whithin_Cohort__unique_sites_discordant_sites_that_are_concordant_with_other_donors_in_pool), \
-            'Total_Reads_for_Out_of_Cohort__unique_sites_discordant_sites_that_are_concordant_with_other_donors_in_pool':Out_of_Cohort__unique_sites_discordant_sites_that_are_concordant_with_other_donors_in_pool, \
+            'Out_of_Cohort__unique_sites_total_reads':Out_of_Cohort__unique_sites_total_reads, \
             'Total__discordant_sites_that_are_concordant_with_other_donors_in_pool':len(Total__discordant_sites_that_are_concordant_with_other_donors_in_pool)
         }, donor_table_of_concordances]
     
@@ -1339,6 +1469,12 @@ if __name__ == "__main__":
         result.drop(columns=['Discordant_Site_Identities'],inplace=True)
     except:
         _='sample_hasnt_matched_any_gt --- most likely too little cells assigned'
+      
+    try:
+        result.drop(columns=['Concordant_Site_Identities'],inplace=True)
+    except:
+        _='sample_hasnt_matched_any_gt --- most likely too little cells assigned'      
+      
         
     result.to_csv(outfile,sep='\t')
     

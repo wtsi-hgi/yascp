@@ -15,6 +15,8 @@ include {RSYNC_RESULTS_REMOVE_WORK_DIR} from "$projectDir/modules/local/rsync_re
 include {celltype} from "$projectDir/subworkflows/celltype"
 include {qc} from "$projectDir/subworkflows/qc"
 include {dummy_filtered_channel} from "$projectDir/modules/nf-core/modules/merge_samples/functions"
+include {CLUSTERING; CLUSTERING as CLUSTERING_HARMONY; CLUSTERING as CLUSTERING_BBKNN;} from "$projectDir/modules/nf-core/modules/clustering/main"
+
 
 ////// WORKFLOW: Run main nf-core/yascp analysis pipeline
 // This is the default entry point, we have others to update ceirtain parts of the results. 
@@ -54,9 +56,48 @@ workflow JUST_CELLTYPES{
 }
 
 
+// workflow JUST_RECLUSTER2{
+//     file__anndata_merged = Channel.from(params.file__anndata_merged)
+//     gt_outlier_input = Channel.from("$projectDir/assets/fake_file.fq")
+//     file__anndata_merged.subscribe { println "file__anndata_merged: $it" }
+//     dummy_filtered_channel(file__anndata_merged,params.id_in)
+//     file__cells_filtered = dummy_filtered_channel.out.anndata_metadata
+
+//     PCA(file__anndata_merged,params.outdir,params.layer)
+
+//     CLUSTERING_HARMONY(
+//         params.outdir,
+//         file__anndata_merged,
+//         PCA.out.metadata,
+//         PCA.out.pcs,
+//         PCA.out.reduced_dims,
+//         "False",  // use_pcs_as_reduced_dims
+//         params.cluster.number_neighbors.value,
+//         params.cluster.methods.value,
+//         params.cluster.resolutions.value,
+//         params.cluster.variables_boxplot.value,
+//         channel__cluster__known_markers,
+//         params.cluster_validate_resolution.sparsity.value,
+//         params.cluster_validate_resolution.train_size_cells.value,
+//         params.cluster_marker.methods.value,
+//         params.umap.n_neighbors.value,
+//         params.umap.umap_init.value,
+//         params.umap.umap_min_dist.value,
+//         params.umap.umap_spread.value,
+//         params.sccaf.min_accuracy         
+//     )
+
+//     qc(file__anndata_merged,file__cells_filtered,gt_outlier_input) //This runs the Clusterring and qc assessments of the datasets.
+                
+// }
+
+
+
+
 workflow JUST_RECLUSTER{
     file__anndata_merged = Channel.from(params.file__anndata_merged)
     gt_outlier_input = Channel.from("$projectDir/assets/fake_file.fq")
+    file__anndata_merged.subscribe { println "file__anndata_merged: $it" }
     dummy_filtered_channel(file__anndata_merged,params.id_in)
     file__cells_filtered = dummy_filtered_channel.out.anndata_metadata
     qc(file__anndata_merged,file__cells_filtered,gt_outlier_input) //This runs the Clusterring and qc assessments of the datasets.
@@ -81,7 +122,7 @@ include {VIREO} from "$projectDir/modules/nf-core/modules/vireo/main"
 include {capture_cellbender_files} from "$projectDir/modules/nf-core/modules/cellbender/functions"
 include { DECONV_INPUTS } from "$projectDir/subworkflows/prepare_inputs/deconvolution_inputs"
 include { prepare_inputs } from "$projectDir/subworkflows/prepare_inputs"
-include {MULTIPLET} from "$projectDir/modules/nf-core/modules/multiplet/main"
+include {MULTIPLET} from "$projectDir/subworkflows/doublet_detection"
 include { SPLIT_DONOR_H5AD } from "$projectDir/modules/nf-core/modules/split_donor_h5ad/main"
 include {REPLACE_GT_DONOR_ID2 } from "$projectDir/modules/nf-core/modules/genotypes/main"
 include {CAPTURE_VIREO } from "$projectDir/modules/nf-core/modules/vireo/main"

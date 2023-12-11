@@ -9,7 +9,6 @@ include { GUZIP_VCF } from "$projectDir/modules/nf-core/modules/guzip_vcf/main"
 include { SOUPORCELL } from "$projectDir/modules/nf-core/modules/souporcell/main"
 include { SPLIT_DONOR_H5AD } from "$projectDir/modules/nf-core/modules/split_donor_h5ad/main"
 include { PLOT_DONOR_CELLS } from "$projectDir/modules/nf-core/modules/plot_donor_cells/main"
-include {MULTIPLET} from "$projectDir/modules/nf-core/modules/multiplet/main"
 include {SOUPORCELL_VS_VIREO} from "$projectDir/modules/nf-core/modules/plot_souporcell_vs_vireo/main"
 include { REPLACE_GT_ASSIGNMENTS_WITH_PHENOTYPE; ENHANCE_VIREO_METADATA_WITH_DONOR } from "$projectDir/modules/nf-core/modules/genotypes/main"
 include { match_genotypes } from './match_genotypes'
@@ -39,7 +38,7 @@ workflow  main_deconvolution {
 		ch_experiment_npooled
 		ch_experiment_filth5
 		ch_experiment_donorsvcf_donorslist
-        channel__file_paths_10x
+        scrublet_paths
         vcf_input
 
     main:
@@ -138,23 +137,8 @@ workflow  main_deconvolution {
         cellsnp_output_dir=cellsnp_output_dir1.concat(cellsnp_output_dir2)
         cellsnp_cell_vcfs2=cellsnp_cell_vcfs.concat(CELLSNP.out.cell_vcfs)
 
-
-        // channel__file_paths_10x.subscribe { println "channel__file_paths_10x: $it" }
-        // if (params.sample_qc.cell_filters.filter_multiplets.run_process){
-        MULTIPLET(
-            channel__file_paths_10x,
-            params.sample_qc.cell_filters.filter_multiplets.expected_multiplet_rate,
-            params.sample_qc.cell_filters.filter_multiplets.n_simulated_multiplet,
-            params.sample_qc.cell_filters.filter_multiplets.multiplet_threshold_method,
-            params.sample_qc.cell_filters.filter_multiplets.scale_log10
-        )
-        scrublet_paths = MULTIPLET.out.scrublet_paths
-        // }else{
-        //     scrublet_paths = Channel.of()
-        // }
-
-//         // Here we run Vireo software to perform the donor deconvolution. Note that we have coded the pipeline to be capable in using
-//         // the full genotypes as an input and also subset to the individuals provided as an input in the donor_vcf_ids column.
+         // Here we run Vireo software to perform the donor deconvolution. Note that we have coded the pipeline to be capable in using
+         // the full genotypes as an input and also subset to the individuals provided as an input in the donor_vcf_ids column.
         if (params.genotype_input.vireo_with_gt && params.genotype_input.run_with_genotype_input) {
             log.info "---running Vireo with genotype input----"
             // for each experiment_id to deconvolute, subset donors vcf to its donors and subset genomic regions.
@@ -312,8 +296,7 @@ workflow  main_deconvolution {
 
         // If sample is not deconvoluted we will use scrublet to detect the doublets and remove them.
         not_deconvoluted.map{ experiment, donorsvcf, npooled,t,t2 -> tuple(experiment, 'None')}.set{not_deconvoluted2}
-        // file_cellmetadata = MULTIPLET.out.file__cellmetadata
-        
+
         split_channel = vireo_out_sample_donor_ids.combine(ch_experiment_filth5, by: 0)
         split_channel2 = not_deconvoluted2.combine(ch_experiment_filth5, by: 0)
         // combining these 2 channels in one

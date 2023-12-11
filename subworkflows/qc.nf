@@ -13,6 +13,7 @@ include {LISI} from "$projectDir/modules/nf-core/modules/lisi/main"
 include {UMAP; UMAP as UMAP_HARMONY; UMAP as UMAP_BBKNN;} from "$projectDir/modules/nf-core/modules/umap/main"
 include {CLUSTERING; CLUSTERING as CLUSTERING_HARMONY; CLUSTERING as CLUSTERING_BBKNN;} from "$projectDir/modules/nf-core/modules/clustering/main"
 include {CELL_HARD_FILTERS} from "$projectDir/modules/nf-core/modules/cell_hard_filters/main"
+include {DONT_INTEGRATE} from "$projectDir/modules/nf-core/modules/reduce_dims/main"
 
 
 workflow qc {
@@ -96,7 +97,7 @@ workflow qc {
             PCA.out.param_details,
             n_pcs
         )
-        PCA.out.outdir.subscribe { println "outdir input: $it" }
+        
         PLOT_STATS(file__anndata_merged,
                     file__cells_filtered,
                     SUBSET_PCS.out.outdir,
@@ -151,6 +152,12 @@ workflow qc {
             cluster_harmony__pcs = UMAP_HARMONY.out.pcs
             cluster_harmony__reduced_dims = UMAP_HARMONY.out.reduced_dims
             
+
+            cluster_harmony__outdir.subscribe { println "cluster_harmony__outdir input: $it" }
+            cluster_harmony__anndata.subscribe { println "cluster_harmony__anndata input: $it" }
+            cluster_harmony__reduced_dims.subscribe { println "cluster_harmony__reduced_dims input: $it" }
+            cluster_harmony__metadata.subscribe { println "cluster_harmony__metadata input: $it" }
+            cluster_harmony__pcs.subscribe { println "cluster_harmony__pcs input: $it" }
 
             CLUSTERING_HARMONY(
                 cluster_harmony__outdir,
@@ -246,6 +253,61 @@ workflow qc {
         }else{
             lisi_input3 = Channel.of([1, 'dummy'])
             LI2 = Channel.of([1, 'dummy_bbknn'])
+        }
+
+
+        if (params.dont_integrate_just_cluster){
+            DONT_INTEGRATE(
+                PCA.out.outdir,
+                PCA.out.anndata,
+                PCA.out.metadata,
+                PCA.out.pcs,
+                PCA.out.param_details,
+                n_pcs
+            )
+
+            UMAP(
+                DONT_INTEGRATE.out.outdir,
+                DONT_INTEGRATE.out.anndata,
+                PCA.out.metadata,
+                PCA.out.pcs,
+                DONT_INTEGRATE.out.reduced_dims,
+                "True",  // Don't look at the reduced_dims parameter
+                ["-1"],  // params.cluster.number_neighbors.value,
+                params.umap.umap_init.value,
+                params.umap.umap_min_dist.value,
+                params.umap.umap_spread.value,
+                params.umap.colors_quantitative.value,
+                params.umap.colors_categorical.value,
+                'bbknn'
+            )
+            cluster_outdir = UMAP.out.outdir
+            cluster_anndata = UMAP.out.anndata
+            cluster_metadata = UMAP.out.metadata
+            cluster_pcs = UMAP.out.pcs
+            cluster_reduced_dims = UMAP.out.reduced_dims
+            
+            CLUSTERING(
+                cluster_outdir,
+                cluster_anndata,
+                cluster_metadata,
+                cluster_pcs,
+                cluster_reduced_dims,
+                "True",  // use_pcs_as_reduced_dims
+                ["-1"],  // params.cluster.number_neighbors.value,
+                params.cluster.methods.value,
+                params.cluster.resolutions.value,
+                params.cluster.variables_boxplot.value,
+                channel__cluster__known_markers,
+                params.cluster_validate_resolution.sparsity.value,
+                params.cluster_validate_resolution.train_size_cells.value,
+                params.cluster_marker.methods.value,
+                ["-1"],  // params.umap.n_neighbors.value,
+                params.umap.umap_init.value,
+                params.umap.umap_min_dist.value,
+                params.umap.umap_spread.value,
+                params.sccaf.min_accuracy
+            )
         }
 
         if (params.lisi.run_process) {
