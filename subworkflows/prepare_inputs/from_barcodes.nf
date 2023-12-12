@@ -1,7 +1,6 @@
 nextflow.enable.dsl=2
 
-include {prep_collectmetadata; merge_metadata} from "$projectDir/modules/nf-core/modules/merge_metadata/main"
-
+// This workflow is now depicted starting from version 1.4
 workflow from_barcodes {
     // Here we prepeare ann the required channels for the Cellbender and Deconvolution pipelines. 
     // QC steps and Data Handover bite on the merged h5ad created by MERGE_SAMPLES process and results directory output folder respectively.
@@ -9,6 +8,11 @@ workflow from_barcodes {
         channel_input_data_table
     main:
         log.info "... Prepearing inputs based on the 10x folder required for downstream analysis..."
+
+        // Instead of this chanel definition we will use 1 single process as we will have to support multiple different 
+        // versions of cellranger.
+        
+
         channel_input_data_table
             .splitCsv(header: true, sep: params.input_tables_column_delimiter)
             .map{row->tuple(row.experiment_id, row.n_pooled)}
