@@ -297,6 +297,10 @@ workflow  main_deconvolution {
         // If sample is not deconvoluted we will use scrublet to detect the doublets and remove them.
         not_deconvoluted.map{ experiment, donorsvcf, npooled,t,t2 -> tuple(experiment, 'None')}.set{not_deconvoluted2}
 
+        vireo_out_sample_donor_ids.subscribe { println "vireo_out_sample_donor_ids: $it" }
+        ch_experiment_filth5.subscribe { println "ch_experiment_filth5: $it" }
+
+
         split_channel = vireo_out_sample_donor_ids.combine(ch_experiment_filth5, by: 0)
         split_channel2 = not_deconvoluted2.combine(ch_experiment_filth5, by: 0)
         // combining these 2 channels in one

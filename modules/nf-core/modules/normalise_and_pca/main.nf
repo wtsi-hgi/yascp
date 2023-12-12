@@ -10,7 +10,7 @@ process PCA {
         container "https://yascp.cog.sanger.ac.uk/public/singularity_images/nf_qc_scrna_v1.img"
         // /software/hgi/containers/nf_qc_scrna_v1.img
     } else {
-        container "mercury/nf_qc_scrna:v1"
+        container "mercury/nf_qc_scrna:v3"
     }
 
     publishDir  path: "${outdir}",
@@ -68,7 +68,7 @@ process NORMALISE_AND_PCA {
         container "https://yascp.cog.sanger.ac.uk/public/singularity_images/nf_qc_scrna_v1.img"
         // /software/hgi/containers/nf_qc_scrna_v1.img
     } else {
-        container "mercury/nf_qc_scrna:v1"
+        container "mercury/nf_qc_scrna:v3"
     }
 
 

@@ -53,7 +53,6 @@ workflow MULTIPLET {
         
         doubletdetection(channel__file_paths_10x)
 
-
         // Generate input file for merge based in multiplets
         make_cellmetadata_pipeline_input(
             SCRUBLET.out.multiplet_calls_published.collect()

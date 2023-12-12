@@ -3,9 +3,9 @@ process doubletdetection {
     tag "${experiment_id}"
     label 'process_low'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "/lustre/scratch123/hgi/teams/hgi/mo11/tmp_projects/jaguar_yascp/nieks_pipeline/sle-niek/2022-03-07-sc-eQTLgen-pipeline/2022-03-17-scEqtlgen-scripts-and-data/sif_files/WG1/demultiplex/WG1-pipeline-QC_wgpipeline.sif"
+        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/nf_scrna_qc_v3.img"
     } else {
-        container "wtsihgi/nf_scrna_qc:6bb6af5"
+        container "mercury/nf_scrna_qc:v3"
     }
     
     publishDir  path: "${params.outdir}/multiplet.method=doubletdetection",
