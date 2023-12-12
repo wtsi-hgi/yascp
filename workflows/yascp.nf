@@ -16,6 +16,7 @@ include { CREATE_ARTIFICIAL_BAM_CHANNEL } from "$projectDir/modules/local/create
 include {MERGE_SAMPLES} from "$projectDir/modules/nf-core/modules/merge_samples/main"
 include {dummy_filtered_channel} from "$projectDir/modules/nf-core/modules/merge_samples/functions"
 include {MULTIPLET} from "$projectDir/subworkflows/doublet_detection"
+include { SPLIT_CITESEQ_GEX; SPLIT_CITESEQ_GEX as SPLIT_CITESEQ_GEX_FILTERED } from '../modules/nf-core/modules/citeseq/main'
 /*
 ========================================================================================
     RUN MAIN WORKFLOW
@@ -60,29 +61,46 @@ workflow YASCP {
                 // The input table should contain the folowing columns - experiment_id	n_pooled	donor_vcf_ids	data_path_10x_format
                 // prepearing the inputs from a standard 10x dataset folders.
                 prepare_inputs(input_channel)
+                channel__file_paths_10x=prepare_inputs.out.channel__file_paths_10x
                 log.info 'The preprocessing has been already performed, skipping directly to h5ad input'
                 // // Removing the background using cellbender which is then used in the deconvolution.
-                if (params.input == 'existing_cellbender'){
+
+                // CITESEQ seperation
+                // Split citeseq if available
+                ch_experimentid_paths10x_raw = prepare_inputs.out.ch_experimentid_paths10x_raw
+                ch_experimentid_paths10x_filtered = prepare_inputs.out.ch_experimentid_paths10x_filtered
+                if (params.citeseq){
+                    // If citeseq data is present in the 10x mtx then we strip it before the ambient rna correction.
+                    SPLIT_CITESEQ_GEX( prepare_inputs.out.ch_experimentid_paths10x_raw,'raw')
+                    SPLIT_CITESEQ_GEX_FILTERED(prepare_inputs.out.ch_experimentid_paths10x_filtered,'filterd')
+
+                    channel__file_paths_10x=SPLIT_CITESEQ_GEX_FILTERED.out.channel__file_paths_10x
+                    ch_experimentid_paths10x_raw = SPLIT_CITESEQ_GEX.out.gex_data
+                    ab_data = SPLIT_CITESEQ_GEX.out.ab_data
+                }else{
+                    ab_data = Channel.of()
+                }
+
+                // Either run ambient RNA removal with cellbender or use cellranger filtered reads (cellbender|cellranger)
+                if (params.input == 'cellbender'){
                     // Here we are using the existing cellbender from a different run, Nothe that the structure of the cellbender folder should be same as produced by this pipeline.
                     log.info ' ---- using existing cellbender output for deconvolution---'
-
-
-                    ambient_RNA( prepare_inputs.out.ch_experimentid_paths10x_raw,
-                        prepare_inputs,prepare_inputs.out.channel__metadata)
-                    
+                    ambient_RNA( ch_experimentid_paths10x_raw,
+                        ch_experimentid_paths10x_filtered,prepare_inputs.out.channel__metadata,ab_data)
+        
                     DECONV_INPUTS(ambient_RNA.out.cellbender_path,prepare_inputs)
-                
+
                     channel__file_paths_10x = DECONV_INPUTS.out.channel__file_paths_10x
                     ch_experiment_bam_bai_barcodes= DECONV_INPUTS.out.ch_experiment_bam_bai_barcodes
-                    ch_experiment_filth5= DECONV_INPUTS.out.ch_experiment_filth5
+                    ch_experiment_filth5= channel__file_paths_10x
 
                 }
                 else if (params.input == 'cellranger'){
                     // This is where we skip the cellbender and use the cellranger filtered datasets.
                     log.info '--- using cellranger filtered data instead of cellbender (skipping cellbender)---'
                     ch_experiment_bam_bai_barcodes=prepare_inputs.out.ch_experiment_bam_bai_barcodes
-                    ch_experiment_filth5=prepare_inputs.out.ch_experiment_filth5
-                    channel__file_paths_10x=prepare_inputs.out.channel__file_paths_10x
+                    ch_experiment_filth5= channel__file_paths_10x
+                    // ch_experiment_filth5=prepare_inputs.out.ch_experiment_filth5
                 }
                 else{
                     log.info '--- input mode is not selected - please choose --- (existing_cellbender cellranger)'

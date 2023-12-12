@@ -8,6 +8,7 @@ workflow DECONV_INPUTS{
         cellbender_path
             .map{row->tuple(row[0], file("${row[1]}".replaceFirst(/.*results/,"${params.outdir}")))}
             .set{ch_experiment_filth5} // this channel is used for task 'split_donor_h5ad'
+            
         prepare_inputs.out.ch_experiment_bam_bai_barcodes.map { experiment, bam, bai, barcodes -> tuple(experiment,
                             bam,
                             bai)}.set{pre_ch_experiment_bam_bai_barcodes}
