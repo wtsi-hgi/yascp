@@ -49,7 +49,7 @@ workflow qc {
                 params.sample_qc.cell_filters.filter_outliers.max_samples,
                 params.anndata_compression_opts,
                 gt_outlier_input,
-                params.skip_preprocessing.gt_match_based_adaptive_qc_exclusion_pattern
+                params.gt_match_based_adaptive_qc_exclusion_pattern
             )
             file__anndata_merged = OUTLIER_FILTER.out.anndata
             file__cells_filtered = OUTLIER_FILTER.out.cells_filtered
@@ -73,7 +73,7 @@ workflow qc {
             LI4 = Channel.of([1, 'dummy_lisi'])
         }
 
-        PCA(andata,params.outdir,params.layer)
+        PCA(andata,outdir,params.layer)
 
         ESTIMATE_PCA_ELBOW(
             PCA.out.outdir,

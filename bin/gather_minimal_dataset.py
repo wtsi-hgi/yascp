@@ -1041,7 +1041,11 @@ if __name__ == '__main__':
     try:
         adqc = anndata.read_h5ad(f'{args.results_dir}/merged_h5ad/outlier_filtered_adata.h5ad')
     except:
-        adqc = anndata.read_h5ad(f'{args.results_dir}/adata.h5ad')
+        try:
+            adqc = anndata.read_h5ad(f'{args.results_dir}/adata.h5ad')
+        except:
+            d2 = glob.glob(f'{args.results_dir}/*/*/adatanormalized.h5ad')[0]
+            adqc = anndata.read_h5ad(d2)
     adqc.obs['experiment_id'] = adqc.obs['experiment_id'].str.split("__").str[0]
     fctr = 0
     data_tranche_all=[]
@@ -1055,6 +1059,9 @@ if __name__ == '__main__':
     adqc.obs['tranche.id']=args.experiment_name
     try:
         adqc.obs['cell_passes_qc-per:Azimuth:L0_predicted.celltype.l2:score'] = adqc.obs['cell_passes_qc-per:Azimuth:L0_predicted.celltype.l2:score'].astype(float,errors='ignore')
+    except:
+        _='no values associated'
+    try:
         adqc.obs['cell_passes_qc-per:all_together::exclude:score']= adqc.obs['cell_passes_qc-per:all_together::exclude:score'].astype(float,errors='ignore')
     except:
         _='no values associated'

@@ -62,6 +62,7 @@ workflow YASCP {
                 // prepearing the inputs from a standard 10x dataset folders.
                 prepare_inputs(input_channel)
                 channel__file_paths_10x=prepare_inputs.out.channel__file_paths_10x
+                input_channel = prepare_inputs.out.channel_input_data_table
                 log.info 'The preprocessing has been already performed, skipping directly to h5ad input'
                 // // Removing the background using cellbender which is then used in the deconvolution.
 
@@ -258,7 +259,7 @@ workflow YASCP {
         // ###################################
 
         if (!params.skip_handover){
-            data_handover(params.outdir,
+            data_handover(params.outdir,input_channel,
                             process_finish_check_channel,
                             ch_poolid_csv_donor_assignments,
                             bam_split_channel) 

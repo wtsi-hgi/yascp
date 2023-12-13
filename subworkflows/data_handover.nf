@@ -6,6 +6,7 @@ include { split_bam_by_donor } from "$projectDir/modules/local/cellranger_bam_pe
 workflow data_handover{
     take:
         outdir
+        input_channel
         qc_input
         ch_poolid_csv_donor_assignments
         sample_possorted_bam_vireo_donor_ids
@@ -13,7 +14,7 @@ workflow data_handover{
     main:
         log.info 'running data handover'
 
-        GATHER_DATA(outdir,qc_input.collect(),params.input_data_table)
+        GATHER_DATA(outdir,qc_input.collect(),input_channel)
 
         if (params.split_bam){
             split_bam_by_donor(sample_possorted_bam_vireo_donor_ids, params.reference_assembly_fasta_dir_bam_split)

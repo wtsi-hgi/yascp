@@ -114,4 +114,5 @@ workflow prepare_inputs {
         ch_experimentid_paths10x_filtered
         channel__file_paths_10x
         channel__metadata
+        channel_input_data_table
 }
