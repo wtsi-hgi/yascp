@@ -478,10 +478,11 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
     df_total_counts_cellranger_raw = df_total_counts
     df_total_counts_cellranger_raw['dataset']='Cellranger Raw'
     wd = os.getcwd()
-    df_cellbender = df_cellbender.reset_index()
-    df_cellbender = df_cellbender.drop_duplicates(subset=['experiment_id'])
-    df_cellbender = df_cellbender.set_index('experiment_id')
+
     if df_cellbender is not None and (len(df_cellbender)!=0):
+        df_cellbender = df_cellbender.reset_index()
+        df_cellbender = df_cellbender.drop_duplicates(subset=['experiment_id'])
+        df_cellbender = df_cellbender.set_index('experiment_id')
         f=df_cellbender.loc[expid, 'data_path_10x_format']
         if (type(f) == str):
             print('yes')
