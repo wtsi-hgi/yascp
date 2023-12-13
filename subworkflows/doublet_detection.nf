@@ -51,7 +51,7 @@ workflow MULTIPLET {
             params.sample_qc.cell_filters.filter_multiplets.scale_log10
         )
         
-        doubletdetection(channel__file_paths_10x)
+        // doubletdetection(channel__file_paths_10x)
 
         // Generate input file for merge based in multiplets
         make_cellmetadata_pipeline_input(
