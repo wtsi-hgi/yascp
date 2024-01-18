@@ -282,6 +282,7 @@ process RESOLVE_POOL_VCFS{
       path('Data_Pipeline___*'), emit: pipeline_data
       path('Genotype___*'), emit: genotype_folder
       path('Data_User___*'), emit: user_data
+      // path(vcf),emit: pool_vcf
       // tuple val(samplename), path("*__vcf_gz.vcf.gz"),path("*__vcf_gz.vcf.gz.csi"), emit: merged_expected_genotypes
       // path("*__vcf_gz.vcf.gz",emit:study_merged_vcf)
       // If more than one pool is using the same genotype it is pointless to emit it many times. Hence we produce a vcf pointer files which indicate which pool uses which genotype.
