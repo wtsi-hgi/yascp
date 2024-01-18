@@ -286,6 +286,7 @@ process RESOLVE_POOL_VCFS{
       // path("*__vcf_gz.vcf.gz",emit:study_merged_vcf)
       // If more than one pool is using the same genotype it is pointless to emit it many times. Hence we produce a vcf pointer files which indicate which pool uses which genotype.
     script:
+      vcf=vcf[0]
       """
         pool_panel.py --mode ${mode} --vcf ${vcf} --pool_ids ${samplename} --mode ${mode}
         

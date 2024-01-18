@@ -145,8 +145,15 @@ workflow  main_deconvolution {
             // Here we subset the genotypes. This happens if the input.nf contains subset_genotypes = true
             log.info "---We are using subset genotypes running Vireo----"
             // We need to make sure that the expected genotypes dont contain repeated genotypes - donors sequenced twice.
-            REMOVE_DUPLICATED_DONORS_FROM_GT(merged_expected_genotypes,params.genotype_phenotype_mapping_file,params.input_data_table)
-            merged_expected_genotypes = REMOVE_DUPLICATED_DONORS_FROM_GT.out.merged_expected_genotypes
+            // params.genotype_phenotype_mapping_file.subscribe{ println "params.genotype_phenotype_mapping_file filter_channel: $it" }
+            // log.info "---${params.genotype_phenotype_mapping_file} params.genotype_phenotype_mapping_file----"
+            // log.info "---${params.input_data_table} params.genotype_phenotype_mapping_file----"
+            // merged_expected_genotypes.subscribe{ println "merged_expected_genotypes: $it" }
+            if (params.genotype_phenotype_mapping_file!=''){
+                REMOVE_DUPLICATED_DONORS_FROM_GT(merged_expected_genotypes,params.genotype_phenotype_mapping_file,params.input_data_table)
+                merged_expected_genotypes = REMOVE_DUPLICATED_DONORS_FROM_GT.out.merged_expected_genotypes
+            }
+            
             cellsnp_output_dir.combine(ch_experiment_npooled, by: 0)
                 .combine(merged_expected_genotypes, by: 0).set{full_vcf}
         } else {
@@ -296,11 +303,6 @@ workflow  main_deconvolution {
 
         // If sample is not deconvoluted we will use scrublet to detect the doublets and remove them.
         not_deconvoluted.map{ experiment, donorsvcf, npooled,t,t2 -> tuple(experiment, 'None')}.set{not_deconvoluted2}
-
-        vireo_out_sample_donor_ids.subscribe { println "vireo_out_sample_donor_ids: $it" }
-        ch_experiment_filth5.subscribe { println "ch_experiment_filth5: $it" }
-
-
         split_channel = vireo_out_sample_donor_ids.combine(ch_experiment_filth5, by: 0)
         split_channel2 = not_deconvoluted2.combine(ch_experiment_filth5, by: 0)
         // combining these 2 channels in one
