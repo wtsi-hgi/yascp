@@ -296,6 +296,14 @@ if __name__ == "__main__":
         help='cellsnp'
     )   
 
+    # parser.add_argument(
+    #     '-dny', '--add_dynamic_sites_or_not_to_panel',
+    #     action='store',
+    #     dest='add_dynamic_sites_or_not_to_panel',
+    #     required=True,
+    #     help='cellsnp'
+    # )   
+
     options = parser.parse_args()
     vcf = options.vcf
     cellsnp = options.cellsnp

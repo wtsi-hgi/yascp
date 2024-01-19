@@ -33,17 +33,24 @@ process DYNAMIC_DONOR_EXCLUSIVE_SNP_SELECTION{
                 mode: "${params.copy_mode}",
                 overwrite: "true"
     input: 
+        val(add_dynamic_sites_or_not_to_panel)
         tuple val(samplename), path(vcf_file),path(csi),path(cellsnp_primary_file)
     output:
       tuple val(samplename), path("cellsnp_panel_${samplename}.vcf.gz"),emit:cellsnp_pool_panel
       tuple val(samplename), path("set2_informative_sites_${samplename}.tsv"), path("set1_uninformative_sites_${samplename}.tsv"),path("variants_description.tsv"),emit:informative_uninformative_sites 
     script:       
+      if (params.add_dynamic_sites_or_not_to_panel){
+        cmd1="ln -s ${vcf_file} dynamic_snps.vcf.gz"
+      }else{
+        cmd1="bcftools view -R ${cellsnp_primary_file} ${vcf_file} -Oz -o  dynamic_snps.vcf.gz"
+      }
+
       """
         echo ${samplename}
         echo ${vcf_file}
         echo ${cellsnp_primary_file}
         #// bcftools view -i 'MAF > 0.0001 & R2>=1.00' -Oz -o dynamic_snps.vcf.gz ${vcf_file}
-        ln -s ${vcf_file} dynamic_snps.vcf.gz
+        ${cmd1}
         dynamic_donor_exclusive_snp_selection.py -cpus ${task.cpus} -vcf dynamic_snps.vcf.gz -cellsnp ${cellsnp_primary_file}
         echo test > output.csv
         bcftools view -h ${cellsnp_primary_file} > cellsnp_panel_${samplename}.vcf

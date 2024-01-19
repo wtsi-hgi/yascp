@@ -75,7 +75,8 @@ workflow  main_deconvolution {
             // merged_expected_genotypes2.subscribe { println "merged_expected_genotypes2: $it" }
             GT_MATCH_POOL_IBD(SUBSET_WORKF.out.samplename_subsetvcf_ibd,'Withing_expected','Expected')
 
-            DYNAMIC_DONOR_EXCLUSIVE_SNP_SELECTION(merged_expected_genotypes2)
+            
+            DYNAMIC_DONOR_EXCLUSIVE_SNP_SELECTION(params.add_snps_to_pile_up_based_on_genotypes_provided,merged_expected_genotypes2)
             cellsnp_panels = DYNAMIC_DONOR_EXCLUSIVE_SNP_SELECTION.out.cellsnp_pool_panel
             
             informative_uninformative_sites = DYNAMIC_DONOR_EXCLUSIVE_SNP_SELECTION.out.informative_uninformative_sites
