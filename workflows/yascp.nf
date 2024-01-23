@@ -77,6 +77,7 @@ workflow YASCP {
                     SPLIT_CITESEQ_GEX( prepare_inputs.out.ch_experimentid_paths10x_raw,'raw')
                     SPLIT_CITESEQ_GEX_FILTERED(prepare_inputs.out.ch_experimentid_paths10x_filtered,'filterd')
                     
+                    ch_experimentid_paths10x_raw = SPLIT_CITESEQ_GEX.out.gex_data
                     SPLIT_CITESEQ_GEX_FILTERED.out.gex_data
                     channel__file_paths_10x=SPLIT_CITESEQ_GEX_FILTERED.out.channel__file_paths_10x
                     ch_experiment_filth5 = SPLIT_CITESEQ_GEX.out.gex_data

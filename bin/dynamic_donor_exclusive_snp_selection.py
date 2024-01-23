@@ -111,7 +111,7 @@ class VCF_Loader:
             # r = random.random()
             # Issue is that this slows down after number of entries is recorded. So recoding takes longer and longer.
             # every 500 itterations we push the data to a dictionary, later we combine these together.
-            if (count % 300 == 0):
+            if (count % 1000 == 0):
                 print(f'recording and resetting memory {count}')
                 # self.record_dict[count]=self.exclusive_donor_variants
                 self.set_results(self.exclusive_donor_variants,count)
