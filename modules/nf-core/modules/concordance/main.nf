@@ -23,13 +23,9 @@ process CONCORDANCE_CALCLULATIONS {
         path(donor_table),path(cell_assignments),path(set2_informative_sites), path(set1_uninformative_sites),path(variants_description))
 
     output:
-        tuple val(pool_id), path("cell_concordance_table_noA2G.tsv"), emit: concordances_noAG  optional true
-        tuple val(pool_id), path('discordant_sites_in_other_donors_noA2G.tsv'), emit: read_concordances_noAG
-        tuple val(pool_id), path("cell_concordance_table.tsv"), emit: concordances  optional true
-        tuple val(pool_id), path('discordant_sites_in_other_donors.tsv'), emit: read_concordances
-        tuple val(pool_id), path('site_identities_discordant_sites_in_other_donors.tsv'), emit: site_identities_concordances optional true
+        tuple val(pool_id), path('discordant_sites_in_other_donors_noA2G.tsv'), emit: concordances
+        path("*--each_cells_comparison_with_other_donor.tsv"), emit: each_cells_comparison
         tuple val(pool_id), path("${cell_vcf}"), path("${donor_table}"), path("sub_${pool_id}*.vcf.gz"),path("${cell_assignments}"),path("*.pkl"), emit: other_donor_input
-
     script:
 
         """
@@ -39,10 +35,8 @@ process CONCORDANCE_CALCLULATIONS {
                 bcftools view ${vcf_gt_match} -R ${cell_vcf} -Oz -o sub_${pool_id}_GT_Matched.vcf.gz
             fi
             
-            concordance_calculations_donor_exclusive_read_level_noA2G.py --cpus $task.cpus --cell_vcf ${cell_vcf} --donor_assignments ${donor_table} --gt_match_vcf sub_${pool_id}_GT_Matched.vcf.gz --expected_vcf sub_${pool_id}_Expected.vcf.gz --outfile cell_concordance_table_noA2G.tsv --cell_assignments ${cell_assignments} --informative_sites ${set2_informative_sites} --uninformative_sites ${set1_uninformative_sites}
-            find_discordant_sites_in_other_donors_noA2G.py --cpus $task.cpus --cell_vcf ${cell_vcf} --donor_assignments ${donor_table} --gt_match_vcf sub_${pool_id}_GT_Matched.vcf.gz --expected_vcf sub_${pool_id}_Expected.vcf.gz --cell_assignments ${cell_assignments} --outfile discordant_sites_in_other_donors_noA2G.tsv --debug
-            concordance_calculations_donor_exclusive_read_level.py --cpus $task.cpus --cell_vcf ${cell_vcf} --donor_assignments ${donor_table} --gt_match_vcf sub_${pool_id}_GT_Matched.vcf.gz --expected_vcf sub_${pool_id}_Expected.vcf.gz --cell_assignments ${cell_assignments} --informative_sites ${set2_informative_sites} --uninformative_sites ${set1_uninformative_sites}
-            find_discordant_sites_in_other_donors_find_best_donor.py --cpus $task.cpus --cell_vcf ${cell_vcf} --donor_assignments ${donor_table} --gt_match_vcf sub_${pool_id}_GT_Matched.vcf.gz --expected_vcf sub_${pool_id}_Expected.vcf.gz --cell_assignments ${cell_assignments} --outfile discordant_sites_in_other_donors.tsv --debug
+            concordance_calculations.py --cpus $task.cpus --cell_vcf ${cell_vcf} --donor_assignments ${donor_table} --gt_match_vcf sub_${pool_id}_GT_Matched.vcf.gz --expected_vcf sub_${pool_id}_Expected.vcf.gz --cell_assignments ${cell_assignments} --outfile discordant_sites_in_other_donors_noA2G.tsv --informative_sites ${set2_informative_sites} --uninformative_sites ${set1_uninformative_sites} --remove_AG 
+
         """
 }
 

@@ -89,7 +89,7 @@ Joined_Df.to_csv(f'{name}__joined_df_for_plots.tsv',sep='\t',index=False)
 
 
 
-Joined_Df['total number of sites']=Joined_Df['Nr_Concordant']+Joined_Df['Nr_Discordant']
+Joined_Df['total number of sites']=Joined_Df['Total_sites']
 
 ax1 = sns.violinplot(data=Joined_Df, y="Percent_strict_discordant", x="Nr times becoming different donor in subsampling", cut=0, scale='width')
 fig = ax1.get_figure()
