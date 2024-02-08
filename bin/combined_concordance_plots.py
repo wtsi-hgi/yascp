@@ -53,7 +53,7 @@ name = options.name
 Cell_Concordance = pd.read_csv(cc,sep='\t')
 
 Joined_Df = Cell_Concordance
-Joined_Df['total number of sites']=Joined_Df['Nr_Concordant']+Joined_Df['Nr_Discordant']
+Joined_Df['total number of sites']=Joined_Df['Total_sites']
 
 
 ax1 = sns.violinplot(data=Joined_Df, y="Percent_strict_discordant", x="Nr times becoming different donor in subsampling", cut=0, scale='width')
