@@ -427,7 +427,7 @@ args = commandArgs(trailingOnly=TRUE)
 if (length(args)==0) {
   stop("input h5 file required as input.\n", call=FALSE)
 }
-
+# inputfile.h5ad = './AZ_pre_QC_adata_full.h5ad'
 inputfile.h5ad = args[1]
 cat("inputfile.h5ad = ", inputfile.h5ad, "\n")
 # input_dir = args[1]
@@ -553,210 +553,133 @@ anchors <- FindTransferAnchors(
 # The prediction scores for each class are in an assay named "prediction.score.*"
 # The imputed assay is named "impADT" if computed
 
-refdata <- lapply(X = "celltype.l2", function(x) {
-  reference$map[[x, drop = TRUE]]
-})
-names(x = refdata) <- "celltype.l2"
-if (FALSE) {
-  refdata[["impADT"]] <- GetAssayData(
-    object = reference$map[['ADT']],
-    slot = 'data'
-  )
-}
-query <- TransferData(
-  reference = reference$map,
-  query = query,
-  dims = 1:50,
-  anchorset = anchors,
-  refdata = refdata,
-  n.trees = 20,
-  store.weights = TRUE
-)
+levels<- list("celltype.l2", "celltype.l1", "celltype.l3")
 
-# Calculate the embeddings of the query data on the reference SPCA
-query <- IntegrateEmbeddings(
-  anchorset = anchors,
-  reference = reference$map,
-  query = query,
-  reductions = "pcaproject",
-  reuse.weights.matrix = TRUE
-)
+for (celltype_level in levels) {
+      id <- celltype_level[1]
 
-# Calculate the query neighbors in the reference
-# with respect to the integrated embeddings
-query[["query_ref.nn"]] <- FindNeighbors(
-  object = Embeddings(reference$map[["refDR"]]),
-  query = Embeddings(query[["integrated_dr"]]),
-  return.neighbor = TRUE,
-  l2.norm = TRUE
-)
+      refdata <- lapply(X = celltype_level, function(x) {
+        reference$map[[x, drop = TRUE]]
+      })
+      names(x = refdata) <- celltype_level
+      if (FALSE) {
+        refdata[["impADT"]] <- GetAssayData(
+          object = reference$map[['ADT']],
+          slot = 'data'
+        )
+      }
+      query <- TransferData(
+        reference = reference$map,
+        query = query,
+        dims = 1:50,
+        anchorset = anchors,
+        refdata = refdata,
+        n.trees = 20,
+        store.weights = TRUE
+      )
 
-# The reference used in the app is downsampled compared to the reference on which
-# the UMAP model was computed. This step, using the helper function NNTransform,
-# corrects the Neighbors to account for the downsampling.
-query <- NNTransform(
-  object = query,
-  meta.data = reference$map[[]]
-)
+      # Calculate the embeddings of the query data on the reference SPCA
+      query <- IntegrateEmbeddings(
+        anchorset = anchors,
+        reference = reference$map,
+        query = query,
+        reductions = "pcaproject",
+        reuse.weights.matrix = TRUE
+      )
 
-# Project the query to the reference UMAP.
-query[["proj.umap"]] <- RunUMAP(
-  object = query[["query_ref.nn"]],
-  reduction.model = reference$map[["refUMAP"]],
-  reduction.key = 'UMAP_'
-)
+      # Calculate the query neighbors in the reference
+      # with respect to the integrated embeddings
+      query[["query_ref.nn"]] <- FindNeighbors(
+        object = Embeddings(reference$map[["refDR"]]),
+        query = Embeddings(query[["integrated_dr"]]),
+        return.neighbor = TRUE,
+        l2.norm = TRUE
+      )
 
+      # The reference used in the app is downsampled compared to the reference on which
+      # the UMAP model was computed. This step, using the helper function NNTransform,
+      # corrects the Neighbors to account for the downsampling.
+      query <- NNTransform(
+        object = query,
+        meta.data = reference$map[[]]
+      )
 
-# Calculate mapping score and add to metadata
-query <- AddMetaData(
-  object = query,
-  metadata = MappingScore(anchors = anchors),
-  col.name = "mapping.score"
-)
+      # Project the query to the reference UMAP.
+      query[["proj.umap"]] <- RunUMAP(
+        object = query[["query_ref.nn"]],
+        reduction.model = reference$map[["refUMAP"]],
+        reduction.key = 'UMAP_'
+      )
 
 
-# VISUALIZATIONS
-cat("Generating Visualizations ...\n")
-pdf(NULL) # switch off automatic generation of Rplots.pdf
-
-# First predicted metadata field, change to visualize other predicted metadata
-id <- "celltype.l2"[1]
-predicted.id <- paste0("predicted.", id)
-predicted.id.score <- paste0(predicted.id, ".score")
-
-# write a table of cell-type assignments, prediction and mapping scores:
-fnam.table <- paste0(gsub(".", "_", predicted.id, fixed = TRUE),".tsv")
-data <- FetchData(object = query, vars = c(predicted.id, predicted.id.score, "mapping.score"), slot = "data")
-write.table(data, fnam.table, quote = FALSE, sep="\t")
-#gzip(fnam.table, overwrite = TRUE)
-
-# make a barplot for the number of cells in each celltype category
-ctyp.counts <- function(vec, label) {
-  tb <- table(as.factor(vec))
-  v <- vector(mode = "character", length = length(tb))
-  v[] <- label
-  tabf <- cbind(v, as.data.frame(tb))
-  names(tabf) <- c("threshold", "cell_type", "count")
-  tabf
-}
-tdf <- ctyp.counts(data[,1], label = "all")
-for (thresh in c(.5, .8)) {
-  tag <- paste0("score>",format(thresh, digits=1))
-  tdf <- rbind(
-    tdf,
-    ctyp.counts(data[data[,2] > thresh, 1],
-      label = paste0("score>",format(thresh, digits=1))
-    )
-  )
-}
-p <- ggplot(tdf, aes(x=cell_type, y=count, fill = threshold))
-p <- p + geom_col(position = "dodge")
-p <- p + theme(axis.text.x = element_text(angle = 90))
-ggsave("ncells_by_type_barplot.pdf")
-
-# DimPlot of the reference
-#ref.plt <- DimPlot(object = reference$plot, reduction = "refUMAP", group.by = id, label = TRUE) + NoLegend()
-#ggsave(file = "ref_umap.pdf", plot = ref.plt)
-#ggsave("ref_umap.pdf")
-
-# DimPlot of the query, colored by predicted cell type
-DimPlot(object = query, reduction = "proj.umap", group.by = predicted.id, label = TRUE) + NoLegend()
-ggsave("query_umap.pdf")
-
-# Plot the score for the predicted cell type of the query
-FeaturePlot(object = query, features = paste0(predicted.id, ".score"), reduction = "proj.umap")
-ggsave("prediction_score_umap.pdf")
-VlnPlot(object = query, features = paste0(predicted.id, ".score"), group.by = predicted.id) + NoLegend()
-ggsave("prediction_score_vln.pdf")
-
-# Plot the mapping score
-FeaturePlot(object = query, features = "mapping.score", reduction = "proj.umap")
-ggsave("mapping_score_umap.pdf")
-VlnPlot(object = query, features = "mapping.score", group.by = predicted.id) + NoLegend()
-ggsave("mapping_score_vln.pdf")
-
-# Plot the prediction score for the class CD16 Mono
-#FeaturePlot(object = query, features = "CD16 Mono", reduction = "proj.umap")
-#ggsave("prediction_score_CD16Mono_umap.pdf")
-#VlnPlot(object = query, features = "CD16 Mono", group.by = predicted.id) + NoLegend()
-#ggsave("prediction_score_CD16Mono_vln.pdf")
-
-# Plot an RNA feature
-# FeaturePlot(object = query, features = "GNLY", reduction = "proj.umap")
-# VlnPlot(object = query, features = "GNLY", group.by = predicted.id) + NoLegend()
-
-# save mapped data set
-#save(query, file = "azimuth.bin")
-saveRDS(query, file = "azimuth.rds")
-# load("azimuth.bin" )
+      # Calculate mapping score and add to metadata
+      query <- AddMetaData(
+        object = query,
+        metadata = MappingScore(anchors = anchors),
+        col.name = paste0("mapping.score.", id)
+      )
 
 
-# VISUALIZATIONS
-cat("Generating Visualizations ...\n")
-pdf(NULL) # switch off automatic generation of Rplots.pdf
+      # VISUALIZATIONS
+      cat("Generating Visualizations ...\n")
+      pdf(NULL) # switch off automatic generation of Rplots.pdf
+      predicted.id <- paste0("predicted.", id)
+      predicted.id.score <- paste0(predicted.id, ".score")
 
-# First predicted metadata field, change to visualize other predicted metadata
-id <- "celltype.l2"[1]
-predicted.id <- paste0("predicted.", id)
-predicted.id.score <- paste0(predicted.id, ".score")
+      # write a table of cell-type assignments, prediction and mapping scores:
+      fnam.table <- paste0(gsub(".", "_", predicted.id, fixed = TRUE),".tsv")
+      data <- FetchData(object = query, vars = c(predicted.id, predicted.id.score, paste0("mapping.score.", id)), slot = "data")
+      write.table(data, fnam.table, quote = FALSE, sep="\t")
+      #gzip(fnam.table, overwrite = TRUE)
 
-# write a table of cell-type assignments, prediction and mapping scores:
-fnam.table <- paste0(gsub(".", "_", predicted.id, fixed = TRUE),".tsv")
-data <- FetchData(object = query, vars = c(predicted.id, predicted.id.score, "mapping.score"), slot = "data")
-write.table(data, fnam.table, quote = FALSE, sep="\t")
-#gzip(fnam.table, overwrite = TRUE)
+      # make a barplot for the number of cells in each celltype category
+      ctyp.counts <- function(vec, label) {
+        tb <- table(as.factor(vec))
+        v <- vector(mode = "character", length = length(tb))
+        v[] <- label
+        tabf <- cbind(v, as.data.frame(tb))
+        names(tabf) <- c("threshold", "cell_type", "count")
+        tabf
+      }
+      tdf <- ctyp.counts(data[,1], label = "all")
+      for (thresh in c(.5, .8)) {
+        tag <- paste0("score>",format(thresh, digits=1))
+        tdf <- rbind(
+          tdf,
+          ctyp.counts(data[data[,2] > thresh, 1],
+            label = paste0("score>",format(thresh, digits=1))
+          )
+        )
+      }
+      p <- ggplot(tdf, aes(x=cell_type, y=count, fill = threshold))
+      p <- p + geom_col(position = "dodge")
+      p <- p + theme(axis.text.x = element_text(angle = 90))
+      ggsave(paste0(id,".ncells_by_type_barplot.pdf"))
 
-# make a barplot for the number of cells in each celltype category
-ctyp.counts <- function(vec, label) {
-  tb <- table(as.factor(vec))
-  v <- vector(mode = "character", length = length(tb))
-  v[] <- label
-  tabf <- cbind(v, as.data.frame(tb))
-  names(tabf) <- c("threshold", "cell_type", "count")
-  tabf
-}
-tdf <- ctyp.counts(data[,1], label = "all")
-for (thresh in c(.5, .8)) {
-  tag <- paste0("score>",format(thresh, digits=1))
-  tdf <- rbind(
-    tdf,
-    ctyp.counts(data[data[,2] > thresh, 1],
-      label = paste0("score>",format(thresh, digits=1))
-    )
-  )
-}
-p <- ggplot(tdf, aes(x=cell_type, y=count, fill = threshold))
-p <- p + geom_col(position = "dodge")
-p <- p + theme(axis.text.x = element_text(angle = 90))
-ggsave("ncells_by_type_barplot.pdf")
+      # DimPlot of the reference
+      #ref.plt <- DimPlot(object = reference$plot, reduction = "refUMAP", group.by = id, label = TRUE) + NoLegend()
+      #ggsave(file = "ref_umap.pdf", plot = ref.plt)
+      #ggsave("ref_umap.pdf")
 
-# DimPlot of the reference
-#ref.plt <- DimPlot(object = reference$plot, reduction = "refUMAP", group.by = id, label = TRUE) + NoLegend()
-#ggsave(file = "ref_umap.pdf", plot = ref.plt)
-#ggsave("ref_umap.pdf")
+      # DimPlot of the query, colored by predicted cell type
+      DimPlot(object = query, reduction = "proj.umap", group.by = predicted.id, label = TRUE) + NoLegend()
+      ggsave(paste0(id,".query_umap.pdf"))
 
-# DimPlot of the query, colored by predicted cell type
-DimPlot(object = query, reduction = "proj.umap", group.by = predicted.id, label = TRUE) + NoLegend()
-ggsave("query_umap.pdf")
+      # Plot the score for the predicted cell type of the query
+      FeaturePlot(object = query, features = paste0(predicted.id, ".score"), reduction = "proj.umap")
+      ggsave(paste0(id,".prediction_score_umap.pdf"))
+      VlnPlot(object = query, features = paste0(predicted.id, ".score"), group.by = predicted.id) + NoLegend()
+      ggsave(paste0(id,".prediction_score_vln.pdf"))
 
-# Plot the score for the predicted cell type of the query
-FeaturePlot(object = query, features = paste0(predicted.id, ".score"), reduction = "proj.umap")
-ggsave("prediction_score_umap.pdf")
-VlnPlot(object = query, features = paste0(predicted.id, ".score"), group.by = predicted.id) + NoLegend()
-ggsave("prediction_score_vln.pdf")
+      # Plot the mapping score
+      FeaturePlot(object = query, features = paste0("mapping.score.", id), reduction = "proj.umap")
+      ggsave(paste0(id,".mapping_score_umap.pdf"))
+      VlnPlot(object = query, features = paste0("mapping.score.", id), group.by = predicted.id) + NoLegend()
+      ggsave(paste0(id,".mapping_score_vln.pdf"))
 
-# Plot the mapping score
-FeaturePlot(object = query, features = "mapping.score", reduction = "proj.umap")
-ggsave("mapping_score_umap.pdf")
-VlnPlot(object = query, features = "mapping.score", group.by = predicted.id) + NoLegend()
-ggsave("mapping_score_vln.pdf")
+} 
 
-# Plot the prediction score for the class CD16 Mono
-#FeaturePlot(object = query, features = "CD16 Mono", reduction = "proj.umap")
-#ggsave("prediction_score_CD16Mono_umap.pdf")
-#VlnPlot(object = query, features = "CD16 Mono", group.by = predicted.id) + NoLegend()
-#ggsave("prediction_score_CD16Mono_vln.pdf")
-
-# Plot an RNA feature
-# FeaturePlot(object = query, features = "GNLY", reduction = "proj.umap")
-# VlnPlot(object = query, features = "GNLY", group.by = predicted.id) + NoLegend()
+  # save mapped data set
+  #save(query, file = "azimuth.bin")
+  saveRDS(query, file = "azimuth.rds")
+  # load("azimuth.bin" )

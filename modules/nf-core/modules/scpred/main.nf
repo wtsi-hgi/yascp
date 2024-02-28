@@ -3,7 +3,7 @@ process SCPRED{
     label 'process_medium'
    
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "/software/hgi/containers/yascp/cell_classification.sif "
+        container "/software/hgi/containers/yascp/cell_classification.sif"
     } else {
         container "wtsihgi/nf_scrna_qc_azimuth:d54db9b"
     }
@@ -17,17 +17,11 @@ process SCPRED{
     input:
         val outdir_prev
         path file_h5ad_batch
-
+    when:
+        params.celltype_assignment.run_azimuth
     output:
         path('*.RDS')
-        // path(celltype_table, emit:predicted_celltypes)
-        // path(celltype_table, emit:predicted_celltype_labels)
-        // path "ncells_by_type_barplot.pdf"
-        // path "query_umap.pdf"
-        // path "prediction_score_umap.pdf"
-        // path "prediction_score_vln.pdf"
-        // path "mapping_score_umap.pdf"
-        // path "mapping_score_vln.pdf"
+        path("${outfil_prfx}__scpred_prediction.tsv"), emit:predicted_celltype_labels
 
     script:
     
@@ -38,5 +32,6 @@ process SCPRED{
     celltype_table = "${outfil_prfx}_predicted_celltype_l2.tsv.gz"
     """
         scpred_map_hiers.R --file ./${file_h5ad_batch}
+        ln -s scpred_prediction.tsv ${outfil_prfx}__scpred_prediction.tsv
     """
 }

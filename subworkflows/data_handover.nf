@@ -13,6 +13,13 @@ workflow data_handover{
 
     main:
         log.info 'running data handover'
+        // outdir = file(outdir)
+        // outdir = file("${launchDir}/${outdir}").ifEmpty(outdir)
+
+
+
+
+
 
         GATHER_DATA(outdir,qc_input.collect(),input_channel)
 
@@ -44,6 +51,6 @@ workflow data_handover{
 
         // We also generate a report.
         // If we run it in sanger we transfer the data to the local website.
-        TRANSFER(SUMMARY_STATISTICS_PLOTS.out.summary_plots,params.rsync_to_web_file,params.outdir)
+        TRANSFER(SUMMARY_STATISTICS_PLOTS.out.summary_plots,params.rsync_to_web_file,outdir)
 
 }

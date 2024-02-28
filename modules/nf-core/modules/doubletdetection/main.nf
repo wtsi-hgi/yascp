@@ -1,4 +1,4 @@
-process doubletdetection {
+process DOUBLET_DETECTION {
 
     tag "${experiment_id}"
     label 'process_low'
@@ -21,9 +21,9 @@ process doubletdetection {
             path(file_10x_matrix)
         )
 
-    output:
-        path("plots/*.pdf") optional true
-        path("plots/*.png") optional true
+    // output:
+    //     path("plots/*.pdf") optional true
+    //     path("plots/*.png") optional true
 
     script:
         

@@ -296,62 +296,102 @@ if __name__ == "__main__":
         help='cellsnp'
     )   
 
-    # parser.add_argument(
-    #     '-dny', '--add_dynamic_sites_or_not_to_panel',
-    #     action='store',
-    #     dest='add_dynamic_sites_or_not_to_panel',
-    #     required=True,
-    #     help='cellsnp'
-    # )   
+    parser.add_argument(
+        '-dny', '--add_dynamic_sites_or_not_to_panel',
+        action='store',
+        dest='add_dynamic_sites_or_not_to_panel',
+        required=False,default=False,
+        help='cellsnp'
+    )   
 
     options = parser.parse_args()
     vcf = options.vcf
     cellsnp = options.cellsnp
     cpus = int(options.cpus)
-
+    GT_donors = pd.read_csv(vcf,sep='\t',comment='#',header=None)
     print('---Genotype loader init----')    
-    loader2 = VCF_Loader(vcf, biallelic_only=True,
-                    sparse=False, format_list=['GT'])
+    # loader2 = VCF_Loader(vcf, biallelic_only=True,
+    #                 sparse=False, format_list=['GT'])
 
-    GT_Matched_variants = loader2.load_VCF_batch_paralel()
+    GT_donors = pd.read_csv(vcf,sep='\t',comment='#',header=None)
+    GT_donors[0]=GT_donors[0].astype(str)
+    GT_donors[1]=GT_donors[1].astype(str)
+
+    header_det = GT_donors.iloc[0]
+    # subs0 =  GT_donors.iloc[0:10]
+    subs0 =  GT_donors
+    GT_Start_index = int(header_det[header_det.str.contains('GT')].index.values[0])+1
+    GT_Position = header_det[header_det.str.contains('GT')].values[0].split(':').index('GT')
+    
+    idxs = list(subs0.columns[GT_Start_index:])
+    headers = list(subs0.columns[:GT_Start_index-1])
+    subs = subs0[idxs]
+    headers_all = subs0[headers]
+    headers_all.columns = ['#CHROM', 'POS',	'ID', 'REF', 'ALT',	'QUAL',	'FILTER',	'INFO']
+    # count=0
+    subs['full']=';'
+    for c1 in idxs:
+        subs[c1] = subs[c1].str.split(':').str[GT_Position]
+        subs['full']+=subs[c1]+';'
+    # subs = subs['full']
+    # Remove empty:
+
+    subs['full'] = subs['full'].str.replace(".|.",';', regex=False).str.replace(";+",';')
+    subs['full'] = subs['full'].str.replace("./.",';', regex=False).str.replace(";+",';')
+    subs['full'] = subs['full'].str.replace(".",';', regex=False).str.replace(";+",';')
+    
+    # all informative indexes
+     # now we need to locate which variants actually has a change in the genotype. 
+    all_informative_site_index = set()
+    all_informative_site_index = all_informative_site_index.union(set(subs[subs['full'].str.contains(r'^(?=.*0\|0)(?=.*0\|1)')].index))
+    all_informative_site_index = all_informative_site_index.union(set(subs[subs['full'].str.contains(r'^(?=.*0\|0)(?=.*1\|1)')].index))
+    all_informative_site_index = all_informative_site_index.union(set(subs[subs['full'].str.contains(r'^(?=.*0\|0)(?=.*1\|0)')].index))
+    all_informative_site_index = all_informative_site_index.union(set(subs[subs['full'].str.contains(r'^(?=.*1\|0)(?=.*1\|1)')].index))
+    all_informative_site_index = all_informative_site_index.union(set(subs[subs['full'].str.contains(r'^(?=.*0\|1)(?=.*1\|1)')].index))
+    all_informative_site_index = all_informative_site_index.union(set(subs[subs['full'].str.contains(r'^(?=.*0\|1)(?=.*1\|0)')].index))
+    
+    # Now we select the informative sites and produce the filan outpu
+     
+    # GT_Matched_variants = loader2.load_VCF_batch_paralel()
+   
+    
     # donor_distinct_sites = donor_exclusive_sites(GT_Matched_variants)
     cellsnp = pd.read_csv(cellsnp,sep='\t',comment='#',header=None)
     cellsnp[0]=cellsnp[0].astype(str)
     cellsnp[1]=cellsnp[1].astype(str)
-    donor_informaive_sites = GT_Matched_variants
+    # donor_informaive_sites = GT_Matched_variants
     ##CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO
     # chr10	20733	.	T	A	.	.	AF_UKBB=.;AF_ELGH=.;AF_spike_in=0.594649
     # chr10	44822	.	A	C	.	.	AF_UKBB=0.0452576;AF_ELGH=.;AF_spike_in=0.159744
     # chr10	45402	.	T	C	.	.	AF_UKBB=.;AF_ELGH=0.654687;AF_spike_in=.
-    exta_snps = pd.DataFrame()
+    # exta_snps = pd.DataFrame()
     # in the folowing
-    iteration_dataframe = donor_informaive_sites #Here we provide either donor distinct sites or donor informative sites. 
-    for key1 in iteration_dataframe.keys():
-        all_sites = pd.DataFrame(iteration_dataframe[key1],columns=['f1'])
-        splits = all_sites['f1'].str.split('_')
-        all_sites['informative']=splits.str[0]
-        all_sites['#CHROM']=splits.str[1]
-        all_sites['POS']=splits.str[2]
-        all_sites['ID']=f'.'
-        all_sites['REF']=splits.str[3]
-        all_sites['ALT']=splits.str[4]
-        all_sites['QUAL']=f'.'
-        all_sites['FILTER']=f'.'
-        all_sites['INFO']=f'.'
-        all_sites = all_sites.drop(columns=['f1'])
-        exta_snps=pd.concat([exta_snps,all_sites])
+    # iteration_dataframe = donor_informaive_sites #Here we provide either donor distinct sites or donor informative sites. 
+    # for key1 in iteration_dataframe.keys():
+    #     all_sites = pd.DataFrame(iteration_dataframe[key1],columns=['f1'])
+    #     splits = all_sites['f1'].str.split('_')
+    #     all_sites['informative']=splits.str[0]
+    #     all_sites['#CHROM']=splits.str[1]
+    #     all_sites['POS']=splits.str[2]
+    #     all_sites['ID']=f'.'
+    #     all_sites['REF']=splits.str[3]
+    #     all_sites['ALT']=splits.str[4]
+    #     all_sites['QUAL']=f'.'
+    #     all_sites['FILTER']=f'.'
+    #     all_sites['INFO']=f'.'
+    #     all_sites = all_sites.drop(columns=['f1'])
+    #     exta_snps=pd.concat([exta_snps,all_sites])
     # All_Extra_informative_Sites = exta_snps.drop_duplicates()
-    informative_sites = exta_snps[exta_snps['informative']=='informative'].drop('informative',axis=1)
-    constant_sites = exta_snps[exta_snps['informative']=='constant'].drop('informative',axis=1)
+    informative_sites = headers_all.loc[list(all_informative_site_index)]
+    constant_sites = headers_all.loc[set(headers_all.index) - all_informative_site_index]
     constant_sites = constant_sites.drop_duplicates(subset=['#CHROM', 'POS'])
     constant_sites.index=constant_sites['#CHROM']+'_'+constant_sites['POS']
     
-    exta_snps_back = exta_snps.copy()
     exta_snps = informative_sites
-    exta_snps.columns = cellsnp.columns   
-    exta_snps=exta_snps.drop_duplicates(subset=[0, 1])
+ 
+    exta_snps=exta_snps.drop_duplicates(subset=['#CHROM', 'POS'])
     
-    exta_snps.index=exta_snps[0]+'_'+exta_snps[1]
+    exta_snps.index=exta_snps['#CHROM']+'_'+exta_snps['POS']
     cellsnp.index=cellsnp[0]+'_'+cellsnp[1]
     
 

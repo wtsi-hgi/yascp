@@ -21,7 +21,7 @@ export RUN_ID="${PWD##*/}"
 # export TEMP=$PWD/tmp
 # export TMP_DIR=$PWD/tmp
 
-echo $RUN_ID | nextflow run /software/hgi/pipelines/yascp_versions/yascp_v1.4 -profile sanger  -c $INPUT_FILE --nf_ci_loc $PWD -entry WORK_DIR_REMOVAL --remove_work_dir -resume > nextflow.nohup.log 2>&1 & 
+echo $RUN_ID | nextflow run /software/hgi/pipelines/yascp_versions/yascp_v1.5 -profile sanger  -c $INPUT_FILE --nf_ci_loc $PWD -entry WORK_DIR_REMOVAL --remove_work_dir -resume > nextflow.nohup.log 2>&1 & 
 
 # get process PID 
 sleep 1 && export PID=$(pgrep -f "\\-\\-nf_ci_loc $RUN_DIR")

@@ -1,5 +1,5 @@
 include { SCRUBLET } from "$projectDir/modules/nf-core/modules/scrublet/main"
-include { doubletdetection } from "$projectDir/modules/nf-core/modules/doubletdetection/main"
+include { DOUBLET_DETECTION } from "$projectDir/modules/nf-core/modules/doubletdetection/main"
 
 def random_hex(n) {
     Long.toUnsignedString(new Random().nextLong(), n).toUpperCase()

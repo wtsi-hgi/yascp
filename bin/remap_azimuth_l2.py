@@ -43,8 +43,12 @@ parser.add_argument(
     )
 
 options = parser.parse_args()
-
-All_Data = pd.read_csv(options.az_file,compression='gzip',sep='\t')
+try:
+    compressed= True
+    All_Data = pd.read_csv(options.az_file,compression='gzip',sep='\t')
+except:
+    compressed = False
+    All_Data = pd.read_csv(options.az_file,sep='\t')
 Mappings = pd.read_csv(options.mapping,sep='\t',index_col=0)
 
 D1 =All_Data
@@ -55,5 +59,6 @@ for col in Mappings.columns:
     D1[f'{col}_predicted.celltype.l2']=Mappings[col]
 D1 =D1.reset_index()
 D1 = D1.set_index('idx1')
-D1.to_csv(options.of,compression='gzip',sep='\t')    
+
+D1.to_csv(options.of,sep='\t')    
 print('Done')

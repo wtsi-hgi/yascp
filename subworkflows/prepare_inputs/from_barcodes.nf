@@ -32,6 +32,10 @@ workflow from_barcodes {
             file("${row.data_path_10x_format}/filtered_feature_bc_matrix/matrix.mtx.gz")
         )}
 
+        chanel_dsb = channel_input_data_table
+            .splitCsv(header: true, sep: params.input_tables_column_delimiter)
+            .map{row -> tuple(row.experiment_id, file(row.data_path_10x_format+'/raw_feature_bc_matrix'),file(row.data_path_10x_format+'/filtered_feature_bc_matrix'))}
+
         channel__metadata =  channel_input_data_table
             .splitCsv(header: true, sep: params.input_tables_column_delimiter)
             .map{row -> tuple(
@@ -110,4 +114,5 @@ workflow from_barcodes {
         ch_experimentid_paths10x_filtered
         channel__file_paths_10x
         channel__metadata
+        chanel_dsb
 }

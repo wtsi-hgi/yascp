@@ -21,10 +21,11 @@ process CONCORDANCE_CALCLULATIONS {
         path(vcf_exp_csi),
         path(cell_vcf),
         path(donor_table),path(cell_assignments),path(set2_informative_sites), path(set1_uninformative_sites),path(variants_description))
-
+    when:
+        params.perform_concordance_calculations
     output:
         tuple val(pool_id), path('discordant_sites_in_other_donors_noA2G.tsv'), emit: concordances
-        path("*--each_cells_comparison_with_other_donor.tsv"), emit: each_cells_comparison
+        path("*--each_cells_comparison_with_other_donor.tsv"), emit: each_cells_comparison optional true
         tuple val(pool_id), path("${cell_vcf}"), path("${donor_table}"), path("sub_${pool_id}*.vcf.gz"),path("${cell_assignments}"),path("*.pkl"), emit: other_donor_input
     script:
 

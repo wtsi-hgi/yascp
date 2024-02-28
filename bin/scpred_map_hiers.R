@@ -1,3 +1,4 @@
+#!/usr/bin/env Rscript
 #   ____________________________________________________________________________
 #   Script information                                                      ####
 
@@ -15,7 +16,7 @@ suppressPackageStartupMessages(library("HierscPred"))
 suppressPackageStartupMessages(library("optparse"))
 suppressPackageStartupMessages(library("future.apply"))
 suppressPackageStartupMessages(library("progressr"))
-
+options(future.globals.maxSize = 8000 * 1024^2)
 #   ____________________________________________________________________________
 #   Set up parameter variables                                              ####
 
@@ -149,6 +150,17 @@ echo("DONE....................................................................",
 echo("Loading query data......................................................",
      "blue")
 
+
+
+# inputfile.h5ad = opt$file
+# Convert(inputfile.h5ad, dest="h5seurat", overwrite = TRUE)
+# inputfile.h5seurat <- paste0(file_path_sans_ext(inputfile.h5ad), ".h5seurat")
+# cat("inputfile.h5seurat = ", inputfile.h5seurat, "\n")
+# cat("Loading file", inputfile.h5seurat, "\n")
+# data <- LoadH5Seurat(inputfile.h5seurat)
+# cat("query file loaded.\n")
+
+
 data <- readRDS(opt$file)
 if(!inherits(data, "Seurat")) stop("Input query data is not a Seurat object")
 data <- UpdateSeuratObject(data)
@@ -216,9 +228,10 @@ scpred_prediction <- lapply(batches,
                                               "scpred_prediction", drop = FALSE
                             ])
 
-
+write.table(scpred_prediction, 'scpred_prediction.tsv', quote = FALSE, sep="\t")
 
 scpred_prediction <- do.call(rbind, scpred_prediction)
+scpred_prediction
 data <- AddMetaData(data, scpred_prediction)
 
 echo("DONE....................................................................",

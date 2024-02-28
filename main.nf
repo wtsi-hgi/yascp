@@ -16,7 +16,7 @@ include {celltype} from "$projectDir/subworkflows/celltype"
 include {qc} from "$projectDir/subworkflows/qc"
 include {dummy_filtered_channel} from "$projectDir/modules/nf-core/modules/merge_samples/functions"
 include {CLUSTERING; CLUSTERING as CLUSTERING_HARMONY; CLUSTERING as CLUSTERING_BBKNN;} from "$projectDir/modules/nf-core/modules/clustering/main"
-
+include { MATCH_GT_VIREO; GT_MATCH_POOL_IBD } from "$projectDir/modules/nf-core/modules/genotypes/main"
 
 ////// WORKFLOW: Run main nf-core/yascp analysis pipeline
 // This is the default entry point, we have others to update ceirtain parts of the results. 
@@ -162,6 +162,22 @@ workflow WORK_DIR_REMOVAL{
 
 workflow TEST_CATCHE_ISSUES{
     GENOTYPE_UPDATE()
+}
+
+
+workflow GT_MATCH{
+
+    // 2) All the vcfs provided to us. 
+    Channel.fromPath(
+    params.genotype_input.tsv_donor_panel_vcfs,
+    followLinks: true,
+    checkIfExists: true
+    ).splitCsv(header: true, sep: '\t')
+    .map { row -> tuple(params.file_name,file("${params.vcf}"),file("${params.vcf}.tbi"),row.label, file(row.vcf_file_path), file("${row.vcf_file_path}.csi")) }
+    .set { gt_math_pool_against_panel_input }
+
+    MATCH_GT_VIREO(gt_math_pool_against_panel_input)
+    ENHANCE_STATS_GT_MATCH(MATCH_GT_VIREO.out.donor_match_table_with_pool_id,params.input_data_table)
 }
 
 workflow GENOTYPE_UPDATE{

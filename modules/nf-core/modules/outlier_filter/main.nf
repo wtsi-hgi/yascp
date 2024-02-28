@@ -23,15 +23,13 @@ process OUTLIER_FILTER {
     }
 
     publishDir  path: "${outdir}",
-                // saveAs: {filename ->
-                //     if (filename.equalsIgnoreCase("outlier_filtered_adata.h5ad")) {
-                //         filename.replaceAll("outlier_filtered_adata.h5ad", "/merged_h5ad/outlier_filtered_adata.h5ad")
-                //     } else if(filename.equalsIgnoreCase("adata-cell_filtered_per_experiment.tsv.gz")) {
-                //         filename.replaceAll("adata-cell_filtered_per_experiment.tsv.gz", "/merged_h5ad/adata-cell_filtered_per_experiment.tsv.gz")
-                //     } else {
-                //         "/plots/${filename}"
-                //     }
-                // },
+                saveAs: {filename ->
+                    if (filename.contains("___sample_QCd_adata.h5ad")) {
+                        null
+                    } else {
+                        filename
+                    }
+                },
                 mode: "${params.copy_mode}",
                 overwrite: "true"
 
@@ -49,6 +47,7 @@ process OUTLIER_FILTER {
 
     output:
         path("merged_h5ad/outlier_filtered_adata.h5ad", emit: anndata)
+        path('donor_level_anndata_QCfiltered/*___sample_QCd_adata.h5ad',emit: sample_QCd_adata)
         path(
             "merged_h5ad/outlier_filtered_adata-cell_filtered_per_experiment.tsv.gz",
             emit: cells_filtered

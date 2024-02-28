@@ -182,11 +182,16 @@ process ENHANCE_STATS_GT_MATCH{
     } else {
         container "mercury/scrna_deconvolution:62bd56a"
     }
+  tag "${samplename}"
+  publishDir  path: "${params.outdir}/gtmatch/${samplename}",
+          mode: "${params.copy_mode}",
+          overwrite: "true"
 
   label 'process_medium'
 
   input:
     tuple val(samplename), path(enhancement_file)
+    path(input_data_table)
   output:
 
     path("GT_replace_${enhancement_file}"), emit: assignments
@@ -201,8 +206,14 @@ process ENHANCE_STATS_GT_MATCH{
       in=""
     }
 
+    // if(params.input_data_table==''){
+    //   in_f = ""
+    // }else{
+    //   in_f = 
+    // }
+
     """
-      enhance_stats.py -id ${samplename} -dm ${enhancement_file} ${in} --input_file "${params.input_data_table}" -m ${params.genotype_input.vireo_with_gt}
+      enhance_stats.py -id ${samplename} -dm ${enhancement_file} ${in} --input_file '${input_data_table}' -m ${params.genotype_input.vireo_with_gt}
     """
 }
 

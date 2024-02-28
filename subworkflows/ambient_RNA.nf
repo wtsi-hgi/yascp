@@ -2,6 +2,7 @@
 // Load base.config by default for all pipelines - typically included in the nextflow config.
 include { CELLBENDER } from '../modules/nf-core/modules/cellbender/main'
 include { SPLIT_CITESEQ_GEX; DSB } from '../modules/nf-core/modules/citeseq/main'
+
 include {capture_cellbender_files} from "$projectDir/modules/nf-core/modules/cellbender/functions"
 
 workflow ambient_RNA {
@@ -35,7 +36,9 @@ workflow ambient_RNA {
             // Here we capture the filtered matrix and applyt the DSB normalisation on the citeseq datasets
             cb_Filtered.join(ab_data, by: [0], remainder: false).set{cb_ab}
             cb_ab.join(ch_experimentid_paths10x_raw, by: [0], remainder: false).set{cb_ab_raw}
-            // DSB(cb_ab_raw)
+            
+        }else{
+             cb_ab_raw = Channel.from("$projectDir/assets/fake_file.fq")
         }
 
         alt_input1 = CELLBENDER.out.cellbender_path
@@ -44,4 +47,5 @@ workflow ambient_RNA {
     emit:
         // results_list
         cellbender_path
+        cb_ab_raw
 }

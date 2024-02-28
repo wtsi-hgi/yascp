@@ -40,12 +40,11 @@ GT_Assignments=GT_Assignments.set_index('donor_query')
 import os
 tranche = os.getcwd().split('/')[-4]
 pool = input_id
-input_table_file = pd.read_csv(args.input_file,sep='\t')
-input_table_file =input_table_file.set_index('experiment_id')
-
 
 Unassigned= []
 try:
+    input_table_file = pd.read_csv(args.input_file,sep='\t')
+    input_table_file =input_table_file.set_index('experiment_id')
     All_expected_ids = input_table_file.loc[args.donor_id,'donor_vcf_ids'].replace('\'','').split(',')
 except:
     All_expected_ids =[]
@@ -99,9 +98,16 @@ for ix in GT_Assignments.index:
             try:
                 # replacement='15001608190388_204238910153_R09C02'
                 
-                replacements = gp_ma.loc[replacement.split('_')[0]]
+                try:
+                    replacements = gp_ma.loc[replacement.split('_')[0]]
+                except:
+                    try:
+                        replacements = gp_ma.loc[replacement.split('_')[1]]
+                    except:
+                        replacements = gp_ma.loc[replacement.split('_')[2]]
                 
                 if len(replacements)>1:
+                    replacement = ''
                     for rep1 in replacements.iloc[:,0]:
                         
                         if len(D2[D2.col1.str.contains(rep1)])>0:
@@ -109,6 +115,8 @@ for ix in GT_Assignments.index:
                             replacement = rep1
                             remove_from_set = D2[D2.col1.str.contains(replacement)]['col1'].values[0]
                             All_Expected_set.append(remove_from_set)
+                        else:
+                            replacement=replacement+rep1+';'
                 else:
                     replacement = replacements.values[0]
             except:

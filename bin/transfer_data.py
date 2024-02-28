@@ -195,6 +195,10 @@ def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res
             os.mkdir(f'{name_dir}/Cell-type assignment')
         except:
             print('dire exists')
+        try:
+            os.mkdir(f'{name_dir}/Cell-type assignment/azimuth')
+        except:
+            print('dire exists')
         # try:
         #     os.mkdir(f'{name_dir}/Cell-type assignment/azimuth')
         # except:
@@ -202,8 +206,12 @@ def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res
         # copyfile(fil1, f'{name_dir}/QC metrics/plot_ecdf-x_log10.var=total_counts.color=experiment_id-adata.png')
         files = glob.glob(f'{folder1}/*[!.gz]')
         for file1 in files:
-            # print(file1)
-            copy(file1, f'{name_dir}/Cell-type assignment')
+            print(file1)
+            try:
+                copy(file1, f'{name_dir}/Cell-type assignment/azimuth')
+            except:
+                print('picked up directory')
+                continue
 
 
     folder1 = f'{directory}/plots/per_celltype_outliers'
@@ -232,7 +240,10 @@ def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res
             except:
                 print('dire exists')
             nam1 = dens_file.split('/')[-1]
-            copyfile(f'{dens_file}', f'{name_dir}/QC metrics/density/{nam1}')
+            try:
+                copyfile(f'{dens_file}', f'{name_dir}/QC metrics/density/{nam1}')
+            except:
+                continue
 
         density_files = glob.glob(f'{folder1}/*adata-outlier_cells*')
         density_files2 = glob.glob(f'{folder1}/merged_h5ad/plots/*adata-outlier_cells*')
@@ -243,13 +254,19 @@ def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res
             except:
                 print('dire exists')
             nam1 = dens_file.split('/')[-1]
-            copyfile(f'{dens_file}', f'{name_dir}/QC metrics/outlier_cells/{nam1}')
+            try:
+                copyfile(f'{dens_file}', f'{name_dir}/QC metrics/outlier_cells/{nam1}')
+            except:
+                continue
         
         density_files = glob.glob(f'{folder1}/*per_celltype_outliers*')
         for dens_file in density_files:
             print(dens_file)
             name_dir_final = dens_file.split('/')[-1]
-            copytree(dens_file, f'{name_dir}/QC metrics/{name_dir_final}')         
+            try:
+                copytree(dens_file, f'{name_dir}/QC metrics/{name_dir_final}')    
+            except:
+                continue     
         copyfile(f'{folder1}/adata-cell_filtered_per_experiment-n_cells_before_after.png', f'{name_dir}/QC metrics/adata-cell_filtered_per_experiment-n_cells_before_after.png')
         copyfile(f'{folder1}/scatterplot-sex_sample_swap_check.png', f'{name_dir}/QC metrics/scatterplot-sex_sample_swap_check.png')
         fil1 = glob.glob(f'{folder1}/plot_ecdf-x_log10*total_counts*')[0]

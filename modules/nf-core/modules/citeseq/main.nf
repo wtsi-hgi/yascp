@@ -50,6 +50,13 @@ process DSB {
     input:
         tuple val(sample_name),path(cellbender_filtered), path(antibody_data), path(cellranger_raw)
 
+
+//         filtered_cellranger = sample_filtered_feature_bc_matrix.h5
+//         cellranger_rawfile_path = 'raw_feature_bc_matrix.h5'
+//         sample_name <-'cellranger700_multi_bc45a1c2fe2a3fbbcde46cf984cf42e2'
+//         file_with_qc_applied <-'cellranger700_multi_bc45a1c2fe2a3fbbcde46cf984cf42e2___sample_QCd_adata.h5ad'
+
+
     output:
         // tuple val(sample_name), path("${sample_name}__gex_data"), emit:gex_data
         path("*.pdf"), emit: plots optional true
@@ -69,5 +76,104 @@ process DSB {
 
             dsb_process_extr.R ${cellbender_filtered} ${cellranger_raw} ${antibody_data} ${sample_name}
             echo 'lets process data with DSB background removal' > output.tmp
+        """
+}
+
+process DSB_INTEGRATE{
+
+    label 'process_medium'
+    tag "${sample_name}"
+    if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
+        container "/lustre/scratch123/hgi/teams/hgi/mo11/tmp_projects/jaguar_yascp/nieks_pipeline/yascp_run/azimuth_dsb_17_02_2024.sif"
+    } else {
+        container "mercury/azimuth_dsb:latest"
+    }
+
+    publishDir  path: "${params.outdir}/citeseq/all_data_integrated", mode: "${params.copy_mode}",
+      overwrite: "true"
+    
+    output:
+        path("out"), emit: all_data_integrated
+        path("./out/tmp_rds_files/all_samples_integrated.RDS"), emit: all_data_integrated_rds
+
+    input:
+        path(citeseq_rsd)
+        path(vireo)
+        path(assignments_all_pools)
+        path(tmp_rsd)
+        path(matched_donors)
+
+    script:
+    """
+    echo 'running1'
+    2.integrate.R
+    """
+
+}
+
+process MULTIMODAL_INTEGRATION{
+
+    label 'process_medium'
+    tag "${sample_name}"
+    if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
+        container "/lustre/scratch123/hgi/teams/hgi/mo11/tmp_projects/jaguar_yascp/nieks_pipeline/yascp_run/azimuth_dsb_26_02_2024.sif"
+    } else {
+        container "mercury/azimuth_dsb:latest"
+    }
+
+    // publishDir  path: "${params.outdir}/citeseq/all_data_integrated", mode: "${params.copy_mode}",
+    //   overwrite: "true"
+    
+    // output:
+    //     path("out"), emit: all_data_integrated
+    //     path("./out/tmp_rds_files/all_samples_integrated.RDS"), emit: all_data_integrated_rds
+
+    input:
+        path(all_samples_integrated)
+        // path(vireo)
+        // path(assignments_all_pools)
+        // path(tmp_rsd)
+        // path(matched_donors)
+
+    script:
+    """
+    echo 'running1'
+    3.WNN_integrate_SCT_CITE.R
+    """
+
+}
+
+
+process DSB_PROCESS {
+    label 'process_medium'
+    tag "${sample_name}"
+    if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
+        container "/lustre/scratch123/hgi/teams/hgi/mo11/tmp_projects/jaguar_yascp/nieks_pipeline/yascp_run/work/ef/1cda7f07670de6124e43c7c63adfea/azimuth_dsb_14_02_2024.img"
+    } else {
+        container "mercury/azimuth_dsb:latest"
+    }
+
+    publishDir  path: "${params.outdir}/citeseq/${sample_name}",      
+        saveAs: {filename ->
+        if (filename.contains("tmp_rds_files__")) {
+            null
+        }else {
+            filename
+        }
+      }, mode: "${params.copy_mode}",
+      overwrite: "true"
+
+    input:
+        tuple val(sample_name),path(cellranger_rawfile_path), path(filtered_feature_bc_matrix), path(sample_QCd_adata)
+    
+
+
+    output:
+        path("CITE__*"), emit: citeseq_rsd
+        path('tmp_rds_files__*'), emit: tmp_rsd
+    script:
+        """
+  
+            add_adt.R ${sample_name} ${cellranger_rawfile_path} ${filtered_feature_bc_matrix} ${sample_QCd_adata}
         """
 }

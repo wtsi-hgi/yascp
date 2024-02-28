@@ -353,6 +353,11 @@ class Concordances:
             Total_Overlapping_sites = set(expected_vars_norm['ids']).intersection(set(cell_vars_norm['ids']))
             expected_vars2 = expected_vars_norm[expected_vars_norm['ids'].isin(Total_Overlapping_sites)]
             cell_vars2 = cell_vars_norm[cell_vars_norm['ids'].isin(Total_Overlapping_sites)]
+            cell_vars2 = cell_vars2.drop_duplicates(subset=['ids'])
+            expected_vars2 = expected_vars2.drop_duplicates(subset=['ids'])
+            if len(cell_vars2)!=len(expected_vars2):
+                print('failed to select comon variants')
+                exit(1)
             
             # Find exact discordant sites
             Concordant_Sites, Discordant_sites, _ = self.get_discordance(expected_vars2, cell_vars2)
@@ -690,7 +695,10 @@ class Concordances:
         
         Total_Overlapping_sites = set(DonorDiscordant_Sites_that_are_atributed_to_other_donor)
         expected_vars2 = expected_vars_norm[expected_vars_norm['ids'].isin(Total_Overlapping_sites)]
-        cell_vars2 = cell_vars_norm[cell_vars_norm['ids'].isin(Total_Overlapping_sites)]        
+        cell_vars2 = cell_vars_norm[cell_vars_norm['ids'].isin(Total_Overlapping_sites)]   
+        
+        cell_vars2 = cell_vars2.drop_duplicates(subset=['ids'])
+        expected_vars2 = expected_vars2.drop_duplicates(subset=['ids'])
         cell_vars2['DP'] = cell_vars2[0].str.split("_").str[5].astype(int)
         cell_vars2['AD'] = cell_vars2[0].str.split("_").str[6].astype(int)
         cell_vars2['OTH'] = cell_vars2[0].str.split("_").str[7].astype(int)
@@ -801,6 +809,8 @@ class Concordances:
                 discordant_reads_uninformative_fraction_otherDonor, \
                 discordant_reads_informative_fraction_otherDonor, discordant_reads_informative_subset_otherDonor  = self.retrieve_concordant_discordant_sites(expected_vars_norm_of_other_donor,cell_vars,donor_cohort=donor_cohort)
             
+            if total_sites_otherDonor==0:
+                total_sites_otherDonor=0.000000000001
             total_concordant_sites_otherDonor = relaxed_concordant_count_otherDonor
             concordant_percent_in_other_donor= total_concordant_sites_otherDonor/total_sites_otherDonor*100
             discordant_percent_in_other_donor= true_discordant_count_otherDonor/total_sites_otherDonor*100

@@ -23,16 +23,18 @@ process AZIMUTH{
     input:
         val outdir_prev
         path file_h5ad_batch
-
+        // path(mapping_file)
     output:
         path(celltype_table, emit:predicted_celltypes)
+        tuple(val(outfil_prfx), path("predicted_celltype_*.tsv"),emit:celltype_tables_all) 
         path(celltype_table, emit:predicted_celltype_labels)
-        path "ncells_by_type_barplot.pdf"
-        path "query_umap.pdf"
-        path "prediction_score_umap.pdf"
-        path "prediction_score_vln.pdf"
-        path "mapping_score_umap.pdf"
-        path "mapping_score_vln.pdf"
+        path "*ncells_by_type_barplot.pdf"
+        path "*query_umap.pdf"
+        path "*prediction_score_umap.pdf"
+        path "*prediction_score_vln.pdf"
+        path "*mapping_score_umap.pdf"
+        path "*mapping_score_vln.pdf"
+        path('query.rds'), emit: query_rds
 
     script:
     
@@ -44,6 +46,7 @@ process AZIMUTH{
     """
         azimuth.R ./${file_h5ad_batch}
         gzip -c predicted_celltype_l2.tsv > ${celltype_table}
+
     """
 }
 
@@ -65,16 +68,21 @@ process REMAP_AZIMUTH{
     stageInMode 'copy'  
 
     input:
-        path(azimuth_file)
+        tuple val(outfil_prfx), path(azimuth_file)
         path(mapping_file)
 
     output:
-        path(celltype_table, emit:predicted_celltype_labels)
+        path('azimuth/*', emit:predicted_celltype_labels)
 
     script:
         celltype_table = "remapped__${azimuth_file}"
         """
-            remap_azimuth_l2.py -of ${celltype_table} -m ${mapping_file} -az ${azimuth_file}
+            remap_azimuth_l2.py -of remapped__predicted_celltype_l2.tsv -m ${mapping_file} -az predicted_celltype_l2.tsv
+            mkdir azimuth
+            
+            mv predicted_celltype_l1.tsv  azimuth/${outfil_prfx}__predicted_celltype_l1.tsv
+            mv predicted_celltype_l3.tsv azimuth/${outfil_prfx}__predicted_celltype_l3.tsv
+            mv remapped__predicted_celltype_l2.tsv azimuth/${outfil_prfx}__predicted_celltype_l2.tsv
         """
 
 }

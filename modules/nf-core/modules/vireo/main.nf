@@ -151,6 +151,43 @@ process VIREO_SUBSAMPLING {
 }
 
 
+process GENOTYPE_MATCHER{
+    tag "${samplename}"
+    label 'process_low'
+    publishDir "${params.outdir}/deconvolution/vireo/",  mode: "${params.vireo.copy_mode}", overwrite: true
+	  // saveAs: {filename -> filename.replaceFirst("vireo_${samplename}/","") }
+    
+    if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
+        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_62bd56a-2021-12-15-4d1ec9312485.sif"
+        //// container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_latest.img"
+    } else {
+        container "mercury/scrna_deconvolution:62bd56a"
+    } 
+
+    input:
+        path(vireo)
+
+    output:
+      path("correlations.png"), emit: correlations
+      path("matched_donors.txt"), emit: matched_donors
+
+    if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
+        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_62bd56a-2021-12-15-4d1ec9312485.sif"
+        //// container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_latest.img"
+    } else {
+        container "mercury/scrna_deconvolution:62bd56a"
+    }
+
+    script:
+      """
+        matcher.py \
+        \$PWD \
+        \$PWD \
+        -m 0.6
+      """
+
+}
+
 process VIREO {
     tag "${samplename}"
     label 'medium_cpus'
@@ -173,7 +210,8 @@ process VIREO {
       tuple val(samplename), path(cell_data), val(n_pooled), path(donors_gt_vcf), path(donor_gt_csi)
 
     output:
-      tuple val(samplename), path("vireo_${samplename}"), emit: output_dir
+      path("vireo_${samplename}"), emit: output_dir
+      // tuple val(samplename), path("vireo_${samplename}"), emit: output_dir
       tuple val(samplename), path("vireo_${samplename}/donor_ids.tsv"), emit: sample_donor_ids
       tuple val(samplename), path("vireo_${samplename}/GT_donors.vireo.vcf.gz"), path(vcf_file),path(donor_gt_csi), emit: sample_donor_vcf
       tuple val(samplename), path("vireo_${samplename}/GT_donors.vireo.vcf.gz"), emit: infered_vcf

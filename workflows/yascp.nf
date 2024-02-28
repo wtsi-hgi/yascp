@@ -17,6 +17,7 @@ include {MERGE_SAMPLES} from "$projectDir/modules/nf-core/modules/merge_samples/
 include {dummy_filtered_channel} from "$projectDir/modules/nf-core/modules/merge_samples/functions"
 include {MULTIPLET} from "$projectDir/subworkflows/doublet_detection"
 include { SPLIT_CITESEQ_GEX; SPLIT_CITESEQ_GEX as SPLIT_CITESEQ_GEX_FILTERED } from '../modules/nf-core/modules/citeseq/main'
+
 /*
 ========================================================================================
     RUN MAIN WORKFLOW
@@ -140,6 +141,8 @@ workflow YASCP {
                         prepare_inputs.out.ch_experiment_donorsvcf_donorslist,
                         scrublet_paths,
                         vcf_input)
+                    vireo_paths = main_deconvolution.out.vireo_paths
+                    matched_donors = main_deconvolution.out.matched_donors
                     ch_poolid_csv_donor_assignments = main_deconvolution.out.ch_poolid_csv_donor_assignments
                     bam_split_channel = main_deconvolution.out.sample_possorted_bam_vireo_donor_ids
                     assignments_all_pools = main_deconvolution.out.assignments_all_pools
@@ -152,6 +155,8 @@ workflow YASCP {
                         MERGE_SAMPLES(channel__file_paths_10x,channel__metadata,'barcodes')
                     }
                     assignments_all_pools = Channel.from("$projectDir/assets/fake_file.fq")
+                    vireo_paths = Channel.from("$projectDir/assets/fake_file.fq")
+                    matched_donors = Channel.from("$projectDir/assets/fake_file.fq")
                 }
                 // TODO: Here add a fundtion to take an extra h5ad and merge it together with the current run. This will be required for the downstream analysis when we want to integrate multiple datasets and account for the batches in these
                 if (!params.skip_merge){
@@ -218,7 +223,7 @@ workflow YASCP {
                     gt_outlier_input = Channel.from("$projectDir/assets/fake_file.fq")
                 }
 
-                qc(file__anndata_merged,file__cells_filtered,gt_outlier_input) //This runs the Clusterring and qc assessments of the datasets.
+                qc(file__anndata_merged,file__cells_filtered,gt_outlier_input,prepare_inputs.out.channel_dsb,vireo_paths,assignments_all_pools,matched_donors) //This runs the Clusterring and qc assessments of the datasets.
                 process_finish_check_channel = qc.out.LI
                 file__anndata_merged = qc.out.file__anndata_merged
             }else{
@@ -260,7 +265,12 @@ workflow YASCP {
         // ###################################
 
         if (!params.skip_handover){
-            data_handover(params.outdir,input_channel,
+
+            out_ch = params.outdir
+            ? Channel.fromPath(params.outdir, checkIfExists:true)
+            : Channel.fromPath("${launchDir}/${outdir}")
+
+            data_handover(out_ch,input_channel,
                             process_finish_check_channel,
                             ch_poolid_csv_donor_assignments,
                             bam_split_channel) 

@@ -14,13 +14,17 @@ include {UMAP; UMAP as UMAP_HARMONY; UMAP as UMAP_BBKNN;} from "$projectDir/modu
 include {CLUSTERING; CLUSTERING as CLUSTERING_HARMONY; CLUSTERING as CLUSTERING_BBKNN;} from "$projectDir/modules/nf-core/modules/clustering/main"
 include {CELL_HARD_FILTERS} from "$projectDir/modules/nf-core/modules/cell_hard_filters/main"
 include {DONT_INTEGRATE} from "$projectDir/modules/nf-core/modules/reduce_dims/main"
-
+include { DSB_PROCESS; DSB_INTEGRATE; MULTIMODAL_INTEGRATION } from '../modules/nf-core/modules/citeseq/main'
 
 workflow qc {
     take:
         file__anndata_merged
         file__cells_filtered
         gt_outlier_input
+        channel_dsb
+        vireo_paths
+        assignments_all_pools
+        matched_donors
     main:
         log.info "--- Running QC metrics --- "
         // if(params.extra_metadata!=''){
@@ -54,8 +58,15 @@ workflow qc {
             file__anndata_merged = OUTLIER_FILTER.out.anndata
             file__cells_filtered = OUTLIER_FILTER.out.cells_filtered
         }
-
         
+        OUTLIER_FILTER.out.sample_QCd_adata.flatten().map{sample -> tuple("${sample}".replaceFirst(/___sample_QCd_adata.h5ad/,"").replaceFirst(/.*\//,""),sample)}.set{alt_input}
+        channel_dsb2 = channel_dsb.combine(alt_input, by: 0)
+        DSB_PROCESS(channel_dsb2)
+        DSB_PROCESS.out.citeseq_rsd.view()
+        DSB_INTEGRATE(DSB_PROCESS.out.citeseq_rsd.collect(),vireo_paths.collect(),assignments_all_pools,DSB_PROCESS.out.tmp_rsd.collect(),matched_donors)
+
+        MULTIMODAL_INTEGRATION(DSB_INTEGRATE.out.all_data_integrated)
+
         if (params.normalise_andata){
             NORMALISE_AND_PCA(
                 file__anndata_merged,
