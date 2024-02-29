@@ -359,7 +359,7 @@ process cellbender__remove_background {
     if (params.utilise_gpu){
       gpu_text_info = '--cuda'
     }else{
-      gpu_text_info = ''
+      gpu_text_info = "--cpu-threads ${task.cpus}"
     }
     
     outdir = "${outdir_prev}/${experiment_id}"

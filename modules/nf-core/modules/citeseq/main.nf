@@ -8,13 +8,13 @@ process SPLIT_CITESEQ_GEX {
     }
 
     publishDir  path: "${params.outdir}/citeseq/${sample_name}",
-      saveAs: {filename ->
-        if (filename.contains("antibody-")) {
-            filename.replaceAll("antibody-", "${mode}_antibody-")
-        }else {
-            null
-        }
-      },
+    //   saveAs: {filename ->
+    //     if (filename.contains("antibody-")) {
+    //         filename.replaceAll("antibody-", "${mode}_antibody-")
+    //     }else {
+    //         null
+    //     }
+    //   },
       mode: "${params.copy_mode}",
       overwrite: "true"
 
@@ -23,10 +23,10 @@ process SPLIT_CITESEQ_GEX {
         val(mode)
 
     output:
-        tuple val(sample_name), path("${sample_name}__gex_data"), emit:gex_data
+        tuple val(sample_name), path("${sample_name}__Gene_Expression"), emit:gex_data
         tuple val(sample_name), path("antibody-${sample_name}.h5ad"), emit: ab_data2 optional true
-        tuple val(sample_name), path("${sample_name}__ab_data"), emit: ab_data optional true
-        tuple val(sample_name), path("${sample_name}__gex_data/barcodes.tsv.gz"), path("${sample_name}__gex_data/features.tsv.gz"), path("${sample_name}__gex_data/matrix.mtx.gz"), emit: channel__file_paths_10x
+        tuple val(sample_name), path("${sample_name}__*"), emit: ab_data
+        tuple val(sample_name), path("${sample_name}__Gene_Expression/barcodes.tsv.gz"), path("${sample_name}__Gene_Expression/features.tsv.gz"), path("${sample_name}__Gene_Expression/matrix.mtx.gz"), emit: channel__file_paths_10x
  
     script:
 

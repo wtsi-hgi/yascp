@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 INPUT_FILE=$1
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 dt=`date +"%Y_%m_%d_%T"`
 cp nextflow.nohup.log ./nextflow.nohup_$dt.log2 || echo 'first time running'
 # activate Nextflow conda env
@@ -17,7 +18,7 @@ parentdir="$(dirname "$CWD1")"
 export RUN_ID="${PWD##*/}"
 mkdir $PWD/work || echo 'exists'
 mkdir $PWD/work/tmp || echo 'exists'
-echo $RUN_ID | nextflow run /software/hgi/pipelines/yascp_versions/yascp_v1.5 -profile sanger -entry JUST_CELLTYPES -c $INPUT_FILE  --nf_ci_loc $PWD -resume > nextflow.nohup.log 2>&1 & 
+echo $RUN_ID | nextflow run $SCRIPT_DIR/../.. -profile sanger -entry JUST_CELLTYPES -c $INPUT_FILE  --nf_ci_loc $PWD -resume > nextflow.nohup.log 2>&1 & 
 
 # get process PID 
 sleep 1 && export PID=$(pgrep -f "\\-\\-nf_ci_loc $RUN_DIR")

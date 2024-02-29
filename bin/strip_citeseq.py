@@ -287,36 +287,29 @@ def main():
         options.raw_data, var_names='gene_symbols', make_unique=True,
         cache=False, cache_compression=compression_opts,gex_only=False)
 
-    adata_antibody = adata_cellranger_filtered[:,adata_cellranger_filtered.var.query('feature_types=="Antibody Capture"').index]
-    zero_count_cells = adata_antibody.obs_names[np.where(adata_antibody.X.sum(axis=1) == 0)[0]]
-    adata2 = adata_antibody[adata_antibody.obs_names.difference(zero_count_cells, sort=False)]
-    if(adata2.shape[0]>0):
-        # Here we have actually captured some of the reads in the antibody dataset.
-        adata_antibody.write(
-            f'antibody-{options.outname}.h5ad',
-            compression='gzip'
-        )
+    for modality1 in set(adata_cellranger_filtered.var.feature_types):
+        # {'Gene Expression', 'Multiplexing Capture', 'Antibody Capture'}
+        print(f'---- Spliting {modality1}-----')
+        modality = modality1.replace(" ",'_')
+        adata_antibody = adata_cellranger_filtered[:,adata_cellranger_filtered.var.query(f'feature_types=="{modality1}"').index]
+        # zero_count_cells = adata_antibody.obs_names[np.where(adata_antibody.X.sum(axis=1) == 0)[0]]
+        # adata2 = adata_antibody[adata_antibody.obs_names.difference(zero_count_cells, sort=False)]
+        # if(adata2.shape[0]>0):
+        #     # Here we have actually captured some of the reads in the antibody dataset.
+        #     # adata_antibody.write(
+        #     #     f'antibody-{options.outname}.h5ad',
+        #     #     compression='gzip'
+        #     # )
         _ = cellbender_to_tenxmatrix(
             adata_antibody,
             out_file='',
-            out_dir=f'{options.outname}__ab_data'
+            out_dir=f'{options.outname}__{modality}'
         )
     
-    adata_gex = adata_cellranger_filtered[:,adata_cellranger_filtered.var.query('feature_types=="Gene Expression"').index]
+    # adata_gex = adata_cellranger_filtered[:,adata_cellranger_filtered.var.query('feature_types=="Gene Expression"').index]
     # adata_cellbender = anndata_from_h5('/lustre/scratch123/hgi/teams/hgi/mo11/tmp_projects/ania/analysis_trego/work/5d/6a30871e864ed7bc03e949ef846a1d/cellbender_FPR_0.1_filtered.h5',
     #                                         analyzed_barcodes_only=True)
 
-    _ = cellbender_to_tenxmatrix(
-        adata_gex,
-        out_file='',
-        out_dir=f'{options.outname}__gex_data'
-    )
-    
-
-    
-
-
-    print('Done')
     
     
 if __name__ == '__main__':
