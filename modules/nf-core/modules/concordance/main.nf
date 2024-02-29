@@ -12,7 +12,8 @@ process CONCORDANCE_CALCLULATIONS {
     publishDir  path: "${params.outdir}/concordances/${pool_id}",
                 mode: "${params.copy_mode}",
                 overwrite: "true"
-
+    when:
+        params.perform_concordance_calculations
     input:
         tuple(val(pool_id), 
         path(vcf_gt_match), 
@@ -24,7 +25,7 @@ process CONCORDANCE_CALCLULATIONS {
 
     output:
         tuple val(pool_id), path('discordant_sites_in_other_donors_noA2G.tsv'), emit: concordances
-        path("*--each_cells_comparison_with_other_donor.tsv"), emit: each_cells_comparison
+        path("*--each_cells_comparison_with_other_donor.tsv"), emit: each_cells_comparison optional true
         tuple val(pool_id), path("${cell_vcf}"), path("${donor_table}"), path("sub_${pool_id}*.vcf.gz"),path("${cell_assignments}"),path("*.pkl"), emit: other_donor_input
     script:
 

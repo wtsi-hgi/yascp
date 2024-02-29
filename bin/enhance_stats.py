@@ -98,10 +98,16 @@ for ix in GT_Assignments.index:
         except:
             try:
                 # replacement='15001608190388_204238910153_R09C02'
-                
-                replacements = gp_ma.loc[replacement.split('_')[0]]
+                try:
+                    replacements = gp_ma.loc[replacement.split('_')[0]]
+                except:
+                    try:
+                        replacements = gp_ma.loc[replacement.split('_')[1]]
+                    except:
+                        replacements = gp_ma.loc[replacement.split('_')[2]]
                 
                 if len(replacements)>1:
+                    replacement = ''
                     for rep1 in replacements.iloc[:,0]:
                         
                         if len(D2[D2.col1.str.contains(rep1)])>0:
@@ -109,6 +115,8 @@ for ix in GT_Assignments.index:
                             replacement = rep1
                             remove_from_set = D2[D2.col1.str.contains(replacement)]['col1'].values[0]
                             All_Expected_set.append(remove_from_set)
+                        else:
+                            replacement=replacement+rep1+';'
                 else:
                     replacement = replacements.values[0]
             except:

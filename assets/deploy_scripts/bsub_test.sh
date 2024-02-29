@@ -25,5 +25,5 @@ fi
 
 sample="$RUN_ID.yascp"
 echo -e "\nSubmitting yascp (https://github.com/wtsi-hgi/yascp) in test mode withsample OneK1k dataset"
-bsub -R'select[mem>4000] rusage[mem=4000]' -J yascp_test -n 1 -M 4000 -o yascp_test.o -e yascp_test.e -q normal bash /software/hgi/pipelines/yascp_versions/yascp_v1.4/assets/deploy_scripts/nohup_start_nextflow_lsf_test.sh
+bsub -R'select[mem>4000] rusage[mem=4000]' -J yascp_test -n 1 -M 4000 -o yascp_test.o -e yascp_test.e -q normal bash $SCRIPT_DIR/../../assets/deploy_scripts/nohup_start_nextflow_lsf_test.sh
 echo "Submitted job can be killed with: bkill -J yascp_test"

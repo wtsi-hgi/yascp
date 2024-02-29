@@ -21,7 +21,7 @@ parentdir="$(dirname "$CWD1")"
 export RUN_ID="${PWD##*/}"
 mkdir $PWD/work || echo 'exists'
 mkdir $PWD/work/tmp || echo 'exists'
-echo $RUN_ID | nextflow run /software/hgi/pipelines/yascp_versions/yascp_v1.4 -profile sanger -entry JUST_RECLUSTER -c /software/hgi/pipelines/yascp_versions/yascp_v1.4/assets/deploy_scripts/input_setups/recluster_profile.nf $INPUT_FILE  --nf_ci_loc $PWD -resume > nextflow.nohup.log 2>&1 & 
+echo $RUN_ID | nextflow run $SCRIPT_DIR/../.. -profile sanger -entry JUST_RECLUSTER -c $SCRIPT_DIR/../../assets/deploy_scripts/input_setups/recluster_profile.nf $INPUT_FILE  --nf_ci_loc $PWD -resume > nextflow.nohup.log 2>&1 & 
 
 # get process PID 
 sleep 1 && export PID=$(pgrep -f "\\-\\-nf_ci_loc $RUN_DIR")

@@ -260,7 +260,12 @@ workflow YASCP {
         // ###################################
 
         if (!params.skip_handover){
-            data_handover(params.outdir,input_channel,
+
+            out_ch = params.outdir
+            ? Channel.fromPath(params.outdir, checkIfExists:true)
+            : Channel.fromPath("${launchDir}/${outdir}")
+
+            data_handover(out_ch,input_channel,
                             process_finish_check_channel,
                             ch_poolid_csv_donor_assignments,
                             bam_split_channel) 
