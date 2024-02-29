@@ -7,7 +7,7 @@ if [[ $@ == "-v" ]]; then
 elif [[ $@ == "test" ]]; then
     command echo -e "Runing test code from OneK1k" && bash $SCRIPT_DIR/../nohup_start_nextflow_lsf_test.sh
 elif [[ $@ == "sample_input" ]]; then
-    command cp -r /software/hgi/pipelines/yascp_versions/yascp_v1.4/sample_input ./
+    command cp -r $SCRIPT_DIR/../../../sample_input ./
 elif [[ $@ == "info" ]]; then
     command echo -e "\n\n#####YASCP 1.4#####\nYascp module has been set to run in multiple modes:\n 	*yascp -v :will describe the checkout tag used. \n 	*yascp y=test :will run a OneK1k test dataset. \n 	*yascp sample_input :will create a directory sample_input in your current working directory where you will sample input files. \n 	*yascp input.nf :will run your samples as defined in input file. If you are unsure how to fill in the info file please refear to this documentation: https://github.com/wtsi-hgi/yascp/blob/main/docs/usage.md \n\n For the data interpretation please folow this documentation: https://github.com/wtsi-hgi/yascp/tree/main/docs"
 else

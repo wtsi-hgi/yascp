@@ -7,7 +7,7 @@ if [[ $@ == "-v" ]]; then
 elif [[ $@ == "test" ]]; then
     command echo -e "Runing test code from OneK1k" && bash $SCRIPT_DIR/../bsub_test.sh
 elif [[ $@ == "sample_input" ]]; then
-    command cp -r /software/hgi/pipelines/yascp_versions/yascp_v1.4/sample_input ./
+    command cp -r $SCRIPT_DIR/../../../sample_input ./
 elif [[ $1 == "clean" ]]; then
     command echo -e "Removing work dir; after this you will not be able to use the catche to restart pipeline \n\n" && bash $SCRIPT_DIR/../bsub__removeWork.sh "${@:2}"
 elif [[ $1 == "celltypes" ]]; then
