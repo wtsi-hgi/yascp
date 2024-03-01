@@ -21,6 +21,7 @@ include { MATCH_GT_VIREO; GT_MATCH_POOL_IBD } from "$projectDir/modules/nf-core/
 ////// WORKFLOW: Run main nf-core/yascp analysis pipeline
 // This is the default entry point, we have others to update ceirtain parts of the results. 
 // Please go to ./workflows/yascp to see the main Yascp workflow.
+
 workflow MAIN {
 
     if (params.profile=='test_full'){
@@ -47,61 +48,39 @@ workflow {
     MAIN ()
 }
 
-// END OF MAIN ENTRANCE IN WORKFLOWS
+////////////////////////////
+// END OF MAIN ENTRANCE IN WORKFLOWS - No need to look beyond ulness you are looking at a specific entry point.
+//////////////////////////////
 
+workflow WORK_DIR_REMOVAL{
+    // This process should be run with caution as it will remove the work directory and copy the results as an actual files
+    RSYNC_RESULTS_REMOVE_WORK_DIR(params.outdir,params.tmpdir)
+}
 
 workflow JUST_CELLTYPES{
     file__anndata_merged = Channel.from(params.file__anndata_merged)
     celltype(file__anndata_merged)
 }
 
-
-// workflow JUST_RECLUSTER2{
-//     file__anndata_merged = Channel.from(params.file__anndata_merged)
-//     gt_outlier_input = Channel.from("$projectDir/assets/fake_file.fq")
-//     file__anndata_merged.subscribe { println "file__anndata_merged: $it" }
-//     dummy_filtered_channel(file__anndata_merged,params.id_in)
-//     file__cells_filtered = dummy_filtered_channel.out.anndata_metadata
-
-//     PCA(file__anndata_merged,params.outdir,params.layer)
-
-//     CLUSTERING_HARMONY(
-//         params.outdir,
-//         file__anndata_merged,
-//         PCA.out.metadata,
-//         PCA.out.pcs,
-//         PCA.out.reduced_dims,
-//         "False",  // use_pcs_as_reduced_dims
-//         params.cluster.number_neighbors.value,
-//         params.cluster.methods.value,
-//         params.cluster.resolutions.value,
-//         params.cluster.variables_boxplot.value,
-//         channel__cluster__known_markers,
-//         params.cluster_validate_resolution.sparsity.value,
-//         params.cluster_validate_resolution.train_size_cells.value,
-//         params.cluster_marker.methods.value,
-//         params.umap.n_neighbors.value,
-//         params.umap.umap_init.value,
-//         params.umap.umap_min_dist.value,
-//         params.umap.umap_spread.value,
-//         params.sccaf.min_accuracy         
-//     )
-
-//     qc(file__anndata_merged,file__cells_filtered,gt_outlier_input) //This runs the Clusterring and qc assessments of the datasets.
-                
-// }
-
-
+workflow JUST_CELLBENDER{
+    // here we are skipping everything downstram and are only performing cellbender opperations
+    params.do_deconvolution = false
+    params.celltype_assignment.run_celltype_assignment = false
+    params.skip_qc = true
+    params.skip_handover = true
+    params.skip_merge = true
+    MAIN ()
+}
 
 
 workflow JUST_RECLUSTER{
+    // This workflow entry point is for integrations only. Users can provide a h5ad file that can be clustered. 
     file__anndata_merged = Channel.from(params.file__anndata_merged)
     gt_outlier_input = Channel.from("$projectDir/assets/fake_file.fq")
     file__anndata_merged.subscribe { println "file__anndata_merged: $it" }
     dummy_filtered_channel(file__anndata_merged,params.id_in)
     file__cells_filtered = dummy_filtered_channel.out.anndata_metadata
-    qc(file__anndata_merged,file__cells_filtered,gt_outlier_input) //This runs the Clusterring and qc assessments of the datasets.
-                
+    qc(file__anndata_merged,file__cells_filtered,gt_outlier_input) //This runs the Clusterring and qc assessments of the datasets.    
 }
 
 
@@ -131,8 +110,6 @@ include {ENHANCE_STATS_GT_MATCH } from "$projectDir/modules/nf-core/modules/geno
 include {collect_file} from "$projectDir/modules/nf-core/modules/collect_file/main"
 include { CELLSNP;capture_cellsnp_files } from "$projectDir/modules/nf-core/modules/cellsnp/main"
 
-
-
 workflow FREEZE1_GENERATION{
     GENOTYPE_UPDATE()
 
@@ -148,14 +125,6 @@ workflow FREEZE1_GENERATION{
     }
     
     YASCP (GENOTYPE_UPDATE.out.assignments_all_pools,input_channel,vcf_inputs)
-
-}
-
-workflow WORK_DIR_REMOVAL{
-    // This process should be run with caution as it will remove the work directory and copy the results as an actual files
-    RSYNC_RESULTS_REMOVE_WORK_DIR(params.outdir,params.tmpdir)
-
-
 
 }
 
@@ -462,8 +431,6 @@ workflow TEST {
 
 }
 
-
-
 workflow.onComplete{
 
     log.info "Pipeline completed at: $workflow.complete"
@@ -482,7 +449,5 @@ workflow.onComplete{
             log.info b.toString() 
         }
     }
-
-
 }
 

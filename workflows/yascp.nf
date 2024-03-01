@@ -71,6 +71,7 @@ workflow YASCP {
                 // Split citeseq if available
                 ch_experimentid_paths10x_raw = prepare_inputs.out.ch_experimentid_paths10x_raw
                 ch_experiment_filth5 = ch_experimentid_paths10x_filtered = prepare_inputs.out.ch_experimentid_paths10x_filtered
+
                 if (params.citeseq){
                     // If citeseq data is present in the 10x mtx then we strip it before the ambient rna correction.
                     SPLIT_CITESEQ_GEX( prepare_inputs.out.ch_experimentid_paths10x_raw,'raw')
@@ -89,7 +90,7 @@ workflow YASCP {
                     log.info ' ---- using existing cellbender output for deconvolution---'
                     ambient_RNA( ch_experimentid_paths10x_raw,
                         ch_experimentid_paths10x_filtered,prepare_inputs.out.channel__metadata)
-        
+                    // ambient_RNA.out.cellbender_path.subscribe { println "vcf_input: $it" }
                     DECONV_INPUTS(ambient_RNA.out.cellbender_path,prepare_inputs)
 
                     channel__file_paths_10x = DECONV_INPUTS.out.channel__file_paths_10x
@@ -128,7 +129,7 @@ workflow YASCP {
                 // Suggestion is to still run deconvolution so that dublicates are removed.
                 // ###################################
                 // ###################################
-
+                
                 if (params.do_deconvolution){
                     main_deconvolution(ch_experiment_bam_bai_barcodes, // activate this to run deconvolution pipeline
                         prepare_inputs.out.ch_experiment_npooled,
@@ -141,6 +142,7 @@ workflow YASCP {
                     ch_poolid_csv_donor_assignments = main_deconvolution.out.ch_poolid_csv_donor_assignments
                     bam_split_channel = main_deconvolution.out.sample_possorted_bam_vireo_donor_ids
                     assignments_all_pools = main_deconvolution.out.assignments_all_pools
+
                     if (!params.skip_merge){
                         MERGE_SAMPLES(main_deconvolution.out.out_h5ad,main_deconvolution.out.vireo_out_sample__exp_summary_tsv,'h5ad')
                     }

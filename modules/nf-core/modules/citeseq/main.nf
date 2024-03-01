@@ -7,7 +7,7 @@ process SPLIT_CITESEQ_GEX {
         container "wtsihgi/nf_scrna_qc:6bb6af5"
     }
 
-    publishDir  path: "${params.outdir}/citeseq/${sample_name}",
+    publishDir  path: "${params.outdir}/citeseq/${mode}/${sample_name}",
     //   saveAs: {filename ->
     //     if (filename.contains("antibody-")) {
     //         filename.replaceAll("antibody-", "${mode}_antibody-")

@@ -12,6 +12,7 @@ proc ModulesHelp { } {
     puts stderr "	*yascp -v :will describe the checkout tag used."
     puts stderr "	*yascp celltypes inputs.nf - run just a celltype assignment based on the input h5ad files."
     puts stderr "	*yascp cluster -c inputs.nf - run just a celltype assignment based on the input h5ad files."
+    puts stderr "	*yascp cellbender -c inputs.nf - run just a celltype assignment based on the input h5ad files."
     puts stderr " 	*yascp test :will run a OneK1k test dataset."
     puts stderr " 	*yascp sample_input :will create a directory sample_input in your current working directory where you will sample input files."
     puts stderr " 	*yascp fetch :(you need an input.tsv file (ap per this: https://github.com/wtsi-hgi/yascp/blob/main/sample_input/input.tsv) in project directory where you would like to fetch the cellranged data. This file should contain sanger_sample_id as a header and all the uniqie sanger sample ids in the folowin rows) will fetch the cellranger data and prepeare the basic yascp inputs."

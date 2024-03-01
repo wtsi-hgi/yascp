@@ -62,7 +62,7 @@ workflow  main_deconvolution {
             checkIfExists: true
             ).splitCsv(header: true, sep: '\t').map { row -> tuple(row.experiment_id, row.donor_vcf_ids) }
             .set { donors_in_pools }
-            
+            donors_in_pools.subscribe { println "donors_in_pools: $it" }
             // 2) All the vcfs provided to us. 
             vcf_input.splitCsv(header: true, sep: '\t')
             .map { row -> tuple(row.label, file(row.vcf_file_path), file("${row.vcf_file_path}.csi")) }
@@ -96,6 +96,9 @@ workflow  main_deconvolution {
         ch_poolid_donor_assignment = Channel.empty()
         ch_experiment_donorsvcf_donorslist.map { experiment, donorsvcf, donorstbi,donorslist -> tuple(experiment, donorslist.replaceAll(/,/, " ").replaceAll(/"/, ""))}.set{donors_in_lane}
         ch_experiment_bam_bai_barcodes.combine(ch_experiment_npooled, by: 0).set{cellsnp_with_npooled}
+        // ch_experiment_bam_bai_barcodes.subscribe { println "ch_experiment_bam_bai_barcodes: $it" }
+        // ch_experiment_npooled.subscribe { println "ch_experiment_npooled: $it" }
+        // cellsnp_with_npooled.subscribe { println "cellsnp_with_npooled: $it" }
 
         if (params.genotype_input.run_with_genotype_input) {
             // Here we provide sites to pile up the snps within the pool. 

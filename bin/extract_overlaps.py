@@ -67,7 +67,9 @@ def main():
     else:
         bridge = pd.DataFrame(columns=['oragene_id','s00046_id'])
 
-    samples = samples_string.split(',')
+    print(samples_string)
+    samples = samples_string.replace(';', ',').split(',')
+    print(samples)
     all_maped_samples = []
     for s1 in samples:
         # there are no dublicates atm for the S2 ids, but there are replicates for the genotype ids, this however not conceir us.
