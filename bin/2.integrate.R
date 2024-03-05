@@ -10,7 +10,12 @@ library("Matrix")
 library(Seurat)
 library(ggplot2)
 library("RColorBrewer")
-
+library(future)
+if (future::supportsMulticore()) {
+  future::plan(future::multicore)
+} else {
+  future::plan(future::multisession)
+}
 #####
 # .libPaths('/software/hgi/containers/yascp/jaguar_rlibs')
 # install.packages("Matrix")

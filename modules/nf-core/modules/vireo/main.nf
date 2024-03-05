@@ -70,6 +70,7 @@ process VIREO_SUBSAMPLING {
       tuple val(samplename), path(cell_data), val(n_pooled), path(donors_gt_vcf), path(donor_gt_csi), val(itteration)
 
     output:
+      path("vireo_${samplename}___${itteration}"), emit: output_dirs_all
       tuple val(samplename), path("vireo_${samplename}___${itteration}"), emit: output_dir
       tuple val(samplename), path("vireo_${samplename}___${itteration}/donor_ids.tsv"), emit: sample_donor_ids
       tuple val(samplename), path("vireo_${samplename}___${itteration}/GT_donors.vireo.vcf.gz"), path(vcf_file),path(donor_gt_csi), emit: sample_donor_vcf
@@ -211,6 +212,7 @@ process VIREO {
 
     output:
       path("vireo_${samplename}"), emit: output_dir
+      
       // tuple val(samplename), path("vireo_${samplename}"), emit: output_dir
       tuple val(samplename), path("vireo_${samplename}/donor_ids.tsv"), emit: sample_donor_ids
       tuple val(samplename), path("vireo_${samplename}/GT_donors.vireo.vcf.gz"), path(vcf_file),path(donor_gt_csi), emit: sample_donor_vcf

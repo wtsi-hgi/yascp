@@ -35,6 +35,7 @@ workflow celltype{
         if (params.celltype_assignment.run_keras){
             KERAS_CELLTYPE(ch_experiment_filth5,params.celltype_prediction.keras.keras_model,params.celltype_prediction.keras.keras_weights_df) 
             all_extra_fields = KERAS_CELLTYPE.out.predicted_celltype_labels.collect()
+            all_extra_fields = all_extra_fields.ifEmpty(Channel.from("$projectDir/assets/fake_file.fq"))
         }else{
             all_extra_fields = Channel.from("$projectDir/assets/fake_file.fq")
         }
@@ -45,7 +46,8 @@ workflow celltype{
             REMAP_AZIMUTH(AZIMUTH.out.celltype_tables_all,params.mapping_file)
             az_out = REMAP_AZIMUTH.out.predicted_celltype_labels.collect()
         }else{
-            az_out = Channel.from("$projectDir/assets/fake_file.fq")
+            az_out = Channel.from("$projectDir/assets/fake_file1.fq")
+            az_out = az_out.ifEmpty(Channel.from("$projectDir/assets/fake_file1.fq"))
         }
         
         // CELLTYPIST
@@ -54,16 +56,18 @@ workflow celltype{
                 .set{ch_celltypist_models}
             CELLTYPIST(az_ch_experiment_filth5.combine(ch_celltypist_models))
             ct_out = CELLTYPIST.out.predicted_labels.collect()
+            ct_out = ct_out.ifEmpty(Channel.from("$projectDir/assets/fake_file2.fq"))
         }else{
-            ct_out = Channel.from("$projectDir/assets/fake_file.fq")
+            ct_out = Channel.from("$projectDir/assets/fake_file2.fq")
         }
 
         // // SCPRED
         if (params.celltype_assignment.run_scpred){
             SCPRED(params.outdir,AZIMUTH.out.query_rds)
             sc_out = SCPRED.out.predicted_celltype_labels.collect()
+            sc_out = sc_out.ifEmpty(Channel.of())
         }else{
-            sc_out = Channel.from("$projectDir/assets/fake_file.fq")
+            sc_out = Channel.of()
         }        
         all_extra_fields = all_extra_fields.mix(sc_out)
         

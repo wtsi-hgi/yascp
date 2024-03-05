@@ -50,8 +50,7 @@ def main():
         Data= pd.read_csv(s1)
         if dr1:
            Data= Data[Data.final_panel!=dr1]
-        d1 = list(Data['donor_gt'])
-        d1 = list(filter(lambda val: val !=  'NONE', Data['donor_gt']) )
+        d1 = list(filter(lambda val: val !=  'NONE', list(Data['donor_gt'].astype(str))) )
         
         donor_vcf_ids = ','.join(d1)
         Dataset.append({'experiment_id':experiment_id,'donor_vcf_ids':donor_vcf_ids})

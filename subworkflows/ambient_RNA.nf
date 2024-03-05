@@ -25,6 +25,8 @@ workflow ambient_RNA {
         post_ch_experimentid_paths10x_raw.filter{ it[1] != null }.filter{ it[2] != null }.map{row -> tuple(row[0],row[2])}.set{alt_input3}
 
         CELLBENDER(ch_experimentid_paths10x_raw_2,ch_experimentid_paths10x_filtered_2,channel__metadata)
+        
+
         cb_Filtered_pre = CELLBENDER.out.cellbender_downstream
         // If we rerun this with a provided cb path this will not emit anything. 
         cb_Filtered =cb_Filtered_pre2.concat(cb_Filtered_pre)
