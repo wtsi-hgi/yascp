@@ -207,32 +207,39 @@ workflow  main_deconvolution {
         vireo_out_sample_donor_ids = REPLACE_GT_DONOR_ID2.out.sample_donor_ids
 
         if (params.genotype_input.run_with_genotype_input) {
-            VIREO_SUBSAMPLING(vireo_extra_repeats)
-            VIREO_SUBSAMPLING.out.output_dir.concat(VIREO.out.output_dir).set{tuple_1}
-            tuple_1.groupTuple(by:0).set{vspp0}
-            VIREO_SUBSAMPLING_PROCESSING(vspp0)
-            VIREO_SUBSAMPLING.out.all_required_data.set{replacement_input_sub}
-            // replacement_input_sub.combine(vireo_with_gt).set{vir_repl_input}
-            // REPLACE_GT_DONOR_ID_SUBS(vir_repl_input)
-            // VIREO_GT_FIX_HEADER_SUBS(REPLACE_GT_DONOR_ID_SUBS.out.infered_vcf,genome)
-            // VIREO_GT_FIX_HEADER_SUBS.out.gt_pool
-            //     .combine(ch_ref_vcf).set { gt_math_pool_against_panel_input_subs }
-                
-            // MATCH_GT_VIREO(gt_math_pool_against_panel_input_subs)
+            if (params.do_vireo_subsampling){
+                VIREO_SUBSAMPLING(vireo_extra_repeats)
+                VIREO_SUBSAMPLING.out.output_dir.concat(VIREO.out.output_dir).set{tuple_1}
+                // tuple_1.groupTuple(by:0).set{vspp0}
+                // VIREO_SUBSAMPLING_PROCESSING(vspp0)
+                // VIREO_SUBSAMPLING.out.all_required_data.set{replacement_input_sub}
+                // // replacement_input_sub.combine(vireo_with_gt).set{vir_repl_input}
+                // // REPLACE_GT_DONOR_ID_SUBS(vir_repl_input)
+                // // VIREO_GT_FIX_HEADER_SUBS(REPLACE_GT_DONOR_ID_SUBS.out.infered_vcf,genome)
+                // // VIREO_GT_FIX_HEADER_SUBS.out.gt_pool
+                // //     .combine(ch_ref_vcf).set { gt_math_pool_against_panel_input_subs }
+                    
+                // MATCH_GT_VIREO(gt_math_pool_against_panel_input_subs)
+                // subsampling_donor_swap = VIREO_SUBSAMPLING_PROCESSING.out.subsampling_donor_swap
+            }else{
+                subsampling_donor_swap = Channel.from("$projectDir/assets/fake_file.fq")
+            }
 
+            
 
             VIREO_GT_FIX_HEADER.out.gt_pool
                 .combine(ch_ref_vcf)
                 .set { gt_math_pool_against_panel_input }
 
-            match_genotypes(vireo_out_sample_donor_vcf,merged_expected_genotypes,VIREO_GT_FIX_HEADER.out.gt_pool,gt_math_pool_against_panel_input,genome,ch_ref_vcf,cellsnp_cell_vcfs2,cell_assignments,VIREO_SUBSAMPLING_PROCESSING.out.subsampling_donor_swap,informative_uninformative_sites)
+            match_genotypes(vireo_out_sample_donor_vcf,merged_expected_genotypes,VIREO_GT_FIX_HEADER.out.gt_pool,gt_math_pool_against_panel_input,genome,ch_ref_vcf,cellsnp_cell_vcfs2,cell_assignments,subsampling_donor_swap,informative_uninformative_sites)
             gt_matches = match_genotypes.out.donor_match_table.collect()
 
             ENHANCE_STATS_GT_MATCH(match_genotypes.out.donor_match_table_enhanced,params.input_data_table)
             collect_file1(ENHANCE_STATS_GT_MATCH.out.assignments.collect(),"assignments_all_pools.tsv",params.outdir+'/deconvolution/vireo_gt_fix',1,'')
             collect_file10(ENHANCE_STATS_GT_MATCH.out.assignments.collect(),"assignments_all_pools.tsv",params.outdir+'/gtmatch',1,'')
             assignments_all_pools = collect_file1.out.output_collection
-
+            gt_matches = Channel.from("$projectDir/assets/fake_file.fq")
+            assignments_all_pools = Channel.from("$projectDir/assets/fake_file.fq")
         }else{
             gt_matches = Channel.from("$projectDir/assets/fake_file.fq")
             assignments_all_pools = Channel.from("$projectDir/assets/fake_file.fq")

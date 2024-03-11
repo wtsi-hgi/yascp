@@ -1,17 +1,75 @@
 #/bin/bash
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+bold=$(tput bold)
+normal=$(tput sgr0)
 
-if [[ $@ == "-v" ]]; then
-    command echo  -e "yascp v=1.5; \n Available at https://github.com/wtsi-hgi/yascp \n commit cf277b8c285fec33bd2db476aa410f14c329287b"
-elif [[ $@ == "test" ]]; then
+
+
+export RUN_ID="${PWD##*/}"
+
+# export SINGULARITY_CACHEDIR='/software/hgi/containers/yascp'
+
+export NXF_OPTS="-Xms5G -Xmx5G"
+export SINGULARITY_TMPDIR=$PWD/work/tmp
+export TEMP=$PWD/work/tmp
+export TMP_DIR=$PWD/work/tmp
+
+echo press ENTER to NOT fetch containers, otherwise provide writable path:
+read varname
+
+if ["$varname" = ''];
+    then
+        export NXF_SINGULARITY_CACHEDIR='/software/hgi/containers/yascp'
+        export SINGULARITY_DISABLE_CACHE=0
+    else
+        echo Yascp Will fetch the containers and place them in $varname
+        export NXF_SINGULARITY_CACHEDIR=$varname
+fi
+
+
+if [[ $1 == "-v" ]]; then
+    command echo  -e "yascp v=1.5_tmp; \n Available at https://github.com/wtsi-hgi/yascp \n commit cf277b8c285fec33bd2db476aa410f14c329287b"
+elif [[ $1 == "test" ]]; then
     command echo -e "Runing test code from OneK1k" && bash $SCRIPT_DIR/../nohup_start_nextflow_lsf_test.sh
-elif [[ $@ == "sample_input" ]]; then
+elif [[ $1 == "sample_input" ]]; then
     command cp -r $SCRIPT_DIR/../../../sample_input ./
-elif [[ $@ == "info" ]]; then
-    command echo -e "\n\n#####YASCP 1.5#####\nYascp module has been set to run in multiple modes:\n 	*yascp -v :will describe the checkout tag used. \n 	*yascp y=test :will run a OneK1k test dataset. \n 	*yascp sample_input :will create a directory sample_input in your current working directory where you will sample input files. \n 	*yascp input.nf :will run your samples as defined in input file. If you are unsure how to fill in the info file please refear to this documentation: https://github.com/wtsi-hgi/yascp/blob/main/docs/usage.md \n\n For the data interpretation please folow this documentation: https://github.com/wtsi-hgi/yascp/tree/main/docs"
-elif [[ $@ == "-h" ]]; then
-    command echo -e "\n\n#####YASCP 1.5#####\nYascp module has been set to run in multiple modes:\n 	*yascp -v :will describe the checkout tag used. \n 	*yascp y=test :will run a OneK1k test dataset. \n 	*yascp sample_input :will create a directory sample_input in your current working directory where you will sample input files. \n 	*yascp input.nf :will run your samples as defined in input file. If you are unsure how to fill in the info file please refear to this documentation: https://github.com/wtsi-hgi/yascp/blob/main/docs/usage.md \n\n For the data interpretation please folow this documentation: https://github.com/wtsi-hgi/yascp/tree/main/docs"
+elif [[ $1 == "clean" ]]; then
+    command echo -e "Removing work dir; after this you will not be able to use the catche to restart pipeline \n\n" && bash $SCRIPT_DIR/../remove_work_dir.sh "${@:2}"
+elif [[ $1 == "celltypes" ]]; then
+    command echo -e "Running celltype assignment of provided h5ad file \n\n" && bash $SCRIPT_DIR/../nohup_start_nextflow_lsf_celltypes.sh "${@:2}"
+elif [[ $1 == "cluster" ]]; then
+    command echo -e "Running clustering assesment of provided h5ad file \n\n" && bash $SCRIPT_DIR/../nohup_start_nextflow_lsf_recluster.sh "${@:2}"
+elif [[ $1 == "cellbender" ]]; then
+    command echo -e "Running clustering assesment of provided h5ad file \n\n" && bash $SCRIPT_DIR/../nohup_start_nextflow_lsf_cellbender.sh "${@:2}"
+elif [[ $1 == "-info" ]]; then
+    command echo -e "\n\n#####YASCP 1.5_tmp#####\n###################\n###################\nYASCP"\
+    " (Yet Another Single Cell Pieline)[https://github.com/wtsi-hgi/yascp] \nNextflow pipeline that QCs the scRNA Cellranger data by removing ambient RNA, deconvoluting donors, assigning celltypes, analysing concordances vs expected genotypes\n"\
+    "###################\n"\
+    "Yascp module has been set to run in multiple modes:\n\n"\
+    "* ${bold}yascp -v${normal} :will describe the checkout tag used.\n"\
+    "* ${bold}yascp test${normal} :will run a OneK1k test dataset.\n"\
+    "* ${bold}yascp sample_input${normal} :will create a directory sample_input in your current working directory where you will sample input files.\n"\
+    "* ${bold}yascp fetch ${normal}:(you need an input.tsv file [ap per this: https://github.com/wtsi-hgi/yascp/blob/main/sample_input/input.tsv] in project directory where you would like to fetch the cellranged data."\
+    "This file should contain sanger_sample_id as a header and all the uniqie sanger sample ids in the folowin rows) will fetch the cellranger data and prepeare the basic yascp inputs. \n"\
+    "* ${bold}yascp clean inputs.nf${normal}: will rsync results and extract symlinks from the folder defined as an 'outdir' and then remove work directory to avoid running out of quota (this will remove nextflow catche and pipeline will need to be rerun from beggining if needed)\n"\
+    "* ${bold}yascp input.nf${normal} :will run your samples as defined in input file. If you are unsure how to fill in the info file please refear to this documentation: https://github.com/wtsi-hgi/yascp/blob/main/docs/usage.md \n"\
+    "\n For the data interpretation please folow this documentation: https://github.com/wtsi-hgi/yascp/tree/main/docs"
+elif [[ $1 == "-h" ]]; then
+    command echo -e "\n\n#####YASCP 1.5_tmp#####\n###################\n###################\nYASCP"\
+    " (Yet Another Single Cell Pieline)[https://github.com/wtsi-hgi/yascp] \nNextflow pipeline that QCs the scRNA Cellranger data by removing ambient RNA, deconvoluting donors, assigning celltypes, analysing concordances vs expected genotypes\n"\
+    "###################\n"\
+    "Yascp module has been set to run in multiple modes:\n\n"\
+    "* ${bold}yascp -v${normal} :will describe the checkout tag used.\n"\
+    "* ${bold}yascp test${normal} :will run a OneK1k test dataset.\n"\
+    "* ${bold}yascp sample_input${normal} :will create a directory sample_input in your current working directory where you will sample input files.\n"\
+    "* ${bold}yascp fetch ${normal}:(you need an input.tsv file [ap per this: https://github.com/wtsi-hgi/yascp/blob/main/sample_input/input.tsv] in project directory where you would like to fetch the cellranged data."\
+    "This file should contain sanger_sample_id as a header and all the uniqie sanger sample ids in the folowin rows) will fetch the cellranger data and prepeare the basic yascp inputs. \n"\
+    "* ${bold}yascp clean inputs.nf${normal}: will rsync results and extract symlinks from the folder defined as an 'outdir' and then remove work directory to avoid running out of quota (this will remove nextflow catche and pipeline will need to be rerun from beggining if needed)\n"\
+    "* ${bold}yascp input.nf${normal} :will run your samples as defined in input file. If you are unsure how to fill in the info file please refear to this documentation: https://github.com/wtsi-hgi/yascp/blob/main/docs/usage.md \n"\
+    "\n For the data interpretation please folow this documentation: https://github.com/wtsi-hgi/yascp/tree/main/docs"
+elif [[ $1 == "fetch" ]]; then
+    command echo -e "if you have prepeared an input.tsv file with a header 'sanger_sample_id' that lists all the unique sanger sample ids to retrieve then this will be now fetched. \n" && bash /software/hgi/pipelines/yascp_nf_irods_to_lustre_versions/yascp_nf_irods_to_lustre_1.1/scripts/bsub_module.sh
 else
     command bash $SCRIPT_DIR/../nohup_start_nextflow_lsf.sh "$@"
 fi

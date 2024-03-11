@@ -34,7 +34,7 @@ process AZIMUTH{
         path "*prediction_score_vln.pdf"
         path "*mapping_score_umap.pdf"
         path "*mapping_score_vln.pdf"
-        path('query.rds'), emit: query_rds
+        path("${outfil_prfx}_query.rds"), emit: query_rds
 
     script:
     
@@ -46,7 +46,7 @@ process AZIMUTH{
     """
         azimuth.R ./${file_h5ad_batch}
         gzip -c predicted_celltype_l2.tsv > ${celltype_table}
-
+        ln -s query.rds ${outfil_prfx}_query.rds 
     """
 }
 

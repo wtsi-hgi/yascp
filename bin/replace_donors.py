@@ -52,18 +52,24 @@ donor_names_set = set(GT_Assignments['ix']).union(set(donors_in_vcf.iloc[:,0]))
 All_Dons_pre = pd.DataFrame(donor_names_set,columns=['ix'])
 GT_Assignments = All_Dons_pre
 GT_Assignments['donor_gt'] = ''
-All_Dons = All_Dons_pre[All_Dons_pre['ix'].str.contains('donor')]
+try:
+    All_Dons = All_Dons_pre[All_Dons_pre['ix'].str.contains('donor')]
+    Taken_nrs = set(All_Dons['ix'].str.replace('donor','').astype(int))
+except:
+    # no donor numbers taken
+    All_Dons = []
+    Taken_nrs=set()
 
 
 int1 = 0
 
-Taken_nrs = set(All_Dons['ix'].str.replace('donor','').astype(int))
+
 for i,row1 in GT_Assignments.iterrows():
-    don1 = row1['ix']
+    don1 = str(row1['ix'])
     if don1 in ['doublet','unassigned']:
         replacement = don1
     else:
-        if ('donor' in don1):
+        if ('donor' in str(don1)):
             replacement =don1
         else:
             while int1 in Taken_nrs:

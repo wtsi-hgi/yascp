@@ -4,7 +4,7 @@ SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 bold=$(tput bold)
 normal=$(tput sgr0)
 if [[ $1 == "-v" ]]; then
-    command echo  -e "yascp v=1.5; \n Available at https://github.com/wtsi-hgi/yascp \n commit cf277b8c285fec33bd2db476aa410f14c329287b"
+    command echo  -e "yascp v=1.5_tmp; \n Available at https://github.com/wtsi-hgi/yascp \n commit cf277b8c285fec33bd2db476aa410f14c329287b"
 elif [[ $1 == "test" ]]; then
     command echo -e "Runing test code from OneK1k" && bash $SCRIPT_DIR/../bsub_test.sh
 elif [[ $1 == "sample_input" ]]; then
@@ -18,7 +18,7 @@ elif [[ $1 == "cluster" ]]; then
 elif [[ $1 == "cellbender" ]]; then
     command echo -e "Running clustering assesment of provided h5ad file \n\n" && bash $SCRIPT_DIR/../bsub_test_cellbender.sh "${@:2}"
 elif [[ $1 == "-info" ]]; then
-    command echo -e "\n\n#####YASCP 1.5#####\n###################\n###################\nYASCP"\
+    command echo -e "\n\n#####YASCP 1.5_tmp#####\n###################\n###################\nYASCP"\
     " (Yet Another Single Cell Pieline)[https://github.com/wtsi-hgi/yascp] \nNextflow pipeline that QCs the scRNA Cellranger data by removing ambient RNA, deconvoluting donors, assigning celltypes, analysing concordances vs expected genotypes\n"\
     "###################\n"\
     "Yascp module has been set to run in multiple modes:\n\n"\
@@ -31,7 +31,7 @@ elif [[ $1 == "-info" ]]; then
     "* ${bold}yascp input.nf${normal} :will run your samples as defined in input file. If you are unsure how to fill in the info file please refear to this documentation: https://github.com/wtsi-hgi/yascp/blob/main/docs/usage.md \n"\
     "\n For the data interpretation please folow this documentation: https://github.com/wtsi-hgi/yascp/tree/main/docs"
 elif [[ $1 == "-h" ]]; then
-    command echo -e "\n\n#####YASCP 1.5#####\n###################\n###################\nYASCP"\
+    command echo -e "\n\n#####YASCP 1.5_tmp#####\n###################\n###################\nYASCP"\
     " (Yet Another Single Cell Pieline)[https://github.com/wtsi-hgi/yascp] \nNextflow pipeline that QCs the scRNA Cellranger data by removing ambient RNA, deconvoluting donors, assigning celltypes, analysing concordances vs expected genotypes\n"\
     "###################\n"\
     "Yascp module has been set to run in multiple modes:\n\n"\

@@ -8,6 +8,12 @@ library(ggplot2)
 library("RColorBrewer")
 library(tidyverse)
 library(patchwork)
+library(future)
+if (future::supportsMulticore()) {
+  future::plan(future::multicore)
+} else {
+  future::plan(future::multisession)
+}
 library("RColorBrewer")
 #####
 # .libPaths('/lustre/scratch123/hgi/teams/hgi/mo11/tmp_projects/jaguar_yascp/nieks_pipeline/yascp_run/work/6e/dd58d21d32b7a0eefad878415f35e6/pack')

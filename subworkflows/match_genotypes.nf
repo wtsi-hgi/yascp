@@ -90,14 +90,15 @@ workflow match_genotypes {
     input6 = input5.combine(cell_assignments, by:0)
     input7 = input6.combine(informative_uninformative_sites, by:0)
     // input6.subscribe { println "input6: $it" }
-    CONCORDANCE_CALCLULATIONS(input7)
- 
-    ch_combine = subsampling_donor_swap.combine(CONCORDANCE_CALCLULATIONS.out.concordances, by: 0)
-    
-    COMBINE_FILES(ch_combine) //This step plots scatter plots for each of the pools individually.
-    // Now we want to combined all the above files together and make one overall plot for all the tranches.
-    collect_file1(COMBINE_FILES.out.file_joined_df_for_plots.collect(),"joined_df_for_plots.tsv",params.outdir+'/concordances',1,'')
-    PLOT_CONCORDANCES_ALL(collect_file1.out.output_collection)
+    if (params.concordance_calculations){
+        CONCORDANCE_CALCLULATIONS(input7)
+        ch_combine = subsampling_donor_swap.combine(CONCORDANCE_CALCLULATIONS.out.concordances, by: 0)
+        COMBINE_FILES(ch_combine) //This step plots scatter plots for each of the pools individually.
+        // Now we want to combined all the above files together and make one overall plot for all the tranches.
+        collect_file1(COMBINE_FILES.out.file_joined_df_for_plots.collect(),"joined_df_for_plots.tsv",params.outdir+'/concordances',1,'')
+        PLOT_CONCORDANCES_ALL(collect_file1.out.output_collection)
+    }
+
 
   emit:
     pool_id_donor_assignments_csv = MATCH_GT_VIREO.out.pool_id_donor_assignments_csv

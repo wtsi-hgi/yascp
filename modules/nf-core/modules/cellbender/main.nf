@@ -9,27 +9,11 @@ include {
 
 // Set default parameters.
 outdir           = "${params.outdir}/nf-preprocessing"
-params.help                 = false
-
-params.cellbender_rb = [
-    estimate_params_umis: [value: [
-        expected_nemptydroplets_umi_cutoff: 0,
-        method_estimate_ncells: 'dropletutils::barcoderanks::inflection',
-        lower_bound_umis_estimate_ncells: 1000,
-        method_estimate_nemptydroplets: 'dropletutils::barcoderanks::inflection',
-        lower_bound_umis_estimate_nemptydroplets: 10,
-        upper_bound_umis_estimate_nemptydroplets: 100,
-        estimate_nemptydroplets_umi_subtract_factor: 25
-    ]],
-    epochs: [value: [200]],
-    learning_rate: [value: [0.001, 0.0001]],
-    fpr: [value: [0.01, 0.05]],
-]
 
 workflow CELLBENDER {
     take:
         ch_experimentid_paths10x_raw
-		ch_experimentid_paths10x_filtered
+		    ch_experimentid_paths10x_filtered
         channel__metadata
         
     main:
@@ -40,7 +24,11 @@ workflow CELLBENDER {
             file("${row[1]}/features.tsv.gz"),
             file("${row[1]}/matrix.mtx.gz")
         )}.set{channel__file_paths_10x}
-    
+
+        ch_experimentid_paths10x_raw.map{row -> 
+            row[0]}.set{experiment_id_in}
+        experiment_id_in.subscribe { println "experiment_id_in: $it" }
+        experiment_id_in = experiment_id_in.view()
         outdir =  outdir+'/cellbender'
         
         // here pass in the number of cells detected by cellranger/ 
@@ -56,13 +44,8 @@ workflow CELLBENDER {
             )}.set{ncells_cellranger_pre}
         }
 
-
-        
         ncells_cellranger_pre.join(ch_experimentid_paths10x_raw, remainder: false).set{post_ncells_cellranger} 
-
         post_ncells_cellranger.map{row -> tuple(row[0], row[1])}.filter{ it[2] == null }.set{ncells_cellranger}
-                
-
         channel__file_paths_10x.combine(ncells_cellranger, by: 0).set{channel__file_paths_10x_with_ncells}
        
         cellbender__rb__get_input_cells(
@@ -72,27 +55,37 @@ workflow CELLBENDER {
         )
         
         // Correct counts matrix to remove ambient RNA
-        cellbender__rb__get_input_cells.out.cb_input.subscribe { println "cellbender__rb__get_input_cells: $it" }
+    // Some samples may fail with the defaults. Hence here we allow for a changes to be applied. 
+
+    
+    
+    
+    
+        epochs_to_use = params.cellbender_rb.epochs.value
+        learning_rate_to_use = params.cellbender_rb.learning_rate.value
+        zdims_to_use = params.cellbender_rb.zdim.value
+        zlayers_to_use = params.cellbender_rb.zlayers.value
+        low_count_threshold_to_use = params.cellbender_rb.low_count_threshold.value
+
         cellbender__remove_background(
             outdir,
             cellbender__rb__get_input_cells.out.cb_input,
-            params.cellbender_rb.epochs.value,
-            params.cellbender_rb.learning_rate.value,
-            params.cellbender_rb.zdim.value,
-            params.cellbender_rb.zlayers.value,
-            params.cellbender_rb.low_count_threshold.value,
+            epochs_to_use,
+            learning_rate_to_use,
+            zdims_to_use,
+            zlayers_to_use,
+            low_count_threshold_to_use,
             params.cellbender_rb.fpr.value
         )
+
+
+
         cellbender__preprocess_output(
             cellbender__remove_background.out.cleanup_input,
             cellbender__remove_background.out.cb_plot_input,
             cellbender__remove_background.out.experimentid_outdir_cellbenderunfiltered_expectedcells_totaldropletsinclude,
         )
 
-        // Make some basic plots
-        // cellbender__remove_background__qc_plots(
-        //     cellbender__preprocess_output.out.cb_plot_input
-        // )
 
         cellbender__preprocess_output.out.experimentid_outdir_cellbenderunfiltered_expectedcells_totaldropletsinclude
             .combine(ch_experimentid_paths10x_raw, by: 0)

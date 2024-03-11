@@ -261,18 +261,22 @@ workflow REPORT_UPDATE{
     // // UKBB is sending us samples once a week and sometimes the sample mappings may be present at a later date, hence we update previously run samples accordingly.
     Channel.from([["${params.RUN}","${params.outdir}"]]).set{update_input_channel}
     // // We sometimes aslo chnge apporach in the data fetch and we need to add in some extra metadata
-    metadata_posthoc(update_input_channel)
-    metadata_posthoc.out.dummy_out.set{o3}
+    // metadata_posthoc(update_input_channel)
+    // metadata_posthoc.out.dummy_out.set{o3}
     replace_donors_posthoc(update_input_channel)
     replace_donors_posthoc.out.dummy_out.set{o2}
     // o1.mix(o2).last().set{o3}
-    // o3 = Channel.of('dummys')
+    o3 = Channel.of('dummys')
     // Once everything is updated we need to make sure that the dataon the website and in the cardinal analysis foder is accurate and up to date, hence we rerun the data_handover scripts.
     // data_handover(params.outdir,
     //             process_finish_check_channel,
     //             ch_poolid_csv_donor_assignments,
     //             bam_split_channel) 
+
+
+
     data_handover(params.outdir,
+                input_channel,
                 o3,
                 ch_poolid_csv_donor_assignments,
                 bam_split_channel) 
