@@ -58,12 +58,16 @@ workflow YASCP {
                 
         if(!params.just_reports){
             // sometimes we just want to rerun report generation as a result of alterations, hence if we set params.just_reports =True pipeline will use the results directory and generate a new reports.
+            prepare_inputs(input_channel)
+            chanel_cr_outs = prepare_inputs.out.chanel_cr_outs
+            channel__file_paths_10x=prepare_inputs.out.channel__file_paths_10x
+            input_channel = prepare_inputs.out.channel_input_data_table
+            vireo_paths = Channel.from("$projectDir/assets/fake_file.fq")
+            matched_donors = Channel.from("$projectDir/assets/fake_file.fq")
             if (!params.skip_preprocessing){
                 // The input table should contain the folowing columns - experiment_id	n_pooled	donor_vcf_ids	data_path_10x_format
                 // prepearing the inputs from a standard 10x dataset folders.
-                prepare_inputs(input_channel)
-                channel__file_paths_10x=prepare_inputs.out.channel__file_paths_10x
-                input_channel = prepare_inputs.out.channel_input_data_table
+
                 log.info 'The preprocessing has been already performed, skipping directly to h5ad input'
                 // // Removing the background using cellbender which is then used in the deconvolution.
 
@@ -220,7 +224,7 @@ workflow YASCP {
                     gt_outlier_input = Channel.from("$projectDir/assets/fake_file.fq")
                 }
 
-                qc(file__anndata_merged,file__cells_filtered,gt_outlier_input,prepare_inputs.out.channel_dsb,vireo_paths,assignments_all_pools,matched_donors) //This runs the Clusterring and qc assessments of the datasets.
+                qc(file__anndata_merged,file__cells_filtered,gt_outlier_input,prepare_inputs.out.channel_dsb,vireo_paths,assignments_all_pools,matched_donors,chanel_cr_outs) //This runs the Clusterring and qc assessments of the datasets.
                 process_finish_check_channel = qc.out.LI
                 file__anndata_merged = qc.out.file__anndata_merged
             }else{

@@ -124,8 +124,8 @@ process MULTIMODAL_INTEGRATION{
     // publishDir  path: "${params.outdir}/citeseq/all_data_integrated", mode: "${params.copy_mode}",
     //   overwrite: "true"
     
-    // output:
-    //     path("out"), emit: all_data_integrated
+    output:
+        path("out"), emit: all_data_integrated
     //     path("./out/tmp_rds_files/all_samples_integrated.RDS"), emit: all_data_integrated_rds
 
     input:
@@ -139,6 +139,39 @@ process MULTIMODAL_INTEGRATION{
     """
     echo 'running1'
     3.WNN_integrate_SCT_CITE.R
+    """
+
+}
+
+process VDJ_INTEGRATION{
+
+    label 'process_medium'
+    tag "${sample_name}"
+    if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
+        container "/lustre/scratch123/hgi/teams/hgi/mo11/tmp_projects/jaguar_yascp/nieks_pipeline/yascp_run/azimuth_dsb_6_03_2024.sif"
+    } else {
+        container "mercury/azimuth_dsb:6_03_2024"
+    }
+
+    // publishDir  path: "${params.outdir}/citeseq/all_data_integrated", mode: "${params.copy_mode}",
+    //   overwrite: "true"
+    
+    // output:
+    //     path("out"), emit: all_data_integrated
+    //     path("./out/tmp_rds_files/all_samples_integrated.RDS"), emit: all_data_integrated_rds
+
+    input:
+        path(outpath)
+        path(all_cellranger_samples)
+        // path(vireo)
+        // path(assignments_all_pools)
+        // path(tmp_rsd)
+        // path(matched_donors)
+
+    script:
+    """
+    echo 'running1'
+    4.add_vdj.R
     """
 
 }

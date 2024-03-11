@@ -23,6 +23,10 @@ workflow from_barcodes {
             .map{row->tuple(row.experiment_id, "${row.data_path_10x_format}/possorted_genome_bam.bam" ,row.data_path_10x_format+'/filtered_feature_bc_matrix/barcodes.tsv.gz')}
             .set{pre_ch_experiment_bam_barcodes}
 
+        chanel_cr_outs = channel_input_data_table
+            .splitCsv(header: true, sep: params.input_tables_column_delimiter)
+            .map{row -> tuple(row.experiment_id, path(row.data_path_10x_format))}
+
         channel__file_paths_10x =  channel_input_data_table
             .splitCsv(header: true, sep: params.input_tables_column_delimiter)
             .map{row -> tuple(
@@ -115,4 +119,5 @@ workflow from_barcodes {
         channel__file_paths_10x
         channel__metadata
         chanel_dsb
+        chanel_cr_outs
 }

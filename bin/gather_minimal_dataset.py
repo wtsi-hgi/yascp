@@ -45,11 +45,11 @@ AZIMUTH_ASSIGNMENTS_FNSUFFIX = '_predicted_celltype_l2.tsv.gz'
 SCRUBLET_ASSIGNMENTS_FNSUFFIX = '-scrublet.tsv.gz'
 
 COLUMNS_AZIMUTH = {
-    'predicted.celltype.l2': 'azimuth.celltyp.l2',
-    'predicted.celltype.l2.score': 'azimuth.pred.score.l2',
-    'mapping.score': 'azimuth.map.score',
-    
+    'Azimuth:predicted.celltype.l2': 'azimuth.celltyp.l2',
+    'Azimuth:predicted.celltype.l2.score': 'azimuth.pred.score.l2',
+    'Azimuth:mapping.score.celltype.l2': 'azimuth.map.score',
     }
+
 COLUMNS_DECONV = {
     'donor_id': 'vireo.donor.id',
     'prob_max': 'vireo.prob.max',

@@ -36,7 +36,12 @@ for i,row1 in Data.iterrows():
     if os.path.isdir(data_10x_format+'/multi/count'):
         # Cellranger 7
         os.mkdir(outdir)
+        # Any vdj files?
+        for vdj1 in glob.glob(data_10x_format+'/*/vdj*'):
+            vdj1
+            os.system(f"cd {outdir} && ln -s {vdj1} ./")
         # Metrics file:
+        
         Metrics_file = glob.glob(data_10x_format+'/*/*/metrics_summary.csv')[0]
         Dataset = pd.read_csv(Metrics_file)
         Dataset1 = Dataset[Dataset['Library Type']=='Gene Expression']

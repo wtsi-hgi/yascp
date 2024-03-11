@@ -1,7 +1,7 @@
 // Modules to include.
 include {
     cellbender__rb__get_input_cells;
-    cellbender__remove_background;cellbender__remove_background_test;
+    cellbender__remove_background;
     cellbender__remove_background__qc_plots;
     cellbender__remove_background__qc_plots_2;
     cellbender__gather_qc_input;cellbender__preprocess_output;
@@ -63,16 +63,6 @@ workflow CELLBENDER {
             params.cellbender_rb.fpr.value
         )
 
-        cellbender__remove_background_test(
-            outdir,
-            cellbender__rb__get_input_cells.out.cb_input,
-            params.cellbender_rb.epochs.value,
-            params.cellbender_rb.learning_rate.value,
-            params.cellbender_rb.zdim.value,
-            params.cellbender_rb.zlayers.value,
-            params.cellbender_rb.low_count_threshold.value,
-            params.cellbender_rb.fpr.value
-        )
 
         cellbender__preprocess_output(
             cellbender__remove_background.out.cleanup_input,

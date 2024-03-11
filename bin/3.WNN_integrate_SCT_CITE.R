@@ -9,6 +9,7 @@ library("RColorBrewer")
 library(tidyverse)
 library(patchwork)
 library(future)
+options(future.globals.maxSize= 1020971520000)
 if (future::supportsMulticore()) {
   future::plan(future::multicore)
 } else {
@@ -20,77 +21,6 @@ library("RColorBrewer")
 # remotes::install_version("Matrix", "1.6.1")
 # library(Matrix)
 #### set up directories, colors paths ####
-
-
-# also write azimuth predicted cell types to file
-make_azimuth_count_tables <- function(sobj){
-  azimuth_dir <- paste0(outdir,'/azimuth/')
-  dir.create(azimuth_dir,showWarnings = F)
-  
-  unique_donors <- unique(paste(sobj$Pool, sobj$donor.vireo))
-  donor_rename <- data.frame('pool_donor'=unique_donors, 
-                             'new_name'=paste0('donor_',1:length(unique_donors)))
-  sobj$new_donor_name <- donor_rename[match(paste(sobj$Pool, sobj$donor.vireo),
-                                                   donor_rename$pool_donor),]$new_name
-  
-  count_l1 <- all_samples@meta.data %>% group_by(new_donor_name) %>% count(Azimuth.predicted.celltype.l1)
-  count_l2 <- all_samples@meta.data %>% group_by(new_donor_name) %>% count(Azimuth.predicted.celltype.l2)
-  count_l3 <- all_samples@meta.data %>% group_by(new_donor_name) %>% count(Azimuth.predicted.celltype.l3)
-  
-  make_wide_table <- function(long_table){
-    wide_table <- data.frame(spread(long_table, key = colnames(long_table)[2], value = n))
-    wide_table[is.na(wide_table)] <- 0
-    rownames(wide_table) <- wide_table$new_donor_name
-    wide_table$new_donor_name <- NULL 
-    wide_table$total <- rowSums(wide_table)
-    return(wide_table)
-  }
-  
-  count_l1_wide <- make_wide_table(count_l1)
-  count_l2_wide <- make_wide_table(count_l2)
-  count_l3_wide <- make_wide_table(count_l3)
-  write.table(count_l1_wide, paste0(azimuth_dir,'/azimuth.l1.countPerDonor.tsv'),
-              sep='\t',col.names=NA, quote=F)
-  write.table(count_l2_wide, paste0(azimuth_dir,'/azimuth.l2.countPerDonor.tsv'),
-              sep='\t',col.names=NA, quote=F)
-  write.table(count_l3_wide, paste0(azimuth_dir,'/azimuth.l3.countPerDonor.tsv'),
-              sep='\t',col.names=NA, quote=F)
-  
-  
-  dir.create(azimuth_dir,'figures/',showWarnings = F)
-  count_l1$total <- count_l1_wide[match(count_l1$new_donor_name, rownames(count_l1_wide)),]$total
-  ggplot(count_l1, aes(Azimuth.predicted.celltype.l1, n, fill=total))+
-    geom_quasirandom(shape=21)+
-    geom_hline(yintercept=150, colour='red',lty=2)+
-    scale_fill_binned(type="viridis")+
-    theme_pubr()+
-    theme(legend.position='right')
-  ggsave(paste0(azimuth_dir,'figures/azimuth_count_l1.png'), width=8, height=5)
-  
-  count_l2$total <- count_l2_wide[match(count_l2$new_donor_name, rownames(count_l2_wide)),]$total
-  ggplot(count_l2, aes(Azimuth.predicted.celltype.l2, n, fill=total))+
-    geom_quasirandom(shape=21)+
-    geom_hline(yintercept=150, colour='red',lty=2)+
-    scale_fill_binned(type="viridis")+
-    theme_pubr()+
-    theme(legend.position='right',
-          axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
-
-  ggsave(paste0(azimuth_dir,'figures/azimuth_count_l2.png'), width=24, height=5)
-  
-  count_l3$total <- count_l3_wide[match(count_l3$new_donor_name, rownames(count_l3_wide)),]$total
-  ggplot(count_l3, aes(Azimuth.predicted.celltype.l3, n, fill=total))+
-    geom_quasirandom(shape=21)+
-    geom_hline(yintercept=150, colour='red',lty=2)+
-    scale_fill_binned(type="viridis")+
-    theme_pubr()+
-    theme(legend.position='right',
-          axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
-  ggsave(paste0(azimuth_dir,'figures/azimuth_count_l3.png'), width=36, height=5)
-  
-
-}
-
 
 outdir <- paste0('./out')
 dir.create(outdir,showWarnings = F)
@@ -205,5 +135,67 @@ saveRDS(integrated_data, file=paste0(tmp_rds_dir,'wnn.integrated.allsamples.RDS'
 
 
 
-make_azimuth_count_table(integrated_data)
+# sobj = integrated_data
+# azimuth_dir <- paste0(outdir,'/azimuth/')
+# dir.create(azimuth_dir,showWarnings = F)
 
+# unique_donors <- unique(paste(sobj$Pool, sobj$donor.vireo))
+# donor_rename <- data.frame('pool_donor'=unique_donors, 
+#                             'new_name'=paste0('donor_',1:length(unique_donors)))
+# sobj$new_donor_name <- donor_rename[match(paste(sobj$Pool, sobj$donor.vireo),
+#                                                   donor_rename$pool_donor),]$new_name
+
+# count_l1 <- all_samples@meta.data %>% group_by(new_donor_name) %>% count(Azimuth.predicted.celltype.l1)
+# count_l2 <- all_samples@meta.data %>% group_by(new_donor_name) %>% count(Azimuth.predicted.celltype.l2)
+# count_l3 <- all_samples@meta.data %>% group_by(new_donor_name) %>% count(Azimuth.predicted.celltype.l3)
+
+# make_wide_table <- function(long_table){
+#   wide_table <- data.frame(spread(long_table, key = colnames(long_table)[2], value = n))
+#   wide_table[is.na(wide_table)] <- 0
+#   rownames(wide_table) <- wide_table$new_donor_name
+#   wide_table$new_donor_name <- NULL 
+#   wide_table$total <- rowSums(wide_table)
+#   return(wide_table)
+# }
+
+# count_l1_wide <- make_wide_table(count_l1)
+# count_l2_wide <- make_wide_table(count_l2)
+# count_l3_wide <- make_wide_table(count_l3)
+# write.table(count_l1_wide, paste0(azimuth_dir,'/azimuth.l1.countPerDonor.tsv'),
+#             sep='\t',col.names=NA, quote=F)
+# write.table(count_l2_wide, paste0(azimuth_dir,'/azimuth.l2.countPerDonor.tsv'),
+#             sep='\t',col.names=NA, quote=F)
+# write.table(count_l3_wide, paste0(azimuth_dir,'/azimuth.l3.countPerDonor.tsv'),
+#             sep='\t',col.names=NA, quote=F)
+
+
+# dir.create(azimuth_dir,'figures/',showWarnings = F)
+# count_l1$total <- count_l1_wide[match(count_l1$new_donor_name, rownames(count_l1_wide)),]$total
+# ggplot(count_l1, aes(Azimuth.predicted.celltype.l1, n, fill=total))+
+#   geom_quasirandom(shape=21)+
+#   geom_hline(yintercept=150, colour='red',lty=2)+
+#   scale_fill_binned(type="viridis")+
+#   theme_pubr()+
+#   theme(legend.position='right')
+# ggsave(paste0(azimuth_dir,'figures/azimuth_count_l1.png'), width=8, height=5)
+
+# count_l2$total <- count_l2_wide[match(count_l2$new_donor_name, rownames(count_l2_wide)),]$total
+# ggplot(count_l2, aes(Azimuth.predicted.celltype.l2, n, fill=total))+
+#   geom_quasirandom(shape=21)+
+#   geom_hline(yintercept=150, colour='red',lty=2)+
+#   scale_fill_binned(type="viridis")+
+#   theme_pubr()+
+#   theme(legend.position='right',
+#         axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+# ggsave(paste0(azimuth_dir,'figures/azimuth_count_l2.png'), width=24, height=5)
+
+# count_l3$total <- count_l3_wide[match(count_l3$new_donor_name, rownames(count_l3_wide)),]$total
+# ggplot(count_l3, aes(Azimuth.predicted.celltype.l3, n, fill=total))+
+#   geom_quasirandom(shape=21)+
+#   geom_hline(yintercept=150, colour='red',lty=2)+
+#   scale_fill_binned(type="viridis")+
+#   theme_pubr()+
+#   theme(legend.position='right',
+#         axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+# ggsave(paste0(azimuth_dir,'figures/azimuth_count_l3.png'), width=36, height=5)

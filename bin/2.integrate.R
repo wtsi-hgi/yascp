@@ -11,6 +11,7 @@ library(Seurat)
 library(ggplot2)
 library("RColorBrewer")
 library(future)
+options(future.globals.maxSize= 1020971520000)
 if (future::supportsMulticore()) {
   future::plan(future::multicore)
 } else {

@@ -14,7 +14,7 @@ include {UMAP; UMAP as UMAP_HARMONY; UMAP as UMAP_BBKNN;} from "$projectDir/modu
 include {CLUSTERING; CLUSTERING as CLUSTERING_HARMONY; CLUSTERING as CLUSTERING_BBKNN;} from "$projectDir/modules/nf-core/modules/clustering/main"
 include {CELL_HARD_FILTERS} from "$projectDir/modules/nf-core/modules/cell_hard_filters/main"
 include {DONT_INTEGRATE} from "$projectDir/modules/nf-core/modules/reduce_dims/main"
-include { DSB_PROCESS; DSB_INTEGRATE; MULTIMODAL_INTEGRATION } from '../modules/nf-core/modules/citeseq/main'
+include { DSB_PROCESS; DSB_INTEGRATE; MULTIMODAL_INTEGRATION; VDJ_INTEGRATION } from '../modules/nf-core/modules/citeseq/main'
 
 workflow qc {
     take:
@@ -25,6 +25,7 @@ workflow qc {
         vireo_paths
         assignments_all_pools
         matched_donors
+        chanel_cr_outs
     main:
         log.info "--- Running QC metrics --- "
         // if(params.extra_metadata!=''){
@@ -64,9 +65,8 @@ workflow qc {
         DSB_PROCESS(channel_dsb2)
         DSB_PROCESS.out.citeseq_rsd.view()
         DSB_INTEGRATE(DSB_PROCESS.out.citeseq_rsd.collect(),vireo_paths.collect(),assignments_all_pools,DSB_PROCESS.out.tmp_rsd.collect(),matched_donors)
-
         MULTIMODAL_INTEGRATION(DSB_INTEGRATE.out.all_data_integrated)
-
+        VDJ_INTEGRATION(MULTIMODAL_INTEGRATION.out.all_data_integrated,chanel_cr_outs)
         if (params.normalise_andata){
             NORMALISE_AND_PCA(
                 file__anndata_merged,
