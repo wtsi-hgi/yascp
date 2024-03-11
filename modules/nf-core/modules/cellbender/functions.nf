@@ -260,7 +260,6 @@ process cellbender__remove_background {
     gpu_text_info = '--cuda'
   }else{
     label 'process_medium'
-    gpu_text_info = ''
   }
   
   // scratch false    // use tmp directory
@@ -360,17 +359,73 @@ process cellbender__remove_background {
     }else{
       gpu_text_info = "--cpu-threads ${task.cpus}"
     }
-    
+
+
+
+    try {
+      low_count_threshold_to_use = params[experiment_id].low_count_threshold
+      if (!low_count_threshold_to_use) {
+        low_count_threshold_to_use =low_count_threshold
+      }
+    }catch(Exception ex) {
+      low_count_threshold_to_use = low_count_threshold
+    }
+
+    try {
+      epochs_to_use = params[experiment_id].epochs
+      if (!epochs_to_use) {
+        epochs_to_use = epochs
+      }
+    }catch(Exception ex) {
+      epochs_to_use = epochs
+    }
+
+
+    try {
+      learning_rate_to_use = params[experiment_id].learning_rate
+      if (!learning_rate_to_use) {
+
+        learning_rate_to_use = learning_rate
+      }
+    }catch(Exception ex) {
+      learning_rate_to_use = learning_rate
+    }
+
+    try {
+      zdims_to_use = params[experiment_id].zdims
+      if (zdims_to_use) {
+        zdims_to_use = zdims_to_use
+      }else{
+        zdims_to_use = zdims
+      }
+    }catch(Exception ex) {
+      zdims_to_use = zdims
+    }
+
+    try {
+      zlayers_to_use = params[experiment_id].zlayers
+      if (!zlayers_to_use) {
+        zlayers_to_use = zlayers
+      }
+    }catch(Exception ex) {
+      zlayers_to_use = zlayers
+    }   
+
+
+
+
+
+
     outdir = "${outdir_prev}/${experiment_id}"
-    lr_string = "${learning_rate}".replaceAll("\\.", "pt")
+    lr_string = "${learning_rate_to_use}".replaceAll("\\.", "pt")
     lr_string = "${lr_string}".replaceAll("-", "neg")
     fpr_string = "${fpr}".replaceAll("\\.", "pt").replaceAll(" ", "_")
     cb_params = "cellbender_params"
-    cb_params = "${cb_params}-epochs_${epochs}"
+    cb_params = "${cb_params}-epochs_${epochs_to_use}"
     cb_params = "${cb_params}__learnrt_${lr_string}"
-    cb_params = "${cb_params}__zdim_${zdims}"
-    cb_params = "${cb_params}__zlayer_${zlayers}"
-    cb_params = "${cb_params}__lowcount_${low_count_threshold}"
+    cb_params = "${cb_params}__zdim_${zdims_to_use}"
+    cb_params = "${cb_params}__zlayer_${zlayers_to_use}"
+    cb_params = "${cb_params}__lowcount_${low_count_threshold_to_use}"
     outdir = "${outdir}/${cb_params}".replaceAll("cellbender_params","cellbender")
     outfile = "cellbender"
     
@@ -386,7 +441,7 @@ process cellbender__remove_background {
     ln --physical ${file_10x_features} txd_input/features.tsv.gz
     ln --physical ${file_10x_matrix} txd_input/matrix.mtx.gz
 
-    cellbender remove-background --input txd_input ${gpu_text_info} --output ${outfile} --expected-cells \$(cat ${expected_cells}) --total-droplets-included \$(cat ${total_droplets_include}) --model full --z-dim ${zdims} --z-layers ${zlayers} --low-count-threshold ${low_count_threshold} --epochs ${epochs} --learning-rate ${learning_rate} --fpr ${fpr}
+    cellbender remove-background --input txd_input ${gpu_text_info} --output ${outfile} --expected-cells \$(cat ${expected_cells}) --total-droplets-included \$(cat ${total_droplets_include}) --model full --z-dim ${zdims_to_use} --z-layers ${zlayers_to_use} --low-count-threshold ${low_count_threshold_to_use} --epochs ${epochs_to_use} --learning-rate ${learning_rate_to_use} --fpr ${fpr}
     # If outfile does not have h5 appended to it, move it.
     [ -f ${outfile} ] && mv ${outfile} ${outfile}.h5
 
@@ -502,11 +557,12 @@ process capture_cellbender_files{
     path("captured/*/*FPR_${params.cellbender_resolution_to_use}*"),emit:alt_input optional true
     path("cellbender/*/*/cellbender_FPR_${params.cellbender_resolution_to_use.replaceAll('pt', '.')}_filtered.h5"),emit:cb_to_use_downstream optional true
     // cellbender/*/*/cellbender_FPR_0pt1_filtered.h5
-    // tuple(val(experiment_id),path("cellbender_FPR_${params.cellbender_resolution_to_use.replaceAll('pt', '.')}_filtered.h5"),emit: cb_to_use_downstream)
+    // tuple(val(experiment_id),path("cellbender_FPR_${params.cellbender_rb_resolution_to_use.replaceAll('pt', '.')}_filtered.h5"),emit: cb_to_use_downstream)
 
     
   script:
   """
+  
   
     mkdir tmp1234
     mkdir tmp1234/cellbender

@@ -64,6 +64,7 @@ workflow YASCP {
             input_channel = prepare_inputs.out.channel_input_data_table
             vireo_paths = Channel.from("$projectDir/assets/fake_file.fq")
             matched_donors = Channel.from("$projectDir/assets/fake_file.fq")
+            channel_dsb = prepare_inputs.out.channel_dsb
             if (!params.skip_preprocessing){
                 // The input table should contain the folowing columns - experiment_id	n_pooled	donor_vcf_ids	data_path_10x_format
                 // prepearing the inputs from a standard 10x dataset folders.
@@ -168,8 +169,10 @@ workflow YASCP {
                 // This option skips all the deconvolution and and takes a preprocessed yascp h5ad file to run the downstream clustering and celltype annotation.
                 log.info '''----Skipping Preprocessing since we already have prepeared h5ad input file----'''
                 file__anndata_merged = Channel.from(params.file__anndata_merged)
-
-
+                channel_dsb =  Channel.from("$projectDir/assets/fake_file.fq")
+                assignments_all_pools = Channel.from("$projectDir/assets/fake_file.fq")
+                vireo_paths = Channel.from("$projectDir/assets/fake_file.fq")
+                matched_donors = Channel.from("$projectDir/assets/fake_file.fq")
                 if("${mode}"!='default'){
                     // Here we have rerun GT matching upstream - done for freeze1
                     assignments_all_pools = mode
@@ -224,7 +227,7 @@ workflow YASCP {
                     gt_outlier_input = Channel.from("$projectDir/assets/fake_file.fq")
                 }
 
-                qc(file__anndata_merged,file__cells_filtered,gt_outlier_input,prepare_inputs.out.channel_dsb,vireo_paths,assignments_all_pools,matched_donors,chanel_cr_outs) //This runs the Clusterring and qc assessments of the datasets.
+                qc(file__anndata_merged,file__cells_filtered,gt_outlier_input,channel_dsb,vireo_paths,assignments_all_pools,matched_donors) //This runs the Clusterring and qc assessments of the datasets.
                 process_finish_check_channel = qc.out.LI
                 file__anndata_merged = qc.out.file__anndata_merged
             }else{

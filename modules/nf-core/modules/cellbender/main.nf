@@ -13,7 +13,7 @@ outdir           = "${params.outdir}/nf-preprocessing"
 workflow CELLBENDER {
     take:
         ch_experimentid_paths10x_raw
-		ch_experimentid_paths10x_filtered
+		    ch_experimentid_paths10x_filtered
         channel__metadata
         
     main:
@@ -24,7 +24,11 @@ workflow CELLBENDER {
             file("${row[1]}/features.tsv.gz"),
             file("${row[1]}/matrix.mtx.gz")
         )}.set{channel__file_paths_10x}
-    
+
+        ch_experimentid_paths10x_raw.map{row -> 
+            row[0]}.set{experiment_id_in}
+        experiment_id_in.subscribe { println "experiment_id_in: $it" }
+        experiment_id_in = experiment_id_in.view()
         outdir =  outdir+'/cellbender'
         
         // here pass in the number of cells detected by cellranger/ 
@@ -51,15 +55,26 @@ workflow CELLBENDER {
         )
         
         // Correct counts matrix to remove ambient RNA
+    // Some samples may fail with the defaults. Hence here we allow for a changes to be applied. 
+
+    
+    
+    
+    
+        epochs_to_use = params.cellbender_rb.epochs.value
+        learning_rate_to_use = params.cellbender_rb.learning_rate.value
+        zdims_to_use = params.cellbender_rb.zdim.value
+        zlayers_to_use = params.cellbender_rb.zlayers.value
+        low_count_threshold_to_use = params.cellbender_rb.low_count_threshold.value
 
         cellbender__remove_background(
             outdir,
             cellbender__rb__get_input_cells.out.cb_input,
-            params.cellbender_rb.epochs.value,
-            params.cellbender_rb.learning_rate.value,
-            params.cellbender_rb.zdim.value,
-            params.cellbender_rb.zlayers.value,
-            params.cellbender_rb.low_count_threshold.value,
+            epochs_to_use,
+            learning_rate_to_use,
+            zdims_to_use,
+            zlayers_to_use,
+            low_count_threshold_to_use,
             params.cellbender_rb.fpr.value
         )
 

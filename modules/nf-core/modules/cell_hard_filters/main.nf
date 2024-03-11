@@ -21,7 +21,7 @@ process CELL_HARD_FILTERS{
     when:
         hard_filter_file_params != "no_file__file_sample_qc"
     output:
-        path("hard_filters_${file_paths_h5ad}", emit: anndata)
+        path("hard_filters_*.h5ad", emit: anndata)
 
     script:
         """
