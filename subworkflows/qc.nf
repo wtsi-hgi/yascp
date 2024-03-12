@@ -59,18 +59,27 @@ workflow qc {
             file__anndata_merged = OUTLIER_FILTER.out.anndata
             file__cells_filtered = OUTLIER_FILTER.out.cells_filtered
             OUTLIER_FILTER.out.sample_QCd_adata.flatten().map{sample -> tuple("${sample}".replaceFirst(/___sample_QCd_adata.h5ad/,"").replaceFirst(/.*\//,""),sample)}.set{alt_input}
-        
+            if (params.citeseq){
+
+                channel_dsb2 = channel_dsb.combine(alt_input, by: 0)
+                DSB_PROCESS(channel_dsb2)
+                DSB_PROCESS.out.citeseq_rsd.subscribe { println "1:: DSB_PROCESS.out.citeseq_rsd: $it" }
+                vireo_paths.subscribe { println "1:: vireo_paths input: $it" }
+                assignments_all_pools.subscribe { println "1:: assignments_all_pools input: $it" }
+                DSB_PROCESS.out.tmp_rsd.subscribe { println "1:: DSB_PROCESS.out.tmp_rsd input: $it" }
+                matched_donors.subscribe { println "1:: matched_donors.out.tmp_rsd input: $it" }
+
+                DSB_INTEGRATE(DSB_PROCESS.out.citeseq_rsd.collect(),vireo_paths.collect(),DSB_PROCESS.out.tmp_rsd.collect(),matched_donors)
+
+
+                MULTIMODAL_INTEGRATION(DSB_INTEGRATE.out.all_data_integrated)
+                VDJ_INTEGRATION(MULTIMODAL_INTEGRATION.out.all_data_integrated,chanel_cr_outs.collect())
+            }        
         }
         
         
 
-        if (params.citeseq){
-            channel_dsb2 = channel_dsb.combine(alt_input, by: 0)
-            DSB_PROCESS(channel_dsb2)
-            DSB_PROCESS.out.citeseq_rsd.view()
-            DSB_INTEGRATE(DSB_PROCESS.out.citeseq_rsd.collect(),vireo_paths.collect(),assignments_all_pools,DSB_PROCESS.out.tmp_rsd.collect(),matched_donors)
-            MULTIMODAL_INTEGRATION(DSB_INTEGRATE.out.all_data_integrated)
-        }
+
 
 
         if (params.normalise_andata){
@@ -170,11 +179,11 @@ workflow qc {
             cluster_harmony__reduced_dims = UMAP_HARMONY.out.reduced_dims
             
 
-            cluster_harmony__outdir.subscribe { println "cluster_harmony__outdir input: $it" }
-            cluster_harmony__anndata.subscribe { println "cluster_harmony__anndata input: $it" }
-            cluster_harmony__reduced_dims.subscribe { println "cluster_harmony__reduced_dims input: $it" }
-            cluster_harmony__metadata.subscribe { println "cluster_harmony__metadata input: $it" }
-            cluster_harmony__pcs.subscribe { println "cluster_harmony__pcs input: $it" }
+            // cluster_harmony__outdir.subscribe { println "cluster_harmony__outdir input: $it" }
+            // cluster_harmony__anndata.subscribe { println "cluster_harmony__anndata input: $it" }
+            // cluster_harmony__reduced_dims.subscribe { println "cluster_harmony__reduced_dims input: $it" }
+            // cluster_harmony__metadata.subscribe { println "cluster_harmony__metadata input: $it" }
+            // cluster_harmony__pcs.subscribe { println "cluster_harmony__pcs input: $it" }
 
             CLUSTERING_HARMONY(
                 cluster_harmony__outdir,

@@ -23,7 +23,7 @@ workflow prepare_inputs {
 
         chanel_cr_outs = channel_input_data_table
             .splitCsv(header: true, sep: params.input_tables_column_delimiter)
-            .map{row -> tuple(row.experiment_id, file(row.data_path_10x_format))}
+            .map{row -> file(row.data_path_10x_format)}
 
         channel_input_data_table
             .splitCsv(header: true, sep: params.input_tables_column_delimiter)

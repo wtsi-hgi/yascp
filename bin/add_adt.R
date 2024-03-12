@@ -17,11 +17,21 @@ library('Seurat')
 library(viridis)
 cat('Libraries are loaded')
 library(SeuratDisk)
+library(future)
+options(future.globals.maxSize= 1020971520000)
+if (future::supportsMulticore()) {
+  future::plan(future::multicore)
+} else {
+  future::plan(future::multisession)
+}
+
 #####
 args = commandArgs(trailingOnly=TRUE)
 #### set up directories, colors paths ####
 data_dir <- getwd()
 outdir <- getwd()
+
+
 
 
 #####
@@ -34,14 +44,22 @@ outdir <- getwd()
 
 # get the names of the filtered feature files (from 'cellranger count')
 # filtered_feature_file = cellranger_filepath = args[2]
+#    
 # filtered_cellranger = '/lustre/scratch123/hgi/teams/hgi/mo11/tmp_projects/jaguar_yascp/nieks_pipeline/fetch/results_old/cellranger_data/cellranger700_multi_bc45a1c2fe2a3fbbcde46cf984cf42e2/per_sample_outs/cellranger700_multi_bc45a1c2fe2a3fbbcde46cf984cf42e2/count/sample_filtered_feature_bc_matrix.h5'
-filtered_cellranger = args[3]
-# cellranger_rawfile_path = '/lustre/scratch123/hgi/teams/hgi/mo11/tmp_projects/jaguar_yascp/nieks_pipeline/fetch/results_old/cellranger_data/cellranger700_multi_bc45a1c2fe2a3fbbcde46cf984cf42e2/multi/count/raw_feature_bc_matrix.h5'
-cellranger_rawfile_path <- args[2]
-# sample_name <-'cellranger700_multi_bc45a1c2fe2a3fbbcde46cf984cf42e2'
+# sample_name <- 'cellranger700_multi_d00ddfc9ace09586f1ac108fca92db61'
+# cellranger_rawfile_path <- 'raw_feature_bc_matrix'
+# filtered_cellranger = 'filtered_feature_bc_matrix'
+# file_with_qc_applied = 'cellranger700_multi_d00ddfc9ace09586f1ac108fca92db61___sample_QCd_adata.h5ad'
 sample_name <- args[1]
-# file_with_qc_applied <-'/lustre/scratch123/hgi/teams/hgi/mo11/tmp_projects/jaguar_yascp/nieks_pipeline/yascp_run/work/a0/dd1ce16989fca8ff81e0d759589a1f/donor_level_anndata/cellranger700_multi_bc45a1c2fe2a3fbbcde46cf984cf42e2___sample_QCd_adata.h5ad'
+cellranger_rawfile_path <- args[2]
+filtered_cellranger = args[3]
 file_with_qc_applied = args[4]
+# cellranger_rawfile_path = '/lustre/scratch123/hgi/teams/hgi/mo11/tmp_projects/jaguar_yascp/nieks_pipeline/fetch/results_old/cellranger_data/cellranger700_multi_bc45a1c2fe2a3fbbcde46cf984cf42e2/multi/count/raw_feature_bc_matrix.h5'
+
+# sample_name <-'cellranger700_multi_bc45a1c2fe2a3fbbcde46cf984cf42e2'
+
+# file_with_qc_applied <-'/lustre/scratch123/hgi/teams/hgi/mo11/tmp_projects/jaguar_yascp/nieks_pipeline/yascp_run/work/a0/dd1ce16989fca8ff81e0d759589a1f/donor_level_anndata/cellranger700_multi_bc45a1c2fe2a3fbbcde46cf984cf42e2___sample_QCd_adata.h5ad'
+
 
 
 # Create all output/figure directories

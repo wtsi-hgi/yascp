@@ -34,6 +34,34 @@ random.seed(seed_value)
 np.random.seed(seed_value)
 
 
+class onesidemad():
+    def __init__(self, thresh):
+        self.thresh=thresh.reshape(1, -1)
+        self.median=None
+        self.mad=None
+
+    def fit(self, X):
+        if X.size==0:
+            return
+        self.median=np.median(X, axis=0).reshape(1, -1)
+        self.mad=np.median(np.abs(X - self.median), axis=0).reshape(1, -1)
+    
+    def stats(self):
+        if self.median is None or self.mad is None:
+            raise Exception("need to run fit() before")
+        
+        return self.median.ravel(), self.mad.ravel(), self.thresh.ravel(), (self.median + self.thresh*self.mad).ravel()
+
+    def predict(self, X):
+        if self.median is None or self.mad is None:
+            raise Exception("need to run fit() before")
+        
+        return (np.sign(self.thresh) * (X - self.median - self.thresh*self.mad) > 0).any(axis=1)
+
+    def fit_predict(self, X):
+        self.fit(X)
+        return self.predict(X)
+
 # Fit the model
 def perform_adaptiveQC_Filtering(clf,adata,method,metadata_columns):
     # We return labels of the Treue/False of failing QC
@@ -319,6 +347,8 @@ def main():
             # kernel="rbf",
             # gamma=0.1
         )
+    elif method == 'MAD':
+        clf = onesidemad()
     else:
         raise ValueError('ERROR: invalid method.')
 

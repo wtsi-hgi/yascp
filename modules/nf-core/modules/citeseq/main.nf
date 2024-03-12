@@ -99,7 +99,6 @@ process DSB_INTEGRATE{
     input:
         path(citeseq_rsd)
         path(vireo)
-        path(assignments_all_pools)
         path(tmp_rsd)
         path(matched_donors)
 

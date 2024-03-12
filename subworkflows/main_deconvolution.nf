@@ -62,7 +62,7 @@ workflow  main_deconvolution {
             checkIfExists: true
             ).splitCsv(header: true, sep: '\t').map { row -> tuple(row.experiment_id, row.donor_vcf_ids) }
             .set { donors_in_pools }
-            donors_in_pools.subscribe { println "donors_in_pools: $it" }
+            
             // 2) All the vcfs provided to us. 
             vcf_input.splitCsv(header: true, sep: '\t')
             .map { row -> tuple(row.label, file(row.vcf_file_path), file("${row.vcf_file_path}.csi")) }

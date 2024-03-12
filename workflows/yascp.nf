@@ -17,7 +17,7 @@ include {MERGE_SAMPLES} from "$projectDir/modules/nf-core/modules/merge_samples/
 include {dummy_filtered_channel} from "$projectDir/modules/nf-core/modules/merge_samples/functions"
 include {MULTIPLET} from "$projectDir/subworkflows/doublet_detection"
 include { SPLIT_CITESEQ_GEX; SPLIT_CITESEQ_GEX as SPLIT_CITESEQ_GEX_FILTERED } from '../modules/nf-core/modules/citeseq/main'
-
+include { GENOTYPE_MATCHER } from "$projectDir/modules/nf-core/modules/vireo/main"
 /*
 ========================================================================================
     RUN MAIN WORKFLOW
@@ -54,8 +54,12 @@ workflow YASCP {
         // ###################################
         ch_poolid_csv_donor_assignments = Channel.empty()
         bam_split_channel = Channel.of()
-        
+        out_ch = params.outdir
+            ? Channel.fromPath(params.outdir, checkIfExists:true)
+            : Channel.fromPath("${launchDir}/${params.outdir}")
                 
+        // out_ch.map{row->"${row[0]}/possorted_genome_bam.bam" }
+
         if(!params.just_reports){
             // sometimes we just want to rerun report generation as a result of alterations, hence if we set params.just_reports =True pipeline will use the results directory and generate a new reports.
             prepare_inputs(input_channel)
@@ -169,10 +173,25 @@ workflow YASCP {
                 // This option skips all the deconvolution and and takes a preprocessed yascp h5ad file to run the downstream clustering and celltype annotation.
                 log.info '''----Skipping Preprocessing since we already have prepeared h5ad input file----'''
                 file__anndata_merged = Channel.from(params.file__anndata_merged)
-                channel_dsb =  Channel.from("$projectDir/assets/fake_file.fq")
                 assignments_all_pools = Channel.from("$projectDir/assets/fake_file.fq")
-                vireo_paths = Channel.from("$projectDir/assets/fake_file.fq")
-                matched_donors = Channel.from("$projectDir/assets/fake_file.fq")
+
+                if (params.citeseq){
+                    vireo_paths = Channel.fromPath( "${params.outdir}/deconvolution/vireo/*/vireo_*")
+
+                    vireo_paths = params.outdir
+                        ? Channel.fromPath("${params.outdir}/deconvolution/vireo/*/vireo_*", checkIfExists:true, type: 'dir')
+                        : Channel.fromPath("${launchDir}/${params.outdir}/deconvolution/vireo/*/vireo_*", type: 'dir')
+
+                    
+                    GENOTYPE_MATCHER(vireo_paths.collect())
+                    matched_donors = GENOTYPE_MATCHER.out.matched_donors
+                    matched_donors.subscribe { println "matched_donors: $it" }
+                }else{
+                    vireo_paths = Channel.from("$projectDir/assets/fake_file.fq")
+                    matched_donors = Channel.from("$projectDir/assets/fake_file.fq")
+                }
+                
+                
                 if("${mode}"!='default'){
                     // Here we have rerun GT matching upstream - done for freeze1
                     assignments_all_pools = mode
@@ -227,7 +246,7 @@ workflow YASCP {
                     gt_outlier_input = Channel.from("$projectDir/assets/fake_file.fq")
                 }
 
-                qc(file__anndata_merged,file__cells_filtered,gt_outlier_input,channel_dsb,vireo_paths,assignments_all_pools,matched_donors) //This runs the Clusterring and qc assessments of the datasets.
+                qc(file__anndata_merged,file__cells_filtered,gt_outlier_input,channel_dsb,vireo_paths,assignments_all_pools,matched_donors,chanel_cr_outs) //This runs the Clusterring and qc assessments of the datasets.
                 process_finish_check_channel = qc.out.LI
                 file__anndata_merged = qc.out.file__anndata_merged
             }else{
@@ -270,9 +289,7 @@ workflow YASCP {
 
         if (!params.skip_handover){
 
-            out_ch = params.outdir
-            ? Channel.fromPath(params.outdir, checkIfExists:true)
-            : Channel.fromPath("${launchDir}/${outdir}")
+
 
             data_handover(out_ch,input_channel,
                             process_finish_check_channel,

@@ -1,4 +1,4 @@
-
+#!/usr/bin/env Rscript
 # Add VDJ information to the seurat object
 
 #### libraries ####
@@ -9,6 +9,14 @@ library(ggpubr)
 library(immunarch)
 library("RColorBrewer")
 library('Seurat')
+library(future)
+options(future.globals.maxSize= 1020971520000)
+if (future::supportsMulticore()) {
+  future::plan(future::multicore)
+} else {
+  future::plan(future::multisession)
+}
+
 cat('Libraries are loaded')
 myPallette <- colorRampPalette(rev(brewer.pal(11, "Spectral")))
 cols <- myPallette(10)
