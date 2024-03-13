@@ -36,8 +36,8 @@ workflow qc {
         //     log.info '''--- No extra metadata to add to h5ad ---'''
         // }
 
-        CELL_HARD_FILTERS(file__anndata_merged,params.hard_filters_file,params.hard_filters_drop)
-        if(params.hard_filters_file != "no_file__file_sample_qc"){
+        CELL_HARD_FILTERS(file__anndata_merged,params.hard_filters_drop)
+        if(params.sample_qc.cell_filters.experiment.value != '' | params.sample_qc.cell_filters.all_samples.value != '' | params.sample_qc.downsample_cells_fraction.value != '' | params.sample_qc.downsample_cells_n.value != '' | params.sample_qc.downsample_feature_counts.value != ''){
             file__anndata_merged = CELL_HARD_FILTERS.out.anndata
         }
         
@@ -58,9 +58,22 @@ workflow qc {
             )
             file__anndata_merged = OUTLIER_FILTER.out.anndata
             file__cells_filtered = OUTLIER_FILTER.out.cells_filtered
-            OUTLIER_FILTER.out.sample_QCd_adata.flatten().map{sample -> tuple("${sample}".replaceFirst(/___sample_QCd_adata.h5ad/,"").replaceFirst(/.*\//,""),sample)}.set{alt_input}
-            if (params.citeseq){
+                
+        }
+        
+        
+        if (params.normalise_andata){
+            NORMALISE_AND_PCA(
+                file__anndata_merged,
+                params.normalise.mode,
+                params.normalise.layer,
+                params.gene_filters.genes_exclude,
+                params.genes_score,
+                params.reduced_dims.vars_to_regress.value
+            )
 
+            if (params.citeseq){
+                OUTLIER_FILTER.out.sample_QCd_adata.flatten().map{sample -> tuple("${sample}".replaceFirst(/___sample_QCd_adata.h5ad/,"").replaceFirst(/.*\//,""),sample)}.set{alt_input}
                 channel_dsb2 = channel_dsb.combine(alt_input, by: 0)
                 DSB_PROCESS(channel_dsb2)
                 DSB_PROCESS.out.citeseq_rsd.subscribe { println "1:: DSB_PROCESS.out.citeseq_rsd: $it" }
@@ -70,26 +83,11 @@ workflow qc {
                 matched_donors.subscribe { println "1:: matched_donors.out.tmp_rsd input: $it" }
 
                 DSB_INTEGRATE(DSB_PROCESS.out.citeseq_rsd.collect(),vireo_paths.collect(),DSB_PROCESS.out.tmp_rsd.collect(),matched_donors)
-
-
                 MULTIMODAL_INTEGRATION(DSB_INTEGRATE.out.all_data_integrated)
                 VDJ_INTEGRATION(MULTIMODAL_INTEGRATION.out.all_data_integrated,chanel_cr_outs.collect())
-            }        
-        }
-        
-        
+            }    
 
 
-
-
-        if (params.normalise_andata){
-            NORMALISE_AND_PCA(
-                file__anndata_merged,
-                params.mode,
-                params.layer,
-                params.genes_exclude_hvg,
-                params.genes_score,
-                params.reduced_dims.vars_to_regress.value)
             andata = NORMALISE_AND_PCA.out.anndata
             outdir = NORMALISE_AND_PCA.out.outdir
 
@@ -99,7 +97,7 @@ workflow qc {
             LI4 = Channel.of([1, 'dummy_lisi'])
         }
 
-        PCA(andata,outdir,params.layer)
+        PCA(andata,outdir,params.normalise.layer)
 
         ESTIMATE_PCA_ELBOW(
             PCA.out.outdir,

@@ -424,12 +424,6 @@ def scanpy_normalize_and_pca(
             show=False,
             save='-{}.pdf'.format(output_file)
         )
-        # _ = sc.pl.highly_variable_genes(
-        #     adata,
-        #     log=True,
-        #     show=False,
-        #     save='-{}-log.pdf'.format(output_file)
-        # )
 
     # After calculating highly variable genes, we subsquently remove any custom
     # for highly variable gene selection. This way we retain the normalized
@@ -478,70 +472,41 @@ def scanpy_normalize_and_pca(
                 exclude_hv_gene_df['highly_variable'].sum(),
                 'in the list of genes to exclude.'
             ))
-
+            
+    sc.pp.scale(
+        adata,
+        zero_center=scale_zero_center,  # If true, sparse becomes dense
+        max_value=None,
+        copy=False
+    )
+    # Calculate gene scores on each cell.
+    # Perform this two ways:
+    # (1) All genes [that pass basic 0 filters]. As done in sc tutorial:
+    # https://github.com/theislab/scanpy_usage/blob/master/180209_cell_cycle/cell_cycle.ipynb
+    # (2) Only highly variable genes. As done in:
+    # https://www.biorxiv.org/content/10.1101/2020.04.03.024075v1
+    if score_genes_df is not None:
+        adata, score_genes_df_updated = score_cells(
+            adata,
+            score_genes_df,
+            score_genes_df_column='ensembl_gene_id',
+            only_use_variable_genes=False
+        )
+        adata, _ = score_cells(
+            adata,
+            score_genes_df,
+            score_genes_df_column='ensembl_gene_id',
+            only_use_variable_genes=True
+        )
     if len(vars_to_regress) == 0:
         # Scale the data to unit variance.
         # This effectively weights each gene evenly. Otherwise
         # genes with higher expression values will naturally have higher
         # variation that will be captured by PCA
-        print('---- Regressing variables ----')
-        sc.pp.scale(
-            adata,
-            zero_center=scale_zero_center,  # If true, sparse becomes dense
-            max_value=None,
-            copy=False
-        )
-        # Calculate gene scores on each cell.
-        # Perform this two ways:
-        # (1) All genes [that pass basic 0 filters]. As done in sc tutorial:
-        # https://github.com/theislab/scanpy_usage/blob/master/180209_cell_cycle/cell_cycle.ipynb
-        # (2) Only highly variable genes. As done in:
-        # https://www.biorxiv.org/content/10.1101/2020.04.03.024075v1
-        if score_genes_df is not None:
-            adata, score_genes_df_updated = score_cells(
-                adata,
-                score_genes_df,
-                score_genes_df_column='ensembl_gene_id',
-                only_use_variable_genes=False
-            )
-            adata, _ = score_cells(
-                adata,
-                score_genes_df,
-                score_genes_df_column='ensembl_gene_id',
-                only_use_variable_genes=True
-            )
+        print('---- Not Regressing variables ----')
+
     else:  # Regress out any continuous variables.
-        # Before regressing calculate the gene scores on a copy of the data.
-        if score_genes_df is not None:
-            adata_scored = sc.pp.scale(
-                adata,
-                zero_center=scale_zero_center,  # If true, sparse becomes dense
-                max_value=None,
-                copy=True
-            )
-            adata_scored, score_genes_df_updated = score_cells(
-                adata_scored,
-                score_genes_df,
-                score_genes_df_column='ensembl_gene_id',
-                only_use_variable_genes=False
-            )
-            adata_scored, _ = score_cells(
-                adata_scored,
-                score_genes_df,
-                score_genes_df_column='ensembl_gene_id',
-                only_use_variable_genes=True
-            )
-
-            # Add scores back into the main dataframe.
-            new_cols = np.setdiff1d(
-                adata_scored.obs.columns,
-                adata.obs.columns
-            )
-            adata.obs = pd.concat(
-                [adata.obs, adata_scored.obs.loc[adata.obs.index, new_cols]],
-                axis=1
-            )
-
+        print('---- Regressing variables ----')
         # NOTE: if the same value is repeated (e.g., 0) for all cells this will
         #       fail. https://github.com/theislab/scanpy/issues/230
         # if verbose:
@@ -564,7 +529,6 @@ def scanpy_normalize_and_pca(
             max_value=None,
             copy=False
         )
-
 
     # Keep a record of the different gene scores
     if score_genes_df is not None:

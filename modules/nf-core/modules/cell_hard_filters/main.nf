@@ -13,19 +13,56 @@ process CELL_HARD_FILTERS{
 
     input:
         path(file_paths_h5ad)
-        val(hard_filter_file_params)
         val(drop)
 
     // NOTE: use path here and not file see:
     //       https://github.com/nextflow-io/nextflow/issues/1414
     when:
-        hard_filter_file_params != "no_file__file_sample_qc"
+        params.sample_qc.cell_filters.experiment.value != '' | params.sample_qc.cell_filters.all_samples.value != '' | params.sample_qc.downsample_cells_fraction.value != '' | params.sample_qc.downsample_cells_n.value != '' | params.sample_qc.downsample_feature_counts.value != ''
     output:
         path("hard_filters_*.h5ad", emit: anndata)
 
     script:
+
+
+        if (params.sample_qc.cell_filters.experiment.value != ''){
+            cell_filters_experiment =  "--cell_filters_experiment \"${params.sample_qc.cell_filters.experiment.value}\""
+        }else{
+            cell_filters_experiment =  ""
+        }
+
+        if (params.sample_qc.cell_filters.all_samples.value != ''){
+            cell_filters =  "--cell_filters '${params.sample_qc.cell_filters.all_samples.value}'"
+        }else{
+            cell_filters =  ""
+        }
+
+        if (params.sample_qc.downsample_cells_fraction.value != ''){
+            downsample_cells_fraction = "--downsample_cells_fraction ${params.sample_qc.downsample_cells_fraction.value}"
+        }else{
+            downsample_cells_fraction =  ""
+        }
+
+
+        if (params.sample_qc.downsample_cells_n.value != ''){
+            downsample_cells_n =  "--downsample_cells_n ${params.sample_qc.downsample_cells_n.value}"
+        }else{
+            downsample_cells_n =  ""
+        }
+
+        if (params.sample_qc.downsample_feature_counts.value != ''){
+            downsample_feature_counts =  "--downsample_feature_counts ${params.sample_qc.downsample_feature_counts.value}"
+        }else{
+            downsample_feature_counts =  ""
+        }
+        
         """
-        cell_hard_filters.py --params_yaml ${hard_filter_file_params} \
+        cell_hard_filters.py \
+            ${downsample_cells_fraction} \
+            ${cell_filters} \
+            ${downsample_cells_n} \
+            ${downsample_feature_counts} \
+            ${cell_filters_experiment} \
             --metadata_key ${params.metadata_key_column.value} \
             --number_cpu ${task.cpus} \
             --output_file hard_filters_adata \

@@ -289,7 +289,9 @@ workflow YASCP {
 
         if (!params.skip_handover){
 
-
+            out_ch = params.outdir
+            ? Channel.fromPath(params.outdir, checkIfExists:true)
+            : Channel.fromPath("${launchDir}/${outdir}")
 
             data_handover(out_ch,input_channel,
                             process_finish_check_channel,
