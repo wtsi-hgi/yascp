@@ -303,7 +303,9 @@ def scanpy_normalize_and_pca(
     variable_feature_batch_key='experiment_id',
     n_variable_features=2000,
     exclude_hv_gene_df=[],
+    exclude_gene_list=[],
     score_genes_df=None,
+    genes_at_least_in_nr_cells=5,
     verbose=True,
     plot=True,
     anndata_compression_opts=4
@@ -369,7 +371,14 @@ def scanpy_normalize_and_pca(
     # NOTE: prior to running normalization, low quality cells should be
     # filtered. Example:
     # sc.pp.filter_cells(adata, min_genes=200)
-    sc.pp.filter_genes(adata, min_cells=5)
+    sc.pp.filter_genes(adata, min_cells=genes_at_least_in_nr_cells)
+    
+    
+    # Exclude Genes in general
+    if len(exclude_gene_list) > 0:
+        adata = adata[:,list(set(adata.var.index) - set(exclude_gene_list['ensembl_gene_id']))]
+        adata.uns['genes_droped'] = list(exclude_gene_list['ensembl_gene_id'])
+        
     # Only consider genes expressed in more than 0.5% of cells:
     # sc.pp.filter_genes(adata, min_cells=0.005*len(adata.obs.index))
     # Total-count normalize (library-size correct) the data matrix X to
@@ -386,7 +395,7 @@ def scanpy_normalize_and_pca(
     sc.pp.log1p(adata)
     adata.layers['log1p_cp10k'] = adata.X.copy()
     adata.uns['log1p_cp10k'] = {'transformation': 'ln(CP10k+1)'}
-    adata.raw = adata
+    # adata.raw = adata
     # adata_raw = adata.raw.to_adata()
 
     if plot:
@@ -473,6 +482,9 @@ def scanpy_normalize_and_pca(
                 'in the list of genes to exclude.'
             ))
             
+
+        
+            
     sc.pp.scale(
         adata,
         zero_center=scale_zero_center,  # If true, sparse becomes dense
@@ -498,6 +510,7 @@ def scanpy_normalize_and_pca(
             score_genes_df_column='ensembl_gene_id',
             only_use_variable_genes=True
         )
+        
     if len(vars_to_regress) == 0:
         # Scale the data to unit variance.
         # This effectively weights each gene evenly. Otherwise
@@ -529,6 +542,7 @@ def scanpy_normalize_and_pca(
             max_value=None,
             copy=False
         )
+       
 
     # Keep a record of the different gene scores
     if score_genes_df is not None:
@@ -540,6 +554,42 @@ def scanpy_normalize_and_pca(
         compression='gzip'
     )
 
+    if len(vars_to_regress) > 0:
+          adata.layers['sc_log1p_cp10k_regressed'] = adata.X.copy()
+          
+    adata.X = adata.layers['counts'].copy()
+    adata_donors = []
+    adata_nr_cells = {}
+    count=0
+    os.makedirs('./donor_level_anndata_QCfiltered')
+    for donor_id in adata.obs['convoluted_samplename'].unique():
+        donor_id = str(donor_id)
+        print('filtering cells of AnnData to convoluted_samplename ' + donor_id)
+        adata_donor = adata[adata.obs['convoluted_samplename'] == donor_id, :]
+        
+        del adata_donor.raw
+        del adata_donor.uns
+        del adata_donor.varm
+        del adata_donor.obsp
+
+        for c1 in adata_donor.obs.columns:
+            try:
+                adata_donor.obs[c1] = adata_donor.obs[c1].cat.add_categories("Unknown").fillna('Unknown')
+            except:
+                _=''        
+        
+        print("n cells len(adata_donor.obs) for " + donor_id  + ': ' + str(len(adata_donor.obs)) + '/' + str(len(adata.obs)))
+        if len(adata_donor.obs) > 0:
+            count+=1
+            print(f"more than 0 cells for convoluted_samplename: {donor_id}")
+            adata_nr_cells[count]={'experiment_id':f'{donor_id}','n_cells':len(adata_donor.obs)}
+            adata_donors.append((donor_id, adata_donor))
+            output_file = './donor_level_anndata_QCfiltered/'+donor_id + '___' +"sample_QCd_adata"
+            print('Write h5ad donor AnnData to ' + output_file)
+            
+            adata_donor.write('{}.h5ad'.format(output_file), compression='gzip', compression_opts= 6)
+        else:
+            print("0 cells for donor, therefore no writing donor-specific h5ad.")
     return(output_file)
 
 
@@ -663,6 +713,34 @@ def main():
     )
 
     parser.add_argument(
+        '--minimum_number_of_cells_for_donor',
+        action='store',
+        dest='minimum_number_of_cells_for_donor',
+        default=3,
+        type=int,
+        help='we need at least 3 cells per donor, however you can set the treshold even higher'
+    )
+    parser.add_argument(
+        '--genes_at_least_in_nr_cells',
+        action='store',
+        dest='genes_at_least_in_nr_cells',
+        default=5,
+        type=int,
+        help='we need at least cells to express this gene'
+    )
+
+    
+    parser.add_argument(
+        '-exclude_gene_list', '--exclude_gene_list',
+        action='store',
+        dest='exclude_gene_list',
+        default='',
+        help='Tab-delimited file with genes to exclude from the highly\
+            variable gene list. Must contain ensembl_gene_id column.\
+            (default: None - keep all variable genes)'
+    )
+
+    parser.add_argument(
         '-of', '--output_file',
         action='store',
         dest='of',
@@ -725,12 +803,12 @@ def main():
             )
             adata.obs = obs_prior
 
-    # Removing any donors with less than 3 cells as these must be outliers - the batch key needs at least 3 entires to calculate highly variable genes
+    # Removing any donors with less than 3 cells or what the user has specified as these must be outliers - the batch key needs at least 3 entires to calculate highly variable genes
     x=np.array(adata.obs[options.bk])
     unique, counts = np.unique(x, return_counts=True)
     freqs = pd.DataFrame({'unique':unique,'counts':counts})
     freqs=freqs.set_index(unique)
-    to_keep = list(freqs[freqs['counts']>3]['unique'])
+    to_keep = list(freqs[freqs['counts']>options.minimum_number_of_cells_for_donor]['unique'])
     d2= pd.DataFrame(adata.obs[options.bk])
     to_keep_ix = [i for i,row1 in d2.iterrows() if row1[options.bk] in to_keep]
     adata = adata[to_keep_ix, :]
@@ -741,11 +819,49 @@ def main():
     if options.vr != '':
         vars_to_regress = options.vr.split(',')
 
-    # Load list of genes to filter
-    genes_filter = []
+    # Load list of genes to keep even if they are marked as hvg
+    exclude_hv_gene_df = []
     if options.vge != '':
-        genes_filter = pd.read_csv(options.vge, sep='\t')
+        v1 = options.vge
+        try:
+            exclude_hv_gene_df = pd.read_csv(v1, sep='\t')
+            try:
+                exclude_hv_gene_df = pd.DataFrame(exclude_hv_gene_df['ensembl_gene_id'], columns=['ensembl_gene_id'])
+            except:
+                _='ENSG not provided'
+                list_genes = set(exclude_hv_gene_df['gene_symbol'])
+                exclude_hv_gene_df = pd.DataFrame(adata.var[adata.var['gene_symbols'].isin(list_genes)].index, columns=['ensembl_gene_id'])
+        except:
+            _='Not a file' 
+            regex_exclusions = set(adata.var[adata.var.gene_symbols.str.contains(v1)].index)
+            split_exclusions_gene_symbol = set(adata.var[adata.var['gene_symbols'].isin( v1.replace(',',';').split(';'))].index)
+            split_exclusions_gene_ensg = set(adata.var[adata.var.index.isin( v1.replace(',',';').split(';'))].index)
+            all_genes_to_exclude = regex_exclusions.union(split_exclusions_gene_symbol).union(split_exclusions_gene_ensg)
+            exclude_hv_gene_df = pd.DataFrame(all_genes_to_exclude, columns=['ensembl_gene_id'])         
 
+
+    exclude_gene_list = ''
+    if options.exclude_gene_list !='':
+        v1 = options.exclude_gene_list
+        try:
+            exclude_hv_gene_df = pd.read_csv(v1, sep='\t')
+            try:
+                exclude_hv_gene_df = pd.DataFrame(exclude_hv_gene_df['ensembl_gene_id'], columns=['ensembl_gene_id'])
+            except:
+                _='ENSG not provided'
+                list_genes = set(exclude_hv_gene_df['gene_symbol'])
+                exclude_hv_gene_df = pd.DataFrame(adata.var[adata.var['gene_symbols'].isin(list_genes)].index, columns=['ensembl_gene_id'])
+        except:
+            
+            regex_exclusions = set(adata.var[adata.var.gene_symbols.str.contains(v1)].index)
+            split_exclusions_gene_symbol = set(adata.var[adata.var['gene_symbols'].isin( v1.replace(',',';').split(';'))].index)
+            split_exclusions_gene_ensg = set(adata.var[adata.var.index.isin( v1.replace(',',';').split(';'))].index)
+            all_genes_to_exclude = regex_exclusions.union(split_exclusions_gene_symbol).union(split_exclusions_gene_ensg)
+            exclude_gene_list = pd.DataFrame(all_genes_to_exclude, columns=['ensembl_gene_id'])
+        
+        
+        
+    
     # Load the gene scores
     score_genes_df = None
     if options.sg != '':
@@ -757,8 +873,11 @@ def main():
         output_file=options.of,
         vars_to_regress=vars_to_regress,
         variable_feature_batch_key=options.bk,
+        genes_at_least_in_nr_cells=options.genes_at_least_in_nr_cells,
         n_variable_features=options.nvf,
-        exclude_hv_gene_df=genes_filter,
+        exclude_hv_gene_df=exclude_hv_gene_df,
+        
+        exclude_gene_list=exclude_gene_list,
         score_genes_df=score_genes_df,
         verbose=True,
         anndata_compression_opts=options.anndata_compression_opts

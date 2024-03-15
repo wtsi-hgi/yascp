@@ -101,12 +101,22 @@ process DSB_INTEGRATE{
         path(vireo)
         path(tmp_rsd)
         path(matched_donors)
-
+        each vars_to_regress
+        val(k_anchor)
+        val(dims)
+        val(ndim_sct)
+        val(ndim_citeBgRemoved)
+        val(ndim_cite_integrated)
     script:
-    """
-    echo 'running1'
-    2.integrate.R
-    """
+
+        if (vars_to_regress == ''){
+            vars_to_regress='NONE'
+        }
+        
+        """
+        echo 'running1'
+        2.integrate.R ${vars_to_regress} ${k_anchor} ${dims} ${ndim_sct} ${ndim_citeBgRemoved} ${ndim_cite_integrated}
+        """
 
 }
 

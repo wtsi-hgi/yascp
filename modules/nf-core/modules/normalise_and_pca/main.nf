@@ -62,6 +62,12 @@ process NORMALISE_AND_PCA {
     //       sample and then merge.
     // ------------------------------------------------------------------------
     //cache false        // cache results from run
+    // Couple of steps are happening here:
+    // 1) Dropping any donors that do not pass the tresholds of number of cells.
+    // 2) Regressing any variables that isers has specified.
+    // 3) Filters out any unnecessary genes that users have specified.
+    // 4) Scores the genes according to their gene score as per table provided.
+
     scratch false      // use tmp directory
     label 'process_medium'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
@@ -82,8 +88,11 @@ process NORMALISE_AND_PCA {
         path(file__anndata)
         val(analysis_mode)
         val(layer)
-        path(file__genes_exclude_hvg)
-        path(file__genes_score)
+        val(minimum_number_of_cells_for_donor)
+        val(file__genes_exclude_hvg)
+        val(file__genes_score)
+        val(genes_exclude)
+        val(genes_at_least_in_nr_cells)
         each vars_to_regress
 
     output:
@@ -94,7 +103,7 @@ process NORMALISE_AND_PCA {
         val("${param_details}", emit: param_details)
         path("plots/*.pdf")
         path("plots/*.png") optional true
-
+        path('donor_level_anndata_QCfiltered/*___sample_QCd_adata.h5ad',emit: sample_QCd_adata)
 
     script:
         
@@ -113,19 +122,25 @@ process NORMALISE_AND_PCA {
 
         outdir = "${params.outdir}/clustering/normalize=total_count.${param_details}"
         // Add details on the genes we are exlcuding from hgv list.
-        file_vge = "${file__genes_exclude_hvg.getSimpleName()}"
-        outdir = "${outdir}.hvg_exclude=${file_vge}"
+        // file_vge = "${file__genes_exclude_hvg}"
+        // outdir = "${outdir}.hvg_exclude=${file_vge}"
         // Add details on the scores we are using.
-        file_score = "${file__genes_score.getSimpleName()}"
-        outdir = "${outdir}.scores=${file_score}"
+        // file_score = "${file__genes_score}"
+        // outdir = "${outdir}.scores=${file_score}"
         // this is where the subfolder 1 is determined
         // Customize command for optional files.
         cmd__genes_exclude_hvg = ""
-        if (file__genes_exclude_hvg.name != "no_file__genes_exclude_hvg") {
-            cmd__genes_exclude_hvg = "--variable_genes_exclude ${file__genes_exclude_hvg}"
+        if (file__genes_exclude_hvg != "") {
+            cmd__genes_exclude_hvg = "--variable_genes_exclude '${file__genes_exclude_hvg}'"
         }
+
+        cmd__genes_exclude = ""
+        if (genes_exclude != "") {
+            cmd__genes_exclude = "--exclude_gene_list '${genes_exclude}'"
+        }
+        
         cmd__genes_score = ""
-        if (file__genes_score.name != "no_file__genes_score") {
+        if (file__genes_score != "") {
             cmd__genes_score = "--score_genes ${file__genes_score}"
         }
 
@@ -136,10 +151,13 @@ process NORMALISE_AND_PCA {
             --overwrite_x_with_layer ${layer} \
             --output_file adata \
             --number_cpu ${task.cpus} \
+            --minimum_number_of_cells_for_donor ${minimum_number_of_cells_for_donor} \
             ${cmd__vars_to_regress} \
             ${cmd__genes_exclude_hvg} \
+            ${cmd__genes_exclude} \
             ${cmd__genes_score} \
-            --drop_cell_passes_qc_from_clustering ${params.drop_cell_passes_qc_from_clustering}
+            --drop_cell_passes_qc_from_clustering ${params.normalise.drop_cell_passes_qc_from_clustering} \
+            --genes_at_least_in_nr_cells ${genes_at_least_in_nr_cells}
         mkdir plots
         
         mv *pdf plots/ 2>/dev/null || true

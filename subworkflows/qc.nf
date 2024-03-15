@@ -54,7 +54,8 @@ workflow qc {
                 params.sample_qc.cell_filters.filter_outliers.max_samples,
                 params.anndata_compression_opts,
                 gt_outlier_input,
-                params.gt_match_based_adaptive_qc_exclusion_pattern
+                params.sample_qc.gt_match_based_adaptive_qc_exclusion_pattern,
+                params.sample_qc.outlier_filtering_strategy
             )
             file__anndata_merged = OUTLIER_FILTER.out.anndata
             file__cells_filtered = OUTLIER_FILTER.out.cells_filtered
@@ -67,22 +68,36 @@ workflow qc {
                 file__anndata_merged,
                 params.normalise.mode,
                 params.normalise.layer,
-                params.gene_filters.genes_exclude,
-                params.genes_score,
+                params.normalise.minimum_number_of_cells_for_donor,
+                params.normalise.gene_filters.variable_genes_exclude,
+                params.normalise.genes_score,
+                params.normalise.gene_filters.genes_exclude,
+                params.normalise.gene_filters.genes_at_least_in_nr_cells,
                 params.reduced_dims.vars_to_regress.value
             )
 
             if (params.citeseq){
-                OUTLIER_FILTER.out.sample_QCd_adata.flatten().map{sample -> tuple("${sample}".replaceFirst(/___sample_QCd_adata.h5ad/,"").replaceFirst(/.*\//,""),sample)}.set{alt_input}
+                NORMALISE_AND_PCA.out.sample_QCd_adata.flatten().map{sample -> tuple("${sample}".replaceFirst(/___sample_QCd_adata.h5ad/,"").replaceFirst(/.*\//,""),sample)}.set{alt_input}
                 channel_dsb2 = channel_dsb.combine(alt_input, by: 0)
                 DSB_PROCESS(channel_dsb2)
-                DSB_PROCESS.out.citeseq_rsd.subscribe { println "1:: DSB_PROCESS.out.citeseq_rsd: $it" }
-                vireo_paths.subscribe { println "1:: vireo_paths input: $it" }
-                assignments_all_pools.subscribe { println "1:: assignments_all_pools input: $it" }
-                DSB_PROCESS.out.tmp_rsd.subscribe { println "1:: DSB_PROCESS.out.tmp_rsd input: $it" }
-                matched_donors.subscribe { println "1:: matched_donors.out.tmp_rsd input: $it" }
+                // DSB_PROCESS.out.citeseq_rsd.subscribe { println "1:: DSB_PROCESS.out.citeseq_rsd: $it" }
+                // vireo_paths.subscribe { println "1:: vireo_paths input: $it" }
+                // assignments_all_pools.subscribe { println "1:: assignments_all_pools input: $it" }
+                // DSB_PROCESS.out.tmp_rsd.subscribe { println "1:: DSB_PROCESS.out.tmp_rsd input: $it" }
+                // matched_donors.subscribe { println "1:: matched_donors.out.tmp_rsd input: $it" }
 
-                DSB_INTEGRATE(DSB_PROCESS.out.citeseq_rsd.collect(),vireo_paths.collect(),DSB_PROCESS.out.tmp_rsd.collect(),matched_donors)
+                DSB_INTEGRATE(
+                    DSB_PROCESS.out.citeseq_rsd.collect(),
+                    vireo_paths.collect(),
+                    DSB_PROCESS.out.tmp_rsd.collect(),
+                    matched_donors,
+                    params.reduced_dims.vars_to_regress.value,
+                    params.reduced_dims.seurat_integration.k_anchor,
+                    params.reduced_dims.seurat_integration.dims,
+                    params.reduced_dims.seurat_integration.ndim_sct,
+                    params.reduced_dims.seurat_integration.ndim_citeBgRemoved,
+                    params.reduced_dims.seurat_integration.ndim_cite_integrated
+                    )
                 MULTIMODAL_INTEGRATION(DSB_INTEGRATE.out.all_data_integrated)
                 VDJ_INTEGRATION(MULTIMODAL_INTEGRATION.out.all_data_integrated,chanel_cr_outs.collect())
             }    

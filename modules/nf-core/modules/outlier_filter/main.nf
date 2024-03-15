@@ -2,9 +2,6 @@ def random_hex(n) {
     Long.toUnsignedString(new Random().nextLong(), n).toUpperCase()
 }
 
-if (binding.hasVariable("echo_mode") == false) {
-    echo_mode = true
-}
 
 
 process OUTLIER_FILTER {
@@ -44,10 +41,11 @@ process OUTLIER_FILTER {
         val(anndata_compression_opts)
         path(gt_outlier_input)
         val(gt_match_based_adaptive_qc_exclusion_pattern)
+        val(outlier_filtering_strategy)
 
     output:
         path("merged_h5ad/outlier_filtered_adata.h5ad", emit: anndata)
-        path('donor_level_anndata_QCfiltered/*___sample_QCd_adata.h5ad',emit: sample_QCd_adata)
+        // path('donor_level_anndata_QCfiltered/*___sample_QCd_adata.h5ad',emit: sample_QCd_adata)
         path(
             "merged_h5ad/outlier_filtered_adata-cell_filtered_per_experiment.tsv.gz",
             emit: cells_filtered
@@ -79,7 +77,7 @@ process OUTLIER_FILTER {
                 --max_samples ${max_samples} \
                 --output_file ${outfile} \
                 --anndata_compression_opts ${anndata_compression_opts} \
-                --filter_strategy '${params.outlier_filtering_strategys}' \
+                --filter_strategy '${outlier_filtering_strategy}' \
                 ${filter_strategy_exclusion}
                 
             mkdir plots

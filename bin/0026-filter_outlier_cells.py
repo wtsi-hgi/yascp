@@ -502,45 +502,6 @@ def main():
         generate_plots(adata,cell_qc_column,metadata_columns,metadata_columns_original,options.of)
 
 
-    # Save the updated adata matrix
-    # print("Saving data")
-
-    adata_donors = []
-    adata_nr_cells = {}
-    count=0
-    os.makedirs('./donor_level_anndata_QCfiltered')
-    for donor_id in adata.obs['convoluted_samplename'].unique():
-        donor_id = str(donor_id)
-        print('filtering cells of AnnData to convoluted_samplename ' + donor_id)
-        adata_donor = adata[adata.obs['convoluted_samplename'] == donor_id, :]
-        adata_donor = adata_donor[adata_donor.obs[cell_qc_column] == True,:]
-        
-        del adata_donor.raw
-        del adata_donor.uns
-        del adata_donor.varm
-        del adata_donor.obsp
-
-        for c1 in adata_donor.obs.columns:
-            try:
-                adata_donor.obs[c1] = adata_donor.obs[c1].cat.add_categories("Unknown").fillna('Unknown')
-            except:
-                _=''        
-        
-        print("n cells len(adata_donor.obs) for " + donor_id  + ': ' + str(len(adata_donor.obs)) + '/' + str(len(adata.obs)))
-        if len(adata_donor.obs) > 0:
-            count+=1
-            print(f"more than 0 cells for convoluted_samplename: {donor_id}")
-            adata_nr_cells[count]={'experiment_id':f'{donor_id}','n_cells':len(adata_donor.obs)}
-            adata_donors.append((donor_id, adata_donor))
-            output_file = './donor_level_anndata_QCfiltered/'+donor_id + '___' +"sample_QCd_adata"
-            print('Write h5ad donor AnnData to ' + output_file)
-            
-            adata_donor.write('{}.h5ad'.format(output_file), compression='gzip', compression_opts= 6)
-        else:
-            print("0 cells for donor, therefore no writing donor-specific h5ad.")
-    
-
-
     adata.write(
         '{}.h5ad'.format(options.of),
         compression='gzip',

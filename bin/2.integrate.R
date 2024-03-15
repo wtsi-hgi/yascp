@@ -17,6 +17,33 @@ if (future::supportsMulticore()) {
 } else {
   future::plan(future::multisession)
 }
+
+args = commandArgs(trailingOnly=TRUE)
+
+if (args[1]=='NONE') {
+  vars_to_regress = c()
+  reg_name = 'regress=NONE'
+}else{
+  vars_to_regress = strsplit(args[1], split = ";")
+  vars_to_regress = unlist(vars_to_regress)
+  reg_name = paste0('regress=',args[1])
+}
+
+# integrate sct
+k.anchor=strtoi(args[2])
+print(k.anchor)
+dims=strtoi(args[3])
+
+# Number of dimensions to use for SCT integrated data (check elbow plot to see if it's correct)
+ndim_sct = strtoi(args[4])
+
+# Number of dimensions to use for cite_bgRemoved integrated data (check elbow plot to see if it's correct)
+ndim_citeBgRemoved = strtoi(args[5])
+
+# Number of dimensions to use for cite integrated data (check elbow plot to see if it's correct)
+ndim_cite_integrated = strtoi(args[6])
+ 
+
 #####
 # .libPaths('/software/hgi/containers/yascp/jaguar_rlibs')
 # install.packages("Matrix")
@@ -24,11 +51,12 @@ if (future::supportsMulticore()) {
 data_dir <- getwd()
 outdir <- paste0('./out/')
 dir.create(outdir,showWarnings = F)
-figdir <- paste0(outdir,'/figures/')
+figdir <- paste0(outdir,'/figures','__',reg_name,'/')
 dir.create(figdir,showWarnings = F)
 tmp_rds_dir <- paste0(outdir,'/tmp_rds_files/')
 dir.create(tmp_rds_dir,showWarnings = F)
-tmp_rds_file <- paste0(tmp_rds_dir,'all_samples_integrated.RDS')
+tmp_rds_file <- paste0(tmp_rds_dir,reg_name,'__','all_samples_integrated.RDS')
+
 myPalette <- colorRampPalette(rev(brewer.pal(11, "Spectral")))
 
 # Select the sc eqtlgen rds files
@@ -148,7 +176,7 @@ for(f in cite_files){
     # Using glmGamPoi because faster and more robust (see also https://genomebiology.biomedcentral.com/articles/10.1186/s13059-021-02584-9)
     # return all genes so that more can be used for calculating cell cycle score
     sobj_per_donor[[donor]] <- SCTransform(sobj_per_donor[[donor]], 
-                        vars.to.regress='pct_counts_gene_group__mito_transcript', 
+                        vars.to.regress=vars_to_regress, 
                         method = "glmGamPoi",
                         verbose = F, return.only.var.genes = F)
 
@@ -172,7 +200,7 @@ for(f in cite_files){
     # are mostly not expressed in dataset (at least in batch 1), which makes me
     # not trust the scores. So, only regress mitochondria
     sobj_per_donor[[donor]] <- SCTransform(sobj_per_donor[[donor]], 
-                        vars.to.regress=c('pct_counts_gene_group__mito_transcript'),
+                        vars.to.regress=vars_to_regress,
                                           #"S.Score", "G2M.Score"), # see comments above, don't want to regress cell cycle score
                         method = "glmGamPoi",
                         verbose = F)
@@ -319,8 +347,7 @@ for(pool in pools_to_integrate){
 # integrate sct
 slist = sobj_list
 reference_samples = random_donors_for_reference
-k.anchor=5
-dims=30
+
 
 random_donor_integration_sct <- integrate_sct(sobj_list, random_donors_for_reference)
 
@@ -342,14 +369,12 @@ dir.create(paste0(figdir,'/2.elbow_plots/'),showWarnings = F)
 random_donor_integration_sct <- RunPCA(random_donor_integration_sct, verbose = FALSE)
 
 # Number of dimensions to use for SCT integrated data (check elbow plot to see if it's correct)
-ndim_sct <- 12
 ElbowPlot(random_donor_integration_sct, ndims=50)+geom_vline(xintercept = ndim_sct+0.5,
                                                              lty=2,colour='red')
 ggsave(paste0(figdir,'/2.elbow_plots/SCT.pdf'), width=5, height=5)
 random_donor_integration_sct <- RunUMAP(random_donor_integration_sct, reduction = "pca", dims = 1:ndim_sct)
 
 # Number of dimensions to use for cite_bgRemoved integrated data (check elbow plot to see if it's correct)
-ndim_citeBgRemoved <- 10
 random_donor_integration_citeBgRemoved <- RunPCA(random_donor_integration_citeBgRemoved, verbose = FALSE)
 ElbowPlot(random_donor_integration_citeBgRemoved, ndims=50)+geom_vline(xintercept = ndim_citeBgRemoved+0.5,
                                                                        lty=2,colour='red')
@@ -358,12 +383,11 @@ random_donor_integration_citeBgRemoved <- RunUMAP(random_donor_integration_citeB
                                                   dims = 1:ndim_citeBgRemoved)
 
 # Number of dimensions to use for cite integrated data (check elbow plot to see if it's correct)
-ndim_citeBgRemoved <- 9
 random_donor_integration_cite <- RunPCA(random_donor_integration_cite, verbose = FALSE)
-ElbowPlot(random_donor_integration_cite, ndims=50)+geom_vline(xintercept = ndim_citeBgRemoved+0.5,
+ElbowPlot(random_donor_integration_cite, ndims=50)+geom_vline(xintercept = ndim_cite_integrated+0.5,
                                                               lty=2,colour='red')
 random_donor_integration_cite <- RunUMAP(random_donor_integration_cite, reduction = "pca", 
-                                         dims = 1:ndim_citeBgRemoved)
+                                         dims = 1:ndim_cite_integrated)
 
 
 #####

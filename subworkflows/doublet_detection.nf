@@ -38,17 +38,17 @@ workflow MULTIPLET {
     main:
         // Identify multiplets using scrublet.
 
-        log.info("expected_multiplet_rate: ${params.sample_qc.cell_filters.filter_multiplets.expected_multiplet_rate}")
-        log.info("n_simulated_multiplet: ${params.sample_qc.cell_filters.filter_multiplets.n_simulated_multiplet}")
-        log.info("multiplet_threshold_method: ${params.sample_qc.cell_filters.filter_multiplets.multiplet_threshold_method}")
-        log.info("scale_log10: ${params.sample_qc.cell_filters.filter_multiplets.scale_log10}")
+        // log.info("expected_multiplet_rate: ${params.filter_multiplets.scrublet.expected_multiplet_rate}")
+        // log.info("n_simulated_multiplet: ${params.filter_multiplets.scrublet.n_simulated_multiplet}")
+        // log.info("multiplet_threshold_method: ${params.filter_multiplets.scrublet.multiplet_threshold_method}")
+        // log.info("scale_log10: ${params.filter_multiplets.scrublet.scale_log10}")
 
         SCRUBLET(
             channel__file_paths_10x,
-            params.sample_qc.cell_filters.filter_multiplets.expected_multiplet_rate,
-            params.sample_qc.cell_filters.filter_multiplets.n_simulated_multiplet,
-            params.sample_qc.cell_filters.filter_multiplets.multiplet_threshold_method,
-            params.sample_qc.cell_filters.filter_multiplets.scale_log10
+            params.filter_multiplets.scrublet.expected_multiplet_rate,
+            params.filter_multiplets.scrublet.n_simulated_multiplet,
+            params.filter_multiplets.scrublet.multiplet_threshold_method,
+            params.filter_multiplets.scrublet.scale_log10
         )
         
         // doubletdetection(channel__file_paths_10x)
