@@ -13,9 +13,8 @@ params {
     extra_metadata = '/path/to/extra_metadata.tsv'   //Sometimes users may want to merge extra known metadata for a pool in the h5ad files prior to qc
     extra_sample_metadata ="/path/to/donor_extra_metadata.tsv"  //Sometimes users may want to merge extra known metadata for a donor within pool prior to qc
     input_data_table = '/lustre/scratch123/hgi/teams/hgi/mo11/tmp_projects/OneK1k/onek1k_test_dataset/input.tsv' //Required!! This points to all the cellranger files and pool definition files.
-    split_ad_per_bach=true //if not splitting the celltype assignment will be run on full tranche
-    cellbender_location='' //!!!!! if cellbender is run already then can skip this by selecting  input = 'existing_cellbender' instead input = 'cellbender'
-    existing_vireo=''
+    split_ad_per_bach=true //if not splitting the celltype assignment will be run on full dataset together
+    //cellbender_location='/path/to/existing/folder/nf-preprocessing/cellbender' //!!!!! uncoment and change path if already have results - if cellbender is run already then can skip this by selecting  input = 'existing_cellbender' instead input = 'cellbender'
     existing_cellsnp="" // if we have run cellsnp before we can skip this process by letting yascp capture the files
 	genotype_input {
         run_with_genotype_input=true //if false do not need the genotype_input parameters.
@@ -24,15 +23,6 @@ params {
         subset_genotypes = false
         tsv_donor_panel_vcfs = "/path/to/reference/panel/vcf_inputs.tsv" //this is a panel of vcf files that we want to compar the genotypes with
     }
-    reference_assembly_fasta_dir_bam_split = "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/genotypes/10x_reference_assembly_prefix"
-    reference_assembly_fasta_dir = "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/genotypes/10x_reference_assembly_prefix"
-    skip_preprocessing{
-        value=false
-        file__anndata_merged = '' 
-        file__cells_filtered = ''
-        gt_match_based_adaptive_qc_exclusion_pattern = 'U937;THP1' //We run the adaptive QC on these patterns independently regardless on assigned celltype.    }
-    }
-
 }
 
 
@@ -61,7 +51,7 @@ Where:
 * **donor_vcf_ids** - if using genotyes, here an id of individuals can be added to subset vcfs used to deconvolute samples (need to be as listed in vcf file provided)
 data_path_10x_format - path to a 10x folder containing bam, bai, metrics_summary.csv files and raw_barcodes folder
 
-**path/to/10x_folder** should contain the folowing files:
+**path/to/10x_folder** these outputs can be an output froom both cellranger 6 and cellranger 7. Overall we need the folowing files for pipeline to run smoothly:
 
 ```console
 10x_folder/
@@ -138,7 +128,7 @@ Sometimes IDs that we expect in our [input files](../sample_input/genotype_pheno
 
 ## Some tricks to avoid reruning pipeline over and over if you already have some partial data
 
-1. input = default 'existing_cellbender' which indicates cellbender will be run on all the samples besides the ones that are captured by [cellbender_location='/full/path/to/results/nf-preprocessing/cellbender']. Other options - [cellranger] - which avoids ambient RNA removal and proceeds with deconvolution based on cellranger. If you are providing a path to cellbender_location ='??' - specify location to the results directory containing [cellbender_location='/full/path/to/results/nf-preprocessing/cellbender']
+1. You can avoid running cellbender multiple times. If you have even partial cellbender results you can provide a path to the folder that contains them. cellbender will be run on all the samples besides the ones that are captured by [cellbender_location='/full/path/to/results/nf-preprocessing/cellbender']. Other options - [cellranger] - which avoids ambient RNA removal and proceeds with deconvolution based on cellranger. If you are providing a path to cellbender_location ='??' - specify location to the results directory containing [cellbender_location='/full/path/to/results/nf-preprocessing/cellbender']
 This should contain: 
 ```console
     Sample1
@@ -162,7 +152,7 @@ This should contain:
 
 ## Running the pipeline
 
-The typical command for running the pipeline is as follows:
+The typical command for running the pipeline is as follows [Instead of sanger please select your institution] - the available profiles are here: https://github.com/nf-core/configs/tree/master/conf . you can also provide your own config file by adding an extra input file -c /path/to/my/default/config/file.nf:
 
 ```console
 nextflow run yascp -profile sanger -c inputs.nf --nf_ci_loc $PWD -resume > nextflow.nohup.log 2>&1 & 
