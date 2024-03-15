@@ -25,6 +25,6 @@ if ["$varname" = ''];
 fi
 
 sample="$RUN_ID.yascp"
-echo -e "\nSubmitting yascp (https://github.com/wtsi-hgi/yascp) in JUST_CELLTYPES mode with input file $INPUT_FILE"
-bsub -R'select[mem>4000] rusage[mem=4000]' -J yascp_celltypes -n 1 -M 4000 -o yascp_celltypes.o -e yascp_celltypes.e -q normal bash $SCRIPT_DIR/../../assets/deploy_scripts/nohup_start_nextflow_lsf_celltypes.sh  $INPUT_FILE
-echo "Submitted job can be killed with: bkill -J yascp_celltypes"
+echo -e "\nSubmitting yascp (https://github.com/wtsi-hgi/yascp) in JUST_DOUBLETS mode with input file $INPUT_FILE"
+bsub -R'select[mem>4000] rusage[mem=4000]' -J yascp_doublets -n 1 -M 4000 -o yascp_doublets.o -e yascp_doublets.e -q normal bash $SCRIPT_DIR/../../assets/deploy_scripts/nohup_start_nextflow_lsf_doublets.sh $INPUT_FILE
+echo "Submitted job can be killed with: bkill -J yascp_doublets"

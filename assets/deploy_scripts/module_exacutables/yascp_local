@@ -40,6 +40,9 @@ elif [[ $1 == "celltypes" ]]; then
     command echo -e "Running celltype assignment of provided h5ad file \n\n" && bash $SCRIPT_DIR/../nohup_start_nextflow_lsf_celltypes.sh "${@:2}"
 elif [[ $1 == "cluster" ]]; then
     command echo -e "Running clustering assesment of provided h5ad file \n\n" && bash $SCRIPT_DIR/../nohup_start_nextflow_lsf_recluster.sh "${@:2}"
+elif [[ $1 == "doublet" ]]; then
+    command echo -e "Running doublet assesment of provided matrix files \n\n" && bash $SCRIPT_DIR/../nohup_start_nextflow_lsf_doublets.sh "${@:2}"
+
 elif [[ $1 == "cellbender" ]]; then
     command echo -e "Running clustering assesment of provided h5ad file \n\n" && bash $SCRIPT_DIR/../nohup_start_nextflow_lsf_cellbender.sh "${@:2}"
 elif [[ $1 == "-info" ]]; then

@@ -13,7 +13,6 @@ process DOUBLET_DETECTION {
                 overwrite: "true"
 
     input:
-        // path(outdir_prev)
         tuple(
             val(experiment_id),
             path(file_10x_barcodes),
@@ -21,9 +20,10 @@ process DOUBLET_DETECTION {
             path(file_10x_matrix)
         )
 
-    // output:
-    //     path("plots/*.pdf") optional true
-    //     path("plots/*.png") optional true
+    output:
+        path("plots/*.pdf") optional true
+        path("plots/*.png") optional true
+        path("${experiment_id}__DoubletDetection_results.txt"), emit: doubletDetection_results
 
     script:
         
@@ -37,5 +37,6 @@ process DOUBLET_DETECTION {
             ln --physical ${file_10x_features} \$TMP_DIR
             ln --physical ${file_10x_matrix} \$TMP_DIR
             DoubletDetection.py --tenxdata_dir \$TMP_DIR --n_iterations 100
+            ln -s DoubletDetection_results.txt ${experiment_id}__DoubletDetection_results.txt
         """
 }

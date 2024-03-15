@@ -81,7 +81,8 @@ clf = doubletdetection.BoostClassifier(n_iters=args.n_iterations, standard_scali
 doublets = clf.fit(raw_counts).predict(p_thresh=args.p_thresh, voter_thresh=args.voter_thresh)
 
 results = pd.Series(doublets, name="DoubletDetection_DropletType")
-dataframe = pd.concat([barcodes_df, results], axis=1)
+dataframe =pd.DataFrame(results)
+dataframe.index = barcodes_df
 dataframe.DoubletDetection_DropletType = dataframe.DoubletDetection_DropletType.replace(1.0, "doublet")
 dataframe.DoubletDetection_DropletType = dataframe.DoubletDetection_DropletType.replace(0.0, "singlet")
 

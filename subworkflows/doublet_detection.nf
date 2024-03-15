@@ -34,7 +34,6 @@ process make_cellmetadata_pipeline_input {
 workflow MULTIPLET {
     take:
         channel__file_paths_10x
-    
     main:
         // Identify multiplets using scrublet.
 
@@ -51,7 +50,18 @@ workflow MULTIPLET {
             params.filter_multiplets.scrublet.scale_log10
         )
         
-        // doubletdetection(channel__file_paths_10x)
+        DOUBLET_DETECTION(channel__file_paths_10x)
+
+        //DOUBLET_DECON()
+
+        // DOUBLET_FINDER()
+
+        // SC_DBL_FINDER()
+
+        // SCDS()
+
+        // SOLO()
+
 
         // Generate input file for merge based in multiplets
         make_cellmetadata_pipeline_input(

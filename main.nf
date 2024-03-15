@@ -17,6 +17,25 @@ include {qc} from "$projectDir/subworkflows/qc"
 include {dummy_filtered_channel} from "$projectDir/modules/nf-core/modules/merge_samples/functions"
 include {CLUSTERING; CLUSTERING as CLUSTERING_HARMONY; CLUSTERING as CLUSTERING_BBKNN;} from "$projectDir/modules/nf-core/modules/clustering/main"
 include { MATCH_GT_VIREO; GT_MATCH_POOL_IBD } from "$projectDir/modules/nf-core/modules/genotypes/main"
+include { YASCP_INPUTS } from "$projectDir/modules/nf-core/modules/prepere_yascp_inputs/main"
+include {MULTIPLET} from "$projectDir/subworkflows/doublet_detection"
+include { match_genotypes } from "$projectDir/subworkflows/match_genotypes"
+include { metadata_posthoc;replace_donors_posthoc } from "$projectDir/modules/local/report_update/main"
+include {data_handover} from "$projectDir/subworkflows/data_handover"
+include { CREATE_ARTIFICIAL_BAM_CHANNEL } from "$projectDir/modules/local/create_artificial_bam_channel/main"
+include { TRANSFER;SUMMARY_STATISTICS_PLOTS } from "$projectDir/modules/nf-core/modules/summary_statistics_plots/main"
+include {SUBSET_WORKF; JOIN_STUDIES_MERGE} from "$projectDir/modules/nf-core/modules/subset_genotype/main"
+include {VIREO} from "$projectDir/modules/nf-core/modules/vireo/main"
+include {capture_cellbender_files} from "$projectDir/modules/nf-core/modules/cellbender/functions"
+include { DECONV_INPUTS } from "$projectDir/subworkflows/prepare_inputs/deconvolution_inputs"
+include { prepare_inputs } from "$projectDir/subworkflows/prepare_inputs"
+include { SPLIT_DONOR_H5AD } from "$projectDir/modules/nf-core/modules/split_donor_h5ad/main"
+include {REPLACE_GT_DONOR_ID2 } from "$projectDir/modules/nf-core/modules/genotypes/main"
+include {CAPTURE_VIREO } from "$projectDir/modules/nf-core/modules/vireo/main"
+include {VIREO_GT_FIX_HEADER; VIREO_ADD_SAMPLE_PREFIX; MERGE_GENOTYPES_IN_ONE_VCF as MERGE_GENOTYPES_IN_ONE_VCF_INFERED; MERGE_GENOTYPES_IN_ONE_VCF as MERGE_GENOTYPES_IN_ONE_VCF_SUBSET} from "$projectDir/modules/nf-core/modules/genotypes/main"
+include {ENHANCE_STATS_GT_MATCH } from "$projectDir/modules/nf-core/modules/genotypes/main"
+include {collect_file} from "$projectDir/modules/nf-core/modules/collect_file/main"
+include { CELLSNP;capture_cellsnp_files } from "$projectDir/modules/nf-core/modules/cellsnp/main"
 
 ////// WORKFLOW: Run main nf-core/yascp analysis pipeline
 // This is the default entry point, we have others to update ceirtain parts of the results. 
@@ -73,6 +92,24 @@ workflow JUST_CELLBENDER{
 }
 
 
+workflow JUST_DOUBLETS{
+    input_channel = Channel.fromPath(params.input_data_table, followLinks: true, checkIfExists: true)
+    YASCP_INPUTS(input_channel)
+    channel_input_data_table = YASCP_INPUTS.out.input_file_corectly_formatted
+    channel__file_paths_10x =  channel_input_data_table
+        .splitCsv(header: true, sep: params.input_tables_column_delimiter)
+        .map{row -> tuple(
+        row.experiment_id,
+        file("${row.data_path_10x_format}/filtered_feature_bc_matrix/barcodes.tsv.gz"),
+        file("${row.data_path_10x_format}/filtered_feature_bc_matrix/features.tsv.gz"),
+        file("${row.data_path_10x_format}/filtered_feature_bc_matrix/matrix.mtx.gz")
+    )}
+
+    MULTIPLET(
+        channel__file_paths_10x,
+    )
+}
+
 workflow JUST_RECLUSTER{
     // This workflow entry point is for integrations only. Users can provide a h5ad file that can be clustered. 
     file__anndata_merged = Channel.from(params.file__anndata_merged)
@@ -91,24 +128,7 @@ workflow JUST_RECLUSTER{
 ========================================================================================
 */
 
-include { match_genotypes } from "$projectDir/subworkflows/match_genotypes"
-include { metadata_posthoc;replace_donors_posthoc } from "$projectDir/modules/local/report_update/main"
-include {data_handover} from "$projectDir/subworkflows/data_handover"
-include { CREATE_ARTIFICIAL_BAM_CHANNEL } from "$projectDir/modules/local/create_artificial_bam_channel/main"
-include { TRANSFER;SUMMARY_STATISTICS_PLOTS } from "$projectDir/modules/nf-core/modules/summary_statistics_plots/main"
-include {SUBSET_WORKF; JOIN_STUDIES_MERGE} from "$projectDir/modules/nf-core/modules/subset_genotype/main"
-include {VIREO} from "$projectDir/modules/nf-core/modules/vireo/main"
-include {capture_cellbender_files} from "$projectDir/modules/nf-core/modules/cellbender/functions"
-include { DECONV_INPUTS } from "$projectDir/subworkflows/prepare_inputs/deconvolution_inputs"
-include { prepare_inputs } from "$projectDir/subworkflows/prepare_inputs"
-include {MULTIPLET} from "$projectDir/subworkflows/doublet_detection"
-include { SPLIT_DONOR_H5AD } from "$projectDir/modules/nf-core/modules/split_donor_h5ad/main"
-include {REPLACE_GT_DONOR_ID2 } from "$projectDir/modules/nf-core/modules/genotypes/main"
-include {CAPTURE_VIREO } from "$projectDir/modules/nf-core/modules/vireo/main"
-include {VIREO_GT_FIX_HEADER; VIREO_ADD_SAMPLE_PREFIX; MERGE_GENOTYPES_IN_ONE_VCF as MERGE_GENOTYPES_IN_ONE_VCF_INFERED; MERGE_GENOTYPES_IN_ONE_VCF as MERGE_GENOTYPES_IN_ONE_VCF_SUBSET} from "$projectDir/modules/nf-core/modules/genotypes/main"
-include {ENHANCE_STATS_GT_MATCH } from "$projectDir/modules/nf-core/modules/genotypes/main"
-include {collect_file} from "$projectDir/modules/nf-core/modules/collect_file/main"
-include { CELLSNP;capture_cellsnp_files } from "$projectDir/modules/nf-core/modules/cellsnp/main"
+
 
 workflow FREEZE1_GENERATION{
     GENOTYPE_UPDATE()

@@ -13,6 +13,8 @@ elif [[ $1 == "clean" ]]; then
     command echo -e "Removing work dir; after this you will not be able to use the catche to restart pipeline \n\n" && bash $SCRIPT_DIR/../bsub__removeWork.sh "${@:2}"
 elif [[ $1 == "celltypes" ]]; then
     command echo -e "Running celltype assignment of provided h5ad file \n\n" && bash $SCRIPT_DIR/../bsub_test_celltypes.sh "${@:2}"
+elif [[ $1 == "doublets" ]]; then
+    command echo -e "Running doublet assignment of provided matrix files \n\n" && bash $SCRIPT_DIR/../bsub_test_doublets.sh "${@:2}"
 elif [[ $1 == "cluster" ]]; then
     command echo -e "Running clustering assesment of provided h5ad file \n\n" && bash $SCRIPT_DIR/../bsub_test_recluster.sh "${@:2}"
 elif [[ $1 == "cellbender" ]]; then

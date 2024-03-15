@@ -20,15 +20,16 @@ if (future::supportsMulticore()) {
 
 args = commandArgs(trailingOnly=TRUE)
 
+# arg='pct_counts_gene_group__mito_transcript'; args[2]=5; args[3]=30; args[4]=12;args[5]= 10;args[6]= 9
 if (args[1]=='NONE') {
   vars_to_regress = c()
-  reg_name = 'regress=NONE'
+  reg_name = 'regress__NONE'
 }else{
-  vars_to_regress = strsplit(args[1], split = ";")
+  vars_to_regress = strsplit(as.character(args[1]), split=";")
   vars_to_regress = unlist(vars_to_regress)
-  reg_name = paste0('regress=',args[1])
+  reg_name = paste0('regress__',args[1])
 }
-
+print(vars_to_regress)
 # integrate sct
 k.anchor=strtoi(args[2])
 print(k.anchor)
@@ -91,9 +92,11 @@ donor_files <- list.files(pattern='donor_ids.tsv',
                           full.names=T)
 
 matched_donor_files <- 'matched_donors.txt'
-
+matched_donors <- read.table(matched_donor_files,header=T,sep='\t')
 
 donor_cells <- data.frame()
+count = 1
+drop_doublets = TRUE
 for(f in donor_files){
   sample_id <- basename(dirname(f))
 
@@ -105,16 +108,23 @@ for(f in donor_files){
   
   # This is still some old code from when there were donors in multiple batches but when we didn't
   # have genotypes, at some point his will be updated. Get the matched genotypes
-  matched_donors <- read.table(matched_donor_files,header=T,sep='\t')
-  df$doublet_logLikRatio <- NULL
-  df <- df[!grepl('doublet|unassigned', df$donor_id),]
   
-
+  df$doublet_logLikRatio <- NULL
+  if (drop_doublets){
+    print('--- Dropping Doublets ---')
+    df <- df[!grepl('doublet|unassigned', df$donor_id),]
+  }else{
+    print('--- Not Dropping Doublets ---')
+    df <- df[!grepl('unassigned', df$donor_id),]
+    matched_donors[nrow(matched_donors) + 1,] = c(paste0("doublet",count),sample_name,"doublet")
+  }
+  
   df$matched.donor <- matched_donors[match(paste0(df$sample_name, 
                                                   df$donor_id), 
                                            paste0(matched_donors$sample, 
                                                   matched_donors$old_donor)),]$new_donor
   donor_cells <- rbind(donor_cells, df)
+  count = count+1
 }
 #####
 
@@ -137,7 +147,7 @@ for(f in cite_files){
   # else, use the scpred step output file.
   # if(sum(grepl(sample_name,cite_files))== 0){
   # print(paste(sample_name,' does not have cite data, use scpred file'))
-  sobj <- readRDS(f)  
+  sobj <- readRDS(f)  #// Here we actually dont have the doublets anymore since they were not merged back in the files.
   # t2 = readRDS('/lustre/scratch123/hgi/teams/hgi/mo11/tmp_projects/jaguar_yascp/nieks_pipeline/sle-niek/2022-03-07-sc-eQTLgen-pipeline/2022-03-17-SLE-datasets/2022-07-13-SLE/no-cellbender/WG1/2023-11-23-batch20/2.Demultiplexing-and-Doublet-Removal/out/QC_figures/seurat_object_all_pools_all_barcodes_final_assignments.rds')
   # }else if(sum(grepl(sample_name,cite_files))==1){
   #   print(paste(sample_name,'has cite data, use cite file'))
@@ -434,6 +444,6 @@ names(random_donor_integration_sct@reductions)[[which(names(random_donor_integra
 random_donor_integration_sct@assays$predicted_ADT <- NULL
 #####
 
-
+print('---- Done, lets save the Object ----')
 saveRDS(random_donor_integration_sct, file=tmp_rds_file)
 
