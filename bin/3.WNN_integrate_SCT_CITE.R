@@ -22,15 +22,24 @@ library("RColorBrewer")
 # library(Matrix)
 #### set up directories, colors paths ####
 
-outdir <- paste0('./out')
-dir.create(outdir,showWarnings = F)
-figdir <- paste0(outdir,'/figures/')
-dir.create(figdir,showWarnings = F)
-tmp_rds_dir <- paste0(outdir,'/tmp_rds_files/')
-dir.create(tmp_rds_dir,showWarnings = F)
-tmp_rds_file <- paste0(tmp_rds_dir,'all_samples_integrated.RDS')
+# outdir <- paste0('./out')
+# dir.create(outdir,showWarnings = F)
+# figdir <- paste0(outdir,'/figures/')
+# dir.create(figdir,showWarnings = F)
+# tmp_rds_dir <- paste0(outdir,'/tmp_rds_files/')
+# dir.create(tmp_rds_dir,showWarnings = F)
+# tmp_rds_file <- paste0(tmp_rds_dir,'all_samples_integrated.RDS')
 myPalette <- colorRampPalette(rev(brewer.pal(11, "Spectral")))
 
+
+args = commandArgs(trailingOnly=TRUE)
+
+figdir = args[1]
+outdir = args[2]
+tmp_rds_dir = args[3]
+tmp_rds_file = args[4]
+n2 = strsplit(as.character(tmp_rds_file), split="__all_samples")[[1]][1]
+outname = paste0(tmp_rds_dir,'/',n2,'__all_samples.wnn.integrated.RDS')
 
 integrated_data <- readRDS(tmp_rds_file)
 myPallette <- colorRampPalette(rev(brewer.pal(11, "Spectral")))
@@ -130,7 +139,7 @@ for(graph in names(integrated_data@graphs)[grepl('snn',names(integrated_data@gra
 
 
 
-saveRDS(integrated_data, file=paste0(tmp_rds_dir,'wnn.integrated.allsamples.RDS'))
+saveRDS(integrated_data, file=outname)
 
 
 

@@ -1,6 +1,6 @@
 include { SCRUBLET } from "$projectDir/modules/nf-core/modules/scrublet/main"
 include { DOUBLET_DETECTION } from "$projectDir/modules/nf-core/modules/doubletdetection/main"
-
+include { DOUBLET_DECON} from "$projectDir/modules/nf-core/modules/doubletdecon/main"
 def random_hex(n) {
     Long.toUnsignedString(new Random().nextLong(), n).toUpperCase()
 }
@@ -52,15 +52,16 @@ workflow MULTIPLET {
         
         DOUBLET_DETECTION(channel__file_paths_10x)
 
-        //DOUBLET_DECON()
+        DOUBLET_DECON(channel__file_paths_10x)
 
-        // DOUBLET_FINDER()
 
         // SC_DBL_FINDER()
 
         // SCDS()
 
         // SOLO()
+
+        // DOUBLET_FINDER()
 
 
         // Generate input file for merge based in multiplets

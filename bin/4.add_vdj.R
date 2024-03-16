@@ -26,17 +26,23 @@ cols <- myPallette(10)
 
 #### set up directories, colors paths, read data ####
 data_dir <- './'
-outdir <- paste0('./out/')
-dir.create(outdir,showWarnings = F)
-figdir <- paste0(outdir,'/figures/')
-dir.create(figdir,showWarnings = F)
-tmp_rds_dir <- paste0(outdir,'/tmp_rds_files/')
-dir.create(tmp_rds_dir,showWarnings = F)
+# args = list()
+# args[1]='figures__regress__pct_counts_gene_group__mito_transcript'
+# args[2]='out'
+# args[3] ='tmp_rds_files'
+# args[4]='regress__pct_counts_gene_group__mito_transcript__all_samples.wnn.integrated.RDS'
+args = commandArgs(trailingOnly=TRUE)
+figdir = args[1]
+outdir = args[2]
+tmp_rds_dir = args[3]
+wnn_integrated_file = args[4]
+n2 = strsplit(as.character(wnn_integrated_file), split="__all_samples")[[1]][1]
+outname = paste0(tmp_rds_dir,'/',n2,'__all_samples_integrated.vdj.RDS')
 
 myPalette <- colorRampPalette(rev(brewer.pal(11, "Spectral")))
 
 
-all_samples <- readRDS(paste0(tmp_rds_dir,'wnn.integrated.allsamples.RDS'))
+all_samples <- readRDS(wnn_integrated_file)
 vdj_files <- unique(list.files('./',
                                pattern = "filtered_contig_annotations.csv", recursive = TRUE,
                                full.names = T))
@@ -154,5 +160,5 @@ names(immdata_BCR$data) <- bcr_names
 saveRDS(immdata_BCR, file=paste0(vdj_dir,'/slemap_BCR.rds'))
 saveRDS(immdata_TCR, paste0(vdj_dir,'/slemap_TCR.rds'))
 
-saveRDS(all_samples, file=paste0(tmp_rds_dir,'all_samples_integrated.vdj.RDS'))
+saveRDS(all_samples, file=outname)
 

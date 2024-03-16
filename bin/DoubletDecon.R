@@ -39,7 +39,7 @@ dir.create(args$out, recursive = TRUE, showWarnings = FALSE)
 
 ## Read in Data ##
 seurat <- readRDS(args$seurat_object)
-
+# seurat <- Read10X(args$seurat_object)
 ## Preprocess ##
 processed <- Improved_Seurat_Pre_Process(seurat, num_genes=args$num_genes, write_files=FALSE)
 

@@ -93,8 +93,11 @@ process DSB_INTEGRATE{
       overwrite: "true"
     
     output:
-        path("out"), emit: all_data_integrated
-        path("./out/tmp_rds_files/all_samples_integrated.RDS"), emit: all_data_integrated_rds
+        path("out"), emit: outdir
+        path("out/tmp_rds_files/*all_samples_integrated.RDS"), emit: tmp_rds_file
+        path("out/figures__*"), emit: figdir
+        path("out/tmp_rds_files"), emit: tmp_rds_dir
+
 
     input:
         path(citeseq_rsd)
@@ -134,20 +137,21 @@ process MULTIMODAL_INTEGRATION{
     //   overwrite: "true"
     
     output:
-        path("out"), emit: all_data_integrated
-    //     path("./out/tmp_rds_files/all_samples_integrated.RDS"), emit: all_data_integrated_rds
+        path("out/figures__*"), emit: figdir
+        path("out"), emit: outdir
+        path("out/tmp_rds_files"), emit: tmp_rds_dir
+        path("out/tmp_rds_files/*wnn.integrated.RDS"), emit: wnn_integrated_file
 
     input:
-        path(all_samples_integrated)
-        // path(vireo)
-        // path(assignments_all_pools)
-        // path(tmp_rsd)
-        // path(matched_donors)
+        path(outdir)
+        path(figdir)
+        path(tmp_rds_dir)
+        path(tmp_rds_file)
 
     script:
     """
     echo 'running1'
-    3.WNN_integrate_SCT_CITE.R
+    3.WNN_integrate_SCT_CITE.R ${figdir} ${outdir} ${tmp_rds_dir} ${tmp_rds_file}
     """
 
 }
@@ -170,17 +174,17 @@ process VDJ_INTEGRATION{
     //     path("./out/tmp_rds_files/all_samples_integrated.RDS"), emit: all_data_integrated_rds
 
     input:
-        path(outpath)
+        path(outdir)
         path(all_cellranger_samples)
-        // path(vireo)
-        // path(assignments_all_pools)
-        // path(tmp_rsd)
-        // path(matched_donors)
+        path(figdir)
+        path(tmp_rds_dir)
+        path(wnn_integrated_file)
+
 
     script:
     """
     echo 'running1'
-    4.add_vdj.R
+    4.add_vdj.R ${figdir} ${outdir} ${tmp_rds_dir} ${wnn_integrated_file}
     """
 
 }

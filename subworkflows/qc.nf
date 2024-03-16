@@ -98,8 +98,19 @@ workflow qc {
                     params.reduced_dims.seurat_integration.ndim_citeBgRemoved,
                     params.reduced_dims.seurat_integration.ndim_cite_integrated
                     )
-                MULTIMODAL_INTEGRATION(DSB_INTEGRATE.out.all_data_integrated)
-                VDJ_INTEGRATION(MULTIMODAL_INTEGRATION.out.all_data_integrated,chanel_cr_outs.collect())
+                MULTIMODAL_INTEGRATION(
+                    DSB_INTEGRATE.out.outdir,
+                    DSB_INTEGRATE.out.figdir,
+                    DSB_INTEGRATE.out.tmp_rds_dir,
+                    DSB_INTEGRATE.out.tmp_rds_file,
+                )
+                VDJ_INTEGRATION(
+                    MULTIMODAL_INTEGRATION.out.outdir,
+                    chanel_cr_outs.collect(),
+                    MULTIMODAL_INTEGRATION.out.figdir,
+                    MULTIMODAL_INTEGRATION.out.tmp_rds_dir,
+                    MULTIMODAL_INTEGRATION.out.wnn_integrated_file
+                )
             }    
 
 
