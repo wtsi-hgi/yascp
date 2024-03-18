@@ -128,7 +128,12 @@ Sometimes IDs that we expect in our [input files](../sample_input/genotype_pheno
 
 ## Some tricks to avoid reruning pipeline over and over if you already have some partial data
 
-1. You can avoid running cellbender multiple times. If you have even partial cellbender results you can provide a path to the folder that contains them. cellbender will be run on all the samples besides the ones that are captured by [cellbender_location='/full/path/to/results/nf-preprocessing/cellbender']. Other options - [cellranger] - which avoids ambient RNA removal and proceeds with deconvolution based on cellranger. If you are providing a path to cellbender_location ='??' - specify location to the results directory containing [cellbender_location='/full/path/to/results/nf-preprocessing/cellbender']
+1. You can avoid running cellbender multiple times. If you have even partial cellbender results you can provide a path to the folder that contains them. cellbender will be run on all the samples besides the ones that are captured by [cellbender_location='/full/path/to/results/nf-preprocessing/cellbender']. Other options - [cellranger] - which avoids ambient RNA removal and proceeds with deconvolution based on cellranger. If you are providing a path to cellbender_location ='??' - specify location to the results directory containing:
+```
+params{
+    cellbender_location='/full/path/to/results/nf-preprocessing/cellbender'
+}
+```
 This should contain: 
 ```console
     Sample1
@@ -140,7 +145,11 @@ This should contain:
         file_paths_10x-*FPR_0pt01
 ```
 
-2. existing_cellsnp = '' - If you point to the path of partial cellsnp files these will be captured in pipeline and utilised in downstram processes, and only cellsnp of the files that dont have the runs performed on cellsnp will proceed.
+2. existing_cellsnp = '' - If you point to the path of partial cellsnp files these will be captured in pipeline and utilised in downstram processes, and only cellsnp of the files that dont have the runs performed on cellsnp will proceed:
+
+params{
+    existing_cellsnp='/full/path/to/results/cellsnp'
+}
 
 <!-- 2. full_vcf_file = points to vcf file to be used.
 4. subset_genotypes = indicates to subset genotypes for an input to be used in Vireo.
