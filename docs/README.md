@@ -16,7 +16,7 @@ For users looking to tailor the pipeline to specific needs, we offer a series of
 
 - **[Running the Full Pipeline](full_pipeline_tutorial.md):** A step-by-step guide to executing the complete workflow.
 - **[Excluding Cellbender Ambient RNA Removal](no_cb_full_pipeline.md):** Opt for this tutorial if GPU resources are unavailable.
-- **[Full pipeline with available Genotypes](full_pipeline_GT__tutorial.md):** Opt for this tutorial if GPU resources are unavailable.
+- **[Full pipeline with available Genotypes](full_pipeline_GT__tutorial.md):**
 - **Focusing on Specific Components:** Tailored instructions for running only certain parts of the pipeline:
     - [Celltype Assignment](celltype.md)
     - [Cellbender Ambient RNA Removal](ambient_rna_removal_tutorial)
