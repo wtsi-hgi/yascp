@@ -3,6 +3,33 @@
 
 <!-- TODO nf-core: Add documentation about anything specific to running your pipeline. For general topics, please point to (and add to) the main nf-core website. -->
 
+## Running the pipeline (please see bellow what imputs MUST be prepeared and what can be prepeared)
+
+First clone the YASCP pipeline:
+```console
+    git clone https://github.com/wtsi-hgi/yascp.git
+```
+And then run the pipeline by [Instead of sanger please select your institution] - the available profiles are here: https://github.com/nf-core/configs/tree/master/conf . 
+Or you can also provide your own config file by adding an extra input file -c /path/to/my/default/config/file.nf:
+
+```console
+     nextflow run /path/to/cloned/yascp -profile sanger,singularity -c inputs.nf -resume
+```
+for a test dataset run:
+```console
+    nextflow run /path/to/cloned/yascp -profile sanger,test,singularity -c inputs.nf -resume
+```
+This will launch the pipeline with the `sanger` configuration profile. See below for more information about profiles.
+
+Note that the pipeline will create the following files in your working directory:
+
+```console
+work            # Directory containing the nextflow working files
+results         # Finished results (configurable, see below)
+.nextflow_log   # Log file from Nextflow
+# Other nextflow hidden files, eg. history of pipeline runs and old logs.
+```
+ 
 ## Input declaration config file
 An [example samplesheet](../sample_input/inputs.nf) has been provided with the pipeline.
 
@@ -11,12 +38,17 @@ Since we have multiple inputs in pipeline we point to each of them in a sample c
 ```console
 params {
     extra_metadata = '/path/to/extra_metadata.tsv'   //Sometimes users may want to merge extra known metadata for a pool in the h5ad files prior to qc
+
     extra_sample_metadata ="/path/to/donor_extra_metadata.tsv"  //Sometimes users may want to merge extra known metadata for a donor within pool prior to qc
+
     input_data_table = '/lustre/scratch123/hgi/teams/hgi/mo11/tmp_projects/OneK1k/onek1k_test_dataset/input.tsv' //Required!! This points to all the cellranger files and pool definition files.
+
     split_ad_per_bach=true //if not splitting the celltype assignment will be run on full dataset together
     //cellbender_location='/path/to/existing/folder/nf-preprocessing/cellbender' //!!!!! uncoment and change path if already have results - if cellbender is run already then can skip this by selecting  input = 'existing_cellbender' instead input = 'cellbender'
+
     existing_cellsnp="" // if we have run cellsnp before we can skip this process by letting yascp capture the files
-	genotype_input {
+
+    genotype_input {
         run_with_genotype_input=true //if false do not need the genotype_input parameters.
         vireo_with_gt=false // Vireo is capable in runing both with genotypes and without. Here we define in which mode we want to run it.
         posterior_assignment = false //if this is set to true, we will perform the genotype donor matching after the deconvolution is performed.
@@ -147,10 +179,11 @@ This should contain:
 
 2. existing_cellsnp = '' - If you point to the path of partial cellsnp files these will be captured in pipeline and utilised in downstram processes, and only cellsnp of the files that dont have the runs performed on cellsnp will proceed:
 
+``` console
 params{
     existing_cellsnp='/full/path/to/results/cellsnp'
 }
-
+```
 <!-- 2. full_vcf_file = points to vcf file to be used.
 4. subset_genotypes = indicates to subset genotypes for an input to be used in Vireo.
 5. run_celltype_assignment = runs celltypist and Azimuth if PBMC data is used.
@@ -158,25 +191,6 @@ params{
 7. extra_metadata = any extra metadata to be added for samples.
 8. input_data_table = is a file pointing to the 10x files as per: -->
 
-
-## Running the pipeline
-
-The typical command for running the pipeline is as follows [Instead of sanger please select your institution] - the available profiles are here: https://github.com/nf-core/configs/tree/master/conf . you can also provide your own config file by adding an extra input file -c /path/to/my/default/config/file.nf:
-
-```console
-nextflow run yascp -profile sanger -c inputs.nf --nf_ci_loc $PWD -resume > nextflow.nohup.log 2>&1 & 
-```
-
-This will launch the pipeline with the `sanger` configuration profile. See below for more information about profiles.
-
-Note that the pipeline will create the following files in your working directory:
-
-```console
-work            # Directory containing the nextflow working files
-results         # Finished results (configurable, see below)
-.nextflow_log   # Log file from Nextflow
-# Other nextflow hidden files, eg. history of pipeline runs and old logs.
-```
 
 ### Reproducibility
 It is a good idea to specify a pipeline version (or a checkout tag indicated when runing `git log`) when running the pipeline on your data. This ensures that a specific version of the pipeline code and software are used when you run your pipeline. If you keep using the same tag, you'll be running the same version of the pipeline, even if there have been changes to the code since.
