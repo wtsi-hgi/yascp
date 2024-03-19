@@ -18,8 +18,8 @@ For users looking to tailor the pipeline to specific needs, we offer a series of
 - **[Excluding Cellbender Ambient RNA Removal](no_cb_full_pipeline.md):** Opt for this tutorial if GPU resources are unavailable.
 - **[Full pipeline with available Genotypes](full_pipeline_GT__tutorial.md):**
 - **Focusing on Specific Components:** Tailored instructions for running only certain parts of the pipeline:
-    - [Celltype Assignment](celltype.md)
-    - [Cellbender Ambient RNA Removal](ambient_rna_removal_tutorial)
+    - [Celltype Assignment](celltype_tutorial.md)
+    - [Cellbender Ambient RNA Removal](ambient_rna_removal_tutorial.md)
     - [Doublet Detection](doublet_detection_tutorial.md)
     - [Integration, Clustering, and Cluster Assignments](cluster_integrate_tutorial.md)
     - [GT (Genotype) Matching](gt_match_tutorial.md)
