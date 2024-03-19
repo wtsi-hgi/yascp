@@ -28,3 +28,11 @@ Please take a look on the available models in default [config file](https://gith
         models = ['/path/to/my/model/Immune_All_High.pkl']
     }
 ```
+<details markdown="1">
+<summary><b>Sanger Specific Exacution:</b></summary>
+
+* In Sanger you do not need to set up anything. All you need is an input file:
+  ```
+      module load HGI/pipelines/yascp/1.4
+      yascp celltype -c input.nf
+  ```
