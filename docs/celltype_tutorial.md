@@ -18,8 +18,9 @@ params{
 }
 ```
 And then you can run the pipeline as:
+```
     nextflow run /path/to/cloned/yascp -profile sanger -entry JUST_CELLTYPES -c input.nf
-
+```
 
 Aditionally if you have your own celltypist models that you want to use you can edit the default params:
 Please take a look on the available models in default [config file](https://github.com/wtsi-hgi/yascp/blob/main/conf/qc.conf)
