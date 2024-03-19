@@ -26,13 +26,13 @@ The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool
 6. Azimuth
 7. BBKNN
 8. Harmony
-9. Scrublet
+9. Scrublet, DoubletDecon, DoubletFinder, SCDS, scDblFinder, DoubletDetection
 10. Sccaf
 11. Lisi
 12. Isolation Forest
 13. Hard filters
 14. Genotype deconvolution and GT match against multiple panels.
-15. Citeseq DSB normalisations
+15. Citeseq DSB normalisations, 
 16. Cell genotype concordance Calculations
 
 <p align="center">
