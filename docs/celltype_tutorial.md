@@ -23,11 +23,13 @@ And then you can run the pipeline as:
 ```
 
 Aditionally if you have your own celltypist models that you want to use you can edit the default params:
-Please take a look on the available models in default [config file](https://github.com/wtsi-hgi/yascp/blob/main/conf/qc.conf)
+Please take a look on the available models in default [config file](https://github.com/wtsi-hgi/yascp/blob/c55fcfb1a11045e16125f31c20ebe57e0fe81149/conf/qc.conf#L44-L56)
 ```
+params{
     celltypist {
         models = ['/path/to/my/model/Immune_All_High.pkl']
     }
+}
 ```
 <details markdown="1">
 <summary><b>Sanger Specific Exacution:</b></summary>
