@@ -5,15 +5,42 @@
 ## expects input *.h5 file as argument
 ## writes plots to a single PDF file Rplots.pdf
 
+
+#!/usr/bin/env Rscript
+
+## adapted from https://azimuth.hubmapconsortium.org
+
+## expects input *.h5 file as argument
+## writes plots to a single PDF file Rplots.pdf
+
 library(Seurat)
 library(SeuratDisk)
 library(Matrix)
 library(hdf5r)
 library(ggplot2)
 library(tools)
+args =list()
+# inputfile.h5ad='./AZ_adata_full.h5ad'
+# REFERENCE_DIR='/lustre/scratch123/hgi/teams/hgi/mo11/tmp_projects/jaguar_yascp/nieks_pipeline/yascp_run/ref_kidney'
+# levels='annotation.l3,annotation.l2,annotation.l1'
+
+args = commandArgs(trailingOnly=TRUE)
+
+
+inputfile.h5ad = args[1]
+REFERENCE_DIR = args[2]
+
+if (REFERENCE_DIR=='PBMC'){
+  REFERENCE_DIR <- "/opt/PBMC_reference/"
+}
+
+levels = args[3]
+# levels = "celltype.l2,celltype.l1,celltype.l3"
+levels = unlist(x = strsplit(x = levels, split = ',', fixed = TRUE))
+# reference files are expected in the following directory
 
 # reference files are expected in the following directory
-REFERENCE_DIR <- "/opt/PBMC_reference/"
+
 
 #' Load file input into a \code{Seurat} object
 #'
@@ -307,6 +334,23 @@ LoadH5AD <- function(path) {
 #' ref2 <- LoadReference("/var/www/html")
 #' }
 #'
+
+Oxford <- function(..., join = c('and', 'or')) {
+  join <- match.arg(arg = join)
+  args <- as.character(x = c(...))
+  args <- Filter(f = nchar, x = args)
+  if (length(x = args) == 1) {
+    return(args)
+  } else if (length(x = args) == 2) {
+    return(paste(args, collapse = paste0(' ', join, ' ')))
+  }
+  return(paste0(
+    paste(args[1:(length(x = args) - 1)], collapse = ', '),
+    paste0(', ', join, ' '),
+    args[length(x = args)]
+  ))
+}
+
 LoadReference <- function(path, seconds = 10L) {
   ref.names <- list(
     map = 'ref.Rds',
@@ -422,13 +466,8 @@ NNTransform <- function(
 ######## main #########
 #######################
 
-args = commandArgs(trailingOnly=TRUE)
-
-if (length(args)==0) {
-  stop("input h5 file required as input.\n", call=FALSE)
-}
 # inputfile.h5ad = './AZ_pre_QC_adata_full.h5ad'
-inputfile.h5ad = args[1]
+
 cat("inputfile.h5ad = ", inputfile.h5ad, "\n")
 # input_dir = args[1]
 
@@ -450,9 +489,10 @@ if (!requireNamespace("glmGamPoi", quietly = TRUE)) {
 Convert(inputfile.h5ad, dest="h5seurat", overwrite = TRUE)
 inputfile.h5seurat <- paste0(file_path_sans_ext(inputfile.h5ad), ".h5seurat")
 cat("inputfile.h5seurat = ", inputfile.h5seurat, "\n")
-
+cat("Loading file", inputfile.h5seurat, "\n")
+query <- LoadH5Seurat(inputfile.h5seurat)
 # Download the Azimuth reference and extract the archive
-
+saveRDS(query, file = "query.rds")
 # Load the reference
 # Change the file path based on where the reference is located on your system.
 ## reference <- LoadReference(path = "https://seurat.nygenome.org/azimuth/references/v1.0.0/human_pbmc")
@@ -466,10 +506,9 @@ reference <- LoadReference(REFERENCE_DIR)
 #  input_dir
 #  gene.column = 2 # 1: ensembl_ids, 2: gene_symbols
 #  )
-cat("Loading file", inputfile.h5seurat, "\n")
-query <- LoadH5Seurat(inputfile.h5seurat)
+
 cat("query file loaded.\n")
-saveRDS(query, file = "query.rds")
+
 # Calculate nCount_RNA and nFeature_RNA if the query does not
 # contain them already
 if (!all(c("nCount_RNA", "nFeature_RNA") %in% c(colnames(x = query[[]])))) {
@@ -553,14 +592,16 @@ anchors <- FindTransferAnchors(
 # The prediction scores for each class are in an assay named "prediction.score.*"
 # The imputed assay is named "impADT" if computed
 
-levels<- list("celltype.l2", "celltype.l1", "celltype.l3")
+# levels<- list("celltype.l2", "celltype.l1", "celltype.l3")
 
 for (celltype_level in levels) {
-      id <- celltype_level[1]
 
+      id <- celltype_level
+      print(id)
       refdata <- lapply(X = celltype_level, function(x) {
         reference$map[[x, drop = TRUE]]
       })
+
       names(x = refdata) <- celltype_level
       if (FALSE) {
         refdata[["impADT"]] <- GetAssayData(

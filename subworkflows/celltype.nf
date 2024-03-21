@@ -42,9 +42,10 @@ workflow celltype{
         
         // AZIMUTH
         if (params.celltype_assignment.run_azimuth){
-            AZIMUTH(params.outdir,ch_batch_files)
-            REMAP_AZIMUTH(AZIMUTH.out.celltype_tables_all,params.mapping_file)
-            az_out = REMAP_AZIMUTH.out.predicted_celltype_labels.collect()
+            AZIMUTH(params.outdir,ch_batch_files,Channel.fromList( params.azimuth.celltype_refsets))
+            az_out = AZIMUTH.out.predicted_celltype_labels.collect()
+            // REMAP_AZIMUTH(AZIMUTH.out.celltype_tables_all,params.mapping_file)
+            // az_out = REMAP_AZIMUTH.out.predicted_celltype_labels.collect()
         }else{
             az_out = Channel.from("$projectDir/assets/fake_file1.fq")
             az_out = az_out.ifEmpty(Channel.from("$projectDir/assets/fake_file1.fq"))
@@ -63,7 +64,7 @@ workflow celltype{
 
         // // SCPRED
         if (params.celltype_assignment.run_scpred){
-            SCPRED(params.outdir,AZIMUTH.out.query_rds)
+            SCPRED(params.outdir,ch_batch_files)
             sc_out = SCPRED.out.predicted_celltype_labels.collect()
             sc_out = sc_out.ifEmpty(Channel.of())
         }else{

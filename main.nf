@@ -37,6 +37,9 @@ include {ENHANCE_STATS_GT_MATCH } from "$projectDir/modules/nf-core/modules/geno
 include {collect_file} from "$projectDir/modules/nf-core/modules/collect_file/main"
 include { CELLSNP;capture_cellsnp_files } from "$projectDir/modules/nf-core/modules/cellsnp/main"
 
+
+
+
 ////// WORKFLOW: Run main nf-core/yascp analysis pipeline
 // This is the default entry point, we have others to update ceirtain parts of the results. 
 // Please go to ./workflows/yascp to see the main Yascp workflow.
@@ -105,8 +108,16 @@ workflow JUST_DOUBLETS{
         file("${row.data_path_10x_format}/filtered_feature_bc_matrix/matrix.mtx.gz")
     )}
 
+    channel__file_paths_10x =  channel_input_data_table
+        .splitCsv(header: true, sep: params.input_tables_column_delimiter)
+        .map{row -> tuple(
+        row.experiment_id,
+        file("${row.data_path_10x_format}/filtered_feature_bc_matrix")
+    )}
+
+
     MULTIPLET(
-        channel__file_paths_10x,
+        channel__file_paths_10x
     )
 }
 

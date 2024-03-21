@@ -283,18 +283,23 @@ process cellbender__remove_background {
   input:
     val(outdir_prev)
     tuple(
-    val(experiment_id),
-    path(file_10x_barcodes),
-    path(file_10x_features),
-    path(file_10x_matrix),
-    path(expected_cells),
-    path(total_droplets_include)
+      val(experiment_id),
+      path(file_10x_barcodes),
+      path(file_10x_features),
+      path(file_10x_matrix),
+      path(expected_cells),
+      path(total_droplets_include),
+      val(low_count_threshold),
+      val(epochs),
+      val(learning_rate),
+      val(zdims),
+      val(zlayers),
     )
-    each epochs
-    each learning_rate
-    each zdims
-    each zlayers
-    each low_count_threshold
+    // each epochs
+    // each learning_rate
+    // each zdims
+    // each zlayers
+    // each low_count_threshold
     each fpr
 
   output:
@@ -362,70 +367,21 @@ process cellbender__remove_background {
 
 
 
-    try {
-      low_count_threshold_to_use = params[experiment_id].low_count_threshold
-      if (!low_count_threshold_to_use) {
-        low_count_threshold_to_use =low_count_threshold
-      }
-    }catch(Exception ex) {
-      low_count_threshold_to_use = low_count_threshold
-    }
-
-    try {
-      epochs_to_use = params[experiment_id].epochs
-      if (!epochs_to_use) {
-        epochs_to_use = epochs
-      }
-    }catch(Exception ex) {
-      epochs_to_use = epochs
-    }
-
-
-    try {
-      learning_rate_to_use = params[experiment_id].learning_rate
-      if (!learning_rate_to_use) {
-
-        learning_rate_to_use = learning_rate
-      }
-    }catch(Exception ex) {
-      learning_rate_to_use = learning_rate
-    }
-
-    try {
-      zdims_to_use = params[experiment_id].zdims
-      if (zdims_to_use) {
-        zdims_to_use = zdims_to_use
-      }else{
-        zdims_to_use = zdims
-      }
-    }catch(Exception ex) {
-      zdims_to_use = zdims
-    }
-
-    try {
-      zlayers_to_use = params[experiment_id].zlayers
-      if (!zlayers_to_use) {
-        zlayers_to_use = zlayers
-      }
-    }catch(Exception ex) {
-      zlayers_to_use = zlayers
-    }   
-
 
 
 
 
 
     outdir = "${outdir_prev}/${experiment_id}"
-    lr_string = "${learning_rate_to_use}".replaceAll("\\.", "pt")
+    lr_string = "${learning_rate}".replaceAll("\\.", "pt")
     lr_string = "${lr_string}".replaceAll("-", "neg")
     fpr_string = "${fpr}".replaceAll("\\.", "pt").replaceAll(" ", "_")
     cb_params = "cellbender_params"
-    cb_params = "${cb_params}-epochs_${epochs_to_use}"
+    cb_params = "${cb_params}-epochs_${epochs}"
     cb_params = "${cb_params}__learnrt_${lr_string}"
-    cb_params = "${cb_params}__zdim_${zdims_to_use}"
-    cb_params = "${cb_params}__zlayer_${zlayers_to_use}"
-    cb_params = "${cb_params}__lowcount_${low_count_threshold_to_use}"
+    cb_params = "${cb_params}__zdim_${zdims}"
+    cb_params = "${cb_params}__zlayer_${zlayers}"
+    cb_params = "${cb_params}__lowcount_${low_count_threshold}"
     outdir = "${outdir}/${cb_params}".replaceAll("cellbender_params","cellbender")
     outfile = "cellbender"
     
@@ -441,7 +397,7 @@ process cellbender__remove_background {
     ln --physical ${file_10x_features} txd_input/features.tsv.gz
     ln --physical ${file_10x_matrix} txd_input/matrix.mtx.gz
 
-    cellbender remove-background --input txd_input ${gpu_text_info} --output ${outfile} --expected-cells \$(cat ${expected_cells}) --total-droplets-included \$(cat ${total_droplets_include}) --model full --z-dim ${zdims_to_use} --z-layers ${zlayers_to_use} --low-count-threshold ${low_count_threshold_to_use} --epochs ${epochs_to_use} --learning-rate ${learning_rate_to_use} --fpr ${fpr}
+    cellbender remove-background --input txd_input ${gpu_text_info} --output ${outfile} --expected-cells \$(cat ${expected_cells}) --total-droplets-included \$(cat ${total_droplets_include}) --model full --z-dim ${zdims} --z-layers ${zlayers} --low-count-threshold ${low_count_threshold} --epochs ${epochs} --learning-rate ${learning_rate} --fpr ${fpr}
     # If outfile does not have h5 appended to it, move it.
     [ -f ${outfile} ] && mv ${outfile} ${outfile}.h5
 

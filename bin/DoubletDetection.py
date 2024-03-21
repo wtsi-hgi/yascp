@@ -83,6 +83,7 @@ doublets = clf.fit(raw_counts).predict(p_thresh=args.p_thresh, voter_thresh=args
 results = pd.Series(doublets, name="DoubletDetection_DropletType")
 dataframe =pd.DataFrame(results)
 dataframe.index = barcodes_df
+dataframe.insert(0, 'barcodes_df', barcodes_df)
 dataframe.DoubletDetection_DropletType = dataframe.DoubletDetection_DropletType.replace(1.0, "doublet")
 dataframe.DoubletDetection_DropletType = dataframe.DoubletDetection_DropletType.replace(0.0, "singlet")
 

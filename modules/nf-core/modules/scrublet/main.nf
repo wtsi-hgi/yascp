@@ -26,11 +26,15 @@ process SCRUBLET {
         container "wtsihgi/nf_scrna_qc:6bb6af5"
     }
     
-    publishDir  path: "${params.outdir}/multiplet.method=scrublet",
+    publishDir  path: "${params.outdir}/doublets/multiplet.method=scrublet",
                 saveAs: {filename ->
                     if (filename.endsWith("multiplet_calls_published.txt")) {
                         null
-                    } else {
+                    }
+                    else if (filename.endsWith(".gz")){
+                        null
+                    }
+                    else {
                         filename.replaceAll("-", "")
                     }
                 },
@@ -61,10 +65,11 @@ process SCRUBLET {
         )
         path("plots/*.pdf") optional true
         path("plots/*.png") optional true
+        tuple val(experiment_id), path("${experiment_id}-scrublet.tsv"), emit: result
 
     script:
         
-        outdir = "${params.outdir}/multiplet"
+        outdir = "${params.outdir}/doublets/multiplet"
         outdir = "${outdir}.method=scrublet"
         outfile = "${experiment_id}"
         // Check to see if we should use use log10 of the doublet simulations
@@ -93,5 +98,8 @@ process SCRUBLET {
         mkdir plots
         mv *pdf plots/ 2>/dev/null || true
         mv *png plots/ 2>/dev/null || true
+
+        zcat ${experiment_id}-scrublet.tsv.gz | awk -F' ' '{print \$1"\\t"\$3"\\t"\$2}' > ${experiment_id}-scrublet.tsv
+
         """
 }

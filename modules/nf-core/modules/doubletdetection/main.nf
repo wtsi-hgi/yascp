@@ -8,7 +8,7 @@ process DOUBLET_DETECTION {
         container "mercury/nf_scrna_qc:v3"
     }
     
-    publishDir  path: "${params.outdir}/multiplet.method=doubletdetection",
+    publishDir  path: "${params.outdir}/doublets/multiplet.method=doubletdetection",
                 mode: "${params.copy_mode}",
                 overwrite: "true"
 
@@ -23,20 +23,20 @@ process DOUBLET_DETECTION {
     output:
         path("plots/*.pdf") optional true
         path("plots/*.png") optional true
-        path("${experiment_id}__DoubletDetection_results.txt"), emit: doubletDetection_results
+        tuple val(experiment_id), path("${experiment_id}__DoubletDetection_results.txt"), emit: result
 
     script:
         
-        outdir = "${params.outdir}/multiplet"
+        outdir = "${params.outdir}/doublets/multiplet"
         outdir = "${outdir}.method=doubletdetection"
         outfile = "${experiment_id}"
 
         """
-            TMP_DIR=\$(mktemp -d -p \$(pwd))
-            ln --physical ${file_10x_barcodes} \$TMP_DIR
-            ln --physical ${file_10x_features} \$TMP_DIR
-            ln --physical ${file_10x_matrix} \$TMP_DIR
-            DoubletDetection.py --tenxdata_dir \$TMP_DIR --n_iterations 100
+            mkdir TMP_DIR
+            ln --physical ${file_10x_barcodes} TMP_DIR
+            ln --physical ${file_10x_features} TMP_DIR
+            ln --physical ${file_10x_matrix} TMP_DIR
+            DoubletDetection.py --tenxdata_dir ./TMP_DIR --n_iterations 100
             ln -s DoubletDetection_results.txt ${experiment_id}__DoubletDetection_results.txt
         """
 }

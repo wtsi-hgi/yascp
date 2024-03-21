@@ -12,17 +12,6 @@ export SINGULARITY_TMPDIR=$PWD/work/tmp
 export TEMP=$PWD/work/tmp
 export TMP_DIR=$PWD/work/tmp
 
-echo press ENTER to NOT fetch containers, otherwise provide writable path:
-read varname
-
-if ["$varname" = ''];
-    then
-        export NXF_SINGULARITY_CACHEDIR='/software/hgi/containers/yascp'
-        export SINGULARITY_DISABLE_CACHE=0
-    else
-        echo Yascp Will fetch the containers and place them in $varname
-        export NXF_SINGULARITY_CACHEDIR=$varname
-fi
 
 sample="$RUN_ID.yascp"
 echo -e "\nSubmitting yascp (https://github.com/wtsi-hgi/yascp) in JUST_CELLTYPES mode with input file $INPUT_FILE"

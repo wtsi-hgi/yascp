@@ -1,14 +1,14 @@
-process SC_DBL_FINDER {
+process SC_DBLFINDER {
 
     tag "${experiment_id}"
-    label 'process_low'
+    label 'process_medium'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/nf_scrna_qc_v3.img"
+        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/azimuth_dsb_6_03_2024.sif"
     } else {
-        container "mercury/nf_scrna_qc:v3"
+        container "mercury/azimuth_dsb:6_03_2024"
     }
     
-    publishDir  path: "${params.outdir}/multiplet.method=doubletdetection",
+    publishDir  path: "${params.outdir}/doublets/multiplet.method=scDblFinder",
                 mode: "${params.copy_mode}",
                 overwrite: "true"
 
@@ -19,24 +19,26 @@ process SC_DBL_FINDER {
             path(file_10x_features),
             path(file_10x_matrix)
         )
-
     output:
         path("plots/*.pdf") optional true
         path("plots/*.png") optional true
-        path("${experiment_id}__DoubletDetection_results.txt"), emit: doubletDetection_results
+        tuple val(experiment_id), path("${experiment_id}__scDblFinder_doublets_singlets.tsv"), emit: result
+        // path("${experiment_id}__DoubletDetection_results.txt"), emit: doubletDetection_results
 
     script:
         
         outdir = "${params.outdir}/multiplet"
-        outdir = "${outdir}.method=doubletdetection"
+        outdir = "${outdir}.method=scDblFinder"
         outfile = "${experiment_id}"
 
         """
-            TMP_DIR=\$(mktemp -d -p \$(pwd))
-            ln --physical ${file_10x_barcodes} \$TMP_DIR
-            ln --physical ${file_10x_features} \$TMP_DIR
-            ln --physical ${file_10x_matrix} \$TMP_DIR
-            DoubletDetection.py --tenxdata_dir \$TMP_DIR --n_iterations 100
-            ln -s DoubletDetection_results.txt ${experiment_id}__DoubletDetection_results.txt
+
+            mkdir TMP_DIR
+            ln --physical ${file_10x_barcodes} TMP_DIR
+            ln --physical ${file_10x_features} TMP_DIR
+            ln --physical ${file_10x_matrix} TMP_DIR
+            mkdir scDblFinder_${experiment_id}
+            scDblFinder.R --tenX_matrix ./TMP_DIR --barcodes_filtered ${file_10x_barcodes} -o scDblFinder_${experiment_id}
+            ln -s scDblFinder_${experiment_id}/scDblFinder_doublets_singlets.tsv ${experiment_id}__scDblFinder_doublets_singlets.tsv 
         """
 }

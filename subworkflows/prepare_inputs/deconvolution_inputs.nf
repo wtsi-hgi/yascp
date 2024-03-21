@@ -12,14 +12,21 @@ workflow DECONV_INPUTS{
         prepare_inputs.out.ch_experiment_bam_bai_barcodes.map { experiment, bam, bai, barcodes -> tuple(experiment,
                             bam,
                             bai)}.set{pre_ch_experiment_bam_bai_barcodes}
+
         cellbender_path.map{row->tuple(row[0], file("${row[1]}".replaceFirst(/.*results/,"${params.outdir}")+'/barcodes.tsv.gz'))}.set{barcodes}
+
         channel__file_paths_10x= cellbender_path.map{row->tuple(row[0],
                                                     file("${row[1]}".replaceFirst(/.*results/,"${params.outdir}")+'/barcodes.tsv.gz'),
                                                     file("${row[1]}".replaceFirst(/.*results/,"${params.outdir}")+'/features.tsv.gz'),
                                                     file("${row[1]}".replaceFirst(/.*results/,"${params.outdir}")+'/matrix.mtx.gz'))}
+
+        channel__file_paths_10x_single = cellbender_path.map{row->tuple(row[0],
+                                                    file("${row[1]}".replaceFirst(/.*results/,"${params.outdir}"))
+                                                    )}
         pre_ch_experiment_bam_bai_barcodes.combine(barcodes, by: 0).set{ch_experiment_bam_bai_barcodes}
     emit:
         channel__file_paths_10x
         ch_experiment_bam_bai_barcodes
         ch_experiment_filth5
+        channel__file_paths_10x_single
 }

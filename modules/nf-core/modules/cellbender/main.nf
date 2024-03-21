@@ -27,8 +27,7 @@ workflow CELLBENDER {
 
         ch_experimentid_paths10x_raw.map{row -> 
             row[0]}.set{experiment_id_in}
-        experiment_id_in.subscribe { println "experiment_id_in: $it" }
-        experiment_id_in = experiment_id_in.view()
+
         outdir =  outdir+'/cellbender'
         
         // here pass in the number of cells detected by cellranger/ 
@@ -48,6 +47,8 @@ workflow CELLBENDER {
         post_ncells_cellranger.map{row -> tuple(row[0], row[1])}.filter{ it[2] == null }.set{ncells_cellranger}
         channel__file_paths_10x.combine(ncells_cellranger, by: 0).set{channel__file_paths_10x_with_ncells}
        
+
+
         cellbender__rb__get_input_cells(
             outdir,
             channel__file_paths_10x_with_ncells,
@@ -67,14 +68,41 @@ workflow CELLBENDER {
         zlayers_to_use = params.cellbender_rb.zlayers.value
         low_count_threshold_to_use = params.cellbender_rb.low_count_threshold.value
 
+
+        bc_in = Channel.fromList( params.cellbender_rb.per_sample_thresholds)
+        bc_in.map{row -> tuple(
+            row.name,
+            row.low_count_threshold == "" ? params.cellbender_rb.low_count_threshold.value : row.low_count_threshold ,
+            row.epochs == "" ? params.cellbender_rb.epochs.value : row.epochs,
+            row.learning_rate == "" ? params.cellbender_rb.learning_rate.value : row.learning_rate,
+            row.zdim == "" ? params.cellbender_rb.zdim.value : row.zdim,
+            row.zlayers == "" ? params.cellbender_rb.zlayers.value : row.zlayers,
+        )}.set{channel__f}
+
+        // Now we figure out the ones that are not covered by the individual definitions but are in the input panels needed to process
+        // cellbender__rb__get_input_cells.out.cb_input.subscribe { println "cellbender__rb__get_input_cells: $it" }
+
+        cellbender__rb__get_input_cells.out.cb_input.join(channel__f, by: [0], remainder: true).set{post_ch_experimentid_paths10x_filtered}
+        post_ch_experimentid_paths10x_filtered.subscribe { println "post_ch_experimentid_paths10x_filtered: $it" }
+        post_ch_experimentid_paths10x_filtered.filter{ it[8] == null }.map{row -> tuple(row[0])}.set{not_defined}
+
+        not_defined.map{row -> tuple(
+            row[0],
+            params.cellbender_rb.low_count_threshold.value,
+            params.cellbender_rb.epochs.value,
+            params.cellbender_rb.learning_rate.value,
+            params.cellbender_rb.zdim.value,
+            params.cellbender_rb.zlayers.value,
+        )}.set{channel__g}
+        
+        channel__combo =channel__g.concat(channel__f)
+
+        cellbender__rb__get_input_cells.out.cb_input.join(channel__combo, by: [0], remainder: false).set{cellbender_ambient_rna_input}
+
+        cellbender_ambient_rna_input.subscribe { println "cellbender_ambient_rna_input: $it" }
         cellbender__remove_background(
             outdir,
-            cellbender__rb__get_input_cells.out.cb_input,
-            epochs_to_use,
-            learning_rate_to_use,
-            zdims_to_use,
-            zlayers_to_use,
-            low_count_threshold_to_use,
+            cellbender_ambient_rna_input,
             params.cellbender_rb.fpr.value
         )
 

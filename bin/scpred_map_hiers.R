@@ -16,6 +16,7 @@ suppressPackageStartupMessages(library("HierscPred"))
 suppressPackageStartupMessages(library("optparse"))
 suppressPackageStartupMessages(library("future.apply"))
 suppressPackageStartupMessages(library("progressr"))
+library(SeuratDisk)
 options(future.globals.maxSize = 8000 * 1024^2)
 #   ____________________________________________________________________________
 #   Set up parameter variables                                              ####
@@ -160,8 +161,11 @@ echo("Loading query data......................................................",
 # data <- LoadH5Seurat(inputfile.h5seurat)
 # cat("query file loaded.\n")
 
+Convert(opt$file, dest = paste('tmp',"h5seurat",sep='.'), overwrite = TRUE)
+data <-  LoadH5Seurat(paste('tmp',"h5seurat",sep='.'),assays = "RNA")
 
-data <- readRDS(opt$file)
+
+# data <- readRDS(opt$file)
 if(!inherits(data, "Seurat")) stop("Input query data is not a Seurat object")
 data <- UpdateSeuratObject(data)
 

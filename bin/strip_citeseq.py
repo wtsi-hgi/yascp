@@ -296,10 +296,11 @@ def main():
         # adata2 = adata_antibody[adata_antibody.obs_names.difference(zero_count_cells, sort=False)]
         # if(adata2.shape[0]>0):
         #     # Here we have actually captured some of the reads in the antibody dataset.
-        #     # adata_antibody.write(
-        #     #     f'antibody-{options.outname}.h5ad',
-        #     #     compression='gzip'
-        #     # )
+        if (modality=='Gene_Expression'):
+            adata_antibody.write(
+                f'{modality}-{options.outname}.h5ad',
+                compression='gzip'
+            )
         _ = cellbender_to_tenxmatrix(
             adata_antibody,
             out_file='',

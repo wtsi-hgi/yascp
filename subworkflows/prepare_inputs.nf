@@ -125,4 +125,5 @@ workflow prepare_inputs {
         channel_input_data_table
         channel_dsb
         chanel_cr_outs
+
 }

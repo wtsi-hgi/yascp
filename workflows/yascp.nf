@@ -36,6 +36,7 @@ workflow YASCP {
     take:
         mode
         input_channel
+        input_channel
         vcf_input
     main:
         if("${mode}"!='default'){
@@ -65,6 +66,7 @@ workflow YASCP {
             prepare_inputs(input_channel)
             chanel_cr_outs = prepare_inputs.out.chanel_cr_outs
             channel__file_paths_10x=prepare_inputs.out.channel__file_paths_10x
+            channel__file_paths_10x_single=prepare_inputs.out.ch_experimentid_paths10x_filtered
             input_channel = prepare_inputs.out.channel_input_data_table
             vireo_paths = Channel.from("$projectDir/assets/fake_file.fq")
             matched_donors = Channel.from("$projectDir/assets/fake_file.fq")
@@ -88,6 +90,7 @@ workflow YASCP {
                     
                     ch_experimentid_paths10x_raw = SPLIT_CITESEQ_GEX.out.gex_data
                     channel__file_paths_10x=SPLIT_CITESEQ_GEX_FILTERED.out.channel__file_paths_10x
+                    channel__file_paths_10x_single=SPLIT_CITESEQ_GEX_FILTERED.out.gex_data
                     ch_experiment_filth5 = SPLIT_CITESEQ_GEX.out.gex_data
                 }else{
                     ab_data = Channel.of()
@@ -103,6 +106,7 @@ workflow YASCP {
                     DECONV_INPUTS(ambient_RNA.out.cellbender_path,prepare_inputs)
 
                     channel__file_paths_10x = DECONV_INPUTS.out.channel__file_paths_10x
+                    channel__file_paths_10x_single=DECONV_INPUTS.out.channel__file_paths_10x_single
                     ch_experiment_bam_bai_barcodes= DECONV_INPUTS.out.ch_experiment_bam_bai_barcodes
                     ch_experiment_filth5= ambient_RNA.out.cellbender_path
 
@@ -126,8 +130,9 @@ workflow YASCP {
                 // ###################################
 
                 MULTIPLET(
-                    channel__file_paths_10x,
+                    channel__file_paths_10x_single,
                 )
+
                 scrublet_paths = MULTIPLET.out.scrublet_paths
 
                 // ###################################

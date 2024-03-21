@@ -25,12 +25,14 @@ process SPLIT_CITESEQ_GEX {
     output:
         tuple val(sample_name), path("${sample_name}__Gene_Expression"), emit:gex_data
         tuple val(sample_name), path("antibody-${sample_name}.h5ad"), emit: ab_data2 optional true
+        tuple val(sample_name), path("Gene_Expression-${sample_name}.h5ad"), emit: gex_h5ad optional true
         tuple val(sample_name), path("${sample_name}__*"), emit: ab_data
         tuple val(sample_name), path("${sample_name}__Gene_Expression/barcodes.tsv.gz"), path("${sample_name}__Gene_Expression/features.tsv.gz"), path("${sample_name}__Gene_Expression/matrix.mtx.gz"), emit: channel__file_paths_10x
  
     script:
 
         """
+        
             strip_citeseq.py --raw_data ${cellranger_raw} -o ${sample_name}
         """
 }
@@ -84,9 +86,9 @@ process DSB_INTEGRATE{
     label 'process_medium'
     tag "${sample_name}"
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "/lustre/scratch123/hgi/teams/hgi/mo11/tmp_projects/jaguar_yascp/nieks_pipeline/yascp_run/azimuth_dsb_17_02_2024.sif"
+        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/azimuth_dsb_6_03_2024.sif"
     } else {
-        container "mercury/azimuth_dsb:latest"
+        container "mercury/azimuth_dsb:6_03_2024"
     }
 
     publishDir  path: "${params.outdir}/citeseq/all_data_integrated", mode: "${params.copy_mode}",
@@ -128,9 +130,9 @@ process MULTIMODAL_INTEGRATION{
     label 'process_medium'
     tag "${sample_name}"
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "/lustre/scratch123/hgi/teams/hgi/mo11/tmp_projects/jaguar_yascp/nieks_pipeline/yascp_run/azimuth_dsb_26_02_2024.sif"
+        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/azimuth_dsb_6_03_2024.sif"
     } else {
-        container "mercury/azimuth_dsb:latest"
+        container "mercury/azimuth_dsb:6_03_2024"
     }
 
     // publishDir  path: "${params.outdir}/citeseq/all_data_integrated", mode: "${params.copy_mode}",
@@ -161,7 +163,7 @@ process VDJ_INTEGRATION{
     label 'process_medium'
     tag "${sample_name}"
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "/lustre/scratch123/hgi/teams/hgi/mo11/tmp_projects/jaguar_yascp/nieks_pipeline/yascp_run/azimuth_dsb_6_03_2024.sif"
+        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/azimuth_dsb_6_03_2024.sif"
     } else {
         container "mercury/azimuth_dsb:6_03_2024"
     }
@@ -194,9 +196,9 @@ process DSB_PROCESS {
     label 'process_medium'
     tag "${sample_name}"
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "/lustre/scratch123/hgi/teams/hgi/mo11/tmp_projects/jaguar_yascp/nieks_pipeline/yascp_run/work/ef/1cda7f07670de6124e43c7c63adfea/azimuth_dsb_14_02_2024.img"
+        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/azimuth_dsb_6_03_2024.sif"
     } else {
-        container "mercury/azimuth_dsb:latest"
+        container "mercury/azimuth_dsb:6_03_2024"
     }
 
     publishDir  path: "${params.outdir}/citeseq/${sample_name}",      

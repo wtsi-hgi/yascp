@@ -10,7 +10,7 @@ process AZIMUTH{
         container "wtsihgi/nf_scrna_qc_azimuth:d54db9b"
     }
 
-    publishDir  path: "${params.outdir}/celltype/azimuth/",
+    publishDir  path: "${params.outdir}/celltype/azimuth/${refset.name}",
             saveAs: {filename -> "${outfil_prfx}_" + filename},
             mode: "${params.copy_mode}",
             overwrite: "true"
@@ -23,30 +23,31 @@ process AZIMUTH{
     input:
         val outdir_prev
         path file_h5ad_batch
+        each refset
         // path(mapping_file)
     output:
-        path(celltype_table, emit:predicted_celltypes)
-        tuple(val(outfil_prfx), path("predicted_celltype_*.tsv"),emit:celltype_tables_all) 
-        path(celltype_table, emit:predicted_celltype_labels)
+        // path(celltype_table, emit:predicted_celltypes)
+        tuple(val(outfil_prfx), val(refset.refset), path("predicted_*.tsv"),emit:celltype_tables_all) 
+        path("predicted_*.tsv"), emit:predicted_celltype_labels
         path "*ncells_by_type_barplot.pdf"
         path "*query_umap.pdf"
         path "*prediction_score_umap.pdf"
         path "*prediction_score_vln.pdf"
         path "*mapping_score_umap.pdf"
         path "*mapping_score_vln.pdf"
-        path("${outfil_prfx}_query.rds"), emit: query_rds
+        // path("${outfil_prfx}_query.rds"), emit: query_rds
 
+        
     script:
     
-    outdir = "${outdir_prev}/azimuth"
+    
     // output file prefix: strip random hex number form beginning of file name
     outfil_prfx = "${file_h5ad_batch}".minus(".h5ad")
     //outfil_prfx = "${file_h5ad_batch}".minus(".h5ad")
-    celltype_table = "${outfil_prfx}_predicted_celltype_l2.tsv.gz"
-    """
-        azimuth.R ./${file_h5ad_batch}
-        gzip -c predicted_celltype_l2.tsv > ${celltype_table}
-        ln -s query.rds ${outfil_prfx}_query.rds 
+    
+    """ 
+        azimuth.R ./${file_h5ad_batch} ${refset.refset} ${refset.annotation_labels}
+
     """
 }
 
@@ -68,9 +69,10 @@ process REMAP_AZIMUTH{
     stageInMode 'copy'  
 
     input:
-        tuple val(outfil_prfx), path(azimuth_file)
+        tuple val(outfil_prfx),val(name) path(azimuth_file)
         path(mapping_file)
-
+    when:
+        name=='PBMC'
     output:
         path('azimuth/*', emit:predicted_celltype_labels)
 

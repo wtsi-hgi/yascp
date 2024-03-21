@@ -1,6 +1,11 @@
 include { SCRUBLET } from "$projectDir/modules/nf-core/modules/scrublet/main"
 include { DOUBLET_DETECTION } from "$projectDir/modules/nf-core/modules/doubletdetection/main"
 include { DOUBLET_DECON} from "$projectDir/modules/nf-core/modules/doubletdecon/main"
+include {SC_DBLFINDER} from "$projectDir/modules/nf-core/modules/scDblFinder/main"
+include { DOUBLET_FINDER} from "$projectDir/modules/nf-core/modules/doubletfinder/main"
+include { SCDS} from "$projectDir/modules/nf-core/modules/scds/main"
+include { SPLIT_CITESEQ_GEX; SPLIT_CITESEQ_GEX as SPLIT_CITESEQ_GEX_FILTERED } from "$projectDir/modules/nf-core/modules/citeseq/main"
+
 def random_hex(n) {
     Long.toUnsignedString(new Random().nextLong(), n).toUpperCase()
 }
@@ -31,49 +36,108 @@ process make_cellmetadata_pipeline_input {
         """
 }
 
+
+process MERGE_DOUBLET_RESULTS{
+    tag "${experiment_id}"
+    label 'process_medium'
+    if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
+        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/nf_scrna_qc_v3.img"
+    } else {
+        container "mercury/nf_scrna_qc:v3"
+    }
+    publishDir  path: "${params.outdir}/doublets",
+                mode: "${params.copy_mode}",
+                overwrite: "true"
+
+    input:
+        tuple(
+            val(experiment_id),
+            path(all_doublet_files)
+        )
+
+    output:
+        // path("plots/*.pdf") optional true
+        // path("plots/*.png") optional true
+        // path("${experiment_id}__DoubletDecon_doublets_singlets.tsv"), emit: results
+        tuple val(experiment_id), path("${experiment_id}__doublet_results_combined.tsv"), emit: result
+
+    script:
+        
+        """
+            echo 'Lets combine'
+            combine_doublets.py --list ${all_doublet_files}
+            ln -s all_doublet_results_combined.tsv ${experiment_id}__doublet_results_combined.tsv
+        """
+}
+
 workflow MULTIPLET {
     take:
         channel__file_paths_10x
     main:
         // Identify multiplets using scrublet.
 
-        // log.info("expected_multiplet_rate: ${params.filter_multiplets.scrublet.expected_multiplet_rate}")
-        // log.info("n_simulated_multiplet: ${params.filter_multiplets.scrublet.n_simulated_multiplet}")
-        // log.info("multiplet_threshold_method: ${params.filter_multiplets.scrublet.multiplet_threshold_method}")
-        // log.info("scale_log10: ${params.filter_multiplets.scrublet.scale_log10}")
+        SPLIT_CITESEQ_GEX( channel__file_paths_10x,'filterd')
+        channel__file_paths_10x = SPLIT_CITESEQ_GEX.out.channel__file_paths_10x
+        gex_h5ad = SPLIT_CITESEQ_GEX.out.gex_h5ad
 
-        SCRUBLET(
-            channel__file_paths_10x,
-            params.filter_multiplets.scrublet.expected_multiplet_rate,
-            params.filter_multiplets.scrublet.n_simulated_multiplet,
-            params.filter_multiplets.scrublet.multiplet_threshold_method,
-            params.filter_multiplets.scrublet.scale_log10
-        )
+        input_channel = Channel.of()
+        if (params.filter_multiplets.scrublet.run_process){
+            SCRUBLET(
+                channel__file_paths_10x,
+                params.filter_multiplets.expected_multiplet_rate,
+                params.filter_multiplets.scrublet.n_simulated_multiplet,
+                params.filter_multiplets.scrublet.multiplet_threshold_method,
+                params.filter_multiplets.scrublet.scale_log10
+            )
+            input_channel = input_channel.mix(SCRUBLET.out.result)
+        }else{
+            out = Channel.of()
+        }
+
+        if (params.filter_multiplets.scrublet.run_process){
+            DOUBLET_DETECTION(channel__file_paths_10x) //Done
+            input_channel = input_channel.mix(DOUBLET_DETECTION.out.result)
+        }else{
+            out = Channel.of()
+        }
+
+        if (params.filter_multiplets.scrublet.run_process){
+            DOUBLET_DECON(gex_h5ad) //Done
+            input_channel = input_channel.mix(DOUBLET_DECON.out.result)
+        }else{
+            out = Channel.of()
+        }
+
+        if (params.filter_multiplets.scrublet.run_process){
+            SC_DBLFINDER(channel__file_paths_10x)
+            input_channel = input_channel.mix(SC_DBLFINDER.out.result)
+        }else{
+            out = Channel.of()
+        }
+
+        if (params.filter_multiplets.scrublet.run_process){
+            SCDS(channel__file_paths_10x)
+            input_channel = input_channel.mix(SCDS.out.result)
+        }else{
+            out = Channel.of()
+        }
+
+        if (params.filter_multiplets.scrublet.run_process){
+            DOUBLET_FINDER(gex_h5ad,params.filter_multiplets.expected_multiplet_rate) //Done
+            input_channel = input_channel.mix(DOUBLET_FINDER.out.result)
+            
+        }else{
+            out = Channel.of()
+        }
+
+
+        input_channel2 = input_channel.groupTuple()
+        input_channel2.subscribe { println "1:: input_channel.out.citeseq_rsd: $it" }
         
-        DOUBLET_DETECTION(channel__file_paths_10x)
+        MERGE_DOUBLET_RESULTS(input_channel2) 
 
-        DOUBLET_DECON(channel__file_paths_10x)
-
-
-        // SC_DBL_FINDER()
-
-        // SCDS()
-
-        // SOLO()
-
-        // DOUBLET_FINDER()
-
-
-        // Generate input file for merge based in multiplets
-        make_cellmetadata_pipeline_input(
-            SCRUBLET.out.multiplet_calls_published.collect()
-        )
 
     emit:
-        // Return merged input data file.
-        // outdir = make_cellmetadata_pipeline_input.out.outdir
-        file__cellmetadata = make_cellmetadata_pipeline_input.out.file__cellmetadata
-        multiplet_calls = SCRUBLET.out.multiplet_calls 
-        scrublet_paths = SCRUBLET.out.scrublet_paths
+        scrublet_paths = MERGE_DOUBLET_RESULTS.out.result
 }
 

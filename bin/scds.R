@@ -1,7 +1,4 @@
 #!/usr/bin/env Rscript
-
-.libPaths("/usr/local/lib/R/site-library")
-
 suppressMessages(suppressWarnings(library(argparse))) 
 # create parser object
 parser <- ArgumentParser()
@@ -25,18 +22,20 @@ suppressMessages(suppressWarnings(library(Seurat)))
 suppressMessages(suppressWarnings(library(SingleCellExperiment)))
 
 
+counts <- Seurat::Read10X(args$tenX_matrix)
 ## Read in data
-if (file.exists(args$tenX_matrix)){
-    message(paste0("Using the following counts: ", args$tenX_matrix))
-    if (endsWith(args$tenX_matrix, ".h5")){
-        counts <- Read10X_h5(args$tenX_matrix)
-    } else {
-        counts <- Read10X(args$tenX_matrix, gene.column = 1)
-    }
-} else {
-    message(paste0("Cannot find the counts matrix ", args$tenX_matrix, ".\n\nExiting"))
-    q()
-}
+# if (file.exists(args$tenX_matrix)){
+#     message(paste0("Using the following counts: ", args$tenX_matrix))
+#     if (endsWith(args$tenX_matrix, ".h5")){
+#         counts <- Read10X_h5(args$tenX_matrix)
+#     } else {
+#         counts <- Seurat::Read10X(args$tenX_matrix)
+#     }
+# } else {
+#     message(paste0("Cannot find the counts matrix ", args$tenX_matrix, ".\n\nExiting"))
+#     q()
+# }
+print('Data read')
 
 if (!is.null(args$barcodes_filtered)){
     if (file.exists(args$barcodes_filtered)){
