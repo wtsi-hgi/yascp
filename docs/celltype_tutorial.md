@@ -1,4 +1,4 @@
- ## Running Only Celltype Assesments:
+ ## Running Only Celltype Assignments or Adjusting params for a pipeline regarding celltype assignments:
 
 It is possible to run only the celltype assignemt of your h5ad file as you may not want to run deconvolution and all other processing steps.
 This is possible with the pipeline.
@@ -22,6 +22,7 @@ And then you can run the pipeline as:
     nextflow run /path/to/cloned/yascp -profile sanger -entry JUST_CELLTYPES -c input.nf
 ```
 
+### Celltypist
 Aditionally if you have your own celltypist models that you want to use you can edit the default params:
 Please take a look on the available models in default [config file](https://github.com/wtsi-hgi/yascp/blob/c55fcfb1a11045e16125f31c20ebe57e0fe81149/conf/qc.conf#L44-L56)
 ```
@@ -31,6 +32,21 @@ params{
     }
 }
 ```
+
+### Azimuth 
+Aditionally if you have your own azimuth model or a model retrieved from [Azimuth Zenodo](https://azimuth.hubmapconsortium.org/references/) that you want to use you can edit the default params. By default we run a PBMC reference in pipeline but you can change this and add any references you are interested in.
+```
+params{
+    azimuth{
+        run_process = true
+        celltype_refsets = [
+                # [ name : 'kidney', refset : "/lustre/scratch123/hgi/teams/hgi/mo11/tmp_projects/jaguar_yascp/nieks_pipeline/yascp_run/ref_kidney", annotation_labels : "cluster,subclass" ],
+                [ name : 'PBMC', refset : "PBMC", annotation_labels : "celltype.l2,celltype.l1,celltype.l3" ],
+            ]
+    }
+}
+```
+
 <details markdown="1">
 <summary><b>Sanger Specific Exacution:</b></summary>
 
