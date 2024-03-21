@@ -128,13 +128,14 @@ workflow YASCP {
                 // Curently contains only Scrublet, but we are also adding DoubletDetect
                 // ###################################
                 // ###################################
-
-                MULTIPLET(
-                    channel__file_paths_10x_single,
-                )
-
-                scrublet_paths = MULTIPLET.out.scrublet_paths
-
+                if (params.filter_multiplets.run_process){
+                    MULTIPLET(
+                        channel__file_paths_10x_single
+                    )
+                    scrublet_paths = MULTIPLET.out.scrublet_paths
+                }else{
+                    scrublet_paths = Channel.of()
+                }
                 // ###################################
                 // ################################### Readme
                 // Step2. DECONVOLUTION
