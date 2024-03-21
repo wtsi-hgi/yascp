@@ -12,17 +12,22 @@ if ["$QUEUE"==''];
         export QUEUE="$QUEUE"
 fi
 
-echo "queue: $QUEUE"
-echo press ENTER to NOT fetch containers, otherwise provide writable path:
-read varname
 
-if ["$varname" = ''];
-    then
-        export NXF_SINGULARITY_CACHEDIR='/software/hgi/containers/yascp'
-        export SINGULARITY_DISABLE_CACHE=0
-    else
-        echo Yascp Will fetch the containers and place them in $varname
-        export NXF_SINGULARITY_CACHEDIR=$varname
+
+if [[ $1 == "-v" || $1 == "-info" ||  $1 == "info" || $1 == "-h" ]]; then
+    _=''
+else
+    echo "queue: $QUEUE"
+    echo press ENTER to NOT fetch containers, otherwise provide writable path:
+    read varname
+    if ["$varname" = ''];
+        then
+            export NXF_SINGULARITY_CACHEDIR='/software/hgi/containers/yascp'
+            export SINGULARITY_DISABLE_CACHE=0
+        else
+            echo Yascp Will fetch the containers and place them in $varname
+            export NXF_SINGULARITY_CACHEDIR=$varname
+    fi
 fi
 
 if [[ $1 == "-v" ]]; then

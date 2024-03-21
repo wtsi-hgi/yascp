@@ -46,10 +46,10 @@ outdir <- getwd()
 # filtered_feature_file = cellranger_filepath = args[2]
 #    
 # filtered_cellranger = '/lustre/scratch123/hgi/teams/hgi/mo11/tmp_projects/jaguar_yascp/nieks_pipeline/fetch/results_old/cellranger_data/cellranger700_multi_bc45a1c2fe2a3fbbcde46cf984cf42e2/per_sample_outs/cellranger700_multi_bc45a1c2fe2a3fbbcde46cf984cf42e2/count/sample_filtered_feature_bc_matrix.h5'
-# sample_name <- 'cellranger700_multi_d00ddfc9ace09586f1ac108fca92db61'
+# sample_name <- 'cellranger700_multi_abb2ba0911f1f4bde982a4c38d9fd6ed'
 # cellranger_rawfile_path <- 'raw_feature_bc_matrix'
 # filtered_cellranger = 'filtered_feature_bc_matrix'
-# file_with_qc_applied = 'cellranger700_multi_d00ddfc9ace09586f1ac108fca92db61___sample_QCd_adata.h5ad'
+# file_with_qc_applied = 'cellranger700_multi_abb2ba0911f1f4bde982a4c38d9fd6ed___sample_QCd_adata.h5ad'
 sample_name <- args[1]
 cellranger_rawfile_path <- args[2]
 filtered_cellranger = args[3]
@@ -158,6 +158,7 @@ Convert(
   qced_cells[["RNA"]] <- AddMetaData(qced_cells[["RNA"]], genes[match(rownames(qced_cells[["RNA"]]),genes$ENSG_ID),]$Gene_ID, col.name = "Gene_ID")
   cts = qced_cells@assays$RNA@counts
   rownames(cts) = genes[match(rownames(cts),genes$ENSG_ID),]$Gene_ID
+
   qced_cells <- CreateSeuratObject(cts, meta.data = qced_cells[[]])
 
 
