@@ -52,6 +52,6 @@ params{
 
 * In Sanger you do not need to set up anything. All you need is an input file:
   ```
-      module load HGI/pipelines/yascp/1.4
+      module load HGI/pipelines/yascp/1.5
       yascp celltype -c input.nf
   ```
