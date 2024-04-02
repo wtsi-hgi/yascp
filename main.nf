@@ -76,7 +76,13 @@ workflow {
 
 workflow WORK_DIR_REMOVAL{
     // This process should be run with caution as it will remove the work directory and copy the results as an actual files
-    RSYNC_RESULTS_REMOVE_WORK_DIR(params.outdir,params.tmpdir)
+
+
+    out_ch = params.outdir
+    ? Channel.fromPath(params.outdir, checkIfExists:true)
+    : Channel.fromPath("${launchDir}/${outdir}")
+
+    RSYNC_RESULTS_REMOVE_WORK_DIR(out_ch,params.tmpdir)
 }
 
 workflow JUST_CELLTYPES{
