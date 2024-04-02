@@ -9,9 +9,25 @@ import statistics
 import pandas as pd
 
 VERBOSE = True
+
+
+nargs = len(sys.argv)
+if nargs < 3:
+    sys.exit("usage: {:s} <summary output> <assignment output panel 1> [<assignment output panel 2> ....]"
+        .format(sys.argv[0]))
+
+oufn = sys.argv[1] 
+ZSCORE_THRESH = float(sys.argv[2]) # Default is 8 - cardinal has been run with this threshold
+ZSCORE_DIST_THRESH = float(sys.argv[3]) # Default is 8 - cardinal has been run with this threshold
+infns = sys.argv[4:]
+
+sys.stdout.write("compare scores from {:d} files and write overall assignment to file {:s}\n".
+    format(len(infns), oufn))
+
+
 SMVAL = float(1e-9)
-ZSCORE_THRESH = float(8)
-ZSCORE_DIST_THRESH = float(8)
+# ZSCORE_THRESH = float(3)
+# ZSCORE_DIST_THRESH = float(3)
 
 DONOR_CELLINE_MATCHSTR = re.compile("^celline_(\S+)$")
 FNAM_MATCHSTR = re.compile("^pool_(\S+)_panel_(\S+)_gtcheck_donor_assignments")
@@ -230,16 +246,7 @@ class AssignmentTables:
         return pd.DataFrame(df).T
 
 if __name__ == '__main__':
-    nargs = len(sys.argv)
-    if nargs < 3:
-        sys.exit("usage: {:s} <summary output> <assignment output panel 1> [<assignment output panel 2> ....]"
-            .format(sys.argv[0]))
 
-    oufn = sys.argv[1]
-    infns = sys.argv[2:]
-
-    sys.stdout.write("compare scores from {:d} files and write overall assignment to file {:s}\n".
-        format(len(infns), oufn))
     asstab = AssignmentTables()
     fctr = asstab.parse_assignment_output_files(infns)
     if VERBOSE:

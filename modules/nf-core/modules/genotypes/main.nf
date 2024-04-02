@@ -358,7 +358,7 @@ process ASSIGN_DONOR_OVERALL
   donor_assignment_file = "${pool_id}_gt_donor_assignments.csv"
   stats_assignment_table_out = "stats_${pool_id}_gt_donor_assignments.csv"
   """
-    gtcheck_assign_summary.py ${donor_assignment_file} ${gtcheck_assign_files}
+    gtcheck_assign_summary.py ${donor_assignment_file} ${params.genotype_input.ZSCORE_THRESH} ${params.genotype_input.ZSCORE_DIST_THRESH} ${gtcheck_assign_files}
   """
 }
 
