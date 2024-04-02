@@ -46,7 +46,7 @@ process DSB {
         container "mercury/azimuth_dsb:latest"
     }
 
-    publishDir  path: "${params.outdir}/citeseq/${sample_name}", mode: "${params.copy_mode}",
+    publishDir  path: "${params.outdir}/citeseq/DSB/${sample_name}", mode: "${params.copy_mode}",
       overwrite: "true"
 
     input:
@@ -190,7 +190,7 @@ process DSB_PROCESS {
         container "mercury/azimuth_dsb:6_03_2024"
     }
 
-    publishDir  path: "${params.outdir}/citeseq/${sample_name}",      
+    publishDir  path: "${params.outdir}/citeseq/DSB/${sample_name}",      
         saveAs: {filename ->
         if (filename.contains("tmp_rds_files__")) {
             null
