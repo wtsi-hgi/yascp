@@ -122,23 +122,6 @@ Each of these steps and the outputs produced are decribed more in detail bellow:
 
 </details>
 
-<details markdown="1">
-<summary>SCDS Output files:</summary>
-    
-* SCDS output files contain barcode and label of whether its a singlet or a doublet:
-    * ![Screenshot 2024-04-02 at 16 03 11](https://github.com/wtsi-hgi/yascp/assets/22347136/c7d2bd3b-e1f4-4ca0-a53b-541c2f622288)
-
-</details>
-
-
-<details markdown="1">
-<summary>SCDS Output files:</summary>
-    
-* SCDS output files contain barcode and label of whether its a singlet or a doublet:
-    * ![Screenshot 2024-04-02 at 16 03 11](https://github.com/wtsi-hgi/yascp/assets/22347136/c7d2bd3b-e1f4-4ca0-a53b-541c2f622288)
-
-</details>
-
 #### [Donor Deconvolution using Souporcell](#Souporcell) - Souporcell option both removes the ambioent RNA and deconvolutes the donors [currently however this option is broken and will be fixed soon]
 
 #### [GT match](#GT_match) - This step utilises the prepeared genotypes and the infered genotypes by Vireo and picks out the donor that corresponds to the right reads. 
