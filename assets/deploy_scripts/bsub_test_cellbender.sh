@@ -16,5 +16,5 @@ export TMP_DIR=$PWD/work/tmp
 
 sample="$RUN_ID.yascp"
 echo -e "\nSubmitting yascp (https://github.com/wtsi-hgi/yascp) in CELLBENDER mode running integration and clustering with input file $INPUT_FILE"
-bsub -R'select[mem>4000] rusage[mem=4000]' -J yascp_cellbender -n 1 -M 4000 -o yascp_cellbender.o -e yascp_cellbender.e -q normal bash $SCRIPT_DIR/../../assets/deploy_scripts/nohup_start_nextflow_lsf_cellbender.sh  $INPUT_FILE
+bsub -R'select[mem>4000] rusage[mem=4000]' -J yascp_cellbender -n 1 -M 4000 -o yascp_cellbender.o -e yascp_cellbender.e -q $QUEUE bash $SCRIPT_DIR/../../assets/deploy_scripts/nohup_start_nextflow_lsf_cellbender.sh  $INPUT_FILE
 echo "Submitted job can be killed with: bkill -J yascp_cluster"

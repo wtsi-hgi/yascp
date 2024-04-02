@@ -87,7 +87,6 @@ workflow qc {
                 // matched_donors.subscribe { println "1:: matched_donors.out.tmp_rsd input: $it" }
 
                 DSB_INTEGRATE(
-                    DSB_PROCESS.out.citeseq_rsd.collect(),
                     vireo_paths.collect(),
                     DSB_PROCESS.out.tmp_rsd.collect(),
                     matched_donors,
@@ -98,17 +97,13 @@ workflow qc {
                     params.reduced_dims.seurat_integration.ndim_citeBgRemoved,
                     params.reduced_dims.seurat_integration.ndim_cite_integrated
                     )
+
                 MULTIMODAL_INTEGRATION(
-                    DSB_INTEGRATE.out.outdir,
-                    DSB_INTEGRATE.out.figdir,
-                    DSB_INTEGRATE.out.tmp_rds_dir,
                     DSB_INTEGRATE.out.tmp_rds_file,
                 )
+
                 VDJ_INTEGRATION(
-                    MULTIMODAL_INTEGRATION.out.outdir,
                     chanel_cr_outs.collect(),
-                    MULTIMODAL_INTEGRATION.out.figdir,
-                    MULTIMODAL_INTEGRATION.out.tmp_rds_dir,
                     MULTIMODAL_INTEGRATION.out.wnn_integrated_file
                 )
             }    

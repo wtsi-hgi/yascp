@@ -32,12 +32,10 @@ data_dir <- './'
 # args[3] ='tmp_rds_files'
 # args[4]='regress__pct_counts_gene_group__mito_transcript__all_samples.wnn.integrated.RDS'
 args = commandArgs(trailingOnly=TRUE)
-figdir = args[1]
-outdir = args[2]
-tmp_rds_dir = args[3]
-wnn_integrated_file = args[4]
+
+wnn_integrated_file = args[1]
 n2 = strsplit(as.character(wnn_integrated_file), split="__all_samples")[[1]][1]
-outname = paste0(tmp_rds_dir,'/',n2,'__all_samples_integrated.vdj.RDS')
+outname = paste0(n2,'__all_samples_integrated.vdj.RDS')
 
 myPalette <- colorRampPalette(rev(brewer.pal(11, "Spectral")))
 
@@ -153,7 +151,7 @@ for (file_path in vdj_files) {
   total <- total+1
 }
 
-vdj_dir <- paste0(outdir,'/vdj/')
+vdj_dir <- paste0('./vdj/')
 dir.create(vdj_dir,showWarnings = F)
 names(immdata_TCR$data) <- tcr_names
 names(immdata_BCR$data) <- bcr_names

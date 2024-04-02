@@ -14,5 +14,5 @@ export TMP_DIR=$PWD/work/tmp
 
 sample="$RUN_ID.yascp"
 echo -e "\nSubmitting yascp (https://github.com/wtsi-hgi/yascp) in JUST_DOUBLETS mode with input file $INPUT_FILE"
-bsub -R'select[mem>4000] rusage[mem=4000]' -J yascp_doublets -n 1 -M 4000 -o yascp_doublets.o -e yascp_doublets.e -q normal bash $SCRIPT_DIR/../../assets/deploy_scripts/nohup_start_nextflow_lsf_doublets.sh $INPUT_FILE
+bsub -R'select[mem>4000] rusage[mem=4000]' -J yascp_doublets -n 1 -M 4000 -o yascp_doublets.o -e yascp_doublets.e -q $QUEUE bash $SCRIPT_DIR/../../assets/deploy_scripts/nohup_start_nextflow_lsf_doublets.sh $INPUT_FILE
 echo "Submitted job can be killed with: bkill -J yascp_doublets"

@@ -24,7 +24,8 @@ if (future::supportsMulticore()) {
 } else {
   future::plan(future::multisession)
 }
-
+# args=vector(mode='list', length=6); args[[1]]='cellranger700_multi_abb2ba0911f1f4bde982a4c38d9fd6ed'; args[[2]]='raw_feature_bc_matrix'; args[[3]]='filtered_feature_bc_matrix'; args[[4]]='cellranger700_multi_abb2ba0911f1f4bde982a4c38d9fd6ed___sample_QCd_adata.h5ad'
+   
 #####
 args = commandArgs(trailingOnly=TRUE)
 #### set up directories, colors paths ####
@@ -46,10 +47,10 @@ outdir <- getwd()
 # filtered_feature_file = cellranger_filepath = args[2]
 #    
 # filtered_cellranger = '/lustre/scratch123/hgi/teams/hgi/mo11/tmp_projects/jaguar_yascp/nieks_pipeline/fetch/results_old/cellranger_data/cellranger700_multi_bc45a1c2fe2a3fbbcde46cf984cf42e2/per_sample_outs/cellranger700_multi_bc45a1c2fe2a3fbbcde46cf984cf42e2/count/sample_filtered_feature_bc_matrix.h5'
-# sample_name <- 'cellranger700_multi_abb2ba0911f1f4bde982a4c38d9fd6ed'
+# sample_name <- 'cellranger700_multi_74b30caec2cf83c0048bc87946b301e8'
 # cellranger_rawfile_path <- 'raw_feature_bc_matrix'
 # filtered_cellranger = 'filtered_feature_bc_matrix'
-# file_with_qc_applied = 'cellranger700_multi_abb2ba0911f1f4bde982a4c38d9fd6ed___sample_QCd_adata.h5ad'
+# file_with_qc_applied = 'cellranger700_multi_74b30caec2cf83c0048bc87946b301e8___sample_QCd_adata.h5ad'
 sample_name <- args[1]
 cellranger_rawfile_path <- args[2]
 filtered_cellranger = args[3]
@@ -158,7 +159,7 @@ Convert(
   qced_cells[["RNA"]] <- AddMetaData(qced_cells[["RNA"]], genes[match(rownames(qced_cells[["RNA"]]),genes$ENSG_ID),]$Gene_ID, col.name = "Gene_ID")
   cts = qced_cells@assays$RNA@counts
   rownames(cts) = genes[match(rownames(cts),genes$ENSG_ID),]$Gene_ID
-
+  rownames(cts) = make.names(rownames(cts), unique=TRUE)
   qced_cells <- CreateSeuratObject(cts, meta.data = qced_cells[[]])
 
 
@@ -282,7 +283,7 @@ Convert(
   # added to data slot, not counts slot, because it is already normalized.
   # See https://cran.r-project.org/web/packages/dsb/vignettes/end_to_end_workflow.html
   # for more info
-  qced_cells[["CITE_bgRemoved"]] = CreateAssayObject(data = cells.dsb.norm$dsb_normalized_matrix)
+  qced_cells[["CITE_bgRemoved"]] = CreateAssayObject(counts = cells.dsb.norm$dsb_normalized_matrix)
   qced_cells[["CITE"]] <- CreateAssayObject(counts = prot_qced_cells)
   
   current_assay <- qced_cells@active.assay

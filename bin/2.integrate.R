@@ -17,10 +17,10 @@ if (future::supportsMulticore()) {
 } else {
   future::plan(future::multisession)
 }
-
+future.seed=TRUE
 args = commandArgs(trailingOnly=TRUE)
 
-# arg='pct_counts_gene_group__mito_transcript'; args[2]=5; args[3]=30; args[4]=12;args[5]= 10;args[6]= 9
+# args=vector(mode='list', length=6); args[[1]]='pct_counts_gene_group__mito_transcript'; args[[2]]=5; args[[3]]=30; args[[4]]=12;args[[5]]= 10;args[[6]]= 9
 if (args[1]=='NONE') {
   vars_to_regress = c()
   reg_name = 'regress__NONE'
@@ -50,13 +50,13 @@ ndim_cite_integrated = strtoi(args[6])
 # install.packages("Matrix")
 #### set up directories, colors paths ####
 data_dir <- getwd()
-outdir <- paste0('./out/')
-dir.create(outdir,showWarnings = F)
+outdir <- paste0('.')
+# dir.create(outdir,showWarnings = F)
 figdir <- paste0(outdir,'/figures','__',reg_name,'/')
 dir.create(figdir,showWarnings = F)
-tmp_rds_dir <- paste0(outdir,'/tmp_rds_files/')
-dir.create(tmp_rds_dir,showWarnings = F)
-tmp_rds_file <- paste0(tmp_rds_dir,reg_name,'__','all_samples_integrated.RDS')
+# tmp_rds_dir <- paste0(outdir,'/tmp_rds_files/')
+# dir.create(tmp_rds_dir,showWarnings = F)
+tmp_rds_file <- paste0(reg_name,'__','all_samples_integrated.RDS')
 
 myPalette <- colorRampPalette(rev(brewer.pal(11, "Spectral")))
 
@@ -65,7 +65,7 @@ wg2_dir <- getwd()
 
 
 cite_files <- list.files(pattern='.RDS',
-                         path=Sys.glob(paste0(data_dir,'/tmp_rds_files*','/1.CITE')),recursive=T, full.names=T)
+                         path=Sys.glob('.'),recursive=T, full.names=T)
 #####
 
 #### Get samplesheets for all batches and extract sample IDs ####
@@ -85,7 +85,7 @@ cite_files <- list.files(pattern='.RDS',
 
 ##### Get the donor info per cell from vireo and from matchings we did #####
 # read in donor info so that integration can be done per donor
-
+print('---- Combine files together -----')
 # Get the location of the donor files
 donor_files <- list.files(pattern='donor_ids.tsv',
                           path=Sys.glob(paste0(data_dir,'/vireo_*')),
@@ -102,7 +102,7 @@ for(f in donor_files){
 
   sample_name <-gsub('vireo_','',sample_id)
   df <- read.table(f, header=T, sep='\t')
-  
+
   df$sample_name <- sample_name
   df$sample <- sample_name
   
@@ -129,6 +129,7 @@ for(f in donor_files){
 #####
 
 ##### SCTransforming and correcting RNA-seq data, calculate cellcycle, remove MT/ribosomal genes #####
+print('---- Normalise and prepeare -----')
 sobj_list <- list()
 sample_names <- c()
 i <- 1
@@ -185,14 +186,14 @@ for(f in cite_files){
     # because sctransform should already control for read count and n genes
     # Using glmGamPoi because faster and more robust (see also https://genomebiology.biomedcentral.com/articles/10.1186/s13059-021-02584-9)
     # return all genes so that more can be used for calculating cell cycle score
-    sobj_per_donor[[donor]] <- SCTransform(sobj_per_donor[[donor]], 
+    sobj_per_donor[[donor]] <-SCTransform(sobj_per_donor[[donor]], 
                         vars.to.regress=vars_to_regress, 
                         method = "glmGamPoi",
                         verbose = F, return.only.var.genes = F)
 
     # Calculate cell cycle scores
     sobj_per_donor[[donor]] <- CellCycleScoring(
-      sobj_per_donor[[donor]],
+      NormalizeData(sobj_per_donor[[donor]]),
       s.features = cc.genes$s.genes,
       g2m.features = cc.genes$g2m.genes,
       assay = 'SCT',
@@ -239,6 +240,9 @@ for(f in cite_files){
     i <- i+1
   }
 }
+
+
+print("---- Integrate ------")
 names(sobj_list) <- sample_names
 #####
 Csparse_validate = "CsparseMatrix_validate"
@@ -286,6 +290,10 @@ integrate_sct <- function(slist, reference_samples, k.anchor=5, dims=30){
 }
 
 integrate_cite <- function(slist,reference_samples, normalize, assay, k.anchor=5, dims=20){
+
+
+  # slist =sobj_list;random_donors_for_reference=reference_samples;normalize=F; assay='CITE_bgRemoved';k.anchor=5; dims=20
+                                                     
   # Integrate a list of seurat objects together using assay (e.g. CITE or CITE_bgRemoved)
   # slist: list of seurat objects
   # reference_samples: list of names to use as reference (reference parameter in FindIntegrationAnchors)
@@ -298,16 +306,18 @@ integrate_cite <- function(slist,reference_samples, normalize, assay, k.anchor=5
   print(reference_samples)
   
   for(i in 1:length(slist)){
+
     DefaultAssay(slist[[i]]) <- assay
   }
   
   # Normalize date if paramter is set T
-  if(normalize==T){print('Normalize')}
+
   slist_test <- lapply(X = slist, FUN = function(x) {
     if(normalize==T){
       x <- NormalizeData(x, verbose = FALSE, normalization.method='CLR', margin=2) 
     }
   })
+  
   
   print('Select integration features')
   seurat.features.adt <- rownames(slist[[1]])
@@ -355,24 +365,27 @@ for(pool in pools_to_integrate){
 }
 
 # integrate sct
-slist = sobj_list
-reference_samples = random_donors_for_reference
-
+# slist = sobj_list
+# reference_samples = random_donors_for_reference
+print('---- Integrating ---')
 
 random_donor_integration_sct <- integrate_sct(sobj_list, random_donors_for_reference)
+
+
+# integrate CITE
+random_donor_integration_cite <- integrate_cite(sobj_list, 
+                                              random_donors_for_reference,
+                                              normalize=F,
+                                              assay='CITE')
+
 
 # integrate cite_bgRemoved
 random_donor_integration_citeBgRemoved <- integrate_cite(sobj_list, 
                                                          random_donors_for_reference,
                                                          normalize=F,
                                                          assay='CITE_bgRemoved')
-# integrate CITE
-random_donor_integration_cite <- integrate_cite(sobj_list, 
-                                              random_donors_for_reference,
-                                              normalize=F,
-                                              assay='CITE')
 #####
-
+print("---- Integration done, plot now -----")
 #### PCA and UMAP ####
 dir.create(paste0(figdir,'/2.elbow_plots/'),showWarnings = F)
 

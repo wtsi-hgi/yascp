@@ -41,8 +41,8 @@ date_of_transfer+=day
 
 ANNDATA_FILE_QC = "adata.h5ad"
 DATA_DIR_AZIMUTH = "azimuth"
-AZIMUTH_ASSIGNMENTS_FNSUFFIX = '_predicted_celltype_l2.tsv.gz'
-SCRUBLET_ASSIGNMENTS_FNSUFFIX = '-scrublet.tsv.gz'
+AZIMUTH_ASSIGNMENTS_FNSUFFIX = '_predicted_celltype_l2.tsv'
+SCRUBLET_ASSIGNMENTS_FNSUFFIX = 'scrublet.tsv'
 
 COLUMNS_AZIMUTH = {
     'Azimuth:predicted.celltype.l2': 'azimuth.celltyp.l2',
@@ -312,11 +312,12 @@ def fetch_cellbender_annotation(dirpath, expid,Resolution):
         h5_path = f"{args.results_dir}/{os.path.dirname(dirpath)}/cellbender_FPR_{Resolution}_filtered.h5"
         f = h5py.File(h5_path, 'r')
     except:
-        h5_path = f"{os.path.dirname(dirpath)}/cellbender_FPR_{Resolution}_filtered.h5"
+        
+        h5_path = glob.glob(f"{os.path.dirname(dirpath)}/cellbender*{Resolution}_filtered.h5")[0]
         f = h5py.File(h5_path, 'r')
     # ad = scanpy.read_10x_h5(h5_path, genome='background_removed')
     # interesting data is in /matrix/barcodes and matrix/latent_cell_probability
-    f = h5py.File(h5_path, 'r')
+   
     df = pandas.DataFrame({
         "barcodes":f['/matrix/barcodes'],
         "cellbender_latent_probability":f['/matrix/latent_cell_probability']
@@ -544,21 +545,22 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
     #Azimuth cell-type assignments
     #############
     datadir_azimuth = f'{args.results_dir}/celltype/azimuth' 
-    if os.path.isdir(datadir_azimuth):
-        try:
-            azt = gather_azimuth_annotation(
-                expid, datadir_azimuth=datadir_azimuth,
-                index_label = 'barcode')
-            columns_output = {**columns_output, **COLUMNS_AZIMUTH}
-        except:
+    for datadir_azimuth in glob.glob(f'{args.results_dir}/celltype/azimuth/*'):
+        if os.path.isdir(datadir_azimuth):
+            try:
+                azt = gather_azimuth_annotation(
+                    expid, datadir_azimuth=datadir_azimuth,
+                    index_label = 'barcode')
+                columns_output = {**columns_output, **COLUMNS_AZIMUTH}
+            except:
+                azt = None
+        else:
             azt = None
-    else:
-        azt = None
 
     ##########################
     # Scrublet
     #########################
-    datadir_scrublet=f'{args.results_dir}/multiplet.method=scrublet'
+    datadir_scrublet=glob.glob(f'{args.results_dir}/*/multiplet.method=scrublet')[0]
     if os.path.isdir(datadir_scrublet):
         # Scrublet loading QC
         try:

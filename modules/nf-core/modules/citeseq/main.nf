@@ -95,14 +95,13 @@ process DSB_INTEGRATE{
       overwrite: "true"
     
     output:
-        path("out"), emit: outdir
-        path("out/tmp_rds_files/*all_samples_integrated.RDS"), emit: tmp_rds_file
-        path("out/figures__*"), emit: figdir
-        path("out/tmp_rds_files"), emit: tmp_rds_dir
+        // path("out"), emit: outdir
+        path("*all_samples_integrated.RDS"), emit: tmp_rds_file
+        path("figures__*/*"), emit: figs
+        
 
 
     input:
-        path(citeseq_rsd)
         path(vireo)
         path(tmp_rsd)
         path(matched_donors)
@@ -135,25 +134,19 @@ process MULTIMODAL_INTEGRATION{
         container "mercury/azimuth_dsb:6_03_2024"
     }
 
-    // publishDir  path: "${params.outdir}/citeseq/all_data_integrated", mode: "${params.copy_mode}",
-    //   overwrite: "true"
+    publishDir  path: "${params.outdir}/citeseq/all_data_integrated", mode: "${params.copy_mode}",
+      overwrite: "true"
     
     output:
-        path("out/figures__*"), emit: figdir
-        path("out"), emit: outdir
-        path("out/tmp_rds_files"), emit: tmp_rds_dir
-        path("out/tmp_rds_files/*wnn.integrated.RDS"), emit: wnn_integrated_file
+        path("*wnn.integrated.RDS"), emit: wnn_integrated_file
 
     input:
-        path(outdir)
-        path(figdir)
-        path(tmp_rds_dir)
         path(tmp_rds_file)
 
     script:
     """
     echo 'running1'
-    3.WNN_integrate_SCT_CITE.R ${figdir} ${outdir} ${tmp_rds_dir} ${tmp_rds_file}
+    3.WNN_integrate_SCT_CITE.R ${tmp_rds_file}
     """
 
 }
@@ -168,25 +161,21 @@ process VDJ_INTEGRATION{
         container "mercury/azimuth_dsb:6_03_2024"
     }
 
-    // publishDir  path: "${params.outdir}/citeseq/all_data_integrated", mode: "${params.copy_mode}",
-    //   overwrite: "true"
+    publishDir  path: "${params.outdir}/citeseq/all_data_integrated", mode: "${params.copy_mode}",
+      overwrite: "true"
     
-    // output:
-    //     path("out"), emit: all_data_integrated
-    //     path("./out/tmp_rds_files/all_samples_integrated.RDS"), emit: all_data_integrated_rds
+    output:
+        path("*all_samples_integrated.vdj.RDS"), emit: all_data_integrated_vdj_rds
 
     input:
-        path(outdir)
         path(all_cellranger_samples)
-        path(figdir)
-        path(tmp_rds_dir)
         path(wnn_integrated_file)
 
 
     script:
     """
     echo 'running1'
-    4.add_vdj.R ${figdir} ${outdir} ${tmp_rds_dir} ${wnn_integrated_file}
+    4.add_vdj.R ${wnn_integrated_file}
     """
 
 }
@@ -218,7 +207,7 @@ process DSB_PROCESS {
 
     output:
         path("CITE__*"), emit: citeseq_rsd
-        path('tmp_rds_files__*'), emit: tmp_rsd
+        path("tmp_rds_files__*/*/${sample_name}*.RDS"), emit: tmp_rsd
     script:
         """
   

@@ -33,13 +33,9 @@ myPalette <- colorRampPalette(rev(brewer.pal(11, "Spectral")))
 
 
 args = commandArgs(trailingOnly=TRUE)
-
-figdir = args[1]
-outdir = args[2]
-tmp_rds_dir = args[3]
-tmp_rds_file = args[4]
+tmp_rds_file = args[1]
 n2 = strsplit(as.character(tmp_rds_file), split="__all_samples")[[1]][1]
-outname = paste0(tmp_rds_dir,'/',n2,'__all_samples.wnn.integrated.RDS')
+outname = paste0(n2,'__all_samples.wnn.integrated.RDS')
 
 integrated_data <- readRDS(tmp_rds_file)
 myPallette <- colorRampPalette(rev(brewer.pal(11, "Spectral")))
