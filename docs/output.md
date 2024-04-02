@@ -9,9 +9,31 @@ This document describes the output produced by the pipeline.
 # Pipeline overview
 
 The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes data using the following steps:
+The overall results folder will look simmillar to this:
+
+![Screenshot 2024-04-02 at 15 08 13](https://github.com/wtsi-hgi/yascp/assets/22347136/12cc3575-8772-43ee-b64d-bb396e10ba82)
+
+Where we have outputs from different steps of pipeline:
+* [cellsnp](#cellsnp)
+* [celltype identification](#celltype-identification)
+* citeseq data processing
+* [clustering and integration](#integration-and-clustering)
+* [sample deconvolution](#vireo)
+* [doublet detection](#doublet-detection)
+* [genotype match](#vireo) to determine sample matches
+* handover folder where summary statistics and plots are stored
+* infered genotypes - output from vireo that has generated vcf files for each of the deconvoluted donors in pool.
+* merged_h5ads - different preprocessing step merged h5ads (these allow to start the pipeline again in a clustering only mode)
+* [nf-preprocessing](#ambient-rna-removal) - contains cellbender results
+* pipeline info - statistics of the pipeline run.
+* plots - some quality control plots.
+* recourses - reference genome used in data processing.
+* UMAPS - summary plot UMAPS - for a quick look. 
+
+Each of these steps and the outputs produced are decribed more in detail bellow:
 
 ## Alignment step
-#### [Cellranger](#Cellranger) - Curently users have to run Cellranger (6.11) upstream of pipeline, but an option to run it will be added shortly
+#### [Cellranger](#Cellranger) - Curently users have to run Cellranger upstream of pipeline - we suggest to use the [no-cores pipeline](https://nf-co.re/scrnaseq/2.5.1) - https://nf-co.re/scrnaseq/2.5.1
 ## Ambient RNA removal
 #### [Ambient RNA Removal using Cellbender](#Cellbender) - Reads the Cellranger outputs and removes the ambient RNA using [Cellbender](https://github.com/broadinstitute/CellBender)
 
@@ -33,6 +55,7 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 ####  [Genotype processing](#Genotype_processing) - If users provide the genotypes this step slices and dices the genotypes to prepeare these for the CellSNP/Vireo deconvolutions and GT matches
 #### [Donor Deconvolution using CellSnp/Vireo](#CellSnp/Vireo) - We run cellsnp and vireo to deconvolute donors if the input file has indicated that there are more than 1 donors in the pool.
 
+#### Cellsnp
 <details markdown="1">
 <summary>Cellsnp Output files:</summary>
 
@@ -43,16 +66,77 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 <details markdown="1">
 <summary>Vireo Output files:</summary>
 
+#### Vireo
 * Vireo takes the cellsnp variant pileups and assigns donors the particular cell to the donor cluster:
     * ![Vireo output structure](../assets/images/Vireo_outputs.png)
 </details>
 
+#### Doublet Detection
+![Screenshot 2024-04-02 at 15 43 16](https://github.com/wtsi-hgi/yascp/assets/22347136/781ce3b7-ea5e-4fe4-9ca3-d16e8b47123e)
 <details markdown="1">
 <summary>Scrublet Output files:</summary>
 
 * By default we always run Scrublet - if we have no donors pooled in the run (i.e if we have only 1 donor), then the doublets will be removed by scrublet instead of vireo:
-
     * ![Scrublet output structure](../assets/images/Scrublet.png)
+</details>
+
+<details markdown="1">
+<summary>DoubletDecon Output files:</summary>
+    
+* DoubletDecon output files contain barcode and label of whether its a singlet or a doublet:
+    * ![Screenshot 2024-04-02 at 15 51 26](https://github.com/wtsi-hgi/yascp/assets/22347136/603d27e1-42e3-4be7-bbfd-ebb3412b3ec4)
+
+</details>
+
+<details markdown="1">
+<summary>doubletdetection Output files:</summary>
+    
+* doubletdetection output files contain barcode and label of whether its a singlet or a doublet:
+    * ![Screenshot 2024-04-02 at 15 59 15](https://github.com/wtsi-hgi/yascp/assets/22347136/c798d675-c96d-4137-92c2-6fa9340437c5)
+
+</details>
+
+<details markdown="1">
+<summary>DoubletFinder Output files:</summary>
+    
+* DoubletFinder output files contain barcode and label of whether its a singlet or a doublet:
+    * ![Screenshot 2024-04-02 at 16 00 47](https://github.com/wtsi-hgi/yascp/assets/22347136/4cdd8ba2-5d16-4c9b-a64e-aa9423514208)
+
+
+</details>
+
+<details markdown="1">
+<summary>scDblFinder Output files:</summary>
+    
+* scDblFinder output files contain barcode and label of whether its a singlet or a doublet:
+    * ![Screenshot 2024-04-02 at 16 01 49](https://github.com/wtsi-hgi/yascp/assets/22347136/69f7b19f-3b22-46bb-aafe-403ca3c399ae)
+
+</details>
+
+
+<details markdown="1">
+<summary>SCDS Output files:</summary>
+    
+* SCDS output files contain barcode and label of whether its a singlet or a doublet:
+    * ![Screenshot 2024-04-02 at 16 02 23](https://github.com/wtsi-hgi/yascp/assets/22347136/b2b8ca81-449b-4a94-a1a9-2bec592e74f4)
+
+</details>
+
+<details markdown="1">
+<summary>SCDS Output files:</summary>
+    
+* SCDS output files contain barcode and label of whether its a singlet or a doublet:
+    * ![Screenshot 2024-04-02 at 16 03 11](https://github.com/wtsi-hgi/yascp/assets/22347136/c7d2bd3b-e1f4-4ca0-a53b-541c2f622288)
+
+</details>
+
+
+<details markdown="1">
+<summary>SCDS Output files:</summary>
+    
+* SCDS output files contain barcode and label of whether its a singlet or a doublet:
+    * ![Screenshot 2024-04-02 at 16 03 11](https://github.com/wtsi-hgi/yascp/assets/22347136/c7d2bd3b-e1f4-4ca0-a53b-541c2f622288)
+
 </details>
 
 #### [Donor Deconvolution using Souporcell](#Souporcell) - Souporcell option both removes the ambioent RNA and deconvolutes the donors [currently however this option is broken and will be fixed soon]
