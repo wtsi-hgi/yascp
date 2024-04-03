@@ -293,8 +293,23 @@ Each of these steps and the outputs produced are decribed more in detail bellow:
 
 #### [Lisi](#Lisi) We also have a capability in running LISI cluster assesments, however curently this option does not run by default as it is memory demanding and requires some further optimisations
 
+## [Citeseq](#citeseq): Citeseq folder will be present if your data contains citeseq
+![Screenshot 2024-04-03 at 17 02 05](https://github.com/wtsi-hgi/yascp/assets/22347136/5a6dc2df-85ad-4be9-9338-12880bdb8b5c)
+In this folder we have a couple of subfolders:
+* DSB - folder contains DSB citeseq normalisation statistics and RDS files
+    * ![Screenshot 2024-04-03 at 17 04 38](https://github.com/wtsi-hgi/yascp/assets/22347136/4529980d-6afb-41dc-bf92-89e8d081299a)
+* all_data_integrated - contains Seurats integration of Citeseq and if available VDJ data as well as some UMAPs produced by these processes
+    * ![Screenshot 2024-04-03 at 17 05 28](https://github.com/wtsi-hgi/yascp/assets/22347136/ad6c8f3b-82ca-415f-a9b0-a1242f7e90f7)
+* filtered - folder contains data modalities split appart - i.e if the data is hastaged this layer is stored speratelly to the antibody data and also seperatelly to GEX data
+    * ![Screenshot 2024-04-03 at 17 06 32](https://github.com/wtsi-hgi/yascp/assets/22347136/b4f900f7-2c7b-4423-9a1c-5f7d166ec664)
+* raw - similarly to the above, but the difference is that these are the raw cellranger files split according to the modality.
+    * ![Screenshot 2024-04-03 at 17 07 01](https://github.com/wtsi-hgi/yascp/assets/22347136/8882eba1-4dcb-4870-915e-4025f085bd17)
+
+
 ## [Handover](#handover): Summary Statistics, Per Donor h5ad files, Summary Plots
-    * ![Screenshot 2024-04-03 at 16 44 35](https://github.com/wtsi-hgi/yascp/assets/22347136/64bd3ca8-cb10-48bb-8334-f12482e4ebfd)
+
+![Screenshot 2024-04-03 at 16 44 35](https://github.com/wtsi-hgi/yascp/assets/22347136/64bd3ca8-cb10-48bb-8334-f12482e4ebfd)
+    
 In this folder we can see 3 different folders:
 * Donor_Quantification - where we can see the Cellranger filtered, Cellranger raw, Cellbender filtered files that are used to produce the filal per donor h5ad files and the metadata features in the per donor tsv files
     * ![Screenshot 2024-04-03 at 16 47 28](https://github.com/wtsi-hgi/yascp/assets/22347136/8524243f-4bf1-4713-9076-0e1d3fcb99e1)
