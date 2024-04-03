@@ -21,7 +21,7 @@ Where we have outputs from different steps of pipeline:
 * [sample deconvolution](#vireo)
 * [doublet detection](#doublet-detection)
 * [genotype match](#vireo) to determine sample matches
-* handover folder where summary statistics and plots are stored
+* [handover](#handover) folder where summary statistics, plots and final qcd and annotated h5ads per donor are stored at.
 * infered genotypes - output from vireo that has generated vcf files for each of the deconvoluted donors in pool.
 * merged_h5ads - different preprocessing step merged h5ads (these allow to start the pipeline again in a clustering only mode)
 * [nf-preprocessing](#ambient-rna-removal) - contains cellbender results
@@ -293,5 +293,21 @@ Each of these steps and the outputs produced are decribed more in detail bellow:
 
 #### [Lisi](#Lisi) We also have a capability in running LISI cluster assesments, however curently this option does not run by default as it is memory demanding and requires some further optimisations
 
+## [Handover](#handover): Summary Statistics, Per Donor h5ad files, Summary Plots
+    * ![Screenshot 2024-04-03 at 16 44 35](https://github.com/wtsi-hgi/yascp/assets/22347136/64bd3ca8-cb10-48bb-8334-f12482e4ebfd)
+In this folder we can see 3 different folders:
+* Donor_Quantification - where we can see the Cellranger filtered, Cellranger raw, Cellbender filtered files that are used to produce the filal per donor h5ad files and the metadata features in the per donor tsv files
+    * ![Screenshot 2024-04-03 at 16 47 28](https://github.com/wtsi-hgi/yascp/assets/22347136/8524243f-4bf1-4713-9076-0e1d3fcb99e1)
+
+* Donor_Quantification_summary folder where we have summary statistics per donor and summary statistics per tranche (collection of all pools that were run in this run).
+    * ![Screenshot 2024-04-03 at 16 49 59](https://github.com/wtsi-hgi/yascp/assets/22347136/a6107709-f83e-45e1-9008-1cdde1510c67)
+
+* Summary _plots contains the most important plots per each of the steps for a quick inversigations of the performance of the scRNA runs and the performance of the analysis.
+    * ![Screenshot 2024-04-03 at 16 51 35](https://github.com/wtsi-hgi/yascp/assets/22347136/7c63e2c0-6251-4a7d-8e14-be434c0e017b)
+
+
 
 [Nextflow](https://www.nextflow.io/docs/latest/tracing.html) provides excellent functionality for generating various reports relevant to the running and execution of the pipeline. This will allow you to troubleshoot errors with the running of the pipeline, and also provide you with other information such as launch commands, run times and resource usage.
+
+
+
