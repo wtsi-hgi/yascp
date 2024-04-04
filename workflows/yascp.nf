@@ -60,17 +60,19 @@ workflow YASCP {
             : Channel.fromPath("${launchDir}/${params.outdir}")
                 
         // out_ch.map{row->"${row[0]}/possorted_genome_bam.bam" }
-
+        prepare_inputs(input_channel)
+        chanel_cr_outs = prepare_inputs.out.chanel_cr_outs
+        channel__file_paths_10x=prepare_inputs.out.channel__file_paths_10x
+        channel__file_paths_10x_single=prepare_inputs.out.ch_experimentid_paths10x_filtered
+        input_channel = prepare_inputs.out.channel_input_data_table
+        vireo_paths = Channel.from("$projectDir/assets/fake_file.fq")
+        matched_donors = Channel.from("$projectDir/assets/fake_file.fq")
+        channel_dsb = prepare_inputs.out.channel_dsb
+        
         if(!params.just_reports){
             // sometimes we just want to rerun report generation as a result of alterations, hence if we set params.just_reports =True pipeline will use the results directory and generate a new reports.
-            prepare_inputs(input_channel)
-            chanel_cr_outs = prepare_inputs.out.chanel_cr_outs
-            channel__file_paths_10x=prepare_inputs.out.channel__file_paths_10x
-            channel__file_paths_10x_single=prepare_inputs.out.ch_experimentid_paths10x_filtered
-            input_channel = prepare_inputs.out.channel_input_data_table
-            vireo_paths = Channel.from("$projectDir/assets/fake_file.fq")
-            matched_donors = Channel.from("$projectDir/assets/fake_file.fq")
-            channel_dsb = prepare_inputs.out.channel_dsb
+
+
             if (!params.skip_preprocessing){
                 // The input table should contain the folowing columns - experiment_id	n_pooled	donor_vcf_ids	data_path_10x_format
                 // prepearing the inputs from a standard 10x dataset folders.

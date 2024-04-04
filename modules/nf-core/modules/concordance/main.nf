@@ -22,7 +22,7 @@ process CONCORDANCE_CALCLULATIONS {
         path(cell_vcf),
         path(donor_table),path(cell_assignments),path(set2_informative_sites), path(set1_uninformative_sites),path(variants_description))
     when:
-        params.perform_concordance_calculations
+        params.concordance_calculations
     output:
         tuple val(pool_id), path('discordant_sites_in_other_donors_noA2G.tsv'), emit: concordances
         path("*--each_cells_comparison_with_other_donor.tsv"), emit: each_cells_comparison optional true

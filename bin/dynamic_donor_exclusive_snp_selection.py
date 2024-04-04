@@ -320,8 +320,8 @@ if __name__ == "__main__":
     header_det = GT_donors.iloc[0]
     # subs0 =  GT_donors.iloc[0:10]
     subs0 =  GT_donors
-    GT_Start_index = int(header_det[header_det.str.contains('GT')].index.values[0])+1
-    GT_Position = header_det[header_det.str.contains('GT')].values[0].split(':').index('GT')
+    GT_Start_index = int(header_det[header_det.str.contains('GT').fillna(False)].index.values[0])+1
+    GT_Position = header_det[header_det.str.contains('GT').fillna(False)].values[0].split(':').index('GT')
     
     idxs = list(subs0.columns[GT_Start_index:])
     headers = list(subs0.columns[:GT_Start_index-1])

@@ -157,7 +157,10 @@ def split_h5ad_per_donor(vireo_donor_ids_tsv, filtered_matrix_h5, samplename,
         method = 'Scrublet'
         # here we add doublets from multiplet scrubblet output
         # scrublet = '222CC24C93C884F3-Card_Val11211773-scrublet.tsv.gz'
-        scrublet_data = pd.read_csv(scrublet,compression='gzip',sep='\t')
+        try:
+            scrublet_data = pd.read_csv(scrublet,compression='gzip',sep='\t')
+        except:
+            scrublet_data = pd.read_csv(scrublet,sep='\t')
         doublets = scrublet_data[scrublet_data['scrublet__predicted_multiplet']]
         doublets_nr = len(doublets)
         donor_cell_nr = len(scrublet_data)-doublets_nr
@@ -165,9 +168,14 @@ def split_h5ad_per_donor(vireo_donor_ids_tsv, filtered_matrix_h5, samplename,
         cells_per_donor_count_dic[1]={"donor_id":'donor','n_cells':donor_cell_nr}
         cells_per_donor_count_dic[2]={'donor_id':'doblets','n_cells':doublets_nr}
         cells_per_donor_count = pd.DataFrame(cells_per_donor_count_dic).T
-        scrublet_data=scrublet_data.set_index('cell_barcode')
+        try:
+            idt = 'cell_barcode'
+            scrublet_data=scrublet_data.set_index('cell_barcode')
+        except:
+            idt = 'barcodes'
+            scrublet_data=scrublet_data.set_index('barcodes')
         scrublet_data['donor_id']='donor'
-        scrublet_data.loc[list(doublets['cell_barcode']),'donor_id']='doublet'
+        scrublet_data.loc[list(doublets[idt]),'donor_id']='doublet'
         scrublet_data['prob_doublet']=scrublet_data['scrublet__multiplet_scores']
         for new_cell_annotation in ['donor_id','prob_max','prob_doublet','n_vars','best_singlet','best_doublet']:
             try:

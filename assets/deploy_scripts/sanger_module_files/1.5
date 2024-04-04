@@ -6,11 +6,12 @@ set version [file tail [module-info version [module-info name]]]
  
 proc ModulesHelp { } {
     global version
-    puts stderr "YASCP (Yet Another Single Cell (scRNA) Pieline: https://github.com/wtsi-hgi/yascp) is a nextflow pipeline that QCs the scRNA Cellranger data by removing ambient RNA, deconvoluting donors, assigning celltypes, analysing concordances vs expected genotypes. IMPROVEMENTS: 1) Added support for cellranger 7 input files. 2) Improved filtering for the Citeseq data, 3) for JUST_RECLUSTER option we now allow not to to perform integration (and any variable regression) before subclustering to assess the clustering optimisations 4) For test dataset we drop gpu dependant cellbender so data can be tested."
+    puts stderr "YASCP (Yet Another Single Cell (scRNA) Pieline: https://github.com/wtsi-hgi/yascp) is a nextflow pipeline that QCs the scRNA Cellranger data by removing ambient RNA, deconvoluting donors, assigning celltypes, analysing concordances vs expected genotypes. IMPROVEMENTS: 1) Added support for running cellbender with different parameters. 2) Citeseq, VDJ data integrations using Surat integration, 3) You can now only run only the cellbender step 4) Have added additional 5 doublet detection methods 5) Can provide your own Azimuth and Celltypist references 6) You can now only run the doublet detection step"
     puts stderr ""
     puts stderr "Yascp module has been set to run in multiple modes:"
     puts stderr "	*yascp -v or yascp -h :will describe the checkout tag used."
     puts stderr "	*yascp celltypes -c inputs.nf - run just a celltype assignment based on the input h5ad files."
+    puts stderr "	*yascp doublets -c input.nf : Run just doublet assesments on your h5ad/matrix files."
     puts stderr "	*yascp cluster -c inputs.nf - run just a celltype assignment based on the input h5ad files."
     puts stderr "	*yascp cellbender -c inputs.nf - run just a celltype assignment based on the input h5ad files."
     puts stderr " 	*yascp test :will run a OneK1k test dataset."
@@ -30,7 +31,11 @@ module-whatis   "Yascp version $version is a single cell (scRNA) processing pipe
 set install /software/hgi/pipelines/yascp_versions/yascp_v1.5
 module load ISG/singularity/3.11.4
 module load HGI/common/nextflow/22.04.4
+module load HGI/common/baton
+module load ISG/experimental/irods/4.2.7
 
+prepend-path PATH "/software/hgi/envs/conda/team151/mo11/mo11/bin"
 prepend-path PATH "/software/hgi/containers/yascp/modules/full_yascp"
 prepend-path PATH "/software/hgi/pipelines/yascp_versions/yascp_v1.5/bin"
+
 prepend-path PATH "/software/hgi/pipelines/yascp_versions/yascp_v1.5/assets/deploy_scripts/module_exacutables"
