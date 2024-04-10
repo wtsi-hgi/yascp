@@ -41,7 +41,7 @@ The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool
 
 ## Documentation: Prepearing your own data and interpreting the results
 
-To understand how to prepeare your own data and how to interpret the results please refear to documents [HERE](https://github.com/wtsi-hgi/yascp/tree/main/docs)
+To understand how to prepeare your own data and how to interpret the results please refear to documents [HERE](https://github.com/wtsi-hgi/yascp/tree/yascp_docs)
 
 ## Quick Start
 Easyest to do is using a conda enviroment.
