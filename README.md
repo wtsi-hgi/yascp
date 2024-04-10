@@ -1,4 +1,4 @@
-# nf-core/yascp: Comprehensive Documentation
+# scRNA analysis with Yascp: Comprehensive Documentation
 
 Welcome to the documentation for `nf-core/yascp`, a versatile pipeline designed to address a broad spectrum of research questions in the field. The pipeline's flexibility and array of features make it a powerful tool, though its complexity can seem daunting at first. Our documentation is organized into specific sections to help you get started, understand the pipeline's output, and explore various usage scenarios.
 
