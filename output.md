@@ -14,6 +14,7 @@ The overall results folder will look simmillar to this:
 ![Screenshot 2024-04-02 at 15 08 13](https://github.com/wtsi-hgi/yascp/assets/22347136/12cc3575-8772-43ee-b64d-bb396e10ba82)
 
 Where we have outputs from different steps of pipeline:
+
 * [cellsnp](#cellsnp)
 * [celltype identification](#celltype-identification)
 * citeseq data processing
@@ -41,14 +42,14 @@ Each of these steps and the outputs produced are decribed more in detail bellow:
 <summary>Output file structure ( nf-preprocessing/cellbender ):</summary>
 
 *   Here we have multiple different plots and output files, however the most important ones are the matrix and h5ad files after the ambient rna removal: such as cellbenderFPR_0pt1filtered_10x_mtx/ cellbender_FPR_0.1_filtered.h5
-    * ![Cellbender module output structure](../assets/images/cellbender_output_structure.png)
+    * ![Cellbender module output structure](https://github.com/wtsi-hgi/yascp/assets/images/cellbender_output_structure.png)
 </details>
 
 <details markdown="1">
 <summary>Cellbender output plots:</summary>
 
 *   Cellbender output plots:
-    * ![Cellbender UMAP plot](../assets/images/cb_umap.png)
+    * ![Cellbender UMAP plot](https://github.com/wtsi-hgi/yascp/assets/images/cb_umap.png)
 </details>
 
 ## Genotype processing and Donor deconvolutions (if more than 1 donor is in the pool) and Multiplet/Unassigned cell removal
@@ -60,7 +61,7 @@ Each of these steps and the outputs produced are decribed more in detail bellow:
 <summary>Cellsnp Output files:</summary>
 
 * Cellsnp profiles each of the droplets for the variants in them, which is later utilised by vireo to assign the particular cell to the donor cluster:
-    * ![Cellsnp output structure](../assets/images/cellsnp.png)
+    * ![Cellsnp output structure](https://github.com/wtsi-hgi/yascp/assets/images/cellsnp.png)
 </details>
 
 <details markdown="1">
@@ -68,7 +69,7 @@ Each of these steps and the outputs produced are decribed more in detail bellow:
 
 #### Vireo
 * Vireo takes the cellsnp variant pileups and assigns donors the particular cell to the donor cluster:
-    * ![Vireo output structure](../assets/images/Vireo_outputs.png)
+    * ![Vireo output structure](https://github.com/wtsi-hgi/yascp/assets/images/Vireo_outputs.png)
 </details>
 
 #### Doublet Detection
@@ -77,7 +78,7 @@ Each of these steps and the outputs produced are decribed more in detail bellow:
 <summary>Scrublet Output files:</summary>
 
 * By default we always run Scrublet - if we have no donors pooled in the run (i.e if we have only 1 donor), then the doublets will be removed by scrublet instead of vireo:
-    * ![Scrublet output structure](../assets/images/Scrublet.png)
+    * ![Scrublet output structure](https://github.com/wtsi-hgi/yascp/assets/images/Scrublet.png)
 </details>
 
 <details markdown="1">
@@ -130,17 +131,17 @@ Each of these steps and the outputs produced are decribed more in detail bellow:
 <summary>GT input files:</summary>
 
 * Users can provide multipple different cohort VCFs and that are split per chromosomes or one big vcf/bcf file.:
-    * ![GT input structure](../assets/images/gt_input_vcfs.png)
+    * ![GT input structure](https://github.com/wtsi-hgi/yascp/assets/images/gt_input_vcfs.png)
 </details>
 
 <details markdown="1">
 <summary>GT match results structure:</summary>
 
 * GT match produces multiple metrics that assesses whether donor is the one we expect and what is the relatedness within pool.
-    * ![GT input structure](../assets/images/gt_structure.png)
+    * ![GT input structure](https://github.com/wtsi-hgi/yascp/assets/images/gt_structure.png)
 
 * Results indicate which donor from Vireo deconvolutions is which:
-    * ![GT input structure](../assets/images/GT_Results.png)
+    * ![GT input structure](https://github.com/wtsi-hgi/yascp/assets/images/GT_Results.png)
 </details>
 
 
@@ -152,7 +153,7 @@ Each of these steps and the outputs produced are decribed more in detail bellow:
 
 * By default we run azimuth l2 celltype assignment:
 
-    * ![Scrublet output structure](../assets/images/Azimuth.png)
+    * ![Scrublet output structure](https://github.com/wtsi-hgi/yascp/assets/images/Azimuth.png)
 </details>
 
 #### [Celltypist](#Celltypist) - Performs cellype assignment using celltypist Imule Low and Imune High profiles (this will be adjusted to use more references)
@@ -162,7 +163,7 @@ Each of these steps and the outputs produced are decribed more in detail bellow:
 
 * By default we run Imune High, Imune Low and Imune PBMC reference celltype assignment:
 
-    * ![Celltypist output structure](../assets/images/Celltypist.png)
+    * ![Celltypist output structure](https://github.com/wtsi-hgi/yascp/assets/images/Celltypist.png)
 </details>
 
 <details markdown="1">
@@ -173,7 +174,7 @@ Each of these steps and the outputs produced are decribed more in detail bellow:
 
 #### Combined File - A combined Celltypes file is produced by pipeline where all different references are combined in one spreadsheet.:
 
-    * ![Celltypist output structure](../assets/images/Combined_celltypes.png)
+    * ![Celltypist output structure](https://github.com/wtsi-hgi/yascp/assets/images/Combined_celltypes.png)
 </details>
 
 ## Donor and Cell QC
@@ -182,7 +183,7 @@ Each of these steps and the outputs produced are decribed more in detail bellow:
 <summary>Data QC output folder structure:</summary>
 
 *   QC output Folder structure:
-    * ![Clustering BBKNN structure](../assets/images/QC_structure.png)
+    * ![Clustering BBKNN structure](https://github.com/wtsi-hgi/yascp/assets/images/QC_structure.png)
 </details>
 
 ####  [Isolation Forest](#Isolation_Forest)
@@ -190,9 +191,9 @@ Each of these steps and the outputs produced are decribed more in detail bellow:
 <summary>We parfor Isolation forests in different resolutions - All data together, Per Celltype adaptive qc:</summary>
 
 *   All together Isolation Forests:
-    * ![Adaptive structure](../assets/images/adaptive_qc_alltogether.png)
+    * ![Adaptive structure](https://github.com/wtsi-hgi/yascp/assets/images/adaptive_qc_alltogether.png)
 *   Per Celltype Isolation Forests:
-    * ![Adaptive structure](../assets/images/adaptive_qc_celltype.png)
+    * ![Adaptive structure](https://github.com/wtsi-hgi/yascp/assets/images/adaptive_qc_celltype.png)
 </details>
 
 ####  [Hard filters](#Hard_filters): We also perform hard filters if user has specified that this is something thats required.
@@ -203,7 +204,7 @@ Each of these steps and the outputs produced are decribed more in detail bellow:
 <summary>Output file structure ( clustering ):</summary>
 
 *   Clustering combines all different integration methodologies utilised and in addition different plots in a structure represented in this layout:
-    * ![Clustering module output structure](../assets/images/Clustering.png)
+    * ![Clustering module output structure](https://github.com/wtsi-hgi/yascp/assets/images/Clustering.png)
 </details>
 
 
@@ -213,18 +214,18 @@ Each of these steps and the outputs produced are decribed more in detail bellow:
 <summary>BBKNN file structure ( clustering ):</summary>
 
 *   BBKNN is performed with different clustering resolutions and each of the clusters assesed ussing sccaf:
-    * ![Clustering BBKNN structure](../assets/images/bbknn_structure.png)
+    * ![Clustering BBKNN structure](https://github.com/wtsi-hgi/yascp/assets/images/bbknn_structure.png)
 </details>
 
 <details markdown="1">
 <summary>BBKNN sample UMAPS Coloured:</summary>
 
 *   Resolution 0.1: BBKNN is performed with different clustering resolutions and each of the clusters assesed ussing sccaf:
-    * ![Clustering BBKNN structure](../assets/images/bbknn_cluster1.png)
+    * ![Clustering BBKNN structure](https://github.com/wtsi-hgi/yascp/assets/images/bbknn_cluster1.png)
 *   Resolution 5: BBKNN is performed with different clustering resolutions and each of the clusters assesed ussing sccaf:
-    * ![Clustering BBKNN structure](../assets/images/bbknn_cluster2.png)
+    * ![Clustering BBKNN structure](https://github.com/wtsi-hgi/yascp/assets/images/bbknn_cluster2.png)
 *   Mitochondial transcripts: Coloured UMAP: We also color each of the bespoke clusters with different metrics:
-    * ![Clustering BBKNN structure](../assets/images/BBKNN_mito.png)
+    * ![Clustering BBKNN structure](https://github.com/wtsi-hgi/yascp/assets/images/BBKNN_mito.png)
 </details>
 
 #### [Harmony](#Harmony) - 
@@ -233,26 +234,26 @@ Each of these steps and the outputs produced are decribed more in detail bellow:
 <summary>Harmony file structure ( clustering ):</summary>
 
 *   Harmony is performed with different clustering resolutions and each of the clusters assesed ussing sccaf:
-    * ![Clustering Harmony structure](../assets/images/harmony_structure.png)
+    * ![Clustering Harmony structure](https://github.com/wtsi-hgi/yascp/assets/images/harmony_structure.png)
 </details>
 <details markdown="1">
 <summary>Harmony sample UMAPS Coloured:</summary>
 
 *   Resolution 0.1: Harmony is performed with different clustering resolutions and each of the clusters assesed ussing sccaf:
-    * ![Clustering Harmony structure](../assets/images/harmony_cluster1.png)
+    * ![Clustering Harmony structure](https://github.com/wtsi-hgi/yascp/assets/images/harmony_cluster1.png)
 *   Resolution 5: Harmony is performed with different clustering resolutions and each of the clusters assesed ussing sccaf:
-    * ![Clustering Harmony structure](../assets/images/harmony_cluster2.png)
+    * ![Clustering Harmony structure](https://github.com/wtsi-hgi/yascp/assets/images/harmony_cluster2.png)
 *   Mitochondial transcripts: Coloured UMAP: We also color each of the bespoke clusters with different metrics:
-    * ![Clustering Harmony structure](../assets/images/harmony_mito.png)
+    * ![Clustering Harmony structure](https://github.com/wtsi-hgi/yascp/assets/images/harmony_mito.png)
 </details>
 
 <details markdown="1">
 <summary>Harmony cluster evaluations and cluster markers:</summary>
 
 *   Histograms: Multiple useful prolts are produced to look at the clusterings:
-    * ![Harmony Histogram](../assets/images/harmony_histo.png)
+    * ![Harmony Histogram](https://github.com/wtsi-hgi/yascp/assets/images/harmony_histo.png)
 *   Dotplots: Multiple useful prolts are produced to look at the clusterings:
-    * ![Harmony Dotplot](../assets/images/harmony_dotplot)
+    * ![Harmony Dotplot](https://github.com/wtsi-hgi/yascp/assets/images/harmony_dotplot)
 </details>
 
 #### [PCA](#BBKNN) 
@@ -261,13 +262,13 @@ Each of these steps and the outputs produced are decribed more in detail bellow:
 <summary>PCA file structure ( clustering ):</summary>
 
 *   PCA is performed on the integrated data:
-    * ![Clustering Harmony structure](../assets/images/pca_plots.png)
+    * ![Clustering Harmony structure](https://github.com/wtsi-hgi/yascp/assets/images/pca_plots.png)
 </details>
 <details markdown="1">
 <summary>PCA file structure ( clustering ):</summary>
 
 *   Gene Loadings for each of the PCA is evaluated:
-    * ![PCA gene loadings](../assets/images/PCA_Gene_loadings.png)
+    * ![PCA gene loadings](https://github.com/wtsi-hgi/yascp/assets/images/PCA_Gene_loadings.png)
 </details>
 
 
@@ -278,16 +279,16 @@ Each of these steps and the outputs produced are decribed more in detail bellow:
 <summary>Sccaf file structure ( clustering ):</summary>
 
 *   As described above clustering is assesed using scaff: directory structure:
-    * ![Clustering BBKNN structure](../assets/images/sccaf_structure.png)
+    * ![Clustering BBKNN structure](https://github.com/wtsi-hgi/yascp/assets/images/sccaf_structure.png)
 
 *   Precission recall curves:
-    * ![Clustering BBKNN structure](../assets/images/scaff_prec_recal.png)
+    * ![Clustering BBKNN structure](https://github.com/wtsi-hgi/yascp/assets/images/scaff_prec_recal.png)
 
 *   ROC:
-    * ![Clustering BBKNN structure](../assets/images/sccaff_roc.png)
+    * ![Clustering BBKNN structure](https://github.com/wtsi-hgi/yascp/assets/images/sccaff_roc.png)
 
 *   Accuracy:
-    * ![Clustering BBKNN structure](../assets/images/sccaff_accuracy.png)
+    * ![Clustering BBKNN structure](https://github.com/wtsi-hgi/yascp/assets/images/sccaff_accuracy.png)
 
 </details>
 
