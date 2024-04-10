@@ -5,6 +5,17 @@
 
 ## Running the pipeline (please see bellow what imputs MUST be prepeared and what can be prepeared)
 
+<details markdown="1">
+<summary><b>Sanger Specific Exacution (you dont have to clone the repo):</b></summary>
+
+* In Sanger you do not need to set up anything. All you need is an input file:
+  ```
+      module load HGI/pipelines/yascp/1.5
+      yascp clean -c input.nf
+  ```
+
+</details>
+
 First clone the YASCP pipeline:
 ```console
     git clone https://github.com/wtsi-hgi/yascp.git
