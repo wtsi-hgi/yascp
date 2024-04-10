@@ -22,9 +22,9 @@ Where we have outputs from different steps of pipeline:
 * [sample deconvolution](#vireo)
 * [doublet detection](#doublet-detection)
 * [genotype match](#vireo) to determine sample matches
-* [handover](#handover) folder where summary statistics, plots and final qcd and annotated h5ads per donor are stored at.
+* [handover](#handover-summary-statistics-per-donor-h5ad-files-summary-plots) folder where summary statistics, plots and final qcd and annotated h5ads per donor are stored at.
 * infered genotypes - output from vireo that has generated vcf files for each of the deconvoluted donors in pool.
-* merged_h5ads - different preprocessing step merged h5ads (these allow to start the pipeline again in a clustering only mode)
+* merged_h5ad's - different preprocessing step merged h5ads (these allow to start the pipeline again in a clustering only mode)
 * [nf-preprocessing](#ambient-rna-removal) - contains cellbender results
 * pipeline info - statistics of the pipeline run.
 * plots - some quality control plots.
@@ -59,19 +59,19 @@ Each of these steps and the outputs produced are decribed more in detail bellow:
 #### [Donor Deconvolution using CellSnp/Vireo](#CellSnp/Vireo) - We run cellsnp and vireo to deconvolute donors if the input file has indicated that there are more than 1 donors in the pool.
 
 #### Cellsnp
+Cellsnp profiles each of the droplets for the variants in them, which is later utilised by vireo to assign the particular cell to the donor cluster:
 <details markdown="1">
 <summary>Cellsnp Output files:</summary>
 
-* Cellsnp profiles each of the droplets for the variants in them, which is later utilised by vireo to assign the particular cell to the donor cluster:
+
     * ![Screenshot 2024-04-10 at 16 52 31](https://github.com/wtsi-hgi/yascp/assets/22347136/63c5c540-2082-4e1e-ad9e-c931c92ce300)
 
 </details>
 
+#### Vireo
+Vireo takes the cellsnp variant pileups and assigns donors the particular cell to the donor cluster:
 <details markdown="1">
 <summary>Vireo Output files:</summary>
-
-#### Vireo
-* Vireo takes the cellsnp variant pileups and assigns donors the particular cell to the donor cluster:
     * ![Screenshot 2024-04-10 at 16 52 58](https://github.com/wtsi-hgi/yascp/assets/22347136/c58cdc11-f674-494e-870e-81576fe7765e)
 
 </details>
