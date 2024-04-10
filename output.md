@@ -307,7 +307,9 @@ Each of these steps and the outputs produced are decribed more in detail bellow:
 #### [Lisi](#Lisi) We also have a capability in running LISI cluster assesments, however curently this option does not run by default as it is memory demanding and requires some further optimisations
 
 ## [Citeseq](#citeseq): Citeseq folder will be present if your data contains citeseq
+
 ![Screenshot 2024-04-03 at 17 02 05](https://github.com/wtsi-hgi/yascp/assets/22347136/5a6dc2df-85ad-4be9-9338-12880bdb8b5c)
+
 In this folder we have a couple of subfolders:
 * DSB - folder contains DSB citeseq normalisation statistics and RDS files
     * ![Screenshot 2024-04-03 at 17 04 38](https://github.com/wtsi-hgi/yascp/assets/22347136/4529980d-6afb-41dc-bf92-89e8d081299a)
