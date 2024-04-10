@@ -24,13 +24,24 @@ parser.add_argument("-p", "--positions_called_on", metavar="positions_called_on"
                     default=None)
 
 args = parser.parse_args()
-
-positions_called_on = pd.read_csv(args.positions_called_on,sep='\t',header=None)
+try:
+    positions_called_on = pd.read_csv(args.positions_called_on,sep='\t',header=None)
+except:
+    positions_called_on = pd.DataFrame()
 positions_called_on = set(positions_called_on[0].astype(str)+':'+positions_called_on[1].astype(str))
-set2_informative_sites = pd.read_csv(args.set2_informative_sites,sep='\t',header=None)
-set2_informative_sites = set(set2_informative_sites[0].astype(str)+':'+set2_informative_sites[1].astype(str))
-set1_uninformative_sites = pd.read_csv(args.set1_uninformative_sites,sep='\t',header=None)
-set1_uninformative_sites = set(set1_uninformative_sites[0].astype(str)+':'+set1_uninformative_sites[1].astype(str))
+try:
+    set2_informative_sites = pd.read_csv(args.set2_informative_sites,sep='\t',header=None)
+    set2_informative_sites = set(set2_informative_sites[0].astype(str)+':'+set2_informative_sites[1].astype(str))
+except:
+    set2_informative_sites = pd.DataFrame()
+
+
+try:
+    set1_uninformative_sites = pd.read_csv(args.set1_uninformative_sites,sep='\t',header=None)
+    set1_uninformative_sites = set(set1_uninformative_sites[0].astype(str)+':'+set1_uninformative_sites[1].astype(str))
+except:
+    set1_uninformative_sites = pd.DataFrame()
+
 variants_description = pd.read_csv(args.variants_description,sep='\t')
 samplename = args.samplename
 

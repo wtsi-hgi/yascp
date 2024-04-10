@@ -34,7 +34,7 @@ workflow MERGE_SAMPLES{
                     params.anndata_compression_opts
             )
             file__anndata_merged = merge_samples_from_h5ad.out.anndata
-            file__cells_filtered = merge_samples_from_h5ad.out.cells_filtered
+            // file__cells_filtered = merge_samples_from_h5ad.out.cells_filtered
 
         }else if (mode == 'barcodes'){
             log.info """---Using barcode input---"""
@@ -55,10 +55,10 @@ workflow MERGE_SAMPLES{
                 params.anndata_compression_opts
             )
             file__anndata_merged = merge_samples.out.anndata
-            file__cells_filtered = merge_samples.out.cells_filtered
+            // file__cells_filtered = merge_samples.out.cells_filtered
         }
     emit:
         file__anndata_merged
-        file__cells_filtered
+        // file__cells_filtered
 
 }

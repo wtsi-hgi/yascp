@@ -267,7 +267,10 @@ def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res
                 copytree(dens_file, f'{name_dir}/QC metrics/{name_dir_final}')    
             except:
                 continue     
-        copyfile(f'{folder1}/adata-cell_filtered_per_experiment-n_cells_before_after.png', f'{name_dir}/QC metrics/adata-cell_filtered_per_experiment-n_cells_before_after.png')
+        try:
+            copyfile(f'{folder1}/adata-cell_filtered_per_experiment-n_cells_before_after.png', f'{name_dir}/QC metrics/adata-cell_filtered_per_experiment-n_cells_before_after.png')
+        except:
+            _='file not there'
         copyfile(f'{folder1}/scatterplot-sex_sample_swap_check.png', f'{name_dir}/QC metrics/scatterplot-sex_sample_swap_check.png')
         fil1 = glob.glob(f'{folder1}/plot_ecdf-x_log10*total_counts*')[0]
         copyfile(fil1, f'{name_dir}/QC metrics/plot_ecdf-x_log10.var=total_counts.color=experiment_id-adata.png')

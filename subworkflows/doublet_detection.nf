@@ -94,35 +94,35 @@ workflow MULTIPLET {
             out = Channel.of()
         }
 
-        if (params.filter_multiplets.scrublet.run_process){
+        if (params.filter_multiplets.doubletDetection.run_process){
             DOUBLET_DETECTION(channel__file_paths_10x) //Done
             input_channel = input_channel.mix(DOUBLET_DETECTION.out.result)
         }else{
             out = Channel.of()
         }
 
-        if (params.filter_multiplets.scrublet.run_process){
+        if (params.filter_multiplets.doubletDecon.run_process){
             DOUBLET_DECON(gex_h5ad) //Done
             input_channel = input_channel.mix(DOUBLET_DECON.out.result)
         }else{
             out = Channel.of()
         }
 
-        if (params.filter_multiplets.scrublet.run_process){
+        if (params.filter_multiplets.scDblFinder.run_process){
             SC_DBLFINDER(channel__file_paths_10x)
             input_channel = input_channel.mix(SC_DBLFINDER.out.result)
         }else{
             out = Channel.of()
         }
 
-        if (params.filter_multiplets.scrublet.run_process){
+        if (params.filter_multiplets.scds.run_process){
             SCDS(channel__file_paths_10x)
             input_channel = input_channel.mix(SCDS.out.result)
         }else{
             out = Channel.of()
         }
 
-        if (params.filter_multiplets.scrublet.run_process){
+        if (params.filter_multiplets.doubletFinder.run_process){
             DOUBLET_FINDER(gex_h5ad,params.filter_multiplets.expected_multiplet_rate) //Done
             input_channel = input_channel.mix(DOUBLET_FINDER.out.result)
             

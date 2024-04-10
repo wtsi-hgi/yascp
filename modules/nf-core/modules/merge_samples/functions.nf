@@ -62,10 +62,10 @@ process merge_samples_from_h5ad {
     //       https://github.com/nextflow-io/nextflow/issues/1414
     output:
         path("pre_QC_adata.h5ad", emit: anndata)
-        path(
-            "pre_QC_adata-cell_filtered_per_experiment.tsv.gz",
-            emit: cells_filtered
-        )
+        // path(
+        //     "pre_QC_adata-cell_filtered_per_experiment.tsv.gz",
+        //     emit: cells_filtered
+        // )
         path("plots/*.png") optional true
         path("plots/*.pdf") optional true
 
@@ -154,10 +154,10 @@ process merge_samples {
     //       https://github.com/nextflow-io/nextflow/issues/1414
     output:
         path("adata.h5ad", emit: anndata)
-        path(
-            "adata-cell_filtered_per_experiment.tsv.gz",
-            emit: cells_filtered
-        )
+        // path(
+        //     "adata-cell_filtered_per_experiment.tsv.gz",
+        //     emit: cells_filtered
+        // )
         path("plots/*.png") optional true
         path("plots/*.pdf") optional true
 

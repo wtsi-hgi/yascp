@@ -58,7 +58,7 @@ process DYNAMIC_DONOR_EXCLUSIVE_SNP_SELECTION{
         ln -s set1_uninformative_sites.tsv set1_uninformative_sites_${samplename}.tsv
         ln -s set2_informative_sites.tsv set2_informative_sites_${samplename}.tsv
         bgzip cellsnp_panel_${samplename}.vcf
-        rm -r dynamic_snps.vcf.gz
+        #rm -r dynamic_snps.vcf.gz
       """
 }
 
@@ -115,6 +115,7 @@ process CELLSNP {
     output:
       tuple val(samplename), file("cellsnp_${samplename}"), emit: cellsnp_output_dir
       tuple val(samplename), path("cellsnp_${samplename}/cellSNP.cells.vcf.gz"), emit: cell_vcfs
+      tuple val(samplename), path('region_vcf_no_MHC.vcf.gz'), path(bam_file), emit: for_bam_pileups
 
     script:
     if (n_pooled=='1'){

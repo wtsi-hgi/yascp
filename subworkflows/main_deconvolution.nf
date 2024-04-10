@@ -4,10 +4,12 @@ nextflow.enable.dsl=2
 
 include { CELLSNP;capture_cellsnp_files;DYNAMIC_DONOR_EXCLUSIVE_SNP_SELECTION; ASSESS_CALL_RATE } from "$projectDir/modules/nf-core/modules/cellsnp/main"
 include { SUBSET_GENOTYPE } from "$projectDir/modules/nf-core/modules/subset_genotype/main"
-include { VIREO;REMOVE_DUPLICATED_DONORS_FROM_GT;VIREO_SUBSAMPLING;VIREO_SUBSAMPLING_PROCESSING; GENOTYPE_MATCHER } from "$projectDir/modules/nf-core/modules/vireo/main"
+include { VIREO;VIREO as VIREO_SINGLE_DONOR; REMOVE_DUPLICATED_DONORS_FROM_GT;VIREO_SUBSAMPLING;VIREO_SUBSAMPLING_PROCESSING; GENOTYPE_MATCHER } from "$projectDir/modules/nf-core/modules/vireo/main"
+include { SUBSET_BAM_PER_BARCODES_AND_VARIANTS } from "$projectDir/modules/nf-core/modules/subset_bam_per_barcodes_and_variants/main"
+include { FREEBAYES } from "$projectDir/modules/nf-core/modules/freebayes/main"
 include { GUZIP_VCF } from "$projectDir/modules/nf-core/modules/guzip_vcf/main"
 include { SOUPORCELL } from "$projectDir/modules/nf-core/modules/souporcell/main"
-include { SPLIT_DONOR_H5AD } from "$projectDir/modules/nf-core/modules/split_donor_h5ad/main"
+include { SPLIT_DONOR_H5AD; PREP_ASSIGNMENTS_FILE } from "$projectDir/modules/nf-core/modules/split_donor_h5ad/main"
 include { PLOT_DONOR_CELLS } from "$projectDir/modules/nf-core/modules/plot_donor_cells/main"
 include {SOUPORCELL_VS_VIREO} from "$projectDir/modules/nf-core/modules/plot_souporcell_vs_vireo/main"
 include { REPLACE_GT_ASSIGNMENTS_WITH_PHENOTYPE; ENHANCE_VIREO_METADATA_WITH_DONOR } from "$projectDir/modules/nf-core/modules/genotypes/main"
@@ -19,7 +21,7 @@ include { RETRIEVE_RECOURSES } from "$projectDir/subworkflows/local/retrieve_rec
 include {GT_MATCH_POOL_IBD } from "$projectDir/modules/nf-core/modules/genotypes/main"
 include { MATCH_GT_VIREO } from "$projectDir/modules/nf-core/modules/genotypes/main"
 
-include {VIREO_GT_FIX_HEADER; VIREO_GT_FIX_HEADER as VIREO_GT_FIX_HEADER_SUBS; VIREO_ADD_SAMPLE_PREFIX; MERGE_GENOTYPES_IN_ONE_VCF as MERGE_GENOTYPES_IN_ONE_VCF_INFERED; MERGE_GENOTYPES_IN_ONE_VCF as MERGE_GENOTYPES_IN_ONE_VCF_SUBSET} from "$projectDir/modules/nf-core/modules/genotypes/main"
+include {VIREO_GT_FIX_HEADER; VIREO_GT_FIX_HEADER as VIREO_GT_FIX_HEADER_SUBS; MERGE_GENOTYPES_IN_ONE_VCF; VIREO_ADD_SAMPLE_PREFIX; MERGE_GENOTYPES_IN_ONE_VCF_IDX_PAN; MERGE_GENOTYPES_IN_ONE_VCF_FREEBAYES; MERGE_GENOTYPES_IN_ONE_VCF as MERGE_GENOTYPES_IN_ONE_VCF_SUBSET} from "$projectDir/modules/nf-core/modules/genotypes/main"
 include {collect_file as collect_file1;
         collect_file as collect_file2;
         collect_file as collect_file3;
@@ -96,9 +98,6 @@ workflow  main_deconvolution {
         ch_poolid_donor_assignment = Channel.empty()
         ch_experiment_donorsvcf_donorslist.map { experiment, donorsvcf, donorstbi,donorslist -> tuple(experiment, donorslist.replaceAll(/,/, " ").replaceAll(/"/, ""))}.set{donors_in_lane}
         ch_experiment_bam_bai_barcodes.combine(ch_experiment_npooled, by: 0).set{cellsnp_with_npooled}
-        // ch_experiment_bam_bai_barcodes.subscribe { println "ch_experiment_bam_bai_barcodes: $it" }
-        // ch_experiment_npooled.subscribe { println "ch_experiment_npooled: $it" }
-        // cellsnp_with_npooled.subscribe { println "cellsnp_with_npooled: $it" }
 
         if (params.genotype_input.run_with_genotype_input) {
             // Here we provide sites to pile up the snps within the pool. 
@@ -111,8 +110,6 @@ workflow  main_deconvolution {
         }else{
             cellsnp_with_npooled2 = cellsnp_with_npooled.combine(Channel.fromPath(params.cellsnp.vcf_candidate_snps))
         }
-        // cellsnp_with_npooled2.subscribe { println "cellsnp_with_npooled2: $it" }
-        
 
         log.info('Capturing some of the existing CELLSNP files')
         capture_cellsnp_files(params.existing_cellsnp)
@@ -135,8 +132,6 @@ workflow  main_deconvolution {
             collect_file9(ASSESS_CALL_RATE.out.variants_description.collect(),"all_variants_description.tsv",params.outdir+'/concordances',1,'')
         }
         
-
-
         cellsnp_output_dir2 = CELLSNP.out.cellsnp_output_dir
         cellsnp_output_dir=cellsnp_output_dir1.concat(cellsnp_output_dir2)
         cellsnp_cell_vcfs2=cellsnp_cell_vcfs.concat(CELLSNP.out.cell_vcfs)
@@ -149,10 +144,7 @@ workflow  main_deconvolution {
             // Here we subset the genotypes. This happens if the input.nf contains subset_genotypes = true
             log.info "---We are using subset genotypes running Vireo----"
             // We need to make sure that the expected genotypes dont contain repeated genotypes - donors sequenced twice.
-            // params.genotype_phenotype_mapping_file.subscribe{ println "params.genotype_phenotype_mapping_file filter_channel: $it" }
-            // log.info "---${params.genotype_phenotype_mapping_file} params.genotype_phenotype_mapping_file----"
-            // log.info "---${params.input_data_table} params.genotype_phenotype_mapping_file----"
-            // merged_expected_genotypes.subscribe{ println "merged_expected_genotypes: $it" }
+
             if (params.genotype_phenotype_mapping_file!=''){
                 REMOVE_DUPLICATED_DONORS_FROM_GT(merged_expected_genotypes,params.genotype_phenotype_mapping_file,params.input_data_table)
                 merged_expected_genotypes = REMOVE_DUPLICATED_DONORS_FROM_GT.out.merged_expected_genotypes
@@ -172,9 +164,6 @@ workflow  main_deconvolution {
         full_vcf.filter { experiment, cellsnp, npooled, t,ti -> npooled != '1' }.set{full_vcf2}
         full_vcf.filter { experiment, cellsnp, npooled, t,ti -> npooled == '1' }.set{not_deconvoluted}
 
-        //Vireo creates per pool vcf vit donor0 etc, or if genotypes are provided genotype IDs will be placed there.
-        // full_vcf2.subscribe { println "full_vcf2: $it" }
-
         Channel.of(1..params.vireo.subsample_times).set{itterations}
 
         full_vcf2.combine(itterations).set{vireo_extra_repeats}
@@ -182,13 +171,12 @@ workflow  main_deconvolution {
         VIREO(full_vcf2)
         vireo_paths = VIREO.out.output_dir
 
-        
         //But to make it consistent we still randomly assign donor IDs per pool for each of the names.
         vireo_with_gt = Channel.of(params.genotype_input.vireo_with_gt)
         VIREO.out.all_required_data.set{replacement_input}
         replacement_input.combine(vireo_with_gt).set{vir_repl_input}
         REPLACE_GT_DONOR_ID2(vir_repl_input)
-        cell_assignments = REPLACE_GT_DONOR_ID2.out.cell_assignments
+        // cell_assignments = REPLACE_GT_DONOR_ID2.out.cell_assignments
         VIREO_GT_FIX_HEADER(REPLACE_GT_DONOR_ID2.out.infered_vcf,genome)
         VIREO_ADD_SAMPLE_PREFIX(VIREO_GT_FIX_HEADER.out.infered_vcf)
         
@@ -206,44 +194,6 @@ workflow  main_deconvolution {
         vireo_out_sample__exp_summary_tsv = REPLACE_GT_DONOR_ID2.out.sample__exp_summary_tsv
         vireo_out_sample_donor_ids = REPLACE_GT_DONOR_ID2.out.sample_donor_ids
 
-        if (params.genotype_input.run_with_genotype_input) {
-            if (params.do_vireo_subsampling){
-                VIREO_SUBSAMPLING(vireo_extra_repeats)
-                VIREO_SUBSAMPLING.out.output_dir.concat(VIREO.out.output_dir).set{tuple_1}
-                // tuple_1.groupTuple(by:0).set{vspp0}
-                // VIREO_SUBSAMPLING_PROCESSING(vspp0)
-                // VIREO_SUBSAMPLING.out.all_required_data.set{replacement_input_sub}
-                // // replacement_input_sub.combine(vireo_with_gt).set{vir_repl_input}
-                // // REPLACE_GT_DONOR_ID_SUBS(vir_repl_input)
-                // // VIREO_GT_FIX_HEADER_SUBS(REPLACE_GT_DONOR_ID_SUBS.out.infered_vcf,genome)
-                // // VIREO_GT_FIX_HEADER_SUBS.out.gt_pool
-                // //     .combine(ch_ref_vcf).set { gt_math_pool_against_panel_input_subs }
-                    
-                // MATCH_GT_VIREO(gt_math_pool_against_panel_input_subs)
-                // subsampling_donor_swap = VIREO_SUBSAMPLING_PROCESSING.out.subsampling_donor_swap
-            }else{
-                subsampling_donor_swap = Channel.from("$projectDir/assets/fake_file.fq")
-            }
-
-            
-
-            VIREO_GT_FIX_HEADER.out.gt_pool
-                .combine(ch_ref_vcf)
-                .set { gt_math_pool_against_panel_input }
-
-            match_genotypes(vireo_out_sample_donor_vcf,merged_expected_genotypes,VIREO_GT_FIX_HEADER.out.gt_pool,gt_math_pool_against_panel_input,genome,ch_ref_vcf,cellsnp_cell_vcfs2,cell_assignments,subsampling_donor_swap,informative_uninformative_sites)
-            gt_matches = match_genotypes.out.donor_match_table.collect()
-
-            ENHANCE_STATS_GT_MATCH(match_genotypes.out.donor_match_table_enhanced,params.input_data_table)
-            collect_file1(ENHANCE_STATS_GT_MATCH.out.assignments.collect(),"assignments_all_pools.tsv",params.outdir+'/deconvolution/vireo_gt_fix',1,'')
-            collect_file10(ENHANCE_STATS_GT_MATCH.out.assignments.collect(),"assignments_all_pools.tsv",params.outdir+'/gtmatch',1,'')
-            assignments_all_pools = collect_file1.out.output_collection
-            gt_matches = Channel.from("$projectDir/assets/fake_file.fq")
-            assignments_all_pools = Channel.from("$projectDir/assets/fake_file.fq")
-        }else{
-            gt_matches = Channel.from("$projectDir/assets/fake_file.fq")
-            assignments_all_pools = Channel.from("$projectDir/assets/fake_file.fq")
-        }
 
         // if (params.souporcell.run){
         //     // YASCP pipeline is also capable in running SOUPORCELL instead of VIREO. If activated SOUPORCELL will be used.
@@ -331,6 +281,82 @@ workflow  main_deconvolution {
         }
 
         SPLIT_DONOR_H5AD(split_channel5)
+        PREP_ASSIGNMENTS_FILE(split_channel5)
+        cell_assignments = PREP_ASSIGNMENTS_FILE.out.cell_assignments
+        if (params.bam_pileup_per_donor){
+            // SPLIT_DONOR_H5AD.out.sample_donor_level_barcodes.transpose().subscribe { println "sample_donor_level_barcodes: $it" }
+            // CELLSNP.out.for_bam_pileups.subscribe { println "for_bam_pileups: $it" }
+
+            bam_subset_chanel = SPLIT_DONOR_H5AD.out.sample_donor_level_barcodes.transpose().combine(CELLSNP.out.for_bam_pileups, by: 0)
+            SUBSET_BAM_PER_BARCODES_AND_VARIANTS(bam_subset_chanel)  // This process subsets the ba
+
+            chromosomes =  Channel.of(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22)
+            freebayes_pre = SUBSET_BAM_PER_BARCODES_AND_VARIANTS.out.freebayes_input
+
+            freebayes_in = freebayes_pre.combine(chromosomes)
+
+            FREEBAYES(freebayes_in,genome)
+            vireo_out_sample_donor_vcf = FREEBAYES.out.freebayes_vcf
+
+            // FREEBAYES.out.gt_pool
+            //     .combine(ch_ref_vcf)
+            //     .set { gt_math_pool_against_panel_input2 }
+            FREEBAYES.out.gt_pool.groupTuple(by:0).set{fbb1}
+
+            fbb1.subscribe { println "fbb1: $it" }
+            MERGE_GENOTYPES_IN_ONE_VCF_IDX_PAN(fbb1,'freebayes')
+            MERGE_GENOTYPES_IN_ONE_VCF_IDX_PAN.out.gt_pool.groupTuple(by:0).set{fbb2}
+            fbb2.subscribe { println "fbb2: $it" }
+            MERGE_GENOTYPES_IN_ONE_VCF_FREEBAYES(fbb2,'freebayes')
+            gt_math_pool_against_panel_input2 = MERGE_GENOTYPES_IN_ONE_VCF_FREEBAYES.out.gt_pool.combine(ch_ref_vcf)
+            // cell_assignments = 
+
+        }else{
+            gt_math_pool_against_panel_input2 = Channel.of()
+        }
+
+
+
+        if (params.genotype_input.run_with_genotype_input) {
+            if (params.do_vireo_subsampling){
+                VIREO_SUBSAMPLING(vireo_extra_repeats)
+                VIREO_SUBSAMPLING.out.output_dir.concat(VIREO.out.output_dir).set{tuple_1}
+                // tuple_1.groupTuple(by:0).set{vspp0}
+                // VIREO_SUBSAMPLING_PROCESSING(vspp0)
+                // VIREO_SUBSAMPLING.out.all_required_data.set{replacement_input_sub}
+                // // replacement_input_sub.combine(vireo_with_gt).set{vir_repl_input}
+                // // REPLACE_GT_DONOR_ID_SUBS(vir_repl_input)
+                // // VIREO_GT_FIX_HEADER_SUBS(REPLACE_GT_DONOR_ID_SUBS.out.infered_vcf,genome)
+                // // VIREO_GT_FIX_HEADER_SUBS.out.gt_pool
+                // //     .combine(ch_ref_vcf).set { gt_math_pool_against_panel_input_subs }
+                    
+                // MATCH_GT_VIREO(gt_math_pool_against_panel_input_subs)
+                // subsampling_donor_swap = VIREO_SUBSAMPLING_PROCESSING.out.subsampling_donor_swap
+            }else{
+                subsampling_donor_swap = Channel.from("$projectDir/assets/fake_file.fq")
+            }
+
+            
+
+            VIREO_GT_FIX_HEADER.out.gt_pool
+                .combine(ch_ref_vcf)
+                .set { gt_math_pool_against_panel_input3 }
+            gt_math_pool_against_panel_input = gt_math_pool_against_panel_input3.mix(gt_math_pool_against_panel_input2)
+
+            match_genotypes(vireo_out_sample_donor_vcf,merged_expected_genotypes,VIREO_GT_FIX_HEADER.out.gt_pool,gt_math_pool_against_panel_input,genome,ch_ref_vcf,cellsnp_cell_vcfs2,cell_assignments,subsampling_donor_swap,informative_uninformative_sites)
+            gt_matches = match_genotypes.out.donor_match_table.collect()
+
+            ENHANCE_STATS_GT_MATCH(match_genotypes.out.donor_match_table_enhanced,params.input_data_table)
+            collect_file1(ENHANCE_STATS_GT_MATCH.out.assignments.collect(),"assignments_all_pools.tsv",params.outdir+'/deconvolution/vireo_gt_fix',1,'')
+            collect_file10(ENHANCE_STATS_GT_MATCH.out.assignments.collect(),"assignments_all_pools.tsv",params.outdir+'/gtmatch',1,'')
+            assignments_all_pools = collect_file1.out.output_collection
+            gt_matches = Channel.from("$projectDir/assets/fake_file.fq")
+            assignments_all_pools = Channel.from("$projectDir/assets/fake_file.fq")
+        }else{
+            gt_matches = Channel.from("$projectDir/assets/fake_file.fq")
+            assignments_all_pools = Channel.from("$projectDir/assets/fake_file.fq")
+        }
+
 
         // collect file paths to h5ad files in tsv tables:
         header_seed="experiment_id\tdonor\th5ad_filepath"

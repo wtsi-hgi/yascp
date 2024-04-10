@@ -236,6 +236,17 @@ workflow qc {
         }
 
         if (params.bbknn.run_process) {
+
+            if (params.bbknn.estimate_neighbors){
+                // Here we use BBKNN dims for the UMAPS
+                neighbors =  ["-1"]
+                neighbors_umap = ["-1"]
+                
+            }else{
+                neighbors = params.cluster.number_neighbors.value
+                neighbors_umap = params.umap.n_neighbors.value
+            }
+
             BBKNN(
                 PCA.out.outdir,
                 PCA.out.anndata,
@@ -253,7 +264,7 @@ workflow qc {
                 BBKNN.out.pcs,
                 BBKNN.out.reduced_dims,
                 "True",  // Don't look at the reduced_dims parameter
-                ["-1"],  // params.cluster.number_neighbors.value,
+                neighbors,
                 params.umap.umap_init.value,
                 params.umap.umap_min_dist.value,
                 params.umap.umap_spread.value,
@@ -277,7 +288,7 @@ workflow qc {
                 cluster_bbknn__pcs,
                 cluster_bbknn__reduced_dims,
                 "True",  // use_pcs_as_reduced_dims
-                ["-1"],  // params.cluster.number_neighbors.value,
+                neighbors,
                 params.cluster.methods.value,
                 params.cluster.resolutions.value,
                 params.cluster.variables_boxplot.value,
@@ -285,7 +296,7 @@ workflow qc {
                 params.cluster_validate_resolution.sparsity.value,
                 params.cluster_validate_resolution.train_size_cells.value,
                 params.cluster_marker.methods.value,
-                ["-1"],  // params.umap.n_neighbors.value,
+                neighbors_umap,
                 params.umap.umap_init.value,
                 params.umap.umap_min_dist.value,
                 params.umap.umap_spread.value,
@@ -318,7 +329,7 @@ workflow qc {
                 PCA.out.pcs,
                 DONT_INTEGRATE.out.reduced_dims,
                 "True",  // Don't look at the reduced_dims parameter
-                ["-1"],  // params.cluster.number_neighbors.value,
+                params.cluster.number_neighbors.value,
                 params.umap.umap_init.value,
                 params.umap.umap_min_dist.value,
                 params.umap.umap_spread.value,
@@ -339,7 +350,7 @@ workflow qc {
                 cluster_pcs,
                 cluster_reduced_dims,
                 "True",  // use_pcs_as_reduced_dims
-                ["-1"],  // params.cluster.number_neighbors.value,
+                params.cluster.number_neighbors.value,
                 params.cluster.methods.value,
                 params.cluster.resolutions.value,
                 params.cluster.variables_boxplot.value,
@@ -347,7 +358,7 @@ workflow qc {
                 params.cluster_validate_resolution.sparsity.value,
                 params.cluster_validate_resolution.train_size_cells.value,
                 params.cluster_marker.methods.value,
-                ["-1"],  // params.umap.n_neighbors.value,
+                params.umap.n_neighbors.value,
                 params.umap.umap_init.value,
                 params.umap.umap_min_dist.value,
                 params.umap.umap_spread.value,

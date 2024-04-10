@@ -341,14 +341,19 @@ if __name__ == "__main__":
     subs['full'] = subs['full'].str.replace(".",';', regex=False).str.replace(";+",';')
     
     # all informative indexes
-     # now we need to locate which variants actually has a change in the genotype. 
+    # now we need to locate which variants actually has a change in the genotype. 
     all_informative_site_index = set()
-    all_informative_site_index = all_informative_site_index.union(set(subs[subs['full'].str.contains(r'^(?=.*0\|0)(?=.*0\|1)')].index))
-    all_informative_site_index = all_informative_site_index.union(set(subs[subs['full'].str.contains(r'^(?=.*0\|0)(?=.*1\|1)')].index))
-    all_informative_site_index = all_informative_site_index.union(set(subs[subs['full'].str.contains(r'^(?=.*0\|0)(?=.*1\|0)')].index))
-    all_informative_site_index = all_informative_site_index.union(set(subs[subs['full'].str.contains(r'^(?=.*1\|0)(?=.*1\|1)')].index))
-    all_informative_site_index = all_informative_site_index.union(set(subs[subs['full'].str.contains(r'^(?=.*0\|1)(?=.*1\|1)')].index))
-    all_informative_site_index = all_informative_site_index.union(set(subs[subs['full'].str.contains(r'^(?=.*0\|1)(?=.*1\|0)')].index))
+    if (subs.shape[1] == 2):
+        # here all are informative, we just have 1 GT
+        all_informative_site_index = all_informative_site_index.union(set(subs.index))
+    else:
+        
+        all_informative_site_index = all_informative_site_index.union(set(subs[subs['full'].str.contains(r'^(?=.*0\|0)(?=.*0\|1)')].index))
+        all_informative_site_index = all_informative_site_index.union(set(subs[subs['full'].str.contains(r'^(?=.*0\|0)(?=.*1\|1)')].index))
+        all_informative_site_index = all_informative_site_index.union(set(subs[subs['full'].str.contains(r'^(?=.*0\|0)(?=.*1\|0)')].index))
+        all_informative_site_index = all_informative_site_index.union(set(subs[subs['full'].str.contains(r'^(?=.*1\|0)(?=.*1\|1)')].index))
+        all_informative_site_index = all_informative_site_index.union(set(subs[subs['full'].str.contains(r'^(?=.*0\|1)(?=.*1\|1)')].index))
+        all_informative_site_index = all_informative_site_index.union(set(subs[subs['full'].str.contains(r'^(?=.*0\|1)(?=.*1\|0)')].index))
     
     # Now we select the informative sites and produce the filan outpu
      
@@ -398,14 +403,17 @@ if __name__ == "__main__":
     informative_sites_covered_in_default_panel = set(exta_snps.index)-set(cellsnp.index)
     constant_sites_covered_in_default_panel = set(constant_sites.index)-set(cellsnp.index)
     
-
+    constant_sites.columns = cellsnp.columns
+    exta_snps.columns = cellsnp.columns
+    
     if add_noninformative:
-        constant_sites.columns = cellsnp.columns
+        
         cellsnp_exta_snps=pd.concat([cellsnp,exta_snps,constant_sites])
     else:
         cellsnp_exta_snps=pd.concat([cellsnp,exta_snps])
         
     cellsnp_exta_snps = cellsnp_exta_snps.drop_duplicates(subset=[0, 1])
+    
     
     set2_informative_sites =exta_snps
     set1_uninformative_sites=constant_sites

@@ -224,13 +224,16 @@ def split_h5ad_per_donor(vireo_donor_ids_tsv, filtered_matrix_h5, samplename,
             donor_id = str(donor_id)
             logging.info('filtering cells of AnnData to donor ' + donor_id)
             adata_donor = adata[adata.obs['donor_id'] == donor_id, :]
+            
             logging.info("n cells len(adata_donor.obs) for " + donor_id  + ': ' + str(len(adata_donor.obs)) + '/' + str(len(adata.obs)))
             if len(adata_donor.obs) > 0:
+                
                 count+=1
                 logging.info("more than 0 cells for donor")
                 adata_nr_cells[count]={'experiment_id':f'{samplename}__{donor_id}','n_cells':len(adata_donor.obs)}
                 adata_donors.append((donor_id, adata_donor))
                 output_file = output_dir + '/donor_level_anndata/' + donor_id + '.' + samplename
+                pd.DataFrame(adata_donor.obs.index,columns=['barcodes']).to_csv(f'{output_file}.barcodes.tsv',index=False,header=False)
                 logging.info('Write h5ad donor AnnData to ' + output_file)
                 adata_donor.write('{}.h5ad'.format(output_file), compression='gzip', compression_opts= anndata_compression_level)
             else:

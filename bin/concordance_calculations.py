@@ -29,6 +29,7 @@ import logging
 import os
 import gzip
 import time
+import random
 pd.options.mode.chained_assignment = None
 
 mode = 'no_het'  #We can not determine whether hets are concordant or discordant in terms of reads. 
@@ -141,6 +142,8 @@ class Concordances:
         cellsnp_gtypes_set = sorted(cellsnp_gtypes_set)
 
         #for i in range(0, len(snp_gtypes)):
+        # cellsnp_gtypes_str = pd.DataFrame(cellsnp_gtypes_set,columns=['cellsnp_gtypes'])
+        # cellsnp_gtypes_str['snp_gtypes'] = pd.DataFrame(snp_gtypes_set,columns=['snp_gtypes'])['snp_gtypes']
         for i in range(0, len(snp_gtypes_set)):
             discordant = False
             # snp_data = snp_gtypes[i].split('_')
@@ -148,15 +151,8 @@ class Concordances:
             snp_data = snp_gtypes_set[i].split('_')
             cellsnp_data = cellsnp_gtypes_set[i].split('_')
 
-            # the below will no longer work due to differing length of input strings
-            # snp_alleles = [snp_gtypes[i][-3], snp_gtypes[i][-1]]
-            # cellsnp_alleles = [cellsnp_gtypes[i][-3], cellsnp_gtypes[i][-1]]
-
-            snp_alleles = [snp_data[4][0], snp_data[4][2]]
-            cellsnp_alleles = [cellsnp_data[4][0], cellsnp_data[4][2]]
-
-            snp_alleles_set = set(snp_alleles)
-            cellsnp_alleles_set = set(cellsnp_alleles)
+            snp_alleles_set = set([snp_data[4][0], snp_data[4][2]])
+            cellsnp_alleles_set = set([cellsnp_data[4][0], cellsnp_data[4][2]])
             
             snp_var = ('_').join(snp_data[0:4])
             cellsnp_var = ('_').join(cellsnp_data[0:4])
@@ -402,8 +398,27 @@ class Concordances:
             true_discordant_count = 0
             relaxed_concordant_count = 0
             total_sites = 0
-    
+            relaxed_concordant_informative_count = 0
+            relaxed_concordant_uninformative_count = 0
+            true_discordant_informative_count = 0
+            true_discordant_uninformative_count = 0
+            informative_sites = 0
+            disc_sites_string = ''
             discordant_reads = 0
+            uninformative_sites = 0
+            total_reads = 0
+            total_reads_informative =0
+            total_reads_uninformative=0
+            discordant_reads=0
+            discordant_reads_informative=0
+            discordant_reads_uninformative=0
+            discordant_vars=0
+            concordant_vars=0
+            discordant_read_fraction_in_concordant_sites=0
+            discordant_read_fraction_in_discordant_sites=0
+            discordant_reads_uninformative_fraction=0
+            discordant_reads_informative_fraction=0
+            discordant_reads_informative_subset=0
 
         return Concordant_Sites, \
             Discordant_sites, \
@@ -437,9 +452,10 @@ class Concordances:
 
     def set_results(self,to_set,id):
         # Recod to disk to save the loading mmeory time.
-        with open(f'tmp_{id}.pkl', 'wb') as f:
+        hash = random.getrandbits(128)
+        with open(f'tmp_{id}_{hash}.pkl', 'wb') as f:
             pickle.dump(to_set, f)
-        self.record_dict[id]=f'tmp_{id}.pkl'
+        self.record_dict[id]=f'tmp_{id}_{hash}.pkl'
         return 
     
     # def append_results_cell_concordances(self,result):
@@ -582,20 +598,24 @@ class Concordances:
    
     def set_results(self,to_set,id):
         # Recod to disk to save the loading mmeory time.
-        with open(f'tmp_{id}.pkl', 'wb') as f:
+        hash = random.getrandbits(128)
+        with open(f'tmp_{id}_{hash}.pkl', 'wb') as f:
             pickle.dump(to_set, f)
-        self.record_dict[id]=f'tmp_{id}.pkl' 
+        self.record_dict[id]=f'tmp_{id}_{hash}.pkl' 
     
-    def analyse_donor(self,Cells_to_keep_pre,donor_gt_match,donor_gt_match_cohort,vars_per_donor_gt,donor_cohorts,count,all_donor_data,expected_vars_norm,donor_assignments_table):
+    def analyse_donor(self,analyse_donor,Cells_to_keep_pre,donor_gt_match,donor_gt_match_cohort,vars_per_donor_gt,donor_cohorts,count,all_donor_data,expected_vars_norm,donor_assignments_table):
         donor_concordance_table = {}
         other_donor_concordance_table = []
         for cell1 in Cells_to_keep_pre:
             count+=1
 
             cell_vars = exclusive_cell_variants[cell1]
-            result1, other_donor_concordances = self.concordance_table_production(expected_vars_norm,cell_vars,cell1,donor_gt_match,donor_gt_match_cohort, vars_per_donor_gt, donor_cohorts, count,all_donor_data,donor_assignments_table)
-            cell_concordance_table,other_donor_concordance_table = self.append_results_cell_concordances(result1,donor_concordance_table,other_donor_concordances,other_donor_concordance_table)
-            # if count>300:
+            try:
+                result1, other_donor_concordances = self.concordance_table_production(expected_vars_norm,cell_vars,cell1,donor_gt_match,donor_gt_match_cohort, vars_per_donor_gt, donor_cohorts, count,all_donor_data,donor_assignments_table)
+                cell_concordance_table,other_donor_concordance_table = self.append_results_cell_concordances(result1,donor_concordance_table,other_donor_concordances,other_donor_concordance_table)
+            except:
+                continue
+            # if count>800:
             #     break
             # here we should write these independently to the files
             if (count % 50 == 0):
@@ -605,8 +625,9 @@ class Concordances:
 
         self.set_results(other_donor_concordance_table,f"{count}--{donor_gt_match}")
         output2 = self.combine_written_lists(self.other_donor_comp,self.record_dict)
-        pd.DataFrame(output2).sort_values(by=['cell']).to_csv(f'{donor_gt_match}--each_cells_comparison_with_other_donor.tsv',sep='\t',index=False)
-        del output2
+        pd.DataFrame(output2).sort_values(by=['cell']).to_csv(f'{donor_gt_match}-{analyse_donor}--each_cells_comparison_with_other_donor.tsv',sep='\t',index=False)
+        # del output2
+        self.record_dict={}
         return donor_concordance_table
 
     def combine_concordances(self,result):
@@ -620,6 +641,7 @@ class Concordances:
         exclusive_don_variants=self.exclusive_don_variants
         exclusive_cell_variants= self.exclusive_cell_variants
         donor_list = exclusive_don_variants.keys()
+        # cpus = 1
         pool = mp.Pool(cpus)
         count = 0
         
@@ -654,10 +676,11 @@ class Concordances:
             expected_vars_norm_of_other_donor = self.norm_genotypes(expected_vars_of_other_donor)
             all_donor_data[donor_gt_match]=expected_vars_norm_of_other_donor
 
-        
+        results = []
         for i,row1 in donor_assignments_table.iterrows():
             donor_in_question = row1['donor_query']
             donor_gt_match = row1['donor_gt']
+            print(donor_gt_match)
             # if i>4:
             #     continue
             if (donor_gt_match=='NONE'):
@@ -675,13 +698,21 @@ class Concordances:
             except:
                 continue
             if cpus==1:
-                result = self.analyse_donor(Cells_to_keep_pre,donor_gt_match,donor_gt_match_cohort,vars_per_donor_gt,donor_cohorts,count,all_donor_data,expected_vars_norm,donor_assignments_table)
+                result = self.analyse_donor(donor_in_question,Cells_to_keep_pre,donor_gt_match,donor_gt_match_cohort,vars_per_donor_gt,donor_cohorts,count,all_donor_data,expected_vars_norm,donor_assignments_table)
                 self.combine_concordances(result)
             else:
-                pool.apply_async(self.analyse_donor, args=([Cells_to_keep_pre,donor_gt_match,donor_gt_match_cohort,vars_per_donor_gt,donor_cohorts,count,all_donor_data,expected_vars_norm,donor_assignments_table]),callback=self.combine_concordances)          
-                
+
+                result = pool.apply_async(self.analyse_donor, args=([donor_in_question,Cells_to_keep_pre,donor_gt_match,donor_gt_match_cohort,vars_per_donor_gt,donor_cohorts,count,all_donor_data,expected_vars_norm,donor_assignments_table]),callback=self.combine_concordances)          
+                results.append(result)
+        try:
+            [result.wait() for result in results]        
+        except:
+            print('done')  
+        print('Done') 
         pool.close()
-        pool.join()
+        pool.join() 
+        
+        
         
         # output = self.combine_written_files(self.cell_concordance_table,self.record_dict)
         
@@ -900,7 +931,10 @@ class Concordances:
                 # We do this to investigate the potential of a cell coming from this other donor.
             else:
                 _='check'
-                percent_relaxed_concordant = Nr_Relaxed_concordant/(Nr_Relaxed_concordant+true_discordant_count)*100
+                try:
+                    percent_relaxed_concordant = Nr_Relaxed_concordant/(Nr_Relaxed_concordant+true_discordant_count)*100
+                except:
+                    percent_relaxed_concordant = 0
                 # g2 = total_concordant_sites_otherDonor/total_sites_otherDonor*100
                 if not (percent_relaxed_concordant == concordant_percent_in_other_donor):
                     _='something not right'
@@ -1148,9 +1182,10 @@ class VCF_Loader:
 
     def set_results(self,to_set,id):
         # Recod to disk to save the loading mmeory time.
-        with open(f'tmp_{id}.pkl', 'wb') as f:
+        hash = random.getrandbits(128)
+        with open(f'tmp_{id}_{hash}.pkl', 'wb') as f:
             pickle.dump(to_set, f)
-        self.record_dict[id]=f'tmp_{id}.pkl'
+        self.record_dict[id]=f'tmp_{id}_{hash}.pkl'
         
     
 
@@ -1282,9 +1317,10 @@ class VCF_Loader:
                 pool.apply_async(self.load_sample_mp, args=([line,obs_ids,count,format_list]),callback=self.append_results)
                 del line
         self.last_count=count
+        
+        
         pool.close()
         pool.join()
-        
         output = self.combine_written_files(self.exclusive_donor_variants,self.record_dict)
         
         return output
@@ -1346,29 +1382,35 @@ def norm_genotypes(expected_vars):
 def donor_exclusive_sites(exclusive_don_variants2):
     # Here we generate a function for determining the sites that are donor exclusive
     donor_distinct_sites = {}
-    for col1 in exclusive_don_variants2.keys():
-        comparisons =[]
-        to_compare = []
-        for col2 in exclusive_don_variants2.keys():
-            if col1==col2:
-                # we set this as the unique entry
-                # print('1')
-                to_compare = set(exclusive_don_variants2[col2])
-            else:
-                # We combine all the variants in one list
-                comparisons+=list(exclusive_don_variants2[col2])
-                # print('2')
-        # print('comparison')  
-        comparisons_all = set(comparisons) 
-        comparisons_all_norm = norm_genotypes(comparisons_all)
-        comparisons_all=set(comparisons_all_norm['combo'])
-        
-        to_compare = set(to_compare)
-        to_compare_norm = norm_genotypes(to_compare)
-        to_compare=set(to_compare_norm['combo'])
-        # Make sure we account for hap types - phased/unphased 
-        distinct_donor_sites = to_compare - comparisons_all
-        donor_distinct_sites[col1]=distinct_donor_sites
+    if (len(exclusive_don_variants2.keys())==1):
+        # Here we only have 1 donor.
+        for col1 in exclusive_don_variants2.keys():
+            to_compare = set(exclusive_don_variants2[col1])
+            donor_distinct_sites[col1]=to_compare
+    else:  
+        for col1 in exclusive_don_variants2.keys():
+            comparisons =[]
+            to_compare = []
+            for col2 in exclusive_don_variants2.keys():
+                if col1==col2:
+                    # we set this as the unique entry
+                    # print('1')
+                    to_compare = set(exclusive_don_variants2[col2])
+                else:
+                    # We combine all the variants in one list
+                    comparisons+=list(exclusive_don_variants2[col2])
+                    # print('2')
+            # print('comparison')  
+            comparisons_all = set(comparisons) 
+            comparisons_all_norm = norm_genotypes(comparisons_all)
+            comparisons_all=set(comparisons_all_norm['combo'])
+            
+            to_compare = set(to_compare)
+            to_compare_norm = norm_genotypes(to_compare)
+            to_compare=set(to_compare_norm['combo'])
+            # Make sure we account for hap types - phased/unphased 
+            distinct_donor_sites = to_compare - comparisons_all
+            donor_distinct_sites[col1]=distinct_donor_sites
         # Perform the distinct set function.
     return donor_distinct_sites   
 
@@ -1407,10 +1449,10 @@ if __name__ == "__main__":
             GT_Matched_variants = pickle.load(f)   
         with open('tmp_exclusive_cell_variants.pkl', 'rb') as f:
             exclusive_cell_variants = pickle.load(f) 
-        with open('tmp_donor_distinct_sites.pkl', 'rb') as f:
-            donor_distinct_sites = pickle.load(f)  
-        with open('tmp_exclusive_don_variants.pkl', 'rb') as f:
-            exclusive_don_variants = pickle.load(f) 
+        # with open('tmp_donor_distinct_sites.pkl', 'rb') as f:
+        #     donor_distinct_sites = pickle.load(f)  
+        # with open('tmp_exclusive_don_variants.pkl', 'rb') as f:
+        #     exclusive_don_variants = pickle.load(f) 
     else:  
         print('---Loading genotype VCF----')   
         if (os.path.exists(gt_match_vcf)):
@@ -1443,26 +1485,26 @@ if __name__ == "__main__":
  
         print('---Variant files loaded----')       
         
-        exclusive_don_variants = GT_Expected_variants.keys()
-        content = [x for x in exclusive_don_variants if not x.startswith('donor')]
-        GT_Expected_variants = {key: GT_Expected_variants[key] for key in content}
-        
-        exclusive_don_variants = GT_Matched_variants.keys()
-        content = [x for x in exclusive_don_variants if not x.startswith('donor')]
-        GT_Matched_variants = {key: GT_Matched_variants[key] for key in content}
-        
-        exclusive_don_variants = GT_Expected_variants
-        for key in GT_Matched_variants.keys():
-            if key in exclusive_don_variants.keys():
-                _=''
-            else:
-                exclusive_don_variants[key]=GT_Matched_variants[key]
-        
-        with open(f'tmp_exclusive_don_variants.pkl', 'wb') as f:
-            pickle.dump(exclusive_don_variants, f)
-        donor_distinct_sites = donor_exclusive_sites(exclusive_don_variants)
-        with open(f'tmp_donor_distinct_sites.pkl', 'wb') as f:
-            pickle.dump(donor_distinct_sites, f)
+    exclusive_don_variants = GT_Expected_variants.keys()
+    content = [x for x in exclusive_don_variants if not x.startswith('donor')]
+    GT_Expected_variants = {key: GT_Expected_variants[key] for key in content}
+    
+    exclusive_don_variants = GT_Matched_variants.keys()
+    content = [x for x in exclusive_don_variants if not x.startswith('donor')]
+    GT_Matched_variants = {key: GT_Matched_variants[key] for key in content}
+    
+    exclusive_don_variants = GT_Expected_variants
+    for key in GT_Matched_variants.keys():
+        if key in exclusive_don_variants.keys():
+            _=''
+        else:
+            exclusive_don_variants[key]=GT_Matched_variants[key]
+    
+    with open(f'tmp_exclusive_don_variants.pkl', 'wb') as f:
+        pickle.dump(exclusive_don_variants, f)
+    donor_distinct_sites = donor_exclusive_sites(exclusive_don_variants)
+    with open(f'tmp_donor_distinct_sites.pkl', 'wb') as f:
+        pickle.dump(donor_distinct_sites, f)
 
     cell_concordance_table = Concordances(donor_assignments_table,cell_assignments_table,exclusive_don_variants,exclusive_cell_variants,donor_distinct_sites, informative_sites, uninformative_sites).conc_table()
     

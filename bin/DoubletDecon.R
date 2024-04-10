@@ -14,7 +14,7 @@ parser$add_argument("-s", "--seurat_object", required = TRUE, type = "character"
 parser$add_argument("-g", "--num_genes", required = FALSE, type = "integer", default=50, help = "Number  of genes to use in \'Improved_Seurat_Pre_Process\' function.")
 parser$add_argument("-r", "--rhop", required = FALSE, type="double", default=0.9, help="rhop to use in DoubletDecon - the number of SD from the mean to identify upper limit to blacklist")
 parser$add_argument("-p", "--species", required = FALSE, type = "character", default="hsa", help = "The species of your sample. Can be scientific species name, KEGG ID, three letter species abbreviation, or NCBI ID.")
-parser$add_argument("-n", "--nCores", required = FALSE, type = "double", default=-1, help = "The number of unique cores you would like to use to run DoubletDecon. By default, uses one less than available detected.")
+parser$add_argument("-n", "--nCores", required = FALSE, type = "double", default=2, help = "The number of unique cores you would like to use to run DoubletDecon. By default, uses one less than available detected.")
 parser$add_argument("-c", "--removeCC", required = FALSE, type = "logical", default=FALSE, help = "Whether to remove clusters enriched in cell cycle genes.")
 parser$add_argument("-m", "--pmf", required = FALSE, type = "logical", default=TRUE, help = "Whether to use unique gene expression in doublet determination.")
 parser$add_argument("-f", "--heatmap", required = FALSE, type = "logical", default=FALSE, help = "Whether to generate heatmaps.")
@@ -35,14 +35,14 @@ suppressMessages(suppressWarnings(library(data.table)))
 library(viridis)
 library(SeuratDisk)
 library(future)
-options(future.globals.maxSize= 1020971520000)
+# options(future.globals.maxSize= 1020971520000)
 # options(na.action="na.exclude")
-options(na.action="na.omit")
-if (future::supportsMulticore()) {
-  future::plan(future::multicore)
-} else {
-  future::plan(future::multisession)
-}
+# options(na.action="na.omit")
+# if (future::supportsMulticore()) {
+#   future::plan(future::multicore)
+# } else {
+#   future::plan(future::multisession)
+# }
 
 ## make sure the directory exists ###
 dir.create(args$out, recursive = TRUE, showWarnings = FALSE)

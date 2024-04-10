@@ -1,4 +1,4 @@
-process SPLIT_DONOR_H5AD {
+process PREP_ASSIGNMENTS_FILE{
     tag "${sample}"
     
     label 'process_low'
@@ -19,6 +19,52 @@ process SPLIT_DONOR_H5AD {
       params.split_h5ad_per_donor.run
 
     input: 
+      tuple val(sample), path(donor_ids_tsv), path(filtered_matrix_h5), path(scrublet), val(outdir)
+
+    output:
+      tuple val(sample), path("cell_belongings.tsv"), emit: cell_assignments
+    
+    script:
+      if ("${donor_ids_tsv}" == 'None'){
+        """
+          echo ${donor_ids_tsv}
+          echo 'preping file in the right format for concordances.'
+          rename_cols.py --scrublet ${ scrublet}
+        """
+      }else{
+        """
+          echo 'using vireo assignemts'
+          echo ${donor_ids_tsv}
+          ln -s ${donor_ids_tsv} cell_belongings.tsv
+        """
+      }
+
+
+}
+
+
+process SPLIT_DONOR_H5AD {
+    tag "${sample}"
+    
+    label 'process_low'
+    publishDir "${params.outdir}/deconvolution/split_donor_h5ad/${sample}/", mode: "${params.copy_mode}", overwrite: true,
+	  saveAs: {filename -> filename.replaceFirst("outputs/","") }
+    
+
+    if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
+        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_62bd56a-2021-12-15-4d1ec9312485.sif"
+        //// container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_latest.img"
+	
+    } else {
+        container "mercury/scrna_deconvolution:62bd56a"
+    }
+
+    
+
+    when: 
+      params.split_h5ad_per_donor.run
+
+    input: 
     tuple val(sample), path(donor_ids_tsv), path(filtered_matrix_h5), path(scrublet), val(outdir)
       //tuple val(sample), val(donor_ids_tsv), val(filtered_matrix_h5), path(scrublet)
 
@@ -27,6 +73,7 @@ process SPLIT_DONOR_H5AD {
       tuple val(sample), path("outputs/Vireo_plots.pdf"), emit: sample_pdf
       //tuple val(sample), path("outputs/*.pdf"), emit: sample_pdf
       tuple val(sample), path("outputs/donor_level_anndata/*.${sample}.h5ad"), emit: sample_donor_level_anndata 
+      tuple val(sample), path("outputs/donor_level_anndata/*.${sample}.barcodes.tsv"), emit: sample_donor_level_barcodes 
       //tuple val(sample), path("outputs/donor_level_anndata/*.h5ad"), emit: sample_donor_level_anndata 
       path("${sample}.donors.h5ad.tsv"), emit: donors_h5ad_tsv
       path("${sample}__donors.h5ad.tsv"), emit: exp__donors_h5ad_tsv

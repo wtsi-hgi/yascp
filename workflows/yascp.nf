@@ -175,7 +175,8 @@ workflow YASCP {
                 // TODO: Here add a fundtion to take an extra h5ad and merge it together with the current run. This will be required for the downstream analysis when we want to integrate multiple datasets and account for the batches in these
                 if (!params.skip_merge){
                     file__anndata_merged = MERGE_SAMPLES.out.file__anndata_merged
-                    file__cells_filtered = MERGE_SAMPLES.out.file__cells_filtered
+                    dummy_filtered_channel(file__anndata_merged,params.id_in)
+                    file__cells_filtered = dummy_filtered_channel.out.anndata_metadata
                 }
             }else{
                 // This option skips all the deconvolution and and takes a preprocessed yascp h5ad file to run the downstream clustering and celltype annotation.
