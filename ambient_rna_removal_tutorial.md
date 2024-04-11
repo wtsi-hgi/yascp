@@ -1,7 +1,6 @@
- ## Running and optimising ambient rna removal with cellbender:
+## Running and optimising ambient rna removal with cellbender:
 
-You may only want to run the ambient RNA removal and then investigate the reports of the performence of the training.
-This is possible with the pipeline by providing these inputs in your params file such as [this one](https://github.com/wtsi-hgi/yascp/blob/v1.5/assets/deploy_scripts/input_setups/cellbender_profile.nf):
+If your goal is to execute just the ambient RNA removal step and subsequently analyze the performance reports of the training, the pipeline accommodates this process. By specifying the appropriate inputs in your parameters file, similar to the example found in [this one](https://github.com/wtsi-hgi/yascp/blob/v1.5/assets/deploy_scripts/input_setups/cellbender_profile.nf) you can tailor the pipeline to focus solely on ambient RNA removal and performance evaluation.
 
 ```
 params {
@@ -14,8 +13,7 @@ params {
 ```
 
 
-If after running cellbender you notice that training eppochs were too low, low counts treshold was too high (comon for ATAC and snRNAseq datasets) and you want to tweak some of the samples parameters you can do this by providing the samples params you want to use:
-Have a look at the default [params used in the pipeline here](https://github.com/wtsi-hgi/yascp/blob/v1.5/conf/cellbender.conf)
+If you observe that the training epochs were insufficiently low, or that the count threshold was too high (a common issue with ATAC and snRNAseq datasets) after running CellBender, you can adjust the sample parameters as needed. To customize the parameters for your samples, you can refer to the default settings used in the pipeline, which are available in the [params used in the pipeline here](https://github.com/wtsi-hgi/yascp/blob/v1.5/conf/cellbender.conf)
 ```
 params {
     cellbender_rb{
@@ -29,10 +27,15 @@ params {
 ```
 
 
+And then you can run the pipeline as:
+```
+    nextflow run /path/to/cloned/yascp -profile sanger -entry JUST_CELLBENDER -c input.nf
+```
+
 <details markdown="1">
 <summary><b>Sanger Specific Exacution:</b></summary>
 
-* In Sanger you do not need to set up anything. All you need is an input file:
+* In Sanger you do not need to clone the repo. All you need is an input file:
   ```
       module load HGI/pipelines/yascp/1.5
       yascp cellbender -c input.nf

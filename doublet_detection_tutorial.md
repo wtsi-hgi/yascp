@@ -1,8 +1,8 @@
- ## Running Only Doublet Assesments:
+## Running Only Doublet Assesments:
 
-It is possible to run only the doublet assesments with scrublet, scDblFinder, DoubletDecon, DoubletDetection and DoubletFinder of your matrix files as you may not want to run deconvolution and all other processing steps.
-This is possible with the pipeline.
-To do this you still have to point to your input.nf file that contains all the samples from allignment
+You can run doublet assessments exclusively, using tools such as Scrublet, scDblFinder, DoubletDecon, DoubletDetection, and DoubletFinder on your matrix files, if you wish to bypass deconvolution and other processing steps. This functionality is supported by the pipeline.
+
+To facilitate this, you must still specify your input.nf file, which should contain all the sample details from the alignment phase.
 
 ```console
 params{
@@ -13,7 +13,6 @@ And then you can run the pipeline as:
 ```
     nextflow run /path/to/cloned/yascp -profile sanger -entry JUST_DOUBLETS -c input.nf
 ```
-
 <details markdown="1">
 <summary><b>Sanger Specific Exacution:</b></summary>
 
@@ -22,3 +21,30 @@ And then you can run the pipeline as:
       module load HGI/pipelines/yascp/1.5
       yascp doublets -c input.nf
   ```
+</details>
+
+By default yascp runs with all of these doublet detection methods, you can switch some of them off by providing these params settings:
+
+```console
+    filter_multiplets{
+        run_process = true
+        doubletDetection{
+             run_process = false           
+        }
+        doubletDecon{
+            run_process = false
+        }
+        scDblFinder{
+            run_process = false
+        }
+        scds{
+            run_process = false
+        }
+        doubletFinder{
+            run_process = false
+        }
+        scrublet{
+            run_process= true
+        }
+    }
+```

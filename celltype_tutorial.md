@@ -1,8 +1,6 @@
- ## Running Only Celltype Assignments or Adjusting params for a pipeline regarding celltype assignments:
+## Running Only Celltype Assignments or Adjusting params for a pipeline regarding celltype assignments:
 
-It is possible to run only the celltype assignemt of your h5ad file as you may not want to run deconvolution and all other processing steps.
-This is possible with the pipeline.
-To do this you can modify the input.nf file as:
+You have the flexibility to execute solely the cell type assignment for your h5ad file, bypassing the need for deconvolution and other processing steps. This customization is achievable within the pipeline framework. To tailor the pipeline to perform only the cell type assignment, you can adjust the input.nf file as follows:
 
 ```console
 params{
@@ -22,9 +20,18 @@ And then you can run the pipeline as:
     nextflow run /path/to/cloned/yascp -profile sanger -entry JUST_CELLTYPES -c input.nf
 ```
 
+<details markdown="1">
+<summary><b>Sanger Specific Exacution:</b></summary>
+
+* In Sanger you do not need to set up anything. All you need is an input file:
+  ```
+      module load HGI/pipelines/yascp/1.5
+      yascp celltype -c input.nf
+  ```
+</details>
+
 ### Celltypist
-Aditionally if you have your own celltypist models that you want to use you can edit the default params:
-Please take a look on the available models in default [config file](https://github.com/wtsi-hgi/yascp/blob/c55fcfb1a11045e16125f31c20ebe57e0fe81149/conf/qc.conf#L44-L56)
+Additionally, if you possess custom CellTypist models you wish to utilize, you can modify the default parameters. For an overview of the models currently available by default, please refer to the [config file](https://github.com/wtsi-hgi/yascp/blob/c55fcfb1a11045e16125f31c20ebe57e0fe81149/conf/qc.conf#L44-L56)
 ```
 params{
     celltypist {
@@ -34,7 +41,7 @@ params{
 ```
 
 ### Azimuth 
-Aditionally if you have your own azimuth model or a model retrieved from [Azimuth Zenodo](https://azimuth.hubmapconsortium.org/references/) that you want to use you can edit the default params. By default we run a PBMC reference in pipeline but you can change this and add any references you are interested in.
+Additionally, if you have a custom Azimuth model or one obtained from [Azimuth Zenodo](https://azimuth.hubmapconsortium.org/references/)  that you wish to use, you can modify the default parameters. By default, the pipeline uses a PBMC reference, but you have the flexibility to change this and include any references that meet your requirements.
 ```
 params{
     azimuth{
@@ -47,11 +54,3 @@ params{
 }
 ```
 
-<details markdown="1">
-<summary><b>Sanger Specific Exacution:</b></summary>
-
-* In Sanger you do not need to set up anything. All you need is an input file:
-  ```
-      module load HGI/pipelines/yascp/1.5
-      yascp celltype -c input.nf
-  ```

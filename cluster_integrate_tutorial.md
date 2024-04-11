@@ -1,8 +1,7 @@
 ## Performing only Integration, Clustering and Cluster Assesments
-You may want to only perform Integration with BBKNN or Harmony or Seurat, Clustering and cluster assesments.
-Or you may want to integrate based on a different variable and/or produce different resolution clusters. 
+You may wish to focus solely on integration using BBKNN, Harmony, or Seurat, as well as on clustering and cluster assessments. Alternatively, you might prefer to integrate based on a different variable and/or produce clusters at varying resolutions.
 
-This is possible with Yascp by providing these params settings (there are many params here, you dont need all of them, just change what you need):
+With Yascp, this level of customization is achievable by adjusting the necessary parameters in the settings. There are numerous parameters available; however, you do not need to modify all of them—simply change those that are relevant to your specific requirements:
 
 ```console
 params{
@@ -67,8 +66,7 @@ params{
 
 }
 ```
-You may have already performed normalisation, outlier filtering and you just want to perform clusring.
-If this is the case you can provide also this param:
+If you have already completed normalization and outlier filtering and simply wish to proceed with clustering, you can specify this by adjusting the corresponding parameter. Here's how you can provide this setting:
 ```
 params{
     dont_integrate_just_cluster = true
