@@ -21,10 +21,10 @@ The pipeline delivers outputs across several key areas:
 - **[Genotype Matching](#vireo)**: Determining sample matches through genotype comparison.
 - **[Handover](#handover)**: Storage of summary statistics, plots, and final QC'd and annotated H5AD files per donor.
 - **Inferred Genotypes**: Vireo and Freebayes generated VCF files for each deconvoluted donor in the pool.
-- **[Merged H5AD Files](merged)**: Consolidated H5AD files from various preprocessing steps, enabling restarts from the clustering phase.
+- **[Merged H5AD Files](#merged-h5ad-files)**: Consolidated H5AD files from various preprocessing steps, enabling restarts from the clustering phase.
 - **[NF-Preprocessing](#ambient-rna-removal)**: Includes CellBender results for ambient RNA removal.
-- **Pipeline Info**: Statistics and logs from the pipeline execution.
-- **Plots**: A collection of quality control visualizations.
+- **[Pipeline Info](#pipeline_info)**: Statistics and logs from the pipeline execution.
+- **[Plots](#plots)**: A collection of quality control visualizations.
 - **Resources**: Reference genomes utilized in data processing.
 - **UMAPS**: Quick-reference UMAP plots for data visualization.
 
@@ -321,14 +321,18 @@ Citeseq folder will be present if your data contains citeseq
 In this folder we have a couple of subfolders:
 
 * DSB - folder contains DSB citeseq normalisation statistics and RDS files
+  
     ![Screenshot 2024-04-03 at 17 04 38](https://github.com/wtsi-hgi/yascp/assets/22347136/4529980d-6afb-41dc-bf92-89e8d081299a)
   
 * all_data_integrated - contains Seurats integration of Citeseq and if available VDJ data as well as some UMAPs produced by these processes
+  
     ![Screenshot 2024-04-03 at 17 05 28](https://github.com/wtsi-hgi/yascp/assets/22347136/ad6c8f3b-82ca-415f-a9b0-a1242f7e90f7)
   
 * filtered - folder contains data modalities split appart - i.e if the data is hastaged this layer is stored speratelly to the antibody data and also seperatelly to GEX data
+  
     ![Screenshot 2024-04-03 at 17 06 32](https://github.com/wtsi-hgi/yascp/assets/22347136/b4f900f7-2c7b-4423-9a1c-5f7d166ec664)
 * raw - similarly to the above, but the difference is that these are the raw cellranger files split according to the modality.
+  
     ![Screenshot 2024-04-03 at 17 07 01](https://github.com/wtsi-hgi/yascp/assets/22347136/8882eba1-4dcb-4870-915e-4025f085bd17)
 
 ## [Merged h5ad files](#merged-h5ad-files)
@@ -359,11 +363,15 @@ In this folder we can see 3 different folders:
   
     ![Screenshot 2024-04-03 at 16 51 35](https://github.com/wtsi-hgi/yascp/assets/22347136/7c63e2c0-6251-4a7d-8e14-be434c0e017b)
 
+## [Plots](#plots)
+Some summary plots for quick inspections
+
+![Screenshot 2024-04-11 at 17 11 42](https://github.com/wtsi-hgi/yascp/assets/22347136/4b5107d1-f01d-44d0-a5ba-bfc7daa49a5d)
 
 
-
-## Exactution reports
+## [Exactution reports](#pipeline_info)
 [Nextflow](https://www.nextflow.io/docs/latest/tracing.html) provides excellent functionality for generating various reports relevant to the running and execution of the pipeline. This will allow you to troubleshoot errors with the running of the pipeline, and also provide you with other information such as launch commands, run times and resource usage.
 
+![Screenshot 2024-04-11 at 17 09 20](https://github.com/wtsi-hgi/yascp/assets/22347136/6ab4e164-e59f-4db8-a1a2-38454041843a)
 
 
