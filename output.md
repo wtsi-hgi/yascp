@@ -14,14 +14,14 @@ The pipeline delivers outputs across several key areas:
 
 - **[CellSNP](#cellsnp)**: Variant calling on single cells.
 - **[Cell Type Identification](#celltype-identification)**: Classification of cells into types.
-- **CITE-seq Data Processing**: Handling of CITE-seq (Cellular Indexing of Transcriptomes and Epitopes by Sequencing) data.
+- **[CITE-seq Data Processing](#citeseq)**: Handling of CITE-seq (Cellular Indexing of Transcriptomes and Epitopes by Sequencing) data.
 - **[Clustering and Integration](#integration-and-clustering)**: Grouping cells based on similarities and integrating datasets.
 - **[Sample Deconvolution](#vireo)**: Disentangling mixtures of cells from different donors.
 - **[Doublet Detection](#doublet-detection)**: Identifying artificial doublet cells.
 - **[Genotype Matching](#vireo)**: Determining sample matches through genotype comparison.
-- **[Handover](#handover-summary-statistics-per-donor-h5ad-files-summary-plots)**: Storage of summary statistics, plots, and final QC'd and annotated H5AD files per donor.
+- **[Handover](#handover)**: Storage of summary statistics, plots, and final QC'd and annotated H5AD files per donor.
 - **Inferred Genotypes**: Vireo and Freebayes generated VCF files for each deconvoluted donor in the pool.
-- **Merged H5AD Files**: Consolidated H5AD files from various preprocessing steps, enabling restarts from the clustering phase.
+- **[Merged H5AD Files](merged)**: Consolidated H5AD files from various preprocessing steps, enabling restarts from the clustering phase.
 - **[NF-Preprocessing](#ambient-rna-removal)**: Includes CellBender results for ambient RNA removal.
 - **Pipeline Info**: Statistics and logs from the pipeline execution.
 - **Plots**: A collection of quality control visualizations.
@@ -327,6 +327,12 @@ In this folder we have a couple of subfolders:
 * raw - similarly to the above, but the difference is that these are the raw cellranger files split according to the modality.
     ![Screenshot 2024-04-03 at 17 07 01](https://github.com/wtsi-hgi/yascp/assets/22347136/8882eba1-4dcb-4870-915e-4025f085bd17)
 
+## [Merged h5ad files](#Merged-h5ad-files)
+Pipeline will create merged h5ad files for the most important preprocessing steps - 
+Post deconvolution and celltype assignemt merged files that contain any extra metadata provded.
+Post hard filters merged h5ad file, where cells that are not passing ceitrain thresholds are dropped (or flagged, depends on settings used)
+Post adaptive filters h5ad file where cells that dont pass these filters are dropped (or flagged depending on settings used)
+
 
 ## [Handover](#handover)
 Summary Statistics, Per Donor h5ad files, Summary Plots
@@ -344,6 +350,8 @@ In this folder we can see 3 different folders:
 
 * Summary _plots contains the most important plots per each of the steps for a quick inversigations of the performance of the scRNA runs and the performance of the analysis.
     ![Screenshot 2024-04-03 at 16 51 35](https://github.com/wtsi-hgi/yascp/assets/22347136/7c63e2c0-6251-4a7d-8e14-be434c0e017b)
+
+
 
 
 ## Exactution reports
