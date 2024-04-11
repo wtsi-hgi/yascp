@@ -87,6 +87,7 @@ Vireo takes the cellsnp variant pileups and assigns donors the particular cell t
     * ![Screenshot 2024-04-10 at 16 53 26](https://github.com/wtsi-hgi/yascp/assets/22347136/53e7f5da-0202-48bd-ad07-4470c14836ed)
 
 </details>
+
 ### DoubletDecon
 <details markdown="1">
 <summary>DoubletDecon Output files:</summary>
@@ -95,6 +96,7 @@ Vireo takes the cellsnp variant pileups and assigns donors the particular cell t
     * ![Screenshot 2024-04-02 at 15 51 26](https://github.com/wtsi-hgi/yascp/assets/22347136/603d27e1-42e3-4be7-bbfd-ebb3412b3ec4)
 
 </details>
+
 ### doubletDetection
 <details markdown="1">
 <summary>doubletdetection Output files:</summary>
@@ -103,6 +105,7 @@ Vireo takes the cellsnp variant pileups and assigns donors the particular cell t
     * ![Screenshot 2024-04-02 at 15 59 15](https://github.com/wtsi-hgi/yascp/assets/22347136/c798d675-c96d-4137-92c2-6fa9340437c5)
 
 </details>
+
 ### DoubletFinder
 <details markdown="1">
 <summary>DoubletFinder Output files:</summary>
@@ -110,6 +113,7 @@ Vireo takes the cellsnp variant pileups and assigns donors the particular cell t
 * DoubletFinder output files contain barcode and label of whether its a singlet or a doublet:
     * ![Screenshot 2024-04-02 at 16 00 47](https://github.com/wtsi-hgi/yascp/assets/22347136/4cdd8ba2-5d16-4c9b-a64e-aa9423514208)
 </details>
+
 ### scDblFinder
 <details markdown="1">
 <summary>scDblFinder Output files:</summary>
@@ -327,12 +331,14 @@ In this folder we have a couple of subfolders:
 * raw - similarly to the above, but the difference is that these are the raw cellranger files split according to the modality.
     ![Screenshot 2024-04-03 at 17 07 01](https://github.com/wtsi-hgi/yascp/assets/22347136/8882eba1-4dcb-4870-915e-4025f085bd17)
 
-## [Merged h5ad files](#Merged-h5ad-files)
-Pipeline will create merged h5ad files for the most important preprocessing steps - 
-Post deconvolution and celltype assignemt merged files that contain any extra metadata provded.
-Post hard filters merged h5ad file, where cells that are not passing ceitrain thresholds are dropped (or flagged, depends on settings used)
-Post adaptive filters h5ad file where cells that dont pass these filters are dropped (or flagged depending on settings used)
+## [Merged h5ad files](#merged-h5ad-files)
+![Screenshot 2024-04-11 at 17 04 10](https://github.com/wtsi-hgi/yascp/assets/22347136/6594193c-405b-49b8-9d7b-2c72cf63c3d8)
 
+Pipeline will create merged h5ad files for the most important preprocessing steps - 
+* Post deconvolution and celltype assignemt merged files that contain any extra metadata provded.
+* Post hard filters merged h5ad file, where cells that are not passing ceitrain thresholds are dropped (or flagged, depends on settings used)
+* Post adaptive filters h5ad file where cells that dont pass these filters are dropped (or flagged depending on settings used)
+Note that the Handover folder discussed next contains per donor final h5ad files that include all the information from the above mentioned files.
 
 ## [Handover](#handover)
 Summary Statistics, Per Donor h5ad files, Summary Plots
@@ -346,9 +352,11 @@ In this folder we can see 3 different folders:
     ![Screenshot 2024-04-03 at 16 47 28](https://github.com/wtsi-hgi/yascp/assets/22347136/8524243f-4bf1-4713-9076-0e1d3fcb99e1)
 
 * Donor_Quantification_summary folder where we have summary statistics per donor and summary statistics per tranche (collection of all pools that were run in this run).
+  
     ![Screenshot 2024-04-03 at 16 49 59](https://github.com/wtsi-hgi/yascp/assets/22347136/a6107709-f83e-45e1-9008-1cdde1510c67)
 
 * Summary _plots contains the most important plots per each of the steps for a quick inversigations of the performance of the scRNA runs and the performance of the analysis.
+  
     ![Screenshot 2024-04-03 at 16 51 35](https://github.com/wtsi-hgi/yascp/assets/22347136/7c63e2c0-6251-4a7d-8e14-be434c0e017b)
 
 
