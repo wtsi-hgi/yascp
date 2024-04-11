@@ -19,8 +19,8 @@ The pipeline delivers outputs across several key areas:
 - **[Sample Deconvolution](#vireo)**: Disentangling mixtures of cells from different donors.
 - **[Doublet Detection](#doublet-detection)**: Identifying artificial doublet cells.
 - **[Genotype Matching](#vireo)**: Determining sample matches through genotype comparison.
+- **[Inferred Genotypes](#infered_gt)**: Vireo and Freebayes generated VCF files for each deconvoluted donor in the pool.
 - **[Handover](#handover)**: Storage of summary statistics, plots, and final QC'd and annotated H5AD files per donor.
-- **Inferred Genotypes**: Vireo and Freebayes generated VCF files for each deconvoluted donor in the pool.
 - **[Merged H5AD Files](#merged-h5ad-files)**: Consolidated H5AD files from various preprocessing steps, enabling restarts from the clustering phase.
 - **[NF-Preprocessing](#ambient-rna-removal)**: Includes CellBender results for ambient RNA removal.
 - **[Pipeline Info](#pipeline_info)**: Statistics and logs from the pipeline execution.
@@ -76,6 +76,12 @@ Vireo takes the cellsnp variant pileups and assigns donors the particular cell t
     * ![Screenshot 2024-04-10 at 16 52 58](https://github.com/wtsi-hgi/yascp/assets/22347136/c58cdc11-f674-494e-870e-81576fe7765e)
 
 </details>
+
+## Genotype matching (#infered_gt)
+GT matching will produce statistics and info of the gt matchin against the provided genotype cohorts. Yascp determines which donor is the best and how well it matches the donor within each of the cohortsd.
+
+![Screenshot 2024-04-11 at 17 15 19](https://github.com/wtsi-hgi/yascp/assets/22347136/af682060-6a08-4290-9d13-c58fec0457d1)
+
 
 ## Doublet Detection
 ![Screenshot 2024-04-02 at 15 43 16](https://github.com/wtsi-hgi/yascp/assets/22347136/781ce3b7-ea5e-4fe4-9ca3-d16e8b47123e)
