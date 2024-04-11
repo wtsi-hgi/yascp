@@ -1,3 +1,4 @@
 [submodule "yascp_docs"]
 	path = yascp_docs
 	url = https://github.com/wtsi-hgi/yascp.git
+	branch = yascp_docs
