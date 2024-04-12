@@ -230,6 +230,7 @@ process JOIN_CHROMOSOMES{
     script:
       s1 = samplename.split('___')[0]
       s2 = samplename.split('___')[1]
+
       """
         vcf_name=\$(python ${projectDir}/bin/random_id.py)
         fofn_input_subset.sh "${study_vcf_files}"
@@ -238,9 +239,10 @@ process JOIN_CHROMOSOMES{
         bcftools view pre_\${vcf_name}.bcf.gz | awk '{gsub(/^chr/,""); print}' | awk '{gsub(/ID=chr/,"ID="); print}' > no_prefix_pre_\${vcf_name}.vcf
         bgzip no_prefix_pre_\${vcf_name}.vcf
         bcftools index no_prefix_pre_\${vcf_name}.vcf.gz
-
+        bcftools view ${params.bcf_viewfilters} no_prefix_pre_\${vcf_name}.vcf.gz -Oz -o no_prefix2_pre_\${vcf_name}.vcf.gz
+        bcftools index no_prefix2_pre_\${vcf_name}.vcf.gz
         #bcftools index pre_\${vcf_name}.bcf.gz
-        bcftools +fixref no_prefix_pre_\${vcf_name}.vcf.gz -Ob -o fix_ref_\${vcf_name}_out.bcf.gz -- -d -f ${genome}/genome.fa -m flip-all
+        bcftools +fixref no_prefix2_pre_\${vcf_name}.vcf.gz -Ob -o fix_ref_\${vcf_name}_out.bcf.gz -- -d -f ${genome}/genome.fa -m flip-all
         #ln -s pre_\${vcf_name}.bcf.gz \${vcf_name}_out.bcf.gz
         #bcftools +fill-tags fix_ref_\${vcf_name}_out.bcf.gz -Ob -o \${vcf_name}_out.bcf.gz
         bcftools annotate -x INFO fix_ref_\${vcf_name}_out.bcf.gz -Ob -o \${vcf_name}_out.bcf.gz
