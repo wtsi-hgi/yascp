@@ -77,8 +77,11 @@ Vireo takes the cellsnp variant pileups and assigns donors the particular cell t
 
 </details>
 
-## Genotype matching (#infered_gt)
-GT matching will produce statistics and info of the gt matchin against the provided genotype cohorts. Yascp determines which donor is the best and how well it matches the donor within each of the cohortsd.
+## [Genotype matching](#infered_gt)
+The infered genotypes (both from Freebayes and From Vireo) will be used to double check the identities of the donors in the pool. Vireo and Freebayes are used to produce infered genotypes from scRNA data for each of the deconvoluted donors. These are then used in the bcftools gtcheck to match each of the infered genotypes against the provided genotype cohorts. This will produce statistics and info of the gt matching against the provided genotype cohorts, in particular distributions are calculated and z0 (best donor match statistic) and z1 (second best donor statistic) is calculated per cohort and then these scores are compared in between cohorts to determine best match out of all cohorts. This allows Yascp to determine which donor is the best and how well it matches the donor within each of the cohorts.
+
+* z0 is a best gt match score as per bcftools gtcheck / SD of all scores
+* z1 is the second best match as per bcftools gtcheck / SD of all scores
 
 ![Screenshot 2024-04-11 at 17 15 19](https://github.com/wtsi-hgi/yascp/assets/22347136/af682060-6a08-4290-9d13-c58fec0457d1)
 
