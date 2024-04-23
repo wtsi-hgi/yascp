@@ -41,7 +41,7 @@ process DYNAMIC_DONOR_EXCLUSIVE_SNP_SELECTION{
     script:       
       if (add_dynamic_sites_or_not_to_panel){
         cmd2 = "cat cellsnp_variants.tsv >> cellsnp_panel_${samplename}.vcf"
-      }{
+      }else{
         cmd2 = ''
       }
         cmd1="ln -s ${vcf_file} dynamic_snps.vcf.gz"
