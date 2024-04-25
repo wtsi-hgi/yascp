@@ -27,7 +27,7 @@ process CELLTYPIST {
       tuple val(sample), path("outputs/plot_prob/*_*.pdf"), emit: sample_plots_prob_pdf
 
     script:
-      model="${celltypist_model}".replaceAll(/^.*[\\/]/, "").replaceFirst(/\\..+$/, "")
+      model="${celltypist_model}".replaceAll(/^.*[\\/]/, "").replaceFirst(".pkl","")
 
       filtered_matrix_h5_path = file("${filtered_matrix_h5}/../filtered_feature_bc_matrix.h5")
       if (filtered_matrix_h5_path.exists()){
