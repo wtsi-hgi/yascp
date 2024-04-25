@@ -8,7 +8,6 @@ process CELLTYPE_FILE_MERGE{
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "https://yascp.cog.sanger.ac.uk/public/singularity_images/wtsihgi_nf_scrna_qc_6bb6af5-2021-12-23-3270149cf265.sif"
         // container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/nf_qc_cluster_2.4.img"
-        
     } else {
         container "wtsihgi/nf_scrna_qc:6bb6af5"
     }
@@ -24,18 +23,25 @@ process CELLTYPE_FILE_MERGE{
         path(all_other_paths)
         path(file__anndata_input)
     script:
-        all_azimuth_files = azimuth_files.join("::")
-        all_celltypist_files = celltypist_paths.join("::")
-        if ("${all_other_paths}"!='fake_file.fq'){
-            all_other_paths_comb = all_other_paths.join("::")
-            other_paths ="--all_other_paths ${all_other_paths_comb}"
-        }else{
-            other_paths = ""
+        def azimuth_files_path = "${workDir}/azimuth_files.tsv"
+        azimuth_files.each { file -> file.withWriterAppend { w -> w.println("${file}") } }
+
+        def celltypist_files_path = "${workDir}/celltypist_files.tsv"
+        celltypist_paths.each { file -> file.withWriterAppend { w -> w.println("${file}") } }
+
+        def all_other_files_path = "${workDir}/other_files.tsv"
+        if (all_other_paths != "fake_file.fq") {
+            all_other_paths.each { file -> file.withWriterAppend { w -> w.println("${file}") } }
+            other_paths_option = "--all_other_paths ${all_other_files_path}"
+        } else {
+            other_paths_option = ""
         }
-        
-        all_adatas = file__anndata_input.join("::")
+
+        def adatas_path = "${workDir}/adatas.tsv"
+        file__anndata_input.each { file -> file.withWriterAppend { w -> w.println("${file}") } }
+
         """
-            generate_combined_celltype_anotation_file.py --all_azimuth_files ${all_azimuth_files} --all_celltypist_files ${all_celltypist_files} ${other_paths} --adata '${all_adatas}'
+        generate_combined_celltype_annotation_file.py --all_azimuth_files ${azimuth_files_path} --all_celltypist_files ${celltypist_files_path} ${other_paths_option} --adata '${adatas_path}'
         """
 
 }

@@ -94,16 +94,22 @@ def main():
     
     Data_All=pd.DataFrame()
     
-    azimuth_files = options.all_azimuth_files.split('::')
+    # Read azimuth files from a TSV file using pandas
+    azimuth_df = pd.read_csv(options.all_azimuth_files, header=None, names=['file_path'])
+    azimuth_files = azimuth_df['file_path'].tolist()
     Data_All_Azimuth = combine_reports(azimuth_files,'Azimuth:')
     
-    celltypist_files = options.all_celltypist_files.split('::')
+    # Read celltypist files from a TSV file using pandas
+    celltypist_df = pd.read_csv(options.all_celltypist_files, header=None, names=['file_path'])
+    celltypist_files = celltypist_df['file_path'].tolist()
+
     celltypist_files2 = pd.DataFrame(celltypist_files,columns=['col1'])
     celltypist_files3 =list(celltypist_files2[~celltypist_files2['col1'].str.contains('input')]['col1'])
     Data_All_celltypist = combine_reports(celltypist_files3,'Celltypist:')
     
     if (options.all_alternitive):
-        all_alternitive = options.all_alternitive.split('::')
+        all_alternitive_df = pd.read_csv(options.all_alternitive, header=None, names=['file_path'])
+        all_alternitive = all_alternitive_df['file_path'].tolist()
         Data_All_alt = combine_reports(all_alternitive,'')
     else:
         Data_All_alt=pd.DataFrame()
@@ -118,7 +124,8 @@ def main():
     Data_All['Exp'] =Exp
     Data_All.to_csv('All_Celltype_Assignments.csv',sep='\t')
 
-    adatas = options.andata.split('::')
+    adatas_df = pd.read_csv(options.andata, header=None, names=['file_path'])
+    adatas = adatas_df['file_path'].tolist()
     adatasets = []
     # adatasets2 = adatasets[:2]
     adatasets__experiment_ids = []
