@@ -348,7 +348,8 @@ def main():
             # gamma=0.1
         )
     elif method == 'MAD':
-        clf = onesidemad()
+        mad_thresh = [-5, -5, 5]
+        clf = onesidemad(mad_thresh)
     else:
         raise ValueError('ERROR: invalid method.')
 

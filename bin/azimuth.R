@@ -35,6 +35,7 @@ if (REFERENCE_DIR=='PBMC'){
 }
 
 levels = args[3]
+prefix = args[4]
 # levels = "celltype.l2,celltype.l1,celltype.l3"
 levels = unlist(x = strsplit(x = levels, split = ',', fixed = TRUE))
 # reference files are expected in the following directory
@@ -597,6 +598,7 @@ anchors <- FindTransferAnchors(
 for (celltype_level in levels) {
 
       id <- celltype_level
+      # id <- paste0(id,"_",prefix)
       print(id)
       refdata <- lapply(X = celltype_level, function(x) {
         reference$map[[x, drop = TRUE]]
@@ -668,7 +670,7 @@ for (celltype_level in levels) {
       predicted.id.score <- paste0(predicted.id, ".score")
 
       # write a table of cell-type assignments, prediction and mapping scores:
-      fnam.table <- paste0(gsub(".", "_", predicted.id, fixed = TRUE),".tsv")
+      fnam.table <- paste0(prefix,"_",gsub(".", "_", predicted.id, fixed = TRUE),".tsv")
       data <- FetchData(object = query, vars = c(predicted.id, predicted.id.score, paste0("mapping.score.", id)), slot = "data")
       write.table(data, fnam.table, quote = FALSE, sep="\t")
       #gzip(fnam.table, overwrite = TRUE)
@@ -695,7 +697,7 @@ for (celltype_level in levels) {
       p <- ggplot(tdf, aes(x=cell_type, y=count, fill = threshold))
       p <- p + geom_col(position = "dodge")
       p <- p + theme(axis.text.x = element_text(angle = 90))
-      ggsave(paste0(id,".ncells_by_type_barplot.pdf"))
+      ggsave(paste0(prefix,"_",id,".ncells_by_type_barplot.pdf"))
 
       # DimPlot of the reference
       #ref.plt <- DimPlot(object = reference$plot, reduction = "refUMAP", group.by = id, label = TRUE) + NoLegend()
@@ -704,23 +706,23 @@ for (celltype_level in levels) {
 
       # DimPlot of the query, colored by predicted cell type
       DimPlot(object = query, reduction = "proj.umap", group.by = predicted.id, label = TRUE) + NoLegend()
-      ggsave(paste0(id,".query_umap.pdf"))
+      ggsave(paste0(prefix,"_",id,".query_umap.pdf"))
 
       # Plot the score for the predicted cell type of the query
       FeaturePlot(object = query, features = paste0(predicted.id, ".score"), reduction = "proj.umap")
-      ggsave(paste0(id,".prediction_score_umap.pdf"))
+      ggsave(paste0(prefix,"_",id,".prediction_score_umap.pdf"))
       VlnPlot(object = query, features = paste0(predicted.id, ".score"), group.by = predicted.id) + NoLegend()
-      ggsave(paste0(id,".prediction_score_vln.pdf"))
+      ggsave(paste0(prefix,"_",id,".prediction_score_vln.pdf"))
 
       # Plot the mapping score
       FeaturePlot(object = query, features = paste0("mapping.score.", id), reduction = "proj.umap")
-      ggsave(paste0(id,".mapping_score_umap.pdf"))
+      ggsave(paste0(prefix,"_",id,".mapping_score_umap.pdf"))
       VlnPlot(object = query, features = paste0("mapping.score.", id), group.by = predicted.id) + NoLegend()
-      ggsave(paste0(id,".mapping_score_vln.pdf"))
+      ggsave(paste0(prefix,"_",id,".mapping_score_vln.pdf"))
 
 } 
 
   # save mapped data set
   #save(query, file = "azimuth.bin")
-  saveRDS(query, file = "azimuth.rds")
+  # saveRDS(query, file = paste0(prefix,"azimuth.rds"))
   # load("azimuth.bin" )
