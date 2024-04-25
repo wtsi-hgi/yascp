@@ -22,13 +22,13 @@ process AZIMUTH{
 
     input:
         val outdir_prev
-        path file_h5ad_batch
+        tuple val(samplename),path(file_h5ad_batch)
         each refset
         // path(mapping_file)
     output:
         // path(celltype_table, emit:predicted_celltypes)
-        tuple(val(outfil_prfx), val(refset.refset), path("predicted_*.tsv"),emit:celltype_tables_all) 
-        path("predicted_*.tsv"), emit:predicted_celltype_labels
+        tuple(val(outfil_prfx), val(refset.refset), path("*predicted_*.tsv"),emit:celltype_tables_all) 
+        path("*predicted_*.tsv"), emit:predicted_celltype_labels
         path "*ncells_by_type_barplot.pdf"
         path "*query_umap.pdf"
         path "*prediction_score_umap.pdf"
@@ -46,7 +46,7 @@ process AZIMUTH{
     //outfil_prfx = "${file_h5ad_batch}".minus(".h5ad")
     
     """ 
-        azimuth.R ./${file_h5ad_batch} ${refset.refset} ${refset.annotation_labels}
+        azimuth.R ./${file_h5ad_batch} ${refset.refset} ${refset.annotation_labels} ${samplename}
 
     """
 }

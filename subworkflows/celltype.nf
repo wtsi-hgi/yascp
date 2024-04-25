@@ -42,7 +42,7 @@ workflow celltype{
         
         // AZIMUTH
         if (params.celltype_assignment.run_azimuth){
-            AZIMUTH(params.outdir,ch_batch_files,Channel.fromList( params.azimuth.celltype_refsets))
+            AZIMUTH(params.outdir,az_ch_experiment_filth5,Channel.fromList( params.azimuth.celltype_refsets))
             az_out = AZIMUTH.out.predicted_celltype_labels.collect()
             // REMAP_AZIMUTH(AZIMUTH.out.celltype_tables_all,params.mapping_file)
             // az_out = REMAP_AZIMUTH.out.predicted_celltype_labels.collect()
@@ -72,7 +72,7 @@ workflow celltype{
         }        
         all_extra_fields = all_extra_fields.mix(sc_out)
         
-        CELLTYPE_FILE_MERGE(az_out,ct_out,all_extra_fields,SPLIT_BATCH_H5AD.out.keras_outfile)       
+        CELLTYPE_FILE_MERGE(az_out,ct_out,all_extra_fields,SPLIT_BATCH_H5AD.out.keras_outfile.collect())       
         file__anndata_merged2=CELLTYPE_FILE_MERGE.out.file__anndata_merged2
         file__anndata_merged2.view()
 
