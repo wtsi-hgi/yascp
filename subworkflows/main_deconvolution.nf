@@ -17,7 +17,7 @@ include { match_genotypes } from './match_genotypes'
 include {ENHANCE_STATS_GT_MATCH } from "$projectDir/modules/nf-core/modules/genotypes/main"
 include {SUBSET_WORKF} from "$projectDir/modules/nf-core/modules/subset_genotype/main"
 include {REPLACE_GT_DONOR_ID2; REPLACE_GT_DONOR_ID2 as REPLACE_GT_DONOR_ID_SUBS } from "$projectDir/modules/nf-core/modules/genotypes/main"
-include { RETRIEVE_RECOURSES } from "$projectDir/subworkflows/local/retrieve_recourses"
+include { RETRIEVE_RECOURSES; STAGE_FILE } from "$projectDir/subworkflows/local/retrieve_recourses"
 include {GT_MATCH_POOL_IBD } from "$projectDir/modules/nf-core/modules/genotypes/main"
 include { MATCH_GT_VIREO } from "$projectDir/modules/nf-core/modules/genotypes/main"
 
@@ -52,7 +52,7 @@ workflow  main_deconvolution {
         }else{
             genome = "${params.reference_assembly_fasta_dir}"
         }
-
+        vcf_candidate_snps = STAGE_FILE(params.cellsnp.vcf_candidate_snps)
         // genome.subscribe { println "genome: $it" }
 
         if (params.genotype_input.run_with_genotype_input) {
@@ -73,7 +73,7 @@ workflow  main_deconvolution {
             // This will subsequently result in a joint vcf file per cohort per donors listed for each of the pools that can be used in VIREO and/or GT matching algorythm.
             SUBSET_WORKF(ch_ref_vcf,donors_in_pools,'AllExpectedGT',genome)
             merged_expected_genotypes = SUBSET_WORKF.out.merged_expected_genotypes
-            merged_expected_genotypes2 = merged_expected_genotypes.combine(Channel.fromPath(params.cellsnp.vcf_candidate_snps))
+            merged_expected_genotypes2 = merged_expected_genotypes.combine(vcf_candidate_snps)
             // merged_expected_genotypes2.subscribe { println "merged_expected_genotypes2: $it" }
             GT_MATCH_POOL_IBD(SUBSET_WORKF.out.samplename_subsetvcf_ibd,'Withing_expected','Expected')
 
@@ -105,10 +105,10 @@ workflow  main_deconvolution {
             if (params.provide_within_pool_donor_specific_sites_for_pilup){
                 cellsnp_with_npooled2 = cellsnp_with_npooled.combine(cellsnp_panels, by: 0)
             }else{
-                cellsnp_with_npooled2 = cellsnp_with_npooled.combine(Channel.fromPath(params.cellsnp.vcf_candidate_snps))
+                cellsnp_with_npooled2 = cellsnp_with_npooled.combine(vcf_candidate_snps)
             }
         }else{
-            cellsnp_with_npooled2 = cellsnp_with_npooled.combine(Channel.fromPath(params.cellsnp.vcf_candidate_snps))
+            cellsnp_with_npooled2 = cellsnp_with_npooled.combine(vcf_candidate_snps)
         }
 
         log.info('Capturing some of the existing CELLSNP files')

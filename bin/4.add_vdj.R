@@ -34,8 +34,7 @@ data_dir <- './'
 args = commandArgs(trailingOnly=TRUE)
 
 wnn_integrated_file = args[1]
-n2 = strsplit(as.character(wnn_integrated_file), split="__all_samples")[[1]][1]
-outname = paste0(n2,'__all_samples_integrated.vdj.RDS')
+
 
 myPalette <- colorRampPalette(rev(brewer.pal(11, "Spectral")))
 
@@ -155,8 +154,14 @@ vdj_dir <- paste0('./vdj/')
 dir.create(vdj_dir,showWarnings = F)
 names(immdata_TCR$data) <- tcr_names
 names(immdata_BCR$data) <- bcr_names
-saveRDS(immdata_BCR, file=paste0(vdj_dir,'/slemap_BCR.rds'))
-saveRDS(immdata_TCR, paste0(vdj_dir,'/slemap_TCR.rds'))
+
+n2 = strsplit(as.character(wnn_integrated_file), split="__all_samples")[[1]][1]
+outname = paste0(n2,'__all_samples_integrated.vdj.RDS')
+outname_BCR = paste0(n2,'__all_samples_integrated.BCR.RDS')
+outname_TCR = paste0(n2,'__all_samples_integrated.TCR.RDS')
+
+saveRDS(immdata_BCR, file=outname_BCR)
+saveRDS(immdata_TCR, file=outname_TCR)
 
 saveRDS(all_samples, file=outname)
 

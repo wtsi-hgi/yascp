@@ -413,6 +413,9 @@ def gather_donor(donor_id, ad, ad_lane_raw, azimuth_annot, qc_obs, columns_outpu
     ad.obs = ad.obs.loc[:,~ad.obs.columns.duplicated()]
     if write_h5:
         path1=os.path.join(outdir, oufnam + '.h5ad')
+        ad.obs['qc.filter.pass.AZ:L0'] = ad.obs['qc.filter.pass.AZ:L0'].astype('bool')
+        ad.obs['cell_passes_hard_filters'] = ad.obs['cell_passes_hard_filters'].astype('bool')
+        ad.obs['qc.filter.pass'] = ad.obs['qc.filter.pass'].astype('bool')
         ad.write(path1,compression='gzip')
 
     return {

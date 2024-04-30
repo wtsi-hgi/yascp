@@ -57,7 +57,7 @@ workflow YASCP {
         bam_split_channel = Channel.of()
         out_ch = params.outdir
             ? Channel.fromPath(params.outdir, checkIfExists:true)
-            : Channel.fromPath("${launchDir}/${params.outdir}")
+            : Channel.from("${launchDir}/${params.outdir}")
                 
         // out_ch.map{row->"${row[0]}/possorted_genome_bam.bam" }
         prepare_inputs(input_channel)

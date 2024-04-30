@@ -26,7 +26,7 @@ process SPLIT_CITESEQ_GEX {
         tuple val(sample_name), path("${sample_name}__Gene_Expression"), emit:gex_data
         tuple val(sample_name), path("antibody-${sample_name}.h5ad"), emit: ab_data2 optional true
         tuple val(sample_name), path("Gene_Expression-${sample_name}.h5ad"), emit: gex_h5ad optional true
-        tuple val(sample_name), path("${sample_name}__*"), emit: ab_data
+        tuple val(sample_name), path("${sample_name}__*"), emit: ab_data optional true
         tuple val(sample_name), path("${sample_name}__Gene_Expression/barcodes.tsv.gz"), path("${sample_name}__Gene_Expression/features.tsv.gz"), path("${sample_name}__Gene_Expression/matrix.mtx.gz"), emit: channel__file_paths_10x
  
     script:
@@ -166,6 +166,8 @@ process VDJ_INTEGRATION{
     
     output:
         path("*all_samples_integrated.vdj.RDS"), emit: all_data_integrated_vdj_rds
+        path("*all_samples_integrated.BCR.RDS"), emit: all_data_integrated_BCR_rds
+        path("*all_samples_integrated.TCR.RDS"), emit: all_data_integrated_TCR_rds
 
     input:
         path(all_cellranger_samples)

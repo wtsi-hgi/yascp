@@ -5,6 +5,7 @@ bold=$(tput bold)
 normal=$(tput sgr0)
 
 
+
 if [[ "$QUEUE" == '' ]];
     then
         export QUEUE='long'
