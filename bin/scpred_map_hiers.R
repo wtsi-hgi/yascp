@@ -17,7 +17,7 @@ suppressPackageStartupMessages(library("optparse"))
 suppressPackageStartupMessages(library("future.apply"))
 suppressPackageStartupMessages(library("progressr"))
 library(SeuratDisk)
-options(future.globals.maxSize = 8000 * 1024^2)
+options(future.globals.maxSize = 80000 * 1024^2)
 #   ____________________________________________________________________________
 #   Set up parameter variables                                              ####
 
