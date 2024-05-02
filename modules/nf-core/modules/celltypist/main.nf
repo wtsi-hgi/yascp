@@ -37,6 +37,12 @@ process CELLTYPIST {
         filtered_matrix_h5_path = file("${filtered_matrix_h5}/../cellbender_FPR_0pt05_filtered.h5")
       }
 
+      if (params.celltypist.sample_plot_probs){
+        sample_plot_probs = "--sample_plot_probs"
+      }
+      else{
+        sample_plot_probs = ""
+      }
 
       """
 
@@ -44,6 +50,7 @@ process CELLTYPIST {
         mkdir -p outputs
         run_celltypist.py \\
           --samplename ${sample} \\
+          ${sample_plot_probs} \\
           --filtered_matrix_h5 ${filtered_matrix_h5} \\
           --celltypist_model ${celltypist_model}  \\
           --output_dir \$PWD/outputs  \\

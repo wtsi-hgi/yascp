@@ -15,7 +15,7 @@ import scanpy
 def combine_reports(all_alternitive,mode):
     all_indexes_full=set({})
     for d1 in all_alternitive:
-        if d1=='fake_file.fq':
+        if d1 in ('fake_file.fq', 'fake_file1.fq', 'fake_file2.fq'):
             Dataset = pd.DataFrame()
         else:
             Dataset = pd.read_csv(d1,sep='\t',index_col=0)
@@ -26,7 +26,7 @@ def combine_reports(all_alternitive,mode):
         all_indexes_full = all_indexes_full.union(all_indexes)
     Data_All_alt=pd.DataFrame(index=list(set(all_indexes_full)))    
     for d1 in all_alternitive:
-        if d1=='fake_file.fq':
+        if d1 in ('fake_file.fq', 'fake_file1.fq', 'fake_file2.fq'):
             Dataset = pd.DataFrame()
         else:
             Dataset = pd.read_csv(d1,sep='\t',index_col=0)
@@ -116,13 +116,13 @@ def main():
 
     Data_All = pd.concat([Data_All,Data_All_Azimuth,Data_All_celltypist,Data_All_alt],axis=1)
     
-    Donor_Exp = Data_All.index.str.split('-').str[-1]
+    Donor_Exp = Data_All.index.map(lambda x: '-'.join(x.split('-')[2:]))
     Donor = Donor_Exp.str.split('__').str[-1]
     Exp = Donor_Exp.str.split('__').str[0]
 
     Data_All['Donor'] =Donor
     Data_All['Exp'] =Exp
-    Data_All.to_csv('All_Celltype_Assignments.csv',sep='\t')
+    Data_All.to_csv('All_Celltype_Assignments.tsv',sep='\t')
 
     adatas_df = pd.read_csv(options.andata, header=None, names=['file_path'])
     adatas = adatas_df['file_path'].tolist()
@@ -139,13 +139,12 @@ def main():
         # in this case the concentration adds a -1 -2 -3 to index that has to be removed.
         all_index = pd.DataFrame(ad.obs.index,columns=['col'])
         all_indexes = all_index['col'].str.split('-')
-        all_together = all_indexes.str[0]+'-'+all_indexes.str[1]+'-'+all_indexes.str[2]
+        all_together = all_indexes.apply(lambda x: '-'.join(x[:-1]))
         ad.obs.set_index(all_together, inplace=True)
         
     # ad2 = adatasets2[0].concatenate(*adatasets2[1:])
     # ad = scanpy.read(adata)
-    for col in Data_All.columns:
-        ad.obs[col]=Data_All[col]
+    ad.obs = ad.obs.merge(Data_All, left_index=True, right_index=True)
 
     donor_celltype_report={}
     tranche_exp_report={}
@@ -162,13 +161,13 @@ def main():
                     # col='Celltypist:over_clustering'
                     # col='Azimuth:predicted.celltype.l2'
                     counts = Exp_Data[col].value_counts()
-                    counts.index = counts.index+' - '+col
+                    counts.index = counts.index.astype(str) + ' - ' + col
                     dict_tranche_cells.update(counts.to_dict())
                     
                     # print(donor)
                     donor_data=Exp_Data[Exp_Data['Donor']==donor]
                     donor_counts = donor_data[col].value_counts()
-                    donor_counts.index = donor_counts.index+' - '+col
+                    donor_counts.index = donor_counts.index.astype(str) + ' - '+col
                     dict_donor_cells.update(donor_counts.to_dict())
                 # check all the available celltypes here
                 # and count the numbers
