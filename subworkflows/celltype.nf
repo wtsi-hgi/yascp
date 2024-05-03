@@ -70,9 +70,9 @@ workflow celltype{
         }else{
             sc_out = Channel.of()
         }        
-        all_extra_fields = all_extra_fields.mix(sc_out)
+        all_extra_fields2 = all_extra_fields.mix(sc_out)
         
-        CELLTYPE_FILE_MERGE(az_out,ct_out,all_extra_fields,SPLIT_BATCH_H5AD.out.keras_outfile.collect())       
+        CELLTYPE_FILE_MERGE(az_out,ct_out,all_extra_fields2,SPLIT_BATCH_H5AD.out.keras_outfile.collect())       
         file__anndata_merged2=CELLTYPE_FILE_MERGE.out.file__anndata_merged2
         file__anndata_merged2.view()
 
