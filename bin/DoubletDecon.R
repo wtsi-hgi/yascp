@@ -647,7 +647,7 @@ Main_Doublet_Decon<-function(rawDataFile, groupsFile, filename, location, fullDa
 ## Run Doublet Decon ##
 
 tryCatch({
-
+  print(paste0('trying rhop: ',args$rhop))
   results <- Main_Doublet_Decon(rawDataFile = processed$newExpressionFile, 
     groupsFile = processed$newGroupsFile, 
     filename = "DoubletDecon_results",
@@ -667,25 +667,42 @@ tryCatch({
     nCores = args$nCores)
 
 }, error = function(e) {
-
-  results <- Main_Doublet_Decon(rawDataFile = processed$newExpressionFile, 
-    groupsFile = processed$newGroupsFile, 
-    filename = "DoubletDecon_results",
-    location = paste0(args$out, "/"),
-    fullDataFile = NULL, 
-    removeCC = args$removeCC, 
-    species = args$species, 
-    rhop =  0.64,
-    write = TRUE, 
-    PMF = args$pmf, 
-    useFull = FALSE, 
-    heatmap = args$heatmap, 
-    centroids=args$centroids, 
-    num_doubs=args$num_doubs, 
-    only50=args$only50, 
-    min_uniq=args$min_uniq, 
-    nCores = args$nCores)
-
+  tryCatch({
+    print(paste0('trying rhop: ',0.64))
+    results <- Main_Doublet_Decon(rawDataFile = processed$newExpressionFile, 
+      groupsFile = processed$newGroupsFile, 
+      filename = "DoubletDecon_results",
+      location = paste0(args$out, "/"),
+      fullDataFile = NULL, 
+      removeCC = args$removeCC, 
+      species = args$species, 
+      rhop =  0.64,
+      write = TRUE, 
+      PMF = args$pmf, 
+      useFull = FALSE, 
+      heatmap = args$heatmap, 
+      centroids=args$centroids, 
+      num_doubs=args$num_doubs, 
+      only50=args$only50, 
+      min_uniq=args$min_uniq, 
+      nCores = args$nCores)
+  }, error = function(e) {
+      print(paste0('trying rhop: ',0.5))
+      results <- Main_Doublet_Decon(rawDataFile = processed$newExpressionFile, 
+        groupsFile = processed$newGroupsFile, 
+        filename = "DoubletDecon_results",
+        location = paste0('.', "/"),
+        fullDataFile = NULL, 
+        removeCC = FALSE, 
+        species = args$species, 
+        rhop =  0.5,
+        write = TRUE, 
+        PMF = args$pmf, 
+        useFull = FALSE, 
+        heatmap =  args$heatmap, 
+        nCores = 3)
+  }
+  )
 }
 )
 

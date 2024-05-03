@@ -45,8 +45,8 @@ AZIMUTH_ASSIGNMENTS_FNSUFFIX = '_predicted_celltype_l2.tsv'
 SCRUBLET_ASSIGNMENTS_FNSUFFIX = 'scrublet.tsv'
 
 COLUMNS_AZIMUTH = {
-    'Azimuth:predicted.celltype.l2': 'azimuth.celltyp.l2',
-    'Azimuth:predicted.celltype.l2.score': 'azimuth.pred.score.l2',
+    'Azimuth:Azimuth:predicted.celltype.l2': 'azimuth.celltyp.l2',
+    'Azimuth:Azimuth:predicted.celltype.l2.score': 'azimuth.pred.score.l2',
     'Azimuth:mapping.score.celltype.l2': 'azimuth.map.score',
     }
 
@@ -61,14 +61,14 @@ COLUMNS_QC = {
     'cell_passes_qc:score':'qc.filter.pass:score',
     'cell_passes_qc-per:all_together::exclude':'qc.filter.pass.spikein_exclude',
     'cell_passes_qc-per:all_together::exclude:score':'qc.filter.pass.spikein_exclude:score',
-    'cell_passes_qc-per:Azimuth:L0_predicted.celltype.l2':'qc.filter.pass.AZ:L0',
-    'cell_passes_qc-per:Azimuth:L0_predicted.celltype.l2:score':'qc.filter.pass.AZ:L0:score',
+    'cell_passes_qc-per:Azimuth:L0_Azimuth:predicted.celltype.l2':'qc.filter.pass.AZ:L0',
+    'cell_passes_qc-per:Azimuth:L0_Azimuth:predicted.celltype.l2:score':'qc.filter.pass.AZ:L0:score',
     'total_counts': 'qc.umi.count.total',
     'total_counts_gene_group__mito_transcript': 'qc.umi.count.mt',
     'pct_counts_gene_group__mito_transcript': 'qc.umi.perc.mt',
     'n_genes_by_counts': 'qc.genes.detected.count',
-    'Azimuth:L0_predicted.celltype.l2':'azimuth.celltyp.l0',
-    'Azimuth:L1_predicted.celltype.l2':'azimuth.celltyp.l1',
+    'Azimuth:L0_Azimuth:predicted.celltype.l2':'azimuth.celltyp.l0',
+    'Azimuth:L1_Azimuth:predicted.celltype.l2':'azimuth.celltyp.l1',
     'total_counts_gene_group__mito_transcript':'total_counts_gene_group__mito_transcript',
     'pct_counts_gene_group__mito_transcript':'pct_counts_gene_group__mito_transcript',
     'total_counts_gene_group__mito_protein':'total_counts_gene_group__mito_protein',
@@ -224,49 +224,6 @@ def anndata_from_h5(
 
     return adata
 
-def gather_azimuth_annotation(expid, datadir_azimuth, index_label = None):
-    # e.g. A4C06803ACD34DFB-adata_franke_Pilot_3_lane_3_predicted_celltype.tsv.gz
-    filpath = None
-    expid2=expid
-    fnsfx = '_{}{}'.format(expid, AZIMUTH_ASSIGNMENTS_FNSUFFIX)
-    for fn in os.listdir(datadir_azimuth):
-        if fn.endswith(fnsfx):
-            filpath = os.path.join(datadir_azimuth, fn)
-            break
-    if not filpath:
-        expid ='full'
-        fnsfx = '_{}{}'.format(expid, AZIMUTH_ASSIGNMENTS_FNSUFFIX)
-        for fn in os.listdir(datadir_azimuth):
-            if fn.endswith(fnsfx):
-                if fn.startswith('remapped'):
-                    filpath = os.path.join(datadir_azimuth, fn)
-                    break
-    if not filpath:
-        expid ='full'
-        fnsfx = '_{}{}'.format(expid, AZIMUTH_ASSIGNMENTS_FNSUFFIX)
-        for fn in os.listdir(datadir_azimuth):
-            if fn.endswith(fnsfx):
-                print(fn)
-                if not fn.startswith('remapped'):
-                    filpath = os.path.join(datadir_azimuth, fn)
-                    break   
-                         
-    if not filpath:
-        sys.exit("ERROR: could not find filename suffix '{}' in direcotry {}\n"
-            .format(fnsfx, datadir_azimuth))
-    azt = pandas.read_table(filpath,index_col=0)
-    if (expid=='full'):
-        expid=expid2
-        azt = azt[azt.index.str.contains(expid2)]
-        # filter to only the experiment id inputs.
-    df = get_df_from_mangled_index(azt, expid)
-    azt.insert(0, "barcode", df["barcode"])
-    azt.insert(1, "donor", df["donor"])
-    azt.insert(2, "experiment_id", expid)
-    if index_label is not None and index_label == "barcode":
-        azt.insert(0, "mangled_cell_id", df.index)
-        azt = azt.set_index("barcode", drop = True)
-    return azt
 
 def load_scrublet_assignments(expid, datadir_scrublet):
     filpath = None
@@ -544,22 +501,12 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
     except:
         metrics = pd.read_csv(f'/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/qc/{args.experiment_name}/results_rsync2/results/handover/Summary_plots/{args.experiment_name}/Fetch Pipeline/CSV/Submission_Data_Pilot_UKB.file_metadata.tsv',sep='\t')
         metrics = metrics[metrics['Sample_id']==expid]
+    
     #############
-    #Azimuth cell-type assignments
+    #Cell-type assignments
     #############
-    datadir_azimuth = f'{args.results_dir}/celltype/azimuth' 
-    for datadir_azimuth in glob.glob(f'{args.results_dir}/celltype/azimuth/*'):
-        if os.path.isdir(datadir_azimuth):
-            try:
-                azt = gather_azimuth_annotation(
-                    expid, datadir_azimuth=datadir_azimuth,
-                    index_label = 'barcode')
-                columns_output = {**columns_output, **COLUMNS_AZIMUTH}
-            except:
-                azt = None
-        else:
-            azt = None
 
+    azt = pd.read_csv(f'{args.results_dir}/celltype/All_Celltype_Assignments.csv',sep='\t',index_col=0)
     ##########################
     # Scrublet
     #########################
@@ -647,7 +594,7 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
         chromium_channel = 'Run_ID not vailable'
         
     
-    Azimuth_Cell_Assignments_data = azt
+
 
     def isNaN(num):
         return num!= num
@@ -719,12 +666,7 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
     Cells_before_QC_filters=len(all_QC_lane.obs['cell_passes_qc'])
     Cells_passing_QC=len(all_QC_lane.obs[all_QC_lane.obs['cell_passes_qc']])
     Cells_failing_QC=len(all_QC_lane.obs[all_QC_lane.obs['cell_passes_qc']==False])
-    try:
-        Azimuth_Cell_Assignments_data=Azimuth_Cell_Assignments_data.set_index('mangled_cell_id')
-        all_QC_lane.obs['predicted celltype']=Azimuth_Cell_Assignments_data['predicted.celltype.l2']
-    
-    except:
-        print('skipped az')
+
     UMIS_mapped_to_mitochondrial_genes = sum(all_QC_lane.obs['total_counts_gene_group__mito_transcript'])
     UMIS_mapped_to_ribo_genes = sum(all_QC_lane.obs['total_counts_gene_group__ribo_protein'])
     UMIS_mapped_to_ribo_rna = sum(all_QC_lane.obs['total_counts_gene_group__ribo_rna'])
@@ -819,8 +761,9 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
             data_donor_for_stats['cells failing QC'].append(Donor_cells_fails_qc)
             data_donor_for_stats['cells passing QC'].append(Donor_cells_passes_qc)
 
-            Donor_cell_assignments = Azimuth_Cell_Assignments_data.loc[Mengled_barcodes_donor] #for this have to figure out when the cell type is unasigned.
-            Cell_types_detected = len(set(Donor_cell_assignments['predicted.celltype.l2']))
+            Donor_cell_assignments = azt.loc[Mengled_barcodes_donor] #for this have to figure out when the cell type is unasigned.
+            # Donor_cell_assignments = Donor_cell_assignments.rename(COLUMNS_AZIMUTH,axis=1)
+            Cell_types_detected = len(set(Donor_cell_assignments['Azimuth:predicted.celltype.l2']))
             Donor_UMIS_mapped_to_mitochondrial_genes = sum(Donor_qc_files.obs['total_counts_gene_group__mito_transcript'])
             Donor_UMIS_mapped_to_ribo_genes = sum(Donor_qc_files.obs['total_counts_gene_group__ribo_protein'])
             Donor_UMIS_mapped_to_ribo_rna = sum(Donor_qc_files.obs['total_counts_gene_group__ribo_rna'])
@@ -833,8 +776,8 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
             Median_UMIs_per_cell= statistics.median(pd.DataFrame(Donor_qc_files.X.sum(axis=1))[0])
 
             Cell_numbers = ''
-            for type1 in set(Donor_cell_assignments['predicted.celltype.l2']):
-                nr_cells_of_this_type = len(Donor_cell_assignments[Donor_cell_assignments['predicted.celltype.l2']==type1])
+            for type1 in set(Donor_cell_assignments['Azimuth:predicted.celltype.l2']):
+                nr_cells_of_this_type = len(Donor_cell_assignments[Donor_cell_assignments['Azimuth:predicted.celltype.l2']==type1])
                 Cell_numbers+=f"{type1}:{nr_cells_of_this_type} ; "
 
 
@@ -984,7 +927,7 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
         'Tranche Pass/Fail':Tranche_Pass_Fail,
         'Tranche Failure Reason':Tranche_Failure_Reason
     }
-    return fctr, data_tranche, data_donor,azt
+    return fctr, data_tranche, data_donor
 
 def set_argument_parser():
 
@@ -1064,7 +1007,7 @@ if __name__ == '__main__':
     
     adqc.obs['tranche.id']=args.experiment_name
     try:
-        adqc.obs['cell_passes_qc-per:Azimuth:L0_predicted.celltype.l2:score'] = adqc.obs['cell_passes_qc-per:Azimuth:L0_predicted.celltype.l2:score'].astype(float,errors='ignore')
+        adqc.obs['cell_passes_qc-per:Azimuth:L0_Azimuth:predicted.celltype.l2:score'] = adqc.obs['cell_passes_qc-per:Azimuth:L0_Azimuth:predicted.celltype.l2:score'].astype(float,errors='ignore')
     except:
         _='no values associated'
     try:
@@ -1082,7 +1025,7 @@ if __name__ == '__main__':
             continue #Here no cells has passed the qc thresholds.
         nf, data_tranche, data_donor, azt = gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = oufh, lane_id=count,Resolution=Resolution)
         # add the stuff to the adata.
-        azt=azt.set_index('mangled_cell_id')
+
         All_probs_and_celltypes=pd.concat([All_probs_and_celltypes,azt])
         data_tranche_all.append(data_tranche)
         data_donor_all= data_donor_all+data_donor
