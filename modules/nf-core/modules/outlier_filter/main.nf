@@ -56,7 +56,7 @@ process OUTLIER_FILTER {
 
     script:
         if(gt_match_based_adaptive_qc_exclusion_pattern!=''){
-            filter_strategy_exclusion = "--patterns_exclude '${gt_match_based_adaptive_qc_exclusion_pattern}' --gt_match_file ${gt_outlier_input}"
+            filter_strategy_exclusion = "--patterns_exclude='${gt_match_based_adaptive_qc_exclusion_pattern}' --gt_match_file ${gt_outlier_input}"
         }else{
             filter_strategy_exclusion = ""
         }
@@ -77,7 +77,8 @@ process OUTLIER_FILTER {
                 --max_samples ${max_samples} \
                 --output_file ${outfile} \
                 --anndata_compression_opts ${anndata_compression_opts} \
-                --filter_strategy '${outlier_filtering_strategy}' \
+                --filter_strategy='${outlier_filtering_strategy}' \
+                --MAD_thresholds='${params.sample_qc.cell_filters.filter_outliers.mad_tresholds}' \
                 ${filter_strategy_exclusion}
                 
             mkdir plots

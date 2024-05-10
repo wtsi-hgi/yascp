@@ -16,7 +16,7 @@ include { CREATE_ARTIFICIAL_BAM_CHANNEL } from "$projectDir/modules/local/create
 include {MERGE_SAMPLES} from "$projectDir/modules/nf-core/modules/merge_samples/main"
 include {dummy_filtered_channel} from "$projectDir/modules/nf-core/modules/merge_samples/functions"
 include {MULTIPLET} from "$projectDir/subworkflows/doublet_detection"
-include { SPLIT_CITESEQ_GEX; SPLIT_CITESEQ_GEX as SPLIT_CITESEQ_GEX_FILTERED } from '../modules/nf-core/modules/citeseq/main'
+include { SPLIT_CITESEQ_GEX; SPLIT_CITESEQ_GEX as SPLIT_CITESEQ_GEX_FILTERED; SPLIT_CITESEQ_GEX as PREPOCESS_FILES } from '../modules/nf-core/modules/citeseq/main'
 include { GENOTYPE_MATCHER } from "$projectDir/modules/nf-core/modules/vireo/main"
 /*
 ========================================================================================
@@ -85,6 +85,7 @@ workflow YASCP {
                 ch_experimentid_paths10x_raw = prepare_inputs.out.ch_experimentid_paths10x_raw
                 ch_experiment_filth5 = ch_experimentid_paths10x_filtered = prepare_inputs.out.ch_experimentid_paths10x_filtered
 
+
                 if (params.citeseq){
                     // If citeseq data is present in the 10x mtx then we strip it before the ambient rna correction.
                     SPLIT_CITESEQ_GEX( prepare_inputs.out.ch_experimentid_paths10x_raw,'raw')
@@ -94,8 +95,6 @@ workflow YASCP {
                     channel__file_paths_10x=SPLIT_CITESEQ_GEX_FILTERED.out.channel__file_paths_10x
                     channel__file_paths_10x_single=SPLIT_CITESEQ_GEX_FILTERED.out.gex_data
                     ch_experiment_filth5 = SPLIT_CITESEQ_GEX.out.gex_data
-                }else{
-                    ab_data = Channel.of()
                 }
 
                 // Either run ambient RNA removal with cellbender or use cellranger filtered reads (cellbender|cellranger)
@@ -123,6 +122,10 @@ workflow YASCP {
                 }
 
 
+                PREPOCESS_FILES( channel__file_paths_10x_single,'preprocess')
+                channel__file_paths_10x_gex = PREPOCESS_FILES.out.channel__file_paths_10x
+                gex_h5ad = PREPOCESS_FILES.out.gex_h5ad
+
 
                 // ###################################
                 // ###################################
@@ -132,7 +135,8 @@ workflow YASCP {
                 // ###################################
                 if (params.filter_multiplets.run_process){
                     MULTIPLET(
-                        channel__file_paths_10x_single
+                        channel__file_paths_10x_gex,
+                        gex_h5ad
                     )
                     scrublet_paths = MULTIPLET.out.scrublet_paths
                 }else{
@@ -191,7 +195,6 @@ workflow YASCP {
                         ? Channel.fromPath("${params.outdir}/deconvolution/vireo/*/vireo_*", checkIfExists:true, type: 'dir')
                         : Channel.fromPath("${launchDir}/${params.outdir}/deconvolution/vireo/*/vireo_*", type: 'dir')
 
-                    
                     GENOTYPE_MATCHER(vireo_paths.collect())
                     matched_donors = GENOTYPE_MATCHER.out.matched_donors
                     matched_donors.subscribe { println "matched_donors: $it" }

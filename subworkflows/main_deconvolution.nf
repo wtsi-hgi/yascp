@@ -320,9 +320,9 @@ workflow  main_deconvolution {
         if (params.genotype_input.run_with_genotype_input) {
             if (params.do_vireo_subsampling){
                 VIREO_SUBSAMPLING(vireo_extra_repeats)
-                VIREO_SUBSAMPLING.out.output_dir.concat(VIREO.out.output_dir).set{tuple_1}
-                // tuple_1.groupTuple(by:0).set{vspp0}
-                // VIREO_SUBSAMPLING_PROCESSING(vspp0)
+                VIREO_SUBSAMPLING.out.output_dir.concat(VIREO.out.output_dir_subsampling).set{tuple_1}
+                tuple_1.groupTuple(by:0).set{vspp0}
+                VIREO_SUBSAMPLING_PROCESSING(vspp0)
                 // VIREO_SUBSAMPLING.out.all_required_data.set{replacement_input_sub}
                 // // replacement_input_sub.combine(vireo_with_gt).set{vir_repl_input}
                 // // REPLACE_GT_DONOR_ID_SUBS(vir_repl_input)
@@ -331,7 +331,7 @@ workflow  main_deconvolution {
                 // //     .combine(ch_ref_vcf).set { gt_math_pool_against_panel_input_subs }
                     
                 // MATCH_GT_VIREO(gt_math_pool_against_panel_input_subs)
-                // subsampling_donor_swap = VIREO_SUBSAMPLING_PROCESSING.out.subsampling_donor_swap
+                subsampling_donor_swap = VIREO_SUBSAMPLING_PROCESSING.out.subsampling_donor_swap
             }else{
                 subsampling_donor_swap = Channel.from("$projectDir/assets/fake_file.fq")
             }

@@ -7,16 +7,9 @@ process SPLIT_CITESEQ_GEX {
         container "wtsihgi/nf_scrna_qc:6bb6af5"
     }
 
-    publishDir  path: "${params.outdir}/citeseq/${mode}/${sample_name}",
-    //   saveAs: {filename ->
-    //     if (filename.contains("antibody-")) {
-    //         filename.replaceAll("antibody-", "${mode}_antibody-")
-    //     }else {
-    //         null
-    //     }
-    //   },
-      mode: "${params.copy_mode}",
-      overwrite: "true"
+    publishDir  path: "${params.outdir}/data_modalities_split/${mode}/${sample_name}",
+    mode: "${params.copy_mode}",
+    overwrite: "true"
 
     input:
         tuple val(sample_name),path(cellranger_raw) 
@@ -32,7 +25,7 @@ process SPLIT_CITESEQ_GEX {
     script:
 
         """
-        
+
             strip_citeseq.py --raw_data ${cellranger_raw} -o ${sample_name}
         """
 }

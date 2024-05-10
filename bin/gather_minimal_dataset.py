@@ -45,8 +45,8 @@ AZIMUTH_ASSIGNMENTS_FNSUFFIX = '_predicted_celltype_l2.tsv'
 SCRUBLET_ASSIGNMENTS_FNSUFFIX = 'scrublet.tsv'
 
 COLUMNS_AZIMUTH = {
-    'Azimuth:Azimuth:predicted.celltype.l2': 'azimuth.celltyp.l2',
-    'Azimuth:Azimuth:predicted.celltype.l2.score': 'azimuth.pred.score.l2',
+    'Azimuth:predicted.celltype.l2': 'azimuth.celltyp.l2',
+    'Azimuth:predicted.celltype.l2.score': 'azimuth.pred.score.l2',
     'Azimuth:mapping.score.celltype.l2': 'azimuth.map.score',
     }
 
@@ -327,7 +327,7 @@ def gather_donor(donor_id, ad, ad_lane_raw, azimuth_annot, qc_obs, columns_outpu
     ad.raw = ad_lane_raw[ad.obs.index, :]
     if donor_id != "unassigned" and donor_id != "doublet":
         # add annotation from QC
-        df = pandas.concat([ad.obs, azimuth_annot.loc[azimuth_annot.donor == donor_id]], axis = 1, join = 'outer')
+        df = pandas.concat([ad.obs, azimuth_annot.loc[azimuth_annot.Donor == donor_id]], axis = 1, join = 'outer')
         df =df.loc[:,~df.columns.duplicated()]
         df = df[['experiment_id'] + list(COLUMNS_DECONV.keys()) + list(COLUMNS_AZIMUTH.keys())]
         try:
@@ -370,7 +370,10 @@ def gather_donor(donor_id, ad, ad_lane_raw, azimuth_annot, qc_obs, columns_outpu
     ad.obs = ad.obs.loc[:,~ad.obs.columns.duplicated()]
     if write_h5:
         path1=os.path.join(outdir, oufnam + '.h5ad')
-        ad.obs['qc.filter.pass.AZ:L0'] = ad.obs['qc.filter.pass.AZ:L0'].astype('bool')
+        try:
+            ad.obs['qc.filter.pass.AZ:L0'] = ad.obs['qc.filter.pass.AZ:L0'].astype('bool')
+        except:
+            pass
         ad.obs['cell_passes_hard_filters'] = ad.obs['cell_passes_hard_filters'].astype('bool')
         ad.obs['qc.filter.pass'] = ad.obs['qc.filter.pass'].astype('bool')
         ad.write(path1,compression='gzip')
@@ -1023,10 +1026,10 @@ if __name__ == '__main__':
         ad = adqc[s]
         if ad.n_obs == 0:
             continue #Here no cells has passed the qc thresholds.
-        nf, data_tranche, data_donor, azt = gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = oufh, lane_id=count,Resolution=Resolution)
+        nf, data_tranche, data_donor = gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = oufh, lane_id=count,Resolution=Resolution)
         # add the stuff to the adata.
 
-        All_probs_and_celltypes=pd.concat([All_probs_and_celltypes,azt])
+        # All_probs_and_celltypes=pd.concat([All_probs_and_celltypes,azt])
         data_tranche_all.append(data_tranche)
         data_donor_all= data_donor_all+data_donor
         count += 1

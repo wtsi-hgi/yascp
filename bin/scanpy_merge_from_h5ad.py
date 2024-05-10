@@ -16,6 +16,9 @@ import numpy as np
 import pandas as pd
 import scanpy as sc
 
+
+
+
 # Set seed for reproducibility
 seed_value = 0
 y_n_print=False
@@ -479,7 +482,6 @@ def scanpy_merge(
     metadata,
     metadata_key,
     output_file,
-    params_dict=dict(),
     cellmetadata_filepaths=None,
     anndata_compression_opts=4,
     extra_metadata=None
@@ -505,14 +507,7 @@ def scanpy_merge(
     output_file : string
         output_file
     """
-    # Get compression opts for pandas
-    compression_opts = 'gzip'
-    if LooseVersion(pd.__version__) > '1.0.0':
-        compression_opts = dict(
-            method='gzip',
-            compresslevel=anndata_compression_opts
-        )
-    
+
     # check the h5ad_data
     # check for required columns
     h5ad_data_required_cols = set(['experiment_id', 'data_path_h5ad_format'])
@@ -551,37 +546,10 @@ def scanpy_merge(
                 )
             )
 
-    # Init default values for params_dict
-    params_filters_check = [
-        'cell_filters',
-        'downsample_cells_fraction',
-        'downsample_cells_n',
-        'downsample_feature_counts'
-    ]
-    for i in params_filters_check:
-        if i not in params_dict:
-            if i != 'cell_filters':
-                params_dict[i] = {'value': ''}
-    # Check for validity of filters specified in params_dict
-    param_filters_check = [
-        'downsample_cells_fraction',
-        'downsample_cells_n'
-    ]
-    if all(params_dict[k]['value'] != '' for k in param_filters_check):
-        raise Exception(
-            'Error check the params. Both {} and {} are set.'.format(
-                'downsample_cells_fraction',
-                'downsample_cells_n'
-            )
-        )
 
     # Init a dictionary to record the original number of cells per sample and
     # the number of cells after each filter.
     n_cells_dict = {}
-
-    # If true, then filtered cells are dropped prior to merging the data.
-    # This will save disk space.
-    drop_filtered_cells = False
 
     # Iterate over samples and load data
     adatasets = []
@@ -598,6 +566,7 @@ def scanpy_merge(
             # ivar_names='gene_ids',
             # make_unique=False
         )
+
         adata_orig_cols = list(adata.obs.columns)
         adata_orig_cols.append("donor")
         adata = check_adata(adata, row['experiment_id'])
@@ -676,204 +645,6 @@ def scanpy_merge(
                 for col in cellmetadata.columns:
                     adata.obs[col] = cellmetadata.loc[adata.obs.index, col]
 
-        # Calculate basic qc metrics for this sample.
-        # NOTE: n_genes_by_counts == number of genes with > 0 counts
-        #       adata.obs['n_genes'] = (adata.X > 0).sum(axis = 1) is same as
-        #       adata.obs['n_genes_by_counts']
-        vars_prior_metrics = adata.var_keys()
-        sc.pp.calculate_qc_metrics(
-            adata,
-            qc_vars=[
-                'gene_group__mito_transcript',
-                'gene_group__mito_protein',
-                'gene_group__ribo_protein',
-                'gene_group__ribo_rna'
-            ],
-            inplace=True
-        )
-
-        # # Apply cell filter.
-        # # adata = adata[selected_cells, :]
-        # # Apply gene filter
-        # # adata = adata[:, selected_genes]
-
-        # # Apply cell QC filters.
-        # adata.obs['cell_passes_qc'] = True
-        # filters_all_samples = []
-        # filters_experiment = []
-        # if 'cell_filters' not in params_dict:
-        #     warnings.warn('Found no cell_filters in params_dict.')
-        # else:
-        #     if 'all_samples' in params_dict['cell_filters'].keys():
-        #         # NOTE: we want this to throw an error if value is not there.
-        #         filters_all_samples = params_dict['cell_filters'][
-        #             'all_samples'
-        #         ]['value']
-        #     if row['experiment_id'] in params_dict['cell_filters'].keys():
-        #         filters_experiment = params_dict['cell_filters'][
-        #             row['experiment_id']
-        #         ]['value']
-
-        # # First record the total number of cells that pass each filter
-        # # independently i.e., not depenedent on any other filter.
-        # if len(filters_all_samples) > 0:
-        #     for filter_query in filters_all_samples:
-        #         if filter_query != '':
-        #             n_cells_dict[row['experiment_id']][
-        #                 'filter__all_samples {}'.format(filter_query)
-        #             ] = adata.n_obs - adata.obs.query(filter_query).shape[0]
-        # if len(filters_experiment) > 0:
-        #     for filter_query in filters_experiment:
-        #         # NOTE: could add if test here to grab filter_query ==
-        #         # file_cellids_filter or file_cellids_keep
-        #         if filter_query != '':
-        #             n_cells_dict[row['experiment_id']][
-        #                 'filter__sample_specific {}'.format(
-        #                     filter_query
-        #                 )
-        #             ] = adata.n_obs - adata.obs.query(filter_query).shape[0]
-
-        # # Now apply the filters - first apply the filters for all samples.
-        # n_cells_start = adata.n_obs
-        # filter_i = 0
-        # if len(filters_all_samples) > 0:
-        #     # Run each filter iteratively.
-        #     for filter_query in filters_all_samples:
-        #         if filter_query != '':
-        #             # Drop the cells that are flagged in this query
-        #             cells_to_remove = adata.obs.query(filter_query).index
-        #             adata.obs.loc[cells_to_remove, 'cell_passes_qc'] = False
-        #             # adata = adata[
-        #             #     np.invert(adata.obs.index.isin(cells_to_remove)),
-        #             #     :
-        #             # ]
-        #             if y_n_print:
-        #                 print('[{}] {} "{}": {} dropped {} remain'.format(
-        #                     'all sample cell QC applied',
-        #                     row['experiment_id'],
-        #                     filter_query,
-        #                     len(cells_to_remove),
-        #                     adata.obs['cell_passes_qc'].sum()
-        #                 ))
-        #             n_cells_dict[row['experiment_id']][
-        #                 'filter__all_samples after_filter_{} {}'.format(
-        #                     filter_i,
-        #                     filter_query
-        #                 )
-        #             ] = adata.obs['cell_passes_qc'].sum()
-        #             filter_i += 1
-
-        # # Now apply per sample filters.
-        # if len(filters_experiment) > 0:
-        #     # Run each filter iteratively.
-        #     for filter_query in filters_experiment:
-        #         if filter_query != '':
-        #             cells_to_remove = adata.obs.query(filter_query).index
-        #             adata.obs.loc[cells_to_remove, 'cell_passes_qc'] = False
-        #             # adata = adata[
-        #             #     np.invert(adata.obs.index.isin(cells_to_remove)),
-        #             #     :
-        #             # ]
-        #             if y_n_print:
-        #                 print('[{}] {} "{}": {} dropped {} remain'.format(
-        #                     'sample specific cell QC applied',
-        #                     row['experiment_id'],
-        #                     filter_query,
-        #                     len(cells_to_remove),
-        #                     adata.obs['cell_passes_qc'].sum()
-        #                 ))
-        #             n_cells_dict[row['experiment_id']][
-        #                 'filter__sample_specific after_filter_{} {}'.format(
-        #                     filter_i,
-        #                     filter_query
-        #                 )
-        #             ] = adata.obs['cell_passes_qc'].sum()
-        #             filter_i += 1
-
-        # # Write the number of cells filtered to standard out.
-        # if y_n_print:
-        #     print('[{}] after all cell QC: {} dropped {} remain'.format(
-        #         row['experiment_id'],
-        #         n_cells_start - adata.obs['cell_passes_qc'].sum(),
-        #         adata.obs['cell_passes_qc'].sum()
-        #     ))
-
-        # # Apply cell downsampling if needed.
-        # if params_dict['downsample_cells_fraction']['value'] != '':
-        #     n_cells_start = adata.n_obs
-        #     sc.pp.subsample(
-        #         adata,
-        #         fraction=float(
-        #             params_dict['downsample_cells_fraction']['value']
-        #         ),
-        #         copy=False,
-        #         random_state=0
-        #     )
-        #     n_cells_dict[
-        #         row['experiment_id']
-        #     ]['downsample_cells_fraction'] = adata.n_obs
-        #     if y_n_print:
-        #         print('[{}] cell downsample applied: {} dropped {} remain'.format(
-        #             row['experiment_id'],
-        #             n_cells_start - adata.n_obs,
-        #             adata.n_obs
-        #         ))
-        # elif params_dict['downsample_cells_n']['value'] != '':
-        #     n_cells_start = adata.n_obs
-        #     sc.pp.subsample(
-        #         adata,
-        #         n_obs=int(params_dict['downsample_cells_n']['value']),
-        #         copy=False,
-        #         random_state=0
-        #     )
-        #     n_cells_dict[
-        #         row['experiment_id']
-        #     ]['downsample_cells_n'] = adata.n_obs
-        #     if y_n_print:
-        #         print('[{}] cell downsample applied: {} dropped {} remain'.format(
-        #             row['experiment_id'],
-        #             n_cells_start - adata.n_obs,
-        #             adata.n_obs
-        #         ))
-        # # Apply count downsampling if needed.
-        # if params_dict['downsample_feature_counts']['value'] != '':
-        #     fraction = params_dict['downsample_feature_counts']['value']
-        #     target_counts_per_cell = adata.obs['total_counts'].apply(
-        #         lambda x: int(x * fraction)
-        #     ).values
-        #     sc.pp.downsample_counts(
-        #         adata,
-        #         counts_per_cell=target_counts_per_cell,
-        #         random_state=0
-        #     )
-
-        # # Print the number of cells and genes for this sample.
-        # n_cells_dict[row['experiment_id']]['after_filters'] = adata.obs[
-        #     'cell_passes_qc'
-        # ].sum()
-
-        # if y_n_print:
-        #     print('[{}] {} obs (cells), {} var (genes)'.format(
-        #         row['experiment_id'],
-        #         adata.obs['cell_passes_qc'].sum(),
-        #         adata.n_vars
-        #     ))
-
-        # # Comment code below to keep the vars (gene) output from
-        # # calculate_qc_metrics *per sample*. If we do this, then in
-        # # adata_merged.var, we will have duplicated # measures according to
-        # # each sample (e.g., n_cells_by_counts-0, # n_cells_by_counts-1,
-        # # n_cells_by_counts-3).
-        # #
-        # # Code below removes such output.
-        # adata.var = adata.var[vars_prior_metrics]
-
-        # # Only keep cells that pass QC
-        # if drop_filtered_cells:
-        #     adata = adata[adata.obs['cell_passes_qc'], :]
-        #     del adata.obs['cell_passes_qc']
-
-        # If we still have cells after filters, add to our list of data.
         if adata.n_obs > 0:
             adatasets.append(adata)
             adatasets__experiment_ids.append(row['experiment_id'])
@@ -882,12 +653,7 @@ def scanpy_merge(
             raise Exception(
                 'Error invalid h5ad_data file. Missing coluns.'
             )
-    # OPTIONAL: one could convert the experiment_ids to hashes
-    # adatasets__experiment_ids_hash = [
-    #     hashlib.sha1(i.encode('utf-8')) for i in adatasets__experiment_ids
-    # ]
 
-    # Merge all of the data together.
     adata_merged = adatasets[0].concatenate(
         *adatasets[1:],
         batch_categories=adatasets__experiment_ids
@@ -901,7 +667,7 @@ def scanpy_merge(
     adata_merged.obs['experiment_id'] = adata_merged.obs['experiment_id'].str.split('__donor').str[0]
     # Re-calculate basic qc metrics of var (genes) for the whole dataset.
     # NOTE: we are only changing adata.var
-    obs_prior = adata_merged.obs.copy()
+    # obs_prior = adata_merged.obs.copy()
     sc.pp.calculate_qc_metrics(
         adata_merged,
         qc_vars=[
@@ -912,53 +678,14 @@ def scanpy_merge(
         ],
         inplace=True
     )
-    adata_merged.obs = obs_prior
-
-    # Possible additional basic filtering on the full dataset.
-    # sc.pp.filter_cells(adata, min_genes=200)
-    # sc.pp.filter_genes(adata, min_cells=1)
-    # if y_n_print:
-    #     print('[adata_merged] {} obs, {} vars'.format(
-    #         adata_merged.n_obs,
-    #         adata_merged.n_vars
-    #     ))
-
-    # # Merge info on cell filters
-    # n_cells_df = pd.DataFrame(n_cells_dict)
-    # n_cells_df = n_cells_df.transpose()
-    # n_cells_df['experiment_id'] = n_cells_df.index
-    # n_cells_df = n_cells_df.melt(
-    #     id_vars=['experiment_id'],
-    #     var_name='filter_type',
-    #     value_name='n_cells_left_in_adata'
-    # )
-    # # Drop rows with no value for n_cells_left_in_adata. This will happen for
-    # # per sample filters.
-    # n_cells_df = n_cells_df.dropna(subset=['n_cells_left_in_adata'])
-    # adata_merged.uns['cell_filtered_per_experiment'] = n_cells_df
-    # adata_merged.uns['cell_filtered_per_experiment_dict'] = n_cells_dict
-
-    # Save the adata matrix
-    # output_file = output_dir + "/adata"
+    # adata_merged.obs = obs_prior
+    adata_merged.obs['log10_ngenes_by_count'] = np.log10(adata_merged.obs['n_genes_by_counts']) / np.log10(adata_merged.obs['total_counts'])
     adata_merged.write(
         '{}.h5ad'.format(output_file),
         compression='gzip',
         compression_opts=anndata_compression_opts
     )
-    # adata_merged.write_csvs(output_file)
-    # adata_merged.write_loom(output_file+".loom")
 
-    # n_cells_df.to_csv(
-    #     '{}-cell_filtered_per_experiment.tsv.gz'.format(output_file),
-    #     sep='\t',
-    #     index=False,
-    #     quoting=csv.QUOTE_NONNUMERIC,
-    #     # index_label='cell_barcode',
-    #     na_rep='',
-    #     compression=compression_opts
-    # )
-
-    return(output_file)
 
 
 def main():
@@ -1085,23 +812,6 @@ def main():
     # Scanpy settings
     sc.settings.figdir = os.getcwd()  # figure output directory to match base.
     sc.settings.n_jobs = options.ncpu  # number CPUs
-    # sc.settings.max_memory = 500  # in Gb
-    # sc.set_figure_params(dpi_save = 300)
-
-    # NOTE:
-    # - Could change yaml params file to include a list per sample and the
-    #   filters one wants to use for that sample
-    # - Could allow the input to be either h5ad dir or AnnData/loom object.
-    #   Use AnnData/loom object would be useful if we add doublet scores
-    #   or other scores prior to filtering.
-
-    # Read in the parameters for downsampling and cell filters.
-    if options.pyml == '':
-        params_dict = {}
-    else:
-        with open(options.pyml, 'r') as f:
-            params_dict = yaml.safe_load(f)
-        params_dict = params_dict['sample_qc']
 
     # Load a file of the samples to analyse
     h5ad_data = pd.read_csv(options.txd, sep='\t')
@@ -1151,17 +861,16 @@ def main():
         )
 
     # Run the merge function.
-    out_file = scanpy_merge(
+    scanpy_merge(
         h5ad_data,
         metadata,
         metadata_key=options.mk,
         output_file=options.of,
-        params_dict=params_dict,
         cellmetadata_filepaths=cellmetadata_filepaths,
         anndata_compression_opts=options.anndata_compression_opts,
         extra_metadata= extra_metadata
     )
-    print(out_file)
+
 
 
 if __name__ == '__main__':

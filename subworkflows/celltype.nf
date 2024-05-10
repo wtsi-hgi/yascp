@@ -6,6 +6,7 @@ include {KERAS_CELLTYPE} from "$projectDir/modules/nf-core/modules/keras_celltyp
 include {CELLTYPE_FILE_MERGE} from "$projectDir/modules/nf-core/modules/cell_type_assignment/functions"
 include {SCPRED} from "$projectDir/modules/nf-core/modules/scpred/main"
 include {  DSB } from '../modules/nf-core/modules/citeseq/main'
+
 workflow celltype{
     
     take:
@@ -24,18 +25,19 @@ workflow celltype{
         SPLIT_BATCH_H5AD.out.sample_file
             .splitCsv(header: true, sep: "\t", by: 1)
             .map{row -> tuple(row.experiment_id, file(row.h5ad_filepath))}.set{ch_experiment_filth5}
+
         SPLIT_BATCH_H5AD.out.az_sample_file
             .splitCsv(header: true, sep: "\t", by: 1)
             .map{row -> tuple(row.experiment_id, file(row.h5ad_filepath))}.set{az_ch_experiment_filth5}
 
         SPLIT_BATCH_H5AD.out.files_anndata_batch.flatMap().set{ch_batch_files}
-
+        SPLIT_BATCH_H5AD.out.keras_outfile.collect().set{keras_files}
 
         // Keras celltype assignemt
         if (params.celltype_assignment.run_keras){
             KERAS_CELLTYPE(ch_experiment_filth5,params.celltype_prediction.keras.keras_model,params.celltype_prediction.keras.keras_weights_df) 
-            all_extra_fields = KERAS_CELLTYPE.out.predicted_celltype_labels.collect()
-            all_extra_fields = all_extra_fields.ifEmpty(Channel.from("$projectDir/assets/fake_file.fq"))
+            all_extra_fields3 = KERAS_CELLTYPE.out.predicted_celltype_labels.collect()
+            all_extra_fields = all_extra_fields3.ifEmpty(Channel.from("$projectDir/assets/fake_file.fq"))
         }else{
             all_extra_fields = Channel.from("$projectDir/assets/fake_file.fq")
         }
@@ -56,8 +58,8 @@ workflow celltype{
             Channel.fromList(params.celltypist.models)
                 .set{ch_celltypist_models}
             CELLTYPIST(az_ch_experiment_filth5.combine(ch_celltypist_models))
-            ct_out = CELLTYPIST.out.predicted_labels.collect()
-            ct_out = ct_out.ifEmpty(Channel.from("$projectDir/assets/fake_file2.fq"))
+            ct_out2 = CELLTYPIST.out.predicted_labels.collect()
+            ct_out = ct_out2.ifEmpty(Channel.from("$projectDir/assets/fake_file2.fq"))
         }else{
             ct_out = Channel.from("$projectDir/assets/fake_file2.fq")
         }
@@ -65,16 +67,21 @@ workflow celltype{
         // // SCPRED
         if (params.celltype_assignment.run_scpred){
             SCPRED(params.outdir,ch_batch_files)
-            sc_out = SCPRED.out.predicted_celltype_labels.collect()
-            sc_out = sc_out.ifEmpty(Channel.of())
+            sc_out2 = SCPRED.out.predicted_celltype_labels.collect()
+            sc_out = sc_out2.ifEmpty(Channel.of())
         }else{
             sc_out = Channel.of()
         }        
         all_extra_fields2 = all_extra_fields.mix(sc_out)
         
-        CELLTYPE_FILE_MERGE(az_out,ct_out,all_extra_fields2,SPLIT_BATCH_H5AD.out.keras_outfile.collect())       
+        CELLTYPE_FILE_MERGE(az_out,ct_out,all_extra_fields2,keras_files) 
+        
+        if (params.remap_celltypes){
+            REMAP_AZIMUTH(CELLTYPE_FILE_MERGE.out.celltype_assignments,params.mapping_file)
+            file__anndata_merged2 = REMAP_AZIMUTH.out.predicted_celltype_labels.collect()   
+        }
+
         file__anndata_merged2=CELLTYPE_FILE_MERGE.out.file__anndata_merged2
-        file__anndata_merged2.view()
 
     emit:
         file__anndata_merged2
