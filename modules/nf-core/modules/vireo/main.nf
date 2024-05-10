@@ -213,7 +213,7 @@ process VIREO {
     output:
       path("vireo_${samplename}"), emit: output_dir
       
-      // tuple val(samplename), path("vireo_${samplename}"), emit: output_dir
+      tuple val(samplename), path("vireo_${samplename}"), emit: output_dir_subsampling
       tuple val(samplename), path("vireo_${samplename}/donor_ids.tsv"), emit: sample_donor_ids
       tuple val(samplename), path("vireo_${samplename}/GT_donors.vireo.vcf.gz"), path(vcf_file),path(donor_gt_csi), emit: sample_donor_vcf
       tuple val(samplename), path("vireo_${samplename}/GT_donors.vireo.vcf.gz"), emit: infered_vcf

@@ -94,8 +94,6 @@ workflow YASCP {
                     channel__file_paths_10x=SPLIT_CITESEQ_GEX_FILTERED.out.channel__file_paths_10x
                     channel__file_paths_10x_single=SPLIT_CITESEQ_GEX_FILTERED.out.gex_data
                     ch_experiment_filth5 = SPLIT_CITESEQ_GEX.out.gex_data
-                }else{
-                    ab_data = Channel.of()
                 }
 
                 // Either run ambient RNA removal with cellbender or use cellranger filtered reads (cellbender|cellranger)
@@ -191,7 +189,6 @@ workflow YASCP {
                         ? Channel.fromPath("${params.outdir}/deconvolution/vireo/*/vireo_*", checkIfExists:true, type: 'dir')
                         : Channel.fromPath("${launchDir}/${params.outdir}/deconvolution/vireo/*/vireo_*", type: 'dir')
 
-                    
                     GENOTYPE_MATCHER(vireo_paths.collect())
                     matched_donors = GENOTYPE_MATCHER.out.matched_donors
                     matched_donors.subscribe { println "matched_donors: $it" }
