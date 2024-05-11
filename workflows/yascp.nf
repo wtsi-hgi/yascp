@@ -58,7 +58,7 @@ workflow YASCP {
         out_ch = params.outdir
             ? Channel.fromPath(params.outdir, checkIfExists:true)
             : Channel.from("${launchDir}/${params.outdir}")
-                
+
         // out_ch.map{row->"${row[0]}/possorted_genome_bam.bam" }
         prepare_inputs(input_channel)
         chanel_cr_outs = prepare_inputs.out.chanel_cr_outs
@@ -125,6 +125,7 @@ workflow YASCP {
                 PREPOCESS_FILES( channel__file_paths_10x_single,'preprocess')
                 channel__file_paths_10x_gex = PREPOCESS_FILES.out.channel__file_paths_10x
                 gex_h5ad = PREPOCESS_FILES.out.gex_h5ad
+                
 
 
                 // ###################################
@@ -239,7 +240,6 @@ workflow YASCP {
             if (params.celltype_assignment.run_celltype_assignment){
                 celltype(file__anndata_merged)
                 file__anndata_merged=celltype.out.file__anndata_merged2
-                
             }
 
             // ###################################
@@ -301,9 +301,7 @@ workflow YASCP {
 
         if (!params.skip_handover){
 
-            out_ch = params.outdir
-            ? Channel.fromPath(params.outdir, checkIfExists:true)
-            : Channel.fromPath("${launchDir}/${outdir}")
+
 
             data_handover(out_ch,input_channel,
                             process_finish_check_channel,

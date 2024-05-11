@@ -36,8 +36,10 @@ workflow qc {
         //     log.info '''--- No extra metadata to add to h5ad ---'''
         // }
 
-        CELL_HARD_FILTERS(file__anndata_merged,params.hard_filters_drop)
+        
         if(params.sample_qc.cell_filters.experiment.value != '' | params.sample_qc.cell_filters.all_samples.value != '' | params.sample_qc.downsample_cells_fraction.value != '' | params.sample_qc.downsample_cells_n.value != '' | params.sample_qc.downsample_feature_counts.value != ''){
+            log.info """---Flagging/filtering hard filters.----"""
+            CELL_HARD_FILTERS(file__anndata_merged,params.hard_filters_drop)
             file__anndata_merged = CELL_HARD_FILTERS.out.anndata
         }
         
@@ -64,6 +66,7 @@ workflow qc {
         
         
         if (params.normalise_andata){
+            log.info """---Normalising data For data clustering and integration.----"""
             NORMALISE_AND_PCA(
                 file__anndata_merged,
                 params.normalise.mode,
@@ -77,6 +80,7 @@ workflow qc {
             )
 
             if (params.citeseq){
+                log.info """---Integrating data using Seurat integration method----"""
                 NORMALISE_AND_PCA.out.sample_QCd_adata.flatten().map{sample -> tuple("${sample}".replaceFirst(/___sample_QCd_adata.h5ad/,"").replaceFirst(/.*\//,""),sample)}.set{alt_input}
                 channel_dsb2 = channel_dsb.combine(alt_input, by: 0)
                 DSB_PROCESS(channel_dsb2)
@@ -118,8 +122,9 @@ workflow qc {
             LI4 = Channel.of([1, 'dummy_lisi'])
         }
 
-        PCA(andata,outdir,params.normalise.layer)
 
+        log.info """---Estimating PCA elbow.----"""
+        PCA(andata,outdir,params.normalise.layer)
         ESTIMATE_PCA_ELBOW(
             PCA.out.outdir,
             PCA.out.anndata,
@@ -148,7 +153,7 @@ workflow qc {
                     SUBSET_PCS.out.outdir,
                     SUBSET_PCS.out.anndata,
                     n_pcs)
-
+                    
         file__anndata_merged = PCA.out.anndata
         
         LI4 = PLOT_STATS.out.LI
