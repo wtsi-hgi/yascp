@@ -32,9 +32,9 @@ else
 fi
 
 if [[ $1 == "-v" ]]; then
-    command echo  -e "yascp v=1.5_tmp; \n Available at https://github.com/wtsi-hgi/yascp \n commit cf277b8c285fec33bd2db476aa410f14c329287b"
+    command echo  -e "yascp v=1.7_tmp; \n Available at https://github.com/wtsi-hgi/yascp \n commit cf277b8c285fec33bd2db476aa410f14c329287b"
 elif [[ $1 == "test" ]]; then
-    command echo -e "Runing test code from OneK1k" && bash $SCRIPT_DIR/../bsub_test.sh
+    command echo -e "Runing test code from OneK1k" && bash $SCRIPT_DIR/../bsub_test.sh "${@:2}"
 elif [[ $1 == "sample_input" ]]; then
     command cp -r $SCRIPT_DIR/../../../sample_input ./
 elif [[ $1 == "clean" ]]; then

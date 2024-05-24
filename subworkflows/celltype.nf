@@ -16,7 +16,8 @@ workflow celltype{
     main:
 
         log.info '---Splitting the assignment for each batch---'
-        file__anndata_merged.map{val1 -> tuple('full_ct', val1)}.set{out1}
+        // file__anndata_merged.map{val1 -> tuple('full_ct', val1)}.set{out1}
+        file__anndata_merged.subscribe { println "file__anndata_merged: $it" }
         SPLIT_BATCH_H5AD(file__anndata_merged,params.split_ad_per_bach)
 
         // Here we may want to not split it and just pass in an entire h5ad file for annotations.
