@@ -24,7 +24,7 @@ if (future::supportsMulticore()) {
 } else {
   future::plan(future::multisession)
 }
-# args=vector(mode='list', length=6); args[[1]]='cellranger700_multi_abb2ba0911f1f4bde982a4c38d9fd6ed'; args[[2]]='raw_feature_bc_matrix'; args[[3]]='filtered_feature_bc_matrix'; args[[4]]='cellranger700_multi_abb2ba0911f1f4bde982a4c38d9fd6ed___sample_QCd_adata.h5ad'
+# args=vector(mode='list', length=6); args[[1]]='LDP58'; args[[2]]='raw_feature_bc_matrix'; args[[3]]='filtered_feature_bc_matrix'; args[[4]]='LDP58___sample_QCd_adata.h5ad'
    
 #####
 args = commandArgs(trailingOnly=TRUE)
@@ -47,13 +47,13 @@ outdir <- getwd()
 # filtered_feature_file = cellranger_filepath = args[2]
 #    
 # filtered_cellranger = '/lustre/scratch123/hgi/teams/hgi/mo11/tmp_projects/jaguar_yascp/nieks_pipeline/fetch/results_old/cellranger_data/cellranger700_multi_bc45a1c2fe2a3fbbcde46cf984cf42e2/per_sample_outs/cellranger700_multi_bc45a1c2fe2a3fbbcde46cf984cf42e2/count/sample_filtered_feature_bc_matrix.h5'
-# sample_name <- 'cellranger700_multi_74b30caec2cf83c0048bc87946b301e8'
-# cellranger_rawfile_path <- 'raw_feature_bc_matrix'
-# filtered_cellranger = 'filtered_feature_bc_matrix'
-# file_with_qc_applied = 'cellranger700_multi_74b30caec2cf83c0048bc87946b301e8___sample_QCd_adata.h5ad'
+sample_name <- 'LDP58'
+cellranger_rawfile_path <- 'raw_feature_bc_matrix'
+filtered_cellranger = 'filtered_feature_bc_matrix'
+file_with_qc_applied = 'LDP58___sample_QCd_adata.h5ad'
 sample_name <- args[1]
 cellranger_rawfile_path <- args[2]
-filtered_cellranger = args[3]
+filtered_cellranger = args[3][1]
 file_with_qc_applied = args[4]
 # cellranger_rawfile_path = '/lustre/scratch123/hgi/teams/hgi/mo11/tmp_projects/jaguar_yascp/nieks_pipeline/fetch/results_old/cellranger_data/cellranger700_multi_bc45a1c2fe2a3fbbcde46cf984cf42e2/multi/count/raw_feature_bc_matrix.h5'
 
@@ -151,7 +151,9 @@ Convert(
   # qced_cells <- readRDS(scpred_file_with_qc)
   qced_cells <- LoadH5Seurat(paste('tmp',"h5seurat",sep='.'),assays = "RNA")
   qced_barcodes <- gsub('_.*','',colnames(qced_cells))
-  qced_barcodes <- gsub('-cellranger.*','',colnames(qced_cells))
+  qced_barcodes <- gsub('-1.*','-1',(qced_barcodes))
+  qced_barcodes <- gsub('-2.*','-2',(qced_barcodes))
+  qced_barcodes <- gsub('-cellranger.*','',(qced_barcodes))
   qced_cells = RenameCells(qced_cells, new.names = qced_barcodes)
 
   genes <-  read.table(paste0(cellranger_rawfile_path,"/features.tsv.gz"), sep = "\t", col.names = c("ENSG_ID","Gene_ID", "FeatureType"))
@@ -183,6 +185,7 @@ Convert(
   # }else if(basename(f)=='sample_feature_bc_matrix.h5' || basename(f) == 'sample_filtered_feature_bc_matrix.h5'){
     # with cellranger multi the raw file is 3 directories higher than filtered file, then in multi/count
   rna = raw <- Read10X(cellranger_rawfile_path)
+  print(paste0(' RAW data loaded '))
   # }else{
   #   stop(paste('basename(f) should be sample_feature_bc_matrix.h5 or filtered_feature_bc_matrix.h5, but was:',basename(f)))
   # }
