@@ -45,24 +45,14 @@ To understand how to prepeare your own data and how to interpret the results ple
 Easyest to do is using a conda enviroment.
 
 1. Install [`Nextflow`](https://www.nextflow.io/docs/latest/getstarted.html#installation) (`>=21.04.0`)
-    ```console
-    conda install nextflow=21.04.0
-    ```
 
-2. Install any of [`Docker`](https://docs.docker.com/engine/installation/), [`Singularity`](https://www.sylabs.io/guides/3.0/user-guide/), [`Podman`](https://podman.io/), [`Shifter`](https://nersc.gitlab.io/development/shifter/how-to-use/) or [`Charliecloud`](https://hpc.github.io/charliecloud/) for full pipeline reproducibility _(please only use [`Conda`](https://conda.io/miniconda.html) as a last resort; see [docs](https://nf-co.re/usage/configuration#basic-configuration-profiles))_
+2. Install any of [`Docker`](https://docs.docker.com/engine/installation/), [`Singularity`](https://www.sylabs.io/guides/3.0/user-guide/), [`Podman`](https://podman.io/), [`Shifter`](https://nersc.gitlab.io/development/shifter/how-to-use/) or [`Charliecloud`](https://hpc.github.io/charliecloud/) for full pipeline reproducibility.
 
 3. Download/clone the pipeline and test it on a minimal dataset with a single command:
 
-    !NOTE: you need to define your institution specific queues in the conf/base.conf or provide aditional config file with -c flag in folowing comand such as: -c /path/to/yascp/conf/extra_confs/sanger/base.conf
-
-
-
     ```console
-    nextflow run /path/to/colned/yascp -profile test_full,<docker/singularity/podman/shifter/charliecloud/conda/institute>
+    nextflow run /path/to/colned/yascp -profile test_full,<docker/singularity/institute>
     ```
-
-    !ALSO: by default this test dataset will run cellbender with a cpus - only performing 10 epochs. Cellbender is built for a gpu queue, so for the actual runs the deafault is to utilise_gpu = true
-    You need to make sure that the gpu queue according to your institution is defined in confs: withLabel: gpu {} as for sanger [`config file`](https://github.com/wtsi-hgi/yascp/blob/0fce7bd8ce4ca734e34b28443fe89630e295b1eb/conf/extra_confs/sanger/base.conf#L180-L194)
 
     > * Please check [nf-core/configs](https://github.com/nf-core/configs#documentation) to see if a custom config file to run nf-core pipelines already exists for your Institute. If so, you can simply use `-profile <institute>` in your command. This will enable either `docker` or `singularity` and set the appropriate execution settings for your local compute environment.
     > * If you are using `singularity` then the pipeline will auto-detect this and attempt to download the Singularity images directly as opposed to performing a conversion from Docker images. If you are persistently observing issues downloading Singularity images directly due to timeout or network issues then please use the `--singularity_pull_docker_container` parameter to pull and convert the Docker image instead. Alternatively, it is highly recommended to use the [`nf-core download`](https://nf-co.re/tools/#downloading-pipelines-for-offline-use) command to pre-download all of the required containers before running the pipeline and to set the [`NXF_SINGULARITY_CACHEDIR` or `singularity.cacheDir`](https://www.nextflow.io/docs/latest/singularity.html?#singularity-docker-hub) Nextflow options to be able to store and re-use the images from a central location for future pipeline runs.
