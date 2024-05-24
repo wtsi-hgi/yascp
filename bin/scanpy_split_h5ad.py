@@ -32,7 +32,11 @@ def write_h5_out_for_ct(ad,oufn_list_AZ,oufnam,oufn_list,samples,samples_AZ,bl,c
     # assumes that cells failing qc already were stripped out
     # ad.obs = ad.obs[['convoluted_samplename', 'cell_passes_qc']]
     # ad.var = ad.var[['feature_types', 'genome', 'gene_symbols']]
-    adb.obs['log10_ngenes_by_count'] = np.log10(adb.obs['n_genes_by_counts']) / np.log10(adb.obs['total_counts'])
+    try:
+        adb.obs['log10_ngenes_by_count'] = np.log10(adb.obs['n_genes_by_counts']) / np.log10(adb.obs['total_counts'])
+    except:
+        print('some cols dont exist')
+        
     adb_AZ = adb.copy()
     # disable
     adb_AZ.obs = pandas.DataFrame(adb_AZ.obs.index, index = adb_AZ.obs.index, columns = ["cell_barcode"])
@@ -70,7 +74,10 @@ def write_h5_out_for_ct(ad,oufn_list_AZ,oufnam,oufn_list,samples,samples_AZ,bl,c
         adb_AZ.var['genome']='GRCh38'
         vdf = adb_AZ.var[["feature_types", "genome"]]
     vdf.insert(1,"gene_ids", vdf.index)
-    vdf.index = pandas.Index(adb_AZ.var['gene_symbols'].astype('str'))
+    try:
+        vdf.index = pandas.Index(adb_AZ.var['gene_symbols'].astype('str'))
+    except:
+        print('gene_symbols not available')
     #ad.var = vdf.set_index("gene_symbols", drop = True, verify_integrity = False)
     adb_AZ.var = vdf
 
@@ -103,6 +110,12 @@ def split_h5ad_by_batch(ad, oufnprfx, colnam_batch = 'batch', anndata_compressio
     oufn_list_fnam = '{}_files.txt'.format(oufnprfx)
     oufn_list = []
     oufn_list_AZ = []
+    try:
+        print(set(ad.obs[colnam_batch]))
+        # here we do not have a batch id since the data is not deconvoluted yet
+    except:
+        ad.obs[colnam_batch] = oufnprfx
+        
     batch_labels = pandas.Categorical(ad.obs[colnam_batch].apply(lambda a: a.split('__')[0])) # <class 'pandas.core.series.Series'>
     samples = {}
     samples_AZ = {}

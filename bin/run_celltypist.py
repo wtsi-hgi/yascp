@@ -125,7 +125,7 @@ def run_celltypist(samplename, filtered_matrix_h5, celltypist_model,
     #       try the .raw.X attribute.
     # If none of them fit into the desired data type or the expression matrix is not properly normalised, an error will be raised.
     logging.info('... running sc.pp.normalize_total(adata, target_sum=1e4)')
-    sc.pp.normalize_total(adata, target_sum=1e4)
+    sc.pp.normalize_per_cell(adata, counts_per_cell_after=1e4)
     logging.info('... running sc.pp.log1p(adata, copy = False)')
     sc.pp.log1p(adata, copy = False)
 
