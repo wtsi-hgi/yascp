@@ -169,6 +169,11 @@ for(f in cite_files){
 
   # Add the vireo donor assignment to the seurat object
   this_donor_cells <- donor_cells[donor_cells$sample==sample_id,]
+
+  if (dim(this_donor_cells)[1]==0){
+    # Here we skip non deconvoluted samples
+    next
+  }
   sobj@meta.data$donor.vireo <- this_donor_cells[match(paste0(rownames(sobj@meta.data),'_',sample_name),
                                                        paste0(this_donor_cells$cell,
                                                               '_',this_donor_cells$sample)),]$matched.donor

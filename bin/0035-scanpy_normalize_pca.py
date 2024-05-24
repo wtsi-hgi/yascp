@@ -543,7 +543,7 @@ def scanpy_normalize_and_pca(
             copy=False
         )
        
-
+    print('---- Writting files ----')
     # Keep a record of the different gene scores
     if score_genes_df is not None:
         adata.uns['df_score_genes'] = score_genes_df_updated
