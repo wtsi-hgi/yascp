@@ -445,13 +445,19 @@ def main():
         
         for outlier_filtering_strategy in outlier_filtering_strategys:
             metadata_columns = metadata_columns_original.copy()
-            
-            if (outlier_filtering_strategy == 'all_together'):
-                if method == 'IsolationForest':
+            if method == 'IsolationForest':
+                if outlier_filtering_strategy == 'all_together':
                     cell_qc_column = options.cell_qc_column
+                    cell_qc_column_score = options.cell_qc_column+':score'
                 else:
-                    cell_qc_column = f'{cell_qc_column}-per:{outlier_filtering_strategy}'
-                cell_qc_column_score = f"{cell_qc_column}:score"
+                    cell_qc_column = f'{options.cell_qc_column}-{nmethod}-per:{outlier_filtering_strategy}'
+                    cell_qc_column_score = f'{options.cell_qc_column}-{nmethod}-per:{outlier_filtering_strategy}:score'                      
+            else:
+                cell_qc_column = f'{options.cell_qc_column}-{nmethod}-per:{outlier_filtering_strategy}'
+                cell_qc_column_score = f'{options.cell_qc_column}-{nmethod}-per:{outlier_filtering_strategy}:score' 
+                           
+            if (outlier_filtering_strategy == 'all_together'):
+
                 adata.obs[cell_qc_column] = True
                 adata.obs[cell_qc_column_score] = None
                        
@@ -461,11 +467,10 @@ def main():
                 adata.obs[cell_qc_column] = fail_pass
                 adata.obs[cell_qc_column_score] = prediction_score
             else:
-                cell_qc_column = f'{cell_qc_column}-per:{outlier_filtering_strategy}'
-                cell_qc_column_score = f"{cell_qc_column}:score"
+                # cell_qc_column = f'{cell_qc_column}-per:{outlier_filtering_strategy}'
+                # cell_qc_column_score = f"{cell_qc_column}:score"
                 
-                adata.obs[cell_qc_column] = True
-                adata.obs[cell_qc_column_score] = ''
+
                 try:
                     os.mkdir(f'per_celltype_outliers__{outlier_filtering_strategy}')
                 except:
@@ -475,6 +480,10 @@ def main():
                 except:
                     print(f'{outlier_filtering_strategy} - user provided col doesnt exist')
                     continue
+                
+                adata.obs[cell_qc_column] = True
+                adata.obs[cell_qc_column_score] = ''
+                
                 for subset_id_for_ad_qc in outlier_strategy_cols:
                     subset_ad = adata[adata.obs[outlier_filtering_strategy]==subset_id_for_ad_qc]
                     print(f'filtering:{subset_id_for_ad_qc} {outlier_filtering_strategy}')    
