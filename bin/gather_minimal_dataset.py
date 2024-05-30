@@ -46,8 +46,11 @@ SCRUBLET_ASSIGNMENTS_FNSUFFIX = 'scrublet.tsv'
 
 COLUMNS_AZIMUTH = {
     'Azimuth:predicted.celltype.l2': 'azimuth.celltyp.l2',
+    'Azimuth:predicted.celltype.l3': 'azimuth.celltyp.l3',
+    'Azimuth:predicted.celltype.l1': 'azimuth.celltyp.l1',
     'Azimuth:predicted.celltype.l2.score': 'azimuth.pred.score.l2',
     'Azimuth:mapping.score.celltype.l2': 'azimuth.map.score',
+    'Celltypist*':'Celltypist*',
     }
 
 COLUMNS_DECONV = {
@@ -66,9 +69,10 @@ COLUMNS_QC = {
     'total_counts': 'qc.umi.count.total',
     'total_counts_gene_group__mito_transcript': 'qc.umi.count.mt',
     'pct_counts_gene_group__mito_transcript': 'qc.umi.perc.mt',
+    'pct_counts_in_top_500_genes':'pct_counts_in_top_500_genes',
     'n_genes_by_counts': 'qc.genes.detected.count',
-    'Azimuth:L0_Azimuth:predicted.celltype.l2':'azimuth.celltyp.l0',
-    'Azimuth:L1_Azimuth:predicted.celltype.l2':'azimuth.celltyp.l1',
+    'Azimuth:L0_Azimuth:predicted.celltype.l2':'azimuth.celltyp.l0.mapped_fromL2',
+    'Azimuth:L1_Azimuth:predicted.celltype.l2':'azimuth.celltyp.l1.mapped_fromL2',
     'total_counts_gene_group__mito_transcript':'total_counts_gene_group__mito_transcript',
     'pct_counts_gene_group__mito_transcript':'pct_counts_gene_group__mito_transcript',
     'total_counts_gene_group__mito_protein':'total_counts_gene_group__mito_protein',
@@ -91,7 +95,8 @@ COLUMNS_DATASET = {
     'experiment_id': 'experiment.id',
     'tranche.id':'tranche.id',
     'chromium_run_id': 'chromium.run.id',
-    'chromium_lane': 'chromium.lane'
+    'chromium_lane': 'chromium.lane',
+    'instrument':'instrument'
     }
 COLUMNS_SCRUBLET = {
     'scrublet__multiplet_scores': 'scrublet.scores',
@@ -229,8 +234,9 @@ def load_scrublet_assignments(expid, datadir_scrublet):
     filpath = None
     fnam = '{}{}'.format(expid, SCRUBLET_ASSIGNMENTS_FNSUFFIX)
     fnam2 = '{}{}'.format(expid, SCRUBLET_ASSIGNMENTS_FNSUFFIX.replace('-',''))
+    fnam3 = '{}{}'.format(expid, 'scrublet.tsv.gz')
     for fn in os.listdir(datadir_scrublet):
-        if fn == fnam or fn == fnam2:
+        if fn == fnam or fn == fnam2 or fn == fnam3:
             filpath = os.path.join(datadir_scrublet, fn)
             break
  
@@ -327,9 +333,15 @@ def gather_donor(donor_id, ad, ad_lane_raw, azimuth_annot, qc_obs, columns_outpu
     ad.raw = ad_lane_raw[ad.obs.index, :]
     if donor_id != "unassigned" and donor_id != "doublet":
         # add annotation from QC
-        df = pandas.concat([ad.obs, azimuth_annot.loc[azimuth_annot.Donor == donor_id]], axis = 1, join = 'outer')
+        donor_azt = azimuth_annot.loc[azimuth_annot.Donor == donor_id]
+        donor_azt = donor_azt.loc[donor_azt.Exp == expid]
+        donor_azt['barcode'] = donor_azt.index.str.split('-').str[0]+'-'+donor_azt.index.str.split('-').str[1]
+        donor_azt = donor_azt.set_index('barcode')
+        df = pandas.concat([ad.obs, donor_azt], axis = 1, join = 'outer')
         df =df.loc[:,~df.columns.duplicated()]
-        df = df[['experiment_id'] + list(COLUMNS_DECONV.keys()) + list(COLUMNS_AZIMUTH.keys())]
+        df = df[['experiment_id'] + 
+                list(set(df.columns).intersection(set(COLUMNS_DECONV.keys()))) + 
+                list(set(df.columns).intersection(set(COLUMNS_AZIMUTH.keys())))]
         try:
             df = get_lane_and_runid_from_experiment_id(df, insert_pos = 1)
         except:

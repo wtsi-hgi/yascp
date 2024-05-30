@@ -17,7 +17,7 @@ include { match_genotypes } from './match_genotypes'
 include {ENHANCE_STATS_GT_MATCH } from "$projectDir/modules/nf-core/modules/genotypes/main"
 include {SUBSET_WORKF} from "$projectDir/modules/nf-core/modules/subset_genotype/main"
 include {REPLACE_GT_DONOR_ID2; REPLACE_GT_DONOR_ID2 as REPLACE_GT_DONOR_ID_SUBS } from "$projectDir/modules/nf-core/modules/genotypes/main"
-include { RETRIEVE_RECOURSES; STAGE_FILE } from "$projectDir/subworkflows/local/retrieve_recourses"
+include { STAGE_FILE } from "$projectDir/subworkflows/local/retrieve_recourses"
 include {GT_MATCH_POOL_IBD } from "$projectDir/modules/nf-core/modules/genotypes/main"
 include { MATCH_GT_VIREO } from "$projectDir/modules/nf-core/modules/genotypes/main"
 
@@ -42,16 +42,12 @@ workflow  main_deconvolution {
 		ch_experiment_donorsvcf_donorslist
         scrublet_paths
         vcf_input
+        genome
 
     main:
 		log.info "#### running DECONVOLUTION workflow #####"
 
-        if (params.reference_assembly_fasta_dir=='https://yascp.cog.sanger.ac.uk/public/10x_reference_assembly'){
-            RETRIEVE_RECOURSES()  
-            genome = RETRIEVE_RECOURSES.out.reference_assembly
-        }else{
-            genome = "${params.reference_assembly_fasta_dir}"
-        }
+
         vcf_candidate_snps = STAGE_FILE(params.cellsnp.vcf_candidate_snps)
         // genome.subscribe { println "genome: $it" }
 
@@ -303,10 +299,10 @@ workflow  main_deconvolution {
             //     .set { gt_math_pool_against_panel_input2 }
             FREEBAYES.out.gt_pool.groupTuple(by:0).set{fbb1}
 
-            fbb1.subscribe { println "fbb1: $it" }
+            // fbb1.subscribe { println "fbb1: $it" }
             MERGE_GENOTYPES_IN_ONE_VCF_IDX_PAN(fbb1,'freebayes')
             MERGE_GENOTYPES_IN_ONE_VCF_IDX_PAN.out.gt_pool.groupTuple(by:0).set{fbb2}
-            fbb2.subscribe { println "fbb2: $it" }
+            // fbb2.subscribe { println "fbb2: $it" }
             MERGE_GENOTYPES_IN_ONE_VCF_FREEBAYES(fbb2,'freebayes')
             gt_math_pool_against_panel_input2 = MERGE_GENOTYPES_IN_ONE_VCF_FREEBAYES.out.gt_pool.combine(ch_ref_vcf)
             // cell_assignments = 

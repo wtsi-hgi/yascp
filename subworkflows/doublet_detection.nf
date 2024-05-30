@@ -73,12 +73,9 @@ process MERGE_DOUBLET_RESULTS{
 workflow MULTIPLET {
     take:
         channel__file_paths_10x
+        gex_h5ad
     main:
         // Identify multiplets using scrublet.
-
-        SPLIT_CITESEQ_GEX( channel__file_paths_10x,'filterd')
-        channel__file_paths_10x = SPLIT_CITESEQ_GEX.out.channel__file_paths_10x
-        gex_h5ad = SPLIT_CITESEQ_GEX.out.gex_h5ad
 
         input_channel = Channel.of()
         if (params.filter_multiplets.scrublet.run_process){

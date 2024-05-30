@@ -20,7 +20,7 @@ process GATHER_DATA{
     output:
       path("${subdir}", emit:outfiles_dataset)
       path("${subdir}_summary", emit:outfiles_dataset2)
-
+      path("Donor_Quantification/*/*.tsv", emit: barcodes_files)
       val(outdir, emit: outdir_dataset)
 
     script:

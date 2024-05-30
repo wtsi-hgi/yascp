@@ -19,6 +19,7 @@ process SPLIT_CITESEQ_GEX {
         tuple val(sample_name), path("${sample_name}__Gene_Expression"), emit:gex_data
         tuple val(sample_name), path("antibody-${sample_name}.h5ad"), emit: ab_data2 optional true
         tuple val(sample_name), path("Gene_Expression-${sample_name}.h5ad"), emit: gex_h5ad optional true
+        path("Gene_Expression-${sample_name}.h5ad"), emit: gex_h5ad_2 optional true
         tuple val(sample_name), path("${sample_name}__*"), emit: ab_data optional true
         tuple val(sample_name), path("${sample_name}__Gene_Expression/barcodes.tsv.gz"), path("${sample_name}__Gene_Expression/features.tsv.gz"), path("${sample_name}__Gene_Expression/matrix.mtx.gz"), emit: channel__file_paths_10x
  

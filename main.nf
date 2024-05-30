@@ -46,8 +46,12 @@ include { CELLSNP;capture_cellsnp_files } from "$projectDir/modules/nf-core/modu
 
 workflow MAIN {
 
+    out_ch = params.outdir
+            ? Channel.fromPath(params.outdir, checkIfExists:true)
+            : Channel.fromPath("${launchDir}/${outdir}")
+
     if (params.profile=='test_full'){
-        RETRIEVE_RECOURSES_TEST_DATASET()
+        RETRIEVE_RECOURSES_TEST_DATASET(out_ch)
         input_channel = RETRIEVE_RECOURSES_TEST_DATASET.out.input_channel
         vcf_inputs = RETRIEVE_RECOURSES_TEST_DATASET.out.vcf_inputs
     }else{
@@ -62,6 +66,8 @@ workflow MAIN {
             vcf_inputs = Channel.of()
         }
     }
+
+    input_channel.collectFile(name: "$params.outdir/yascp_inputs.tsv")
     YASCP ('default',input_channel,vcf_inputs)
 
 }
