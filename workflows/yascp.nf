@@ -183,7 +183,6 @@ workflow YASCP {
                 assignments_all_pools = Channel.from("$projectDir/assets/fake_file.fq")
 
                 if (params.citeseq){
-                    vireo_paths = Channel.fromPath( "${params.outdir}/deconvolution/vireo/*/vireo_*")
 
                     vireo_paths = params.outdir
                         ? Channel.fromPath("${params.outdir}/deconvolution/vireo/*/vireo_*", checkIfExists:true, type: 'dir')
@@ -191,7 +190,6 @@ workflow YASCP {
 
                     GENOTYPE_MATCHER(vireo_paths.collect())
                     matched_donors = GENOTYPE_MATCHER.out.matched_donors
-                    matched_donors.subscribe { println "matched_donors: $it" }
                 }else{
                     vireo_paths = Channel.from("$projectDir/assets/fake_file.fq")
                     matched_donors = Channel.from("$projectDir/assets/fake_file.fq")

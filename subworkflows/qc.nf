@@ -14,7 +14,7 @@ include {UMAP; UMAP as UMAP_HARMONY; UMAP as UMAP_BBKNN;} from "$projectDir/modu
 include {CLUSTERING; CLUSTERING as CLUSTERING_HARMONY; CLUSTERING as CLUSTERING_BBKNN;} from "$projectDir/modules/nf-core/modules/clustering/main"
 include {CELL_HARD_FILTERS} from "$projectDir/modules/nf-core/modules/cell_hard_filters/main"
 include {DONT_INTEGRATE} from "$projectDir/modules/nf-core/modules/reduce_dims/main"
-include { DSB_PROCESS; DSB_INTEGRATE; MULTIMODAL_INTEGRATION; VDJ_INTEGRATION } from '../modules/nf-core/modules/citeseq/main'
+include { DSB_PROCESS; PREPROCESS_PROCESS; DSB_INTEGRATE; MULTIMODAL_INTEGRATION; VDJ_INTEGRATION } from '../modules/nf-core/modules/citeseq/main'
 
 workflow qc {
     take:
@@ -80,16 +80,21 @@ workflow qc {
                 NORMALISE_AND_PCA.out.sample_QCd_adata.flatten().map{sample -> tuple("${sample}".replaceFirst(/___sample_QCd_adata.h5ad/,"").replaceFirst(/.*\//,""),sample)}.set{alt_input}
                 channel_dsb2 = channel_dsb.combine(alt_input, by: 0)
                 DSB_PROCESS(channel_dsb2)
+
+                // DSB_PROCESS.out.ch_for_norm
+                // PREPROCESS_PROCESS()
                 // DSB_PROCESS.out.citeseq_rsd.subscribe { println "1:: DSB_PROCESS.out.citeseq_rsd: $it" }
-                // vireo_paths.subscribe { println "1:: vireo_paths input: $it" }
+                vireo_paths_map = vireo_paths.map{row->tuple("${row}".replaceFirst(/.*vireo_/,""), row)}
+                vireo_paths_map.combine(DSB_PROCESS.out.ch_for_norm, by: 0).set{norm_chanel}
+                PREPROCESS_PROCESS(norm_chanel,matched_donors,params.reduced_dims.vars_to_regress.value)
                 // assignments_all_pools.subscribe { println "1:: assignments_all_pools input: $it" }
                 // DSB_PROCESS.out.tmp_rsd.subscribe { println "1:: DSB_PROCESS.out.tmp_rsd input: $it" }
                 // matched_donors.subscribe { println "1:: matched_donors.out.tmp_rsd input: $it" }
 
+                // DSB_PROCESS.out.tmp_rsd.
+
                 DSB_INTEGRATE(
-                    vireo_paths.collect(),
-                    DSB_PROCESS.out.tmp_rsd.collect(),
-                    matched_donors,
+                    PREPROCESS_PROCESS.out.tmp_rsd.collect(),
                     params.reduced_dims.vars_to_regress.value,
                     params.reduced_dims.seurat_integration.k_anchor,
                     params.reduced_dims.seurat_integration.dims,
@@ -98,14 +103,14 @@ workflow qc {
                     params.reduced_dims.seurat_integration.ndim_cite_integrated
                     )
 
-                MULTIMODAL_INTEGRATION(
-                    DSB_INTEGRATE.out.tmp_rds_file,
-                )
+                // MULTIMODAL_INTEGRATION(
+                //     DSB_INTEGRATE.out.tmp_rds_file,
+                // )
 
-                VDJ_INTEGRATION(
-                    chanel_cr_outs.collect(),
-                    MULTIMODAL_INTEGRATION.out.wnn_integrated_file
-                )
+                // VDJ_INTEGRATION(
+                //     chanel_cr_outs.collect(),
+                //     MULTIMODAL_INTEGRATION.out.wnn_integrated_file
+                // )
             }    
 
 

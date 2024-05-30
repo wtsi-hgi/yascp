@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-INPUT_FILE=$1
+INPUT_FILE="$@"
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 dt=`date +"%Y_%m_%d_%T"`
 cp nextflow.nohup.log ./nextflow.nohup_$dt.log2 || echo 'first time running'
@@ -17,7 +17,7 @@ parentdir="$(dirname "$CWD1")"
 export RUN_ID="${PWD##*/}"
 mkdir $PWD/work || echo 'exists'
 mkdir $PWD/work/tmp || echo 'exists'
-echo $RUN_ID | nextflow run $SCRIPT_DIR/../.. -profile sanger,test --nf_ci_loc $PWD -resume > nextflow.nohup.log 2>&1 & 
+echo $RUN_ID | nextflow run $SCRIPT_DIR/../.. -profile sanger,test  $INPUT_FILE --nf_ci_loc $PWD -resume > nextflow.nohup.log 2>&1 & 
 
 # get process PID 
 sleep 1 && export PID=$(pgrep -f "\\-\\-nf_ci_loc $RUN_DIR")
