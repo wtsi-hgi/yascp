@@ -4,7 +4,19 @@
 
 ## Introduction
 
-**nf-core/yascp** is a bioinformatics best-practice analysis pipeline tailored for deconvolution, quality control, clustering, and integration of single-cell datasets. Developed under the leadership of N.Soranzo and Human Genetics Informatics (HGI), this large-scale single-cell pipeline was originally crafted for the Cardinal project (profiling UKBB and ELGH participants) but is versatile enough for broad scRNA analysis applications. 
+**nf-core/yascp** is a bioinformatics best-practice analysis pipeline tailored for robuts donor deconvolutions, doublet detections, celltype assignemts, quality control, integration, clustering of single-cell datasets.  YASCP enhances productivity by automating data preprocessing, quality control, and advanced analyses, ensuring high-quality results with minimal manual intervention. All you have to prepeare is a simple tsv file indicating the number of donors in pools and the path to cellrange folder:
+
+
+| experiment_id   | n_pooled | donor_vcf_ids    |  data_path_10x_format   |
+|-----------------|----------|------------------|-------------------------|
+| Pool1 |   1      | ""            | path/to/cellranger/10x_folder      |
+| Pool2|   2      | ""        | path/to/cellranger/10x_folder      |
+
+Results will demultiplex individuals, assess the assignments, assign celltypes, perform integrations, remove ambient RNA and produce publication ready plots:
+![Screenshot 2024-06-02 at 15 20 29](https://github.com/wtsi-hgi/yascp/assets/22347136/fe39d33a-97ec-44a1-9614-55f3585bde4d)
+
+
+Developed under the leadership of N.Soranzo and Human Genetics Informatics (HGI), this large-scale single-cell pipeline was originally crafted for the Cardinal project (profiling UKBB and ELGH participants) but is versatile enough for broad scRNA analysis applications. 
 
 Input requires a tsv seperated file [(please read detailed documentation here)](https://github.com/wtsi-hgi/yascp/tree/yascp_docs) with paths and if running in an genotype  additional input is required to be provided in an input.nf file pointing to the vcf location. This pipeline is designed to be used any large scale single cell experiments.
 
