@@ -122,11 +122,13 @@ process CELLSNP {
       tuple val(samplename), path('region_vcf_no_MHC.vcf.gz'), path(bam_file), emit: for_bam_pileups
 
     script:
-    if (n_pooled=='1'){
+
       genotype_file=' --genotype '
-    }else{
-      genotype_file=' --genotype '
-    }
+      if (n_pooled=='1'){
+        MAF=" " //Since we are dealing with a single sample, we not expect to observe that much variability in alleles across cells, and thus, this filter may remove many variants.
+      }else{
+        MAF=" --minMAF ${params.cellsnp.min_maf}"
+      }
     """
       echo ${n_pooled}
       umask 2 # make files group_writable
@@ -145,7 +147,6 @@ process CELLSNP {
         -O cellsnp_${samplename} \\
         -R region_vcf_no_MHC.vcf.gz \\
         -p ${task.cpus} \\
-        --minMAF ${params.cellsnp.min_maf} \\
-        --minCOUNT ${params.cellsnp.min_count} --gzip ${genotype_file}
+        --minCOUNT ${params.cellsnp.min_count} ${MAF} --gzip ${genotype_file}
     """
 }

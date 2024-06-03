@@ -109,14 +109,14 @@ workflow qc {
                     params.reduced_dims.seurat_integration.ndim_cite_integrated
                     )
 
-                // MULTIMODAL_INTEGRATION(
-                //     DSB_INTEGRATE.out.tmp_rds_file,
-                // )
+                MULTIMODAL_INTEGRATION(
+                    DSB_INTEGRATE.out.tmp_rds_file,
+                )
 
-                // VDJ_INTEGRATION(
-                //     chanel_cr_outs.collect(),
-                //     MULTIMODAL_INTEGRATION.out.wnn_integrated_file
-                // )
+                VDJ_INTEGRATION(
+                    chanel_cr_outs.collect(),
+                    MULTIMODAL_INTEGRATION.out.wnn_integrated_file
+                )
             }    
 
 

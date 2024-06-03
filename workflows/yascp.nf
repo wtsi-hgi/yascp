@@ -19,6 +19,7 @@ include {MULTIPLET} from "$projectDir/subworkflows/doublet_detection"
 include { SPLIT_CITESEQ_GEX; SPLIT_CITESEQ_GEX as SPLIT_CITESEQ_GEX_FILTERED; SPLIT_CITESEQ_GEX as PREPOCESS_FILES } from '../modules/nf-core/modules/citeseq/main'
 include { GENOTYPE_MATCHER } from "$projectDir/modules/nf-core/modules/vireo/main"
 include { RETRIEVE_RECOURSES } from "$projectDir/subworkflows/local/retrieve_recourses"
+include { PREPROCESS_GENOME } from "$projectDir/modules/nf-core/modules/subset_bam_per_barcodes_and_variants/main"
 /*
 ========================================================================================
     RUN MAIN WORKFLOW
@@ -46,10 +47,12 @@ workflow YASCP {
         }
         if (params.reference_assembly_fasta_dir=='https://yascp.cog.sanger.ac.uk/public/10x_reference_assembly'){
             RETRIEVE_RECOURSES()  
-            genome = RETRIEVE_RECOURSES.out.reference_assembly
+            genome1 = RETRIEVE_RECOURSES.out.reference_assembly
         }else{
-            genome = "${params.reference_assembly_fasta_dir}"
+            genome1 = "${params.reference_assembly_fasta_dir}"
         }
+        genome = PREPROCESS_GENOME(genome1)
+
         // vcf_input.subscribe { println "vcf_input: $it" }
         // ###################################
         // ################################### Readme

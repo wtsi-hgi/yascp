@@ -83,15 +83,22 @@ for f in glob.glob(f"{args.cellSNP_dirs}/*/GT_donors.vireo.vcf.gz"):
             all_chr_pos.add(chr+'_'+pos)
             for index, donor in enumerate(line[9:]):
                 alleles = donor.split(':')[gt_index]
+                print(alleles)
                 # for later comparison reasons, encode the alleles as dosages
                 if alleles == '1/0':
+                    genotype = 1
+                elif alleles == '0/1':
                     genotype = 1
                 elif alleles == '0/0':
                     genotype = 0
                 elif alleles == '1/1':
                     genotype = 2
+                elif alleles == './.':
+                    continue
                 else:
-                    raise RuntimeError('Unknown allele configuration: '+alleles)
+                    print('Unknown allele configuration: '+alleles)
+                    continue
+                    # raise RuntimeError('Unknown allele configuration: '+alleles)
                 genotypes_per_file[chr + '_' + pos][name+'<SPLIT>'+donor_IDs[index]] = genotype
 
 print('Read',x,'genotype files')

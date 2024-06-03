@@ -20,10 +20,53 @@ process SUBSET_BAM_PER_BARCODES_AND_VARIANTS {
         """ 
             echo ${donor}
             bcftools sort ${vcf} -Oz -o srt_${vcf}
-            filter_bam_file_for_popscle_dsc_pileup.sh ${bam} ${barcodes} srt_${vcf} ${sample}_filtered.bam
+
+            #    //samtools view -H ${bam} |\
+            #    //    awk '{gsub(/^chr/,""); print}' | awk '{gsub(/ID=chr/,"ID="); print}' | \
+            #    //    samtools reheader - ${bam} > test_chr.bam
+
+            samtools view --threads ${task.cpus} --tag-file CB:${barcodes} \
+               -o tmp_filtered.bam ${bam}
+            samtools index -c tmp_filtered.bam
+
+            #    //samtools view -H tmp_filtered.bam |\
+            #    //    awk '{gsub(/chr/,""); print}' | awk '{gsub(/ID=chr/,"ID="); print}' | \
+            #    //    samtools reheader - tmp_filtered.bam > ${sample}_filtered.bam
+
+            samtools view -H tmp_filtered.bam |\
+                awk '{gsub(/chr/,""); print}' | awk '{gsub(/ID=chr/,"ID="); print}' | \
+                samtools reheader - tmp_filtered.bam > tmp_filtered2.bam
+
+            #    //samtools index -c ${sample}_filtered.bam
+            filter_bam_file_for_popscle_dsc_pileup.sh tmp_filtered2.bam ${barcodes} srt_${vcf} ${sample}_filtered.bam
+
         """
 
 }
+
+process PREPROCESS_GENOME{
+    tag "${samplename}"    
+    label 'process_low'
+   
+    if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
+        container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/carls_data/analysis/bam_tool_processing_05_04_2024.sif"
+    } else {
+        container " mercury/bam_tool_processing:05_04_2024"
+    }
+
+    input:
+        path(genome)
+    output:
+        path('preprocessed_genome')
+    script:
+        """
+            mkdir preprocessed_genome
+            cat ${genome}/*.fa | awk '{gsub(/chr/,""); print}' > preprocessed_genome/genome.fa
+            samtools faidx preprocessed_genome/genome.fa
+        """
+
+}
+
 
 
 process SUBSET_BAM_PER_BARCODES{
