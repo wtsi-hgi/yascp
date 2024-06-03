@@ -69,6 +69,21 @@ To understand how to prepeare your own data and how to interpret the results ple
     > * Please check [nf-core/configs](https://github.com/nf-core/configs#documentation) to see if a custom config file to run nf-core pipelines already exists for your Institute. If so, you can simply use `-profile <institute>` in your command. This will enable either `docker` or `singularity` and set the appropriate execution settings for your local compute environment.
     > * If you are using `singularity` then the pipeline will auto-detect this and attempt to download the Singularity images directly as opposed to performing a conversion from Docker images. If you are persistently observing issues downloading Singularity images directly due to timeout or network issues then please use the `--singularity_pull_docker_container` parameter to pull and convert the Docker image instead. Alternatively, it is highly recommended to use the [`nf-core download`](https://nf-co.re/tools/#downloading-pipelines-for-offline-use) command to pre-download all of the required containers before running the pipeline and to set the [`NXF_SINGULARITY_CACHEDIR` or `singularity.cacheDir`](https://www.nextflow.io/docs/latest/singularity.html?#singularity-docker-hub) Nextflow options to be able to store and re-use the images from a central location for future pipeline runs.
 
+## Run on your own data
+
+1. Prepeare input.tsv file:
+   
+| experiment_id   | n_pooled | donor_vcf_ids    |  data_path_10x_format   |
+|-----------------|----------|------------------|-------------------------|
+| Pool1 |   1      | ""            | path/to/cellranger/10x_folder      |
+| Pool2|   2      | ""        | path/to/cellranger/10x_folder      |
+
+2. Run on your data
+    ```console
+    git clone https://github.com/wtsi-hgi/yascp.git
+    nextflow run /path/to/colned/yascp -profile test,<docker/singularity,institute> --input_data_table input.tsv
+    ```
+
 ## Credits
 
 Yascp was originally written by Matiss Ozols as part of the Cardinal project but is applicable to many other projects with contributions from Leland Taylor, Guillaume Noell, Hannes Ponstingl, Vivek Iyer,  Henry Taylor, Tobi Alegbe, Monika Krzak, Alessandro Raveane, Carl Anderson, Anna Lorenc, Stephen Watt, Nicole Soranzo.
