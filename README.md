@@ -53,7 +53,7 @@ The foundational ideas were inspired by earlier pipelines from Anderson lab but 
 
 ## Documentation: Prepearing your own data and interpreting the results
 
-To understand how to prepeare your own data and how to interpret the results please refear to documents [HERE](https://github.com/wtsi-hgi/yascp/tree/yascp_docs)
+To understand how to prepeare your own data and how to interpret the results please refear to [documents HERE](https://github.com/wtsi-hgi/yascp/tree/yascp_docs)
 
 ## Quick Start
 
