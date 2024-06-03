@@ -54,6 +54,11 @@ Pipeline has a modular design ensuring that the bits and piecies can be run inde
   <img src="https://github.com/wtsi-hgi/yascp/blob/main/assets/images/yascp_workflow.png" width="100%"/>
 </p>
 
+You can run pipeline blocks independently:
+
+<img width="100%" alt="Screenshot 2024-06-03 at 17 01 01" src="https://github.com/wtsi-hgi/yascp/assets/22347136/c724f731-42ab-4880-9666-eeb3384fd5e6">
+
+
 ## Documentation: Prepearing your own data and interpreting the results
 
 To understand how to prepeare your own data and how to interpret the results please refear to [documents HERE](https://github.com/wtsi-hgi/yascp/tree/yascp_docs)
