@@ -31,6 +31,32 @@ The foundational ideas were inspired by earlier pipelines from Anderson lab but 
 <!-- TODO nf-core: Add full-sized test dataset and amend the paragraph below if applicable -->
 <!-- On release, automated continuous integration tests run the pipeline on a full-sized dataset on the AWS cloud infrastructure. This ensures that the pipeline runs on AWS, has sensible resource allocation defaults set to run on real-world datasets, and permits the persistent storage of results to benchmark between pipeline releases and other analysis sources. The results obtained from the full-sized test can be viewed on the [nf-core website](https://nf-co.re/yascp/results). -->
 
+## Quick Start
+
+1. Install [`Nextflow`](https://www.nextflow.io/docs/latest/getstarted.html#installation) (`>=21.04.0`)
+2. Install any of [`Docker`](https://docs.docker.com/engine/installation/), [`Singularity`](https://www.sylabs.io/guides/3.0/user-guide/)for full pipeline reproducibility.
+3. Download/clone the pipeline and test it on a minimal dataset with a single command:
+
+    ```console
+    git clone https://github.com/wtsi-hgi/yascp.git
+    nextflow run /path/to/colned/yascp -profile test,<docker/singularity,institute>
+    ```
+
+## Run on your own data
+
+1. Prepeare input.tsv file:
+   
+| experiment_id   | n_pooled | donor_vcf_ids    |  data_path_10x_format   |
+|-----------------|----------|------------------|-------------------------|
+| Pool1 |   1      | ""            | path/to/cellranger/10x_folder      |
+| Pool2|   2      | ""        | path/to/cellranger/10x_folder      |
+
+2. Run on your data
+    ```console
+    git clone https://github.com/wtsi-hgi/yascp.git
+    nextflow run /path/to/colned/yascp -profile test,<docker/singularity,institute> --input_data_table input.tsv
+    ```
+    
 ## Pipeline summary
 Pipeline has a modular design ensuring that the bits and piecies can be run independently according to project needs. Overall pipeline is focussed arounf main steps:
 1. Cellbender
@@ -63,34 +89,6 @@ You can run pipeline blocks independently:
 
 To understand how to prepeare your own data and how to interpret the results please refear to [documents HERE](https://github.com/wtsi-hgi/yascp/tree/yascp_docs)
 
-## Quick Start
-
-1. Install [`Nextflow`](https://www.nextflow.io/docs/latest/getstarted.html#installation) (`>=21.04.0`)
-2. Install any of [`Docker`](https://docs.docker.com/engine/installation/), [`Singularity`](https://www.sylabs.io/guides/3.0/user-guide/)for full pipeline reproducibility.
-3. Download/clone the pipeline and test it on a minimal dataset with a single command:
-
-    ```console
-    git clone https://github.com/wtsi-hgi/yascp.git
-    nextflow run /path/to/colned/yascp -profile test,<docker/singularity,institute>
-    ```
-
-    > * Please check [nf-core/configs](https://github.com/nf-core/configs#documentation) to see if a custom config file to run nf-core pipelines already exists for your Institute. If so, you can simply use `-profile <institute>` in your command. This will enable either `docker` or `singularity` and set the appropriate execution settings for your local compute environment.
-    > * If you are using `singularity` then the pipeline will auto-detect this and attempt to download the Singularity images directly as opposed to performing a conversion from Docker images. If you are persistently observing issues downloading Singularity images directly due to timeout or network issues then please use the `--singularity_pull_docker_container` parameter to pull and convert the Docker image instead. Alternatively, it is highly recommended to use the [`nf-core download`](https://nf-co.re/tools/#downloading-pipelines-for-offline-use) command to pre-download all of the required containers before running the pipeline and to set the [`NXF_SINGULARITY_CACHEDIR` or `singularity.cacheDir`](https://www.nextflow.io/docs/latest/singularity.html?#singularity-docker-hub) Nextflow options to be able to store and re-use the images from a central location for future pipeline runs.
-
-## Run on your own data
-
-1. Prepeare input.tsv file:
-   
-| experiment_id   | n_pooled | donor_vcf_ids    |  data_path_10x_format   |
-|-----------------|----------|------------------|-------------------------|
-| Pool1 |   1      | ""            | path/to/cellranger/10x_folder      |
-| Pool2|   2      | ""        | path/to/cellranger/10x_folder      |
-
-2. Run on your data
-    ```console
-    git clone https://github.com/wtsi-hgi/yascp.git
-    nextflow run /path/to/colned/yascp -profile test,<docker/singularity,institute> --input_data_table input.tsv
-    ```
 
 ## Credits
 
