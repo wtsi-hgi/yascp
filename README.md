@@ -12,9 +12,12 @@
 | Pool1 |   1      | ""            | path/to/cellranger/10x_folder      |
 | Pool2|   2      | ""        | path/to/cellranger/10x_folder      |
 
-Results will demultiplex individuals, assess the assignments, assign celltypes, perform integrations, remove ambient RNA and produce publication ready plots:
-![Screenshot 2024-06-02 at 15 20 29](https://github.com/wtsi-hgi/yascp/assets/22347136/fe39d33a-97ec-44a1-9614-55f3585bde4d)
+Results will demultiplex individuals, robustly assess the assignments
+![Screenshot 2024-06-03 at 12 56 44](https://github.com/wtsi-hgi/yascp/assets/22347136/5129c789-fbe9-41e8-8d28-5d286896f14a)
 
+
+As well as assign celltypes, perform integrations, remove ambient RNA and produce publication ready plots
+![Screenshot 2024-06-02 at 15 20 29](https://github.com/wtsi-hgi/yascp/assets/22347136/fe39d33a-97ec-44a1-9614-55f3585bde4d)
 
 Developed under the leadership of N.Soranzo and Human Genetics Informatics (HGI), this large-scale single-cell pipeline was originally crafted for the Cardinal project (profiling UKBB and ELGH participants) but is versatile enough for broad scRNA analysis applications. 
 
