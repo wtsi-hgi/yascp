@@ -36,12 +36,14 @@ workflow qc {
         //     log.info '''--- No extra metadata to add to h5ad ---'''
         // }
 
-        
-        if(params.sample_qc.cell_filters.experiment.value != '' | params.sample_qc.cell_filters.all_samples.value != '' | params.sample_qc.downsample_cells_fraction.value != '' | params.sample_qc.downsample_cells_n.value != '' | params.sample_qc.downsample_feature_counts.value != ''){
-            log.info """---Flagging/filtering hard filters.----"""
-            CELL_HARD_FILTERS(file__anndata_merged,params.hard_filters_drop)
-            file__anndata_merged = CELL_HARD_FILTERS.out.anndata
+        if (params.cell_hard_filters){
+            if(params.sample_qc.cell_filters.experiment.value != '' | params.sample_qc.cell_filters.all_samples.value != '' | params.sample_qc.downsample_cells_fraction.value != '' | params.sample_qc.downsample_cells_n.value != '' | params.sample_qc.downsample_feature_counts.value != ''){
+                log.info """---Flagging/filtering hard filters.----"""
+                CELL_HARD_FILTERS(file__anndata_merged,params.hard_filters_drop)
+                file__anndata_merged = CELL_HARD_FILTERS.out.anndata
+            }
         }
+
         
         //FILTERING OUTLIER CELLS
         if (params.filter_outliers) {

@@ -246,8 +246,8 @@ workflow YASCP {
             // file__anndata_merged_ct = gex_h5ad.map{row-> tuple('all_together',row[0]) }
             // file__anndata_merged_ct.subscribe { println "file__anndata_merged_ct: $it" }
             if (params.celltype_assignment.run_celltype_assignment){
-                
-                celltype(gex_h5ad)
+                file__anndata_merged.map{val1 -> tuple('full_ct', val1)}.set{file__anndata_merged2}
+                celltype(file__anndata_merged2)
                 file__anndata_merged=celltype.out.file__anndata_merged2
             }
 

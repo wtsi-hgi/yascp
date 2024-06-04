@@ -150,7 +150,7 @@ def main():
         for donor in set(Exp_Data['Donor']):
             dict_donor_cells = {}
             for col in Exp_Data.columns:
-                if not 'score' in col and not 'probability' in col and not 'majority_voting' in col and not 'ver_clustering' in col and col !='Exp' and col !='Donor':
+                if not 'score' in col and not 'probability' in col and not 'majority_voting' in col and not 'over_clustering' in col and not 'conf_score' in col and not 'n_counts' in col and not 'ver_clustering' in col and col !='Exp' and col !='Donor' and col !='n_counts':
                     print(col)
                     # col='Celltypist:over_clustering'
                     # col='Azimuth:predicted.celltype.l2'
