@@ -134,8 +134,10 @@ workflow  main_deconvolution {
         
         cellsnp_cap_ids.combine(ch_experiment_bam_bai_barcodes, by: 0).combine(vcf_candidate_snps).set{cellsnp_cap_ids2}
         cellsnp_cap_ids2.map{row -> tuple(row[0], row[4],row[1])}.set{cellsnp_cap_ids2}
-        cellsnp_cap_ids2.subscribe { println "cellsnp_cap_ids2 cellsnp_cap_ids2: $it" }
+        // cellsnp_cap_ids2.subscribe { println "cellsnp_cap_ids2 cellsnp_cap_ids2: $it" }
         for_bam_pileups2 = cellsnp_cap_ids2.mix(for_bam_pileups)
+        
+        
 
         cellsnp_output_dir2 = CELLSNP.out.cellsnp_output_dir
         cellsnp_output_dir=cellsnp_output_dir1.concat(cellsnp_output_dir2)
@@ -191,6 +193,11 @@ workflow  main_deconvolution {
 
         filter_channel_vireo.filter{ it[5] == null }.map{row -> tuple(row[0], row[1],row[2],row[3],row[4])}.set{full_vcf3}
         full_vcf.filter { experiment, cellsnp, npooled, t,ti -> npooled == '1' }.set{not_deconvoluted}
+        
+
+        not_deconvoluted.join(for_bam_pileups2, remainder: false).set{for_bam_pileups_pre}
+        for_bam_pileups_pre.map{row -> tuple(row[0], row[5],row[6],row[7])}.set{for_bam_pileups_3}
+
         Channel.of(1..params.vireo.subsample_times).set{itterations}
         full_vcf2.combine(itterations).set{vireo_extra_repeats}
 
@@ -301,7 +308,7 @@ workflow  main_deconvolution {
         split_channel3 = split_channel.mix(split_channel2)
         // adding the scrublet paths to the channel.
         split_channel4 = split_channel3.combine(scrublet_paths, by: 0)
-
+        for_bam_pileups_3.subscribe { println "for_bam_pileups_3: $it" }
         split_channel5 = split_channel4.map{
             val_sample, val_donor_ids_tsv, val_filtered_matrix_h5, path_scrublet ->
             [  val_sample,file(val_donor_ids_tsv),file(val_filtered_matrix_h5),path_scrublet,params.outdir]
@@ -314,10 +321,10 @@ workflow  main_deconvolution {
             // SPLIT_DONOR_H5AD.out.sample_donor_level_barcodes.transpose().subscribe { println "sample_donor_level_barcodes: $it" }
             // CELLSNP.out.for_bam_pileups.subscribe { println "for_bam_pileups: $it" }
 
-            bam_subset_chanel = SPLIT_DONOR_H5AD.out.sample_donor_level_barcodes.transpose().combine(for_bam_pileups2, by: 0)
+            bam_subset_chanel = SPLIT_DONOR_H5AD.out.sample_donor_level_barcodes.transpose().combine(for_bam_pileups_3, by: 0)
             SUBSET_BAM_PER_BARCODES_AND_VARIANTS(bam_subset_chanel)  // This process subsets the ba
 
-            chromosomes =  Channel.of(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22)
+            chromosomes =  Channel.of(1,2,3,4,5,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21)
             freebayes_pre = SUBSET_BAM_PER_BARCODES_AND_VARIANTS.out.freebayes_input
 
             freebayes_in = freebayes_pre.combine(chromosomes)
@@ -329,6 +336,7 @@ workflow  main_deconvolution {
             //     .combine(ch_ref_vcf)
             //     .set { gt_math_pool_against_panel_input2 }
             FREEBAYES.out.gt_pool.groupTuple(by:0).set{fbb1}
+            fbb1.map{row->tuple(row[0], row[1], row[2], row[3][0])}.set{fbb1}
 
             // fbb1.subscribe { println "fbb1: $it" }
             MERGE_GENOTYPES_IN_ONE_VCF_IDX_PAN(fbb1,'freebayes')
@@ -346,8 +354,8 @@ workflow  main_deconvolution {
         // vir_inp.subscribe { println "vir_inp: $it" }
         vir_inp2 = vir_inp.collect()
         vir_inp3 = vireo_paths.collect()
-        gt_matcher_inp = vir_inp3.combine(vir_inp2)
-        gt_matcher_inp.subscribe { println "gt_matcher_inp: $it" }
+        vireo_paths2 = gt_matcher_inp = vir_inp3.combine(vir_inp2)
+        
         GENOTYPE_MATCHER(gt_matcher_inp)
 
         matched_donors = GENOTYPE_MATCHER.out.matched_donors
@@ -437,6 +445,6 @@ workflow  main_deconvolution {
         ch_poolid_csv_donor_assignments = ch_poolid_donor_assignment
         sample_possorted_bam_vireo_donor_ids = ch_experiment_bam_vireo_donor_ids
         assignments_all_pools
-        vireo_paths
+        vireo_paths2
         matched_donors
 }

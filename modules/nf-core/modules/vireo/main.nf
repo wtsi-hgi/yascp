@@ -167,7 +167,7 @@ process GENOTYPE_MATCHER{
         matcher.py \
         \$PWD \
         \$PWD \
-        -m 0.6
+        -m 0.4
       """
 
 }
@@ -257,12 +257,14 @@ process POSTPROCESS_SUMMARY{
 
 process CAPTURE_VIREO{
   label 'process_tiny'
+  publishDir "${params.outdir}/deconvolution/vireo/",  mode: "${params.copy_mode}", overwrite: true
+
   input:
     path(vireo_location)
    
   output:
     // tuple val(pool_id), path("${vireo_fixed_vcf}"), path("${vireo_fixed_vcf}.tbi"), emit: gt_pool
-    path("output_vireo.csv"),emit:vireo_loc
+    // path("output_vireo.csv"),emit:vireo_loc
     path("${vireo_location}/*/vireo_*"), emit: output_dir
     path("${vireo_location}/*/vireo_*"), emit: output_dir2
       // tuple val(samplename), path("vireo_${samplename}"), emit: output_dir_subsampling

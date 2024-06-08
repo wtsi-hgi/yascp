@@ -87,17 +87,18 @@ workflow qc {
                 channel_dsb2 = channel_dsb.combine(alt_input, by: 0)
                 DSB_PROCESS(channel_dsb2)
 
-                // DSB_PROCESS.out.ch_for_norm
+                DSB_PROCESS.out.ch_for_norm.subscribe { println "1:: DSB_PROCESS.out.ch_for_norm: $it" }
+                
                 // PREPROCESS_PROCESS()
                 // DSB_PROCESS.out.citeseq_rsd.subscribe { println "1:: DSB_PROCESS.out.citeseq_rsd: $it" }
-                vireo_paths_map = vireo_paths.map{row->tuple("${row}".replaceFirst(/.*vireo_/,""), row)}
+                vireo_paths_map = vireo_paths.flatten().map{row->tuple("${row}".replaceFirst(/.*vireo_/,""), row)}
+                vireo_paths_map.subscribe { println "1:: vireo_paths_map $it" }
+                DSB_PROCESS.out.ch_for_norm.subscribe { println "1:: vireo_paths_map $it" }
                 vireo_paths_map.combine(DSB_PROCESS.out.ch_for_norm, by: 0).set{norm_chanel}
-                PREPROCESS_PROCESS(norm_chanel,matched_donors,params.reduced_dims.vars_to_regress.value)
-                // assignments_all_pools.subscribe { println "1:: assignments_all_pools input: $it" }
-                // DSB_PROCESS.out.tmp_rsd.subscribe { println "1:: DSB_PROCESS.out.tmp_rsd input: $it" }
-                // matched_donors.subscribe { println "1:: matched_donors.out.tmp_rsd input: $it" }
-
-                // DSB_PROCESS.out.tmp_rsd.
+                norm_chanel.combine(matched_donors).set{inp4}
+                inp4.subscribe { println "1:: inp4 $it" }
+                matched_donors.subscribe { println "1:: matched_donors $it" }
+                PREPROCESS_PROCESS(inp4,params.reduced_dims.vars_to_regress.value)
 
                 DSB_INTEGRATE(
                     PREPROCESS_PROCESS.out.tmp_rsd.collect(),

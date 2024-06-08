@@ -195,8 +195,7 @@ process PREPROCESS_PROCESS {
       overwrite: "true"
 
     input:
-        tuple val(sample_name), path(vireo_path), path(rds_path)
-        path(matched_donors)
+        tuple val(sample_name), path(vireo_path), path(rds_path),path(matched_donors)
         each vars_to_regress
 
     output:

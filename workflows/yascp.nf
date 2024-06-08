@@ -169,7 +169,7 @@ workflow YASCP {
                         scrublet_paths,
                         vcf_input,
                         genome)
-                    vireo_paths = main_deconvolution.out.vireo_paths
+                    vireo_paths = main_deconvolution.out.vireo_paths2
                     matched_donors = main_deconvolution.out.matched_donors
                     ch_poolid_csv_donor_assignments = main_deconvolution.out.ch_poolid_csv_donor_assignments
                     bam_split_channel = main_deconvolution.out.sample_possorted_bam_vireo_donor_ids

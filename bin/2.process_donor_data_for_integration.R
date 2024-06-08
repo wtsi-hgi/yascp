@@ -6,6 +6,9 @@ library("RColorBrewer")
 library(future)
 options(future.globals.maxSize= 1020971520000)
 args = commandArgs(trailingOnly=TRUE)
+
+args=vector(mode='list', length=6); args[[1]]='FOXP3_G1_BM'; args[[2]]='vireo_FOXP3_G1_BM'; args[[3]]='matched_donors.txt'; args[[4]]='FOXP3_G1_BM.withADT.RDS';args[[5]]= 'NONE'
+# FOXP3_G1_BM vireo_FOXP3_G1_BM matched_donors.txt FOXP3_G1_BM.withADT.RDS NONE
 sample_name = args[1]
 vireo_input = args[2]
 matched_donor_files = args[3]

@@ -14,6 +14,8 @@ process SUBSET_BAM_PER_BARCODES_AND_VARIANTS {
     output:
         tuple val(sample), val("${donor}") ,path("${sample}_filtered.bam"),path("${sample}_filtered.bam.csi"), path(barcodes), emit: freebayes_input
 
+    when:
+        "${donor}"!='doublet'
     script:
         def donor_split = "${barcodes}".tokenize('.')
         donor = donor_split[0]
