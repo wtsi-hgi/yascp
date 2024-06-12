@@ -167,6 +167,26 @@ def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res
         for folder in Folders:
             copyfile(f'{folder1}/{folder}/Vireo_plots.pdf', f'{name_dir}/Deconvolution/Vireo_plots_{folder}.pdf')
         
+        
+        
+    folder1 = f'{directory}/doublets'
+    if os.path.isdir(folder1):
+        print('prepearing Doublet folder')
+        try:
+            os.mkdir(f'{name_dir}/Doublets___301')
+        except:
+            print('dire exists')
+        files = glob.glob(f'{folder1}/*.tsv')
+
+        for file1 in files:
+            print(file1)
+            try:
+                copy(file1, f'{name_dir}/Doublets___301')
+            except:
+                print('picked up directory')
+                continue
+                    
+        
     folder1 = f'{directory}/celltype/celltypist'
     if os.path.isdir(folder1):
         print('prepearing celltype folder')
@@ -205,6 +225,8 @@ def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res
         #     print('dire exists')
         # copyfile(fil1, f'{name_dir}/QC metrics/plot_ecdf-x_log10.var=total_counts.color=experiment_id-adata.png')
         files = glob.glob(f'{folder1}/*[!.gz]')
+        files2 = glob.glob(f'{folder1}/*/*[!.gz]')
+        files = files + files2
         for file1 in files:
             print(file1)
             try:
@@ -212,8 +234,12 @@ def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res
             except:
                 print('picked up directory')
                 continue
-
-
+    try:
+        copy(f'{directory}/celltype/All_Celltype_Assignments.csv', f'{name_dir}/Cell-type assignment/All_Celltype_Assignments.csv')
+    except:
+        print('doesnt exist')    
+    
+    
     folder1 = f'{directory}/plots/per_celltype_outliers'
     if os.path.isdir(folder1):
         print('yes')

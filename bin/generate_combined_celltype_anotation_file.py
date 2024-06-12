@@ -134,6 +134,7 @@ def main():
         adata1 = scanpy.read_h5ad(ad1)
         if adata1.n_obs > 0:
             adatasets.append(adata1)
+
     ad = adatasets[0].concatenate(*adatasets[1:])
     if(len(adatasets)>1):
         # in this case the concentration adds a -1 -2 -3 to index that has to be removed.
@@ -141,6 +142,7 @@ def main():
         all_indexes = all_index['col'].str.split('-')
         all_together = all_indexes.apply(lambda x: '-'.join(x[:-1]))
         ad.obs.set_index(all_together, inplace=True)
+
         
     # ad2 = adatasets2[0].concatenate(*adatasets2[1:])
     # ad = scanpy.read(adata)

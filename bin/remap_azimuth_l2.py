@@ -53,7 +53,7 @@ Mappings = pd.read_csv(options.mapping,sep='\t',index_col=0)
 
 D1 =All_Data
 D1['idx1']=D1.index
-D1 = All_Data.set_index('predicted.celltype.l2')
+D1 = All_Data.set_index('Azimuth:predicted.celltype.l2')
 for col in Mappings.columns:
     D1[f'{col}_predicted.celltype.l2']=''
     D1[f'{col}_predicted.celltype.l2']=Mappings[col]

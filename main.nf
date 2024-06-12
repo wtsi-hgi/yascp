@@ -38,7 +38,7 @@ include {collect_file} from "$projectDir/modules/nf-core/modules/collect_file/ma
 include { CELLSNP;capture_cellsnp_files } from "$projectDir/modules/nf-core/modules/cellsnp/main"
 
 
-
+// Channel.of(params.outdir).mkdirs()
 
 ////// WORKFLOW: Run main nf-core/yascp analysis pipeline
 // This is the default entry point, we have others to update ceirtain parts of the results. 

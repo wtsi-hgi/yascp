@@ -1,4 +1,4 @@
-process DOUBLET_DECON {
+process DOUBLET_DECON{
 
     tag "${experiment_id}"
     label 'process_medium'

@@ -17,7 +17,7 @@ include { match_genotypes } from './match_genotypes'
 include {ENHANCE_STATS_GT_MATCH } from "$projectDir/modules/nf-core/modules/genotypes/main"
 include {SUBSET_WORKF} from "$projectDir/modules/nf-core/modules/subset_genotype/main"
 include {REPLACE_GT_DONOR_ID2; REPLACE_GT_DONOR_ID2 as REPLACE_GT_DONOR_ID_SUBS } from "$projectDir/modules/nf-core/modules/genotypes/main"
-include { RETRIEVE_RECOURSES } from "$projectDir/subworkflows/local/retrieve_recourses"
+include { RETRIEVE_RECOURSES; STAGE_FILE } from "$projectDir/subworkflows/local/retrieve_recourses"
 include {GT_MATCH_POOL_IBD } from "$projectDir/modules/nf-core/modules/genotypes/main"
 include { MATCH_GT_VIREO } from "$projectDir/modules/nf-core/modules/genotypes/main"
 
@@ -52,7 +52,7 @@ workflow  main_deconvolution {
         }else{
             genome = "${params.reference_assembly_fasta_dir}"
         }
-
+        vcf_candidate_snps = STAGE_FILE(params.cellsnp.vcf_candidate_snps)
         // genome.subscribe { println "genome: $it" }
 
         if (params.genotype_input.run_with_genotype_input) {
@@ -73,7 +73,7 @@ workflow  main_deconvolution {
             // This will subsequently result in a joint vcf file per cohort per donors listed for each of the pools that can be used in VIREO and/or GT matching algorythm.
             SUBSET_WORKF(ch_ref_vcf,donors_in_pools,'AllExpectedGT',genome)
             merged_expected_genotypes = SUBSET_WORKF.out.merged_expected_genotypes
-            merged_expected_genotypes2 = merged_expected_genotypes.combine(Channel.fromPath(params.cellsnp.vcf_candidate_snps))
+            merged_expected_genotypes2 = merged_expected_genotypes.combine(vcf_candidate_snps)
             // merged_expected_genotypes2.subscribe { println "merged_expected_genotypes2: $it" }
             GT_MATCH_POOL_IBD(SUBSET_WORKF.out.samplename_subsetvcf_ibd,'Withing_expected','Expected')
 
@@ -105,10 +105,10 @@ workflow  main_deconvolution {
             if (params.provide_within_pool_donor_specific_sites_for_pilup){
                 cellsnp_with_npooled2 = cellsnp_with_npooled.combine(cellsnp_panels, by: 0)
             }else{
-                cellsnp_with_npooled2 = cellsnp_with_npooled.combine(Channel.fromPath(params.cellsnp.vcf_candidate_snps))
+                cellsnp_with_npooled2 = cellsnp_with_npooled.combine(vcf_candidate_snps)
             }
         }else{
-            cellsnp_with_npooled2 = cellsnp_with_npooled.combine(Channel.fromPath(params.cellsnp.vcf_candidate_snps))
+            cellsnp_with_npooled2 = cellsnp_with_npooled.combine(vcf_candidate_snps)
         }
 
         log.info('Capturing some of the existing CELLSNP files')
@@ -320,9 +320,9 @@ workflow  main_deconvolution {
         if (params.genotype_input.run_with_genotype_input) {
             if (params.do_vireo_subsampling){
                 VIREO_SUBSAMPLING(vireo_extra_repeats)
-                VIREO_SUBSAMPLING.out.output_dir.concat(VIREO.out.output_dir).set{tuple_1}
-                // tuple_1.groupTuple(by:0).set{vspp0}
-                // VIREO_SUBSAMPLING_PROCESSING(vspp0)
+                VIREO_SUBSAMPLING.out.output_dir.concat(VIREO.out.output_dir_subsampling).set{tuple_1}
+                tuple_1.groupTuple(by:0).set{vspp0}
+                VIREO_SUBSAMPLING_PROCESSING(vspp0)
                 // VIREO_SUBSAMPLING.out.all_required_data.set{replacement_input_sub}
                 // // replacement_input_sub.combine(vireo_with_gt).set{vir_repl_input}
                 // // REPLACE_GT_DONOR_ID_SUBS(vir_repl_input)
@@ -331,7 +331,7 @@ workflow  main_deconvolution {
                 // //     .combine(ch_ref_vcf).set { gt_math_pool_against_panel_input_subs }
                     
                 // MATCH_GT_VIREO(gt_math_pool_against_panel_input_subs)
-                // subsampling_donor_swap = VIREO_SUBSAMPLING_PROCESSING.out.subsampling_donor_swap
+                subsampling_donor_swap = VIREO_SUBSAMPLING_PROCESSING.out.subsampling_donor_swap
             }else{
                 subsampling_donor_swap = Channel.from("$projectDir/assets/fake_file.fq")
             }

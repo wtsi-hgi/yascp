@@ -12,6 +12,7 @@ os.environ['MPLCONFIGDIR']='/tmp'
 from distutils.version import LooseVersion
 import numpy as np
 import scanpy as sc
+import re
 import pandas as pd
 from sklearn.svm import OneClassSVM
 from sklearn.covariance import EllipticEnvelope
@@ -58,6 +59,18 @@ class onesidemad():
         
         return (np.sign(self.thresh) * (X - self.median - self.thresh*self.mad) > 0).any(axis=1)
 
+    def decision_function(self,cols):
+        tresholds_set = (self.median + self.thresh*self.mad).ravel()
+        thresh = self.thresh.ravel()
+        decission_string = ""
+        for i,tr1 in enumerate(thresh):
+            if tr1<0:
+                trs=f"<{tresholds_set[i]}"
+            else:
+                trs=f">{tresholds_set[i]}"
+            decission_string = f"{decission_string}{tr1}({cols[i]}{trs})"
+        return decission_string
+
     def fit_predict(self, X):
         self.fit(X)
         return self.predict(X)
@@ -78,11 +91,19 @@ def perform_adaptiveQC_Filtering(clf,adata,method,metadata_columns):
             adata.obs[metadata_columns].values
         ) == 1
         predicted_scores = clf.decision_function(adata.obs[metadata_columns].values) 
+    elif method == 'MAD':
+        metadata_columns2 = metadata_columns.copy()
+        metadata_columns2.pop()
+        f = clf.fit_predict(
+            adata.obs[metadata_columns2].values
+        ) == 1
+        predicted_scores = clf.decision_function(metadata_columns2)
+        
     else:
         f = clf.fit_predict(
             adata.obs[metadata_columns].values
         ) == 1
-        predicted_scores = clf.decision_function(adata.obs[metadata_columns].values)
+        predicted_scores = clf.decision_function(adata.obs[metadata_columns].values) 
 
     return predicted_scores,f
 
@@ -201,6 +222,16 @@ def main():
         help='Columns to use for outliers.\
             (default: %(default)s)'
     )
+    
+    parser.add_argument(
+        '--MAD_thresholds',
+        action='store',
+        dest='MAD_thresholds',
+        type=str,
+        default='-5,-5,5',
+        help='Columns to use for outliers.\
+            (default: %(default)s)'
+    )
 
     parser.add_argument(
         '--cell_qc_column',
@@ -285,7 +316,7 @@ def main():
     
     # Here we add an adaptive QC per Column
     # Drop out previous QCed cells
-    cell_qc_column = options.cell_qc_column
+    
     # if cell_qc_column in adata.obs.columns:
     #     n_cells_original = adata.shape[0]
     #     adata = adata[adata.obs[cell_qc_column], :]
@@ -313,193 +344,217 @@ def main():
     # ]
 
     method = options.method
-    if method == 'LocalOutlierFactor':
-        # fit the model for outlier detection (default)
-        clf = LocalOutlierFactor(
-            #n_neighbors=100,
-            # contamination=outliers_fraction
-        )
-    elif method == 'IsolationForest':
-        max_samples = options.max_samples
-        # if max_samples == 0.0:
-        #     if n_cells < 1000:
-        #         max_samples = 250
-        #     else:
-        #         max_samples = 0.1
-        print("Using max_samples of:\t{}".format(max_samples))
-        clf = IsolationForest(
-            #n_estimators=500,
-            max_samples=max_samples,
-            warm_start=False,
-            contamination=outliers_fraction,
-            random_state=0,
-            bootstrap=True
-        )
-    elif method == 'EllipticEnvelope':
-        if outliers_fraction == 'auto':
-            outliers_fraction = 0.1
-        clf = EllipticEnvelope(
-            contamination=outliers_fraction
-        )
-    elif method == 'OneClassSVM':
-        clf = OneClassSVM(
-            # nu=n_outliers,
-            # kernel="rbf",
-            # gamma=0.1
-        )
-    elif method == 'MAD':
-        clf = onesidemad()
-    else:
-        raise ValueError('ERROR: invalid method.')
-
-    metadata_columns_original = metadata_columns.copy()
-    # We perform the adaptive qc either for all data together or per user defined column of unique values.
+    
+    
+    methods = re.split(';|,',options.method)
     outlier_filtering_strategys = options.outlier_filtering_strategys
     # outlier_filtering_strategys = 'Azimuth:L0_predicted.celltype.l2;all_together;all_together::exclude'
-    outlier_filtering_strategys = outlier_filtering_strategys.split(';')
-    matching = [s for s in outlier_filtering_strategys if "::" in s]
-    for m1 in matching:
-        # duplicate the strategy if we have flagged it as an extra step by adding ::no_exclude flag
-        m2 = m1.split('::')[0]
-        if m1 =='all_together::exclude':
-            adata.obs[m1] = 'all_cells'
-        else:
-            adata.obs[m1] = m2
-        
-    # We load the GT match file and determine the celline match that needs to be subjected to adaptive qc independently
-    if(options.patterns_exclude):
-        ######## The folowing bit of code takes the GT match outputs and utilises this to run adaptive qc on cellines independently - only if the celline is expected.
-        if(options.gt_match_file!='fake_file.fq'):
-            GT_match_file = pd.read_csv(options.gt_match_file,sep='\t')
-            GT_patterns = options.patterns_exclude.split(';')
-            for outlier_filtering_strategy in outlier_filtering_strategys:
-                strategy = outlier_filtering_strategy
-                if strategy!='all_together':
-                    for pattern in GT_patterns:
-                        Matches = GT_match_file[GT_match_file['donor_gt'].str.contains(pattern)]
-                        if len(Matches)>0:
-                            for i,match in Matches.iterrows():
-                                donor=match['donor_query']
-                                pool=match['pool']
-                                expected = match['Match Expected']
-                                if expected:
-                                    filter_query = f"convoluted_samplename=='{pool}' and Donor=='{donor}'"
-                                    idx1 = adata.obs.query(filter_query).index
-                                    try:
-                                        adata.obs[strategy] = adata.obs[strategy].cat.add_categories(pattern)
-                                    except:
-                                        _='category exists already'
-                                    adata.obs.loc[idx1,strategy]=pattern
-        ########                 
-    # all_index = pd.DataFrame(adata.obs.index,columns=['col'])
-    # all_together = all_indexes.str[0]+'-'+all_indexes.str[1]+'-'+all_indexes.str[2]
+    outlier_filtering_strategys = re.split(';|,',outlier_filtering_strategys)   
+    metadata_columns_original = metadata_columns.copy() 
     
-    for outlier_filtering_strategy in outlier_filtering_strategys:
-        metadata_columns = metadata_columns_original.copy()
-        if (outlier_filtering_strategy == 'all_together'):
+    for method in methods:
+        print(f'-------Running {method} outlier filtering strategy-------')
+        nmethod = method
+        
+        if method == 'LocalOutlierFactor':
+            cell_qc_column = nmethod+':'+options.cell_qc_column
+            # fit the model for outlier detection (default)
+            clf = LocalOutlierFactor(
+                #n_neighbors=100,
+                # contamination=outliers_fraction
+            )
+        elif method == 'IsolationForest':
+            max_samples = options.max_samples
+            # if max_samples == 0.0:
+            #     if n_cells < 1000:
+            #         max_samples = 250
+            #     else:
+            #         max_samples = 0.1
             cell_qc_column = options.cell_qc_column
-            cell_qc_column_score = f"{cell_qc_column}:score"
-            adata.obs[cell_qc_column] = True
-            adata.obs[cell_qc_column_score] = None
-            metadata_columns.append(cell_qc_column)
-            prediction_score, fail_pass = perform_adaptiveQC_Filtering(clf,adata,method,metadata_columns)
-            adata.obs[cell_qc_column] = fail_pass
-            adata.obs[cell_qc_column_score] = prediction_score
+            print("Using max_samples of:\t{}".format(max_samples))
+            clf = IsolationForest(
+                #n_estimators=500,
+                max_samples=max_samples,
+                warm_start=False,
+                contamination=outliers_fraction,
+                random_state=0,
+                bootstrap=True
+            )
+        elif method == 'EllipticEnvelope':
+            cell_qc_column = nmethod+':'+options.cell_qc_column
+            if outliers_fraction == 'auto':
+                outliers_fraction = 0.1
+            clf = EllipticEnvelope(
+                contamination=outliers_fraction
+            )
+        elif method == 'OneClassSVM':
+            cell_qc_column = nmethod+':'+options.cell_qc_column
+            clf = OneClassSVM(
+                # nu=n_outliers,
+                # kernel="rbf",
+                # gamma=0.1
+            )
+        elif method == 'MAD':
+            mad_thresh = np.array([ int(x) for x in re.split(';|,',options.MAD_thresholds)])
+            nmethod = method+options.MAD_thresholds
+            cell_qc_column = nmethod+':'+options.cell_qc_column
+            clf = onesidemad(mad_thresh)
         else:
-            cell_qc_column = f'{cell_qc_column}-per:{outlier_filtering_strategy}'
-            cell_qc_column_score = f"{cell_qc_column}:score"
-            metadata_columns.append(cell_qc_column)
-            adata.obs[cell_qc_column] = True
-            adata.obs[cell_qc_column_score] = None
-            try:
-                os.mkdir(f'per_celltype_outliers__{outlier_filtering_strategy}')
-            except:
-                _='exists already'
-            try:
-                outlier_strategy_cols = set(adata.obs[outlier_filtering_strategy])
-            except:
-                print('user provided col doesnt exist')
-                continue
-            for subset_id_for_ad_qc in outlier_strategy_cols:
-                subset_ad = adata[adata.obs[outlier_filtering_strategy]==subset_id_for_ad_qc]
-                print(f'filtering:{subset_id_for_ad_qc} {outlier_filtering_strategy}')    
-                if(len(subset_ad)>100):
-                    # We only perform adaptive qc when there is at least 100 cells, otherwise we assume that all pass
-                    prediction_score, fail_pass = perform_adaptiveQC_Filtering(clf,subset_ad,method,metadata_columns)
-                    adata.obs.loc[subset_ad.obs.index,cell_qc_column]=fail_pass
-                    subset_ad.obs.loc[subset_ad.obs.index,cell_qc_column]=fail_pass
-                    
-                    adata.obs.loc[subset_ad.obs.index,cell_qc_column_score]=prediction_score
-                    subset_ad.obs.loc[subset_ad.obs.index,cell_qc_column_score]=prediction_score
-                    
-                else:
-                    print(f'For a category {subset_id_for_ad_qc} we have only {len(subset_ad)} cells and as its not sufficient ammount to estimate distributions we assuma all pass QC')
-                # subset_ad.uns['cell_outlier_estimator'] = method
-                of = f'per_celltype_outliers__{outlier_filtering_strategy}/{subset_id_for_ad_qc}---{options.of}'
-                generate_plots(subset_ad,cell_qc_column,metadata_columns,metadata_columns_original,of)
-                del subset_ad
-        adata.uns['cell_outlier_estimator'] = method  
-        adata.obs[['cell_id', cell_qc_column]].to_csv(
-            f'{options.of}-outliers_filtered__{cell_qc_column}.tsv.gz',
-            sep='\t',
-            compression=compression_opts,
-            index=False,
-            header=True
-        )
+            raise ValueError('ERROR: invalid method.')
+        print(cell_qc_column)
+        metadata_columns=metadata_columns_original.copy()
+        metadata_columns.append(cell_qc_column)
+        # We perform the adaptive qc either for all data together or per user defined column of unique values.
 
-        # Calculate cell_filtered_per_experiment
-        filter_columns = [
-            'experiment_id',
-            'filter_type',
-            'n_cells_left_in_adata'
-        ]
-        if options.cell_filtered_per_experiment == 'None':
-            df_cell_filt_per_exp = adata.obs['experiment_id'].value_counts()
-            df_cell_filt_per_exp = df_cell_filt_per_exp.rename_axis(
+        matching = [s for s in outlier_filtering_strategys if "::" in s]
+        for m1 in matching:
+            # duplicate the strategy if we have flagged it as an extra step by adding ::no_exclude flag
+            m2 = m1.split('::')[0]
+            if m1 =='all_together::exclude':
+                adata.obs[m1] = 'all_cells'
+            else:
+                adata.obs[m1] = m2
+            
+        # We load the GT match file and determine the celline match that needs to be subjected to adaptive qc independently
+        if(options.patterns_exclude):
+            ######## The folowing bit of code takes the GT match outputs and utilises this to run adaptive qc on cellines independently - only if the celline is expected.
+            if(options.gt_match_file!='fake_file.fq'):
+                GT_match_file = pd.read_csv(options.gt_match_file,sep='\t')
+                GT_patterns = options.patterns_exclude.split(';')
+                for outlier_filtering_strategy in outlier_filtering_strategys:
+                    strategy = outlier_filtering_strategy
+                    if strategy!='all_together':
+                        for pattern in GT_patterns:
+                            Matches = GT_match_file[GT_match_file['donor_gt'].str.contains(pattern)]
+                            if len(Matches)>0:
+                                for i,match in Matches.iterrows():
+                                    donor=match['donor_query']
+                                    pool=match['pool']
+                                    expected = match['Match Expected']
+                                    if expected:
+                                        filter_query = f"convoluted_samplename=='{pool}' and Donor=='{donor}'"
+                                        idx1 = adata.obs.query(filter_query).index
+                                        try:
+                                            adata.obs[strategy] = adata.obs[strategy].cat.add_categories(pattern)
+                                        except:
+                                            _='category exists already'
+                                        adata.obs.loc[idx1,strategy]=pattern
+            ########                 
+        # all_index = pd.DataFrame(adata.obs.index,columns=['col'])
+        # all_together = all_indexes.str[0]+'-'+all_indexes.str[1]+'-'+all_indexes.str[2]
+        
+        for outlier_filtering_strategy in outlier_filtering_strategys:
+            metadata_columns = metadata_columns_original.copy()
+            
+            if (outlier_filtering_strategy == 'all_together'):
+                if method == 'IsolationForest':
+                    cell_qc_column = options.cell_qc_column
+                else:
+                    cell_qc_column = f'{cell_qc_column}-per:{outlier_filtering_strategy}'
+                cell_qc_column_score = f"{cell_qc_column}:score"
+                adata.obs[cell_qc_column] = True
+                adata.obs[cell_qc_column_score] = None
+                       
+                metadata_columns.append(cell_qc_column)
+                
+                prediction_score, fail_pass = perform_adaptiveQC_Filtering(clf,adata,method,metadata_columns)
+                adata.obs[cell_qc_column] = fail_pass
+                adata.obs[cell_qc_column_score] = prediction_score
+            else:
+                cell_qc_column = f'{cell_qc_column}-per:{outlier_filtering_strategy}'
+                cell_qc_column_score = f"{cell_qc_column}:score"
+                
+                adata.obs[cell_qc_column] = True
+                adata.obs[cell_qc_column_score] = ''
+                try:
+                    os.mkdir(f'per_celltype_outliers__{outlier_filtering_strategy}')
+                except:
+                    _='exists already'
+                try:
+                    outlier_strategy_cols = set(adata.obs[outlier_filtering_strategy])
+                except:
+                    print(f'{outlier_filtering_strategy} - user provided col doesnt exist')
+                    continue
+                for subset_id_for_ad_qc in outlier_strategy_cols:
+                    subset_ad = adata[adata.obs[outlier_filtering_strategy]==subset_id_for_ad_qc]
+                    print(f'filtering:{subset_id_for_ad_qc} {outlier_filtering_strategy}')    
+                    if(len(subset_ad)>100):
+                        # We only perform adaptive qc when there is at least 100 cells, otherwise we assume that all pass
+                        prediction_score, fail_pass = perform_adaptiveQC_Filtering(clf,subset_ad,method,metadata_columns)
+                        adata.obs.loc[subset_ad.obs.index,cell_qc_column]=fail_pass
+                        subset_ad.obs.loc[subset_ad.obs.index,cell_qc_column]=fail_pass
+                        
+                        adata.obs.loc[subset_ad.obs.index,cell_qc_column_score]=prediction_score
+                        subset_ad.obs.loc[subset_ad.obs.index,cell_qc_column_score]=prediction_score
+                        
+                    else:
+                        print(f'For a category {subset_id_for_ad_qc} we have only {len(subset_ad)} cells and as its not sufficient ammount to estimate distributions we assuma all pass QC')
+                    # subset_ad.uns['cell_outlier_estimator'] = method
+                    of = f'per_celltype_outliers__{outlier_filtering_strategy}/{subset_id_for_ad_qc}---{options.of}'
+                    generate_plots(subset_ad,cell_qc_column,metadata_columns,metadata_columns_original,of)
+                    del subset_ad
+            adata.uns['cell_outlier_estimator'] = method  
+            adata.obs[['cell_id', cell_qc_column]].to_csv(
+                f'{options.of}-outliers_filtered__{cell_qc_column}.tsv.gz',
+                sep='\t',
+                compression=compression_opts,
+                index=False,
+                header=True
+            )
+
+            # Calculate cell_filtered_per_experiment
+            filter_columns = [
+                'experiment_id',
+                'filter_type',
+                'n_cells_left_in_adata'
+            ]
+            if options.cell_filtered_per_experiment == 'None':
+                df_cell_filt_per_exp = adata.obs['experiment_id'].value_counts()
+                df_cell_filt_per_exp = df_cell_filt_per_exp.rename_axis(
+                    'experiment_id'
+                ).reset_index(name='n_cells_left_in_adata')
+                df_cell_filt_per_exp['filter_type'] = 'before_filters'
+                df_cell_filt_per_exp = df_cell_filt_per_exp[filter_columns]
+            else:
+                # Load the samples filtered per experiment file:
+                df_cell_filt_per_exp = pd.read_csv(
+                    options.cell_filtered_per_experiment,
+                    sep="\t"
+                )
+                filt = df_cell_filt_per_exp['filter_type'] != 'after_filters'
+                df_cell_filt_per_exp = df_cell_filt_per_exp.loc[filt, :]
+                
+            # Now calculate the n cells left after all filters
+            adata_after_filters = adata.obs.loc[adata.obs[cell_qc_column], :]
+            df_cells_filtered = adata_after_filters['experiment_id'].value_counts()
+            df_cells_filtered = df_cells_filtered.rename_axis(
                 'experiment_id'
             ).reset_index(name='n_cells_left_in_adata')
-            df_cell_filt_per_exp['filter_type'] = 'before_filters'
-            df_cell_filt_per_exp = df_cell_filt_per_exp[filter_columns]
-        else:
-            # Load the samples filtered per experiment file:
-            df_cell_filt_per_exp = pd.read_csv(
-                options.cell_filtered_per_experiment,
-                sep="\t"
+            df_cells_filtered['filter_type'] = '{} {} outlier_{}'.format(
+                'filter__all_samples',
+                'after_outlier_filter',
+                method
             )
-            filt = df_cell_filt_per_exp['filter_type'] != 'after_filters'
-            df_cell_filt_per_exp = df_cell_filt_per_exp.loc[filt, :]
+            df_cells_filtered = df_cells_filtered[filter_columns]
+            df_cell_filt_per_exp = df_cell_filt_per_exp.append(
+                df_cells_filtered,
+                ignore_index=True
+            )
+            df_cells_filtered['filter_type'] = 'after_filters'
+            df_cell_filt_per_exp = df_cell_filt_per_exp.append(
+                df_cells_filtered,
+                ignore_index=True
+            )
+            # Save the final dataframe
+            df_cell_filt_per_exp.to_csv(
+                f'{options.of}-cell_filtered_per_experiment__{cell_qc_column}.tsv.gz',
+                sep='\t',
+                compression=compression_opts,
+                index=False,
+                header=True
+            )
             
-        # Now calculate the n cells left after all filters
-        adata_after_filters = adata.obs.loc[adata.obs[cell_qc_column], :]
-        df_cells_filtered = adata_after_filters['experiment_id'].value_counts()
-        df_cells_filtered = df_cells_filtered.rename_axis(
-            'experiment_id'
-        ).reset_index(name='n_cells_left_in_adata')
-        df_cells_filtered['filter_type'] = '{} {} outlier_{}'.format(
-            'filter__all_samples',
-            'after_outlier_filter',
-            method
-        )
-        df_cells_filtered = df_cells_filtered[filter_columns]
-        df_cell_filt_per_exp = df_cell_filt_per_exp.append(
-            df_cells_filtered,
-            ignore_index=True
-        )
-        df_cells_filtered['filter_type'] = 'after_filters'
-        df_cell_filt_per_exp = df_cell_filt_per_exp.append(
-            df_cells_filtered,
-            ignore_index=True
-        )
-        # Save the final dataframe
-        df_cell_filt_per_exp.to_csv(
-            f'{options.of}-cell_filtered_per_experiment__{cell_qc_column}.tsv.gz',
-            sep='\t',
-            compression=compression_opts,
-            index=False,
-            header=True
-        )
-        
-        generate_plots(adata,cell_qc_column,metadata_columns,metadata_columns_original,options.of)
+            generate_plots(adata,cell_qc_column,metadata_columns,metadata_columns_original,options.of)
 
 
     adata.write(

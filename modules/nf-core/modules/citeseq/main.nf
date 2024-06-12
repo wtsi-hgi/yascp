@@ -7,16 +7,9 @@ process SPLIT_CITESEQ_GEX {
         container "wtsihgi/nf_scrna_qc:6bb6af5"
     }
 
-    publishDir  path: "${params.outdir}/citeseq/${mode}/${sample_name}",
-    //   saveAs: {filename ->
-    //     if (filename.contains("antibody-")) {
-    //         filename.replaceAll("antibody-", "${mode}_antibody-")
-    //     }else {
-    //         null
-    //     }
-    //   },
-      mode: "${params.copy_mode}",
-      overwrite: "true"
+    publishDir  path: "${params.outdir}/data_modalities_split/${mode}/${sample_name}",
+    mode: "${params.copy_mode}",
+    overwrite: "true"
 
     input:
         tuple val(sample_name),path(cellranger_raw) 
@@ -26,13 +19,13 @@ process SPLIT_CITESEQ_GEX {
         tuple val(sample_name), path("${sample_name}__Gene_Expression"), emit:gex_data
         tuple val(sample_name), path("antibody-${sample_name}.h5ad"), emit: ab_data2 optional true
         tuple val(sample_name), path("Gene_Expression-${sample_name}.h5ad"), emit: gex_h5ad optional true
-        tuple val(sample_name), path("${sample_name}__*"), emit: ab_data
+        tuple val(sample_name), path("${sample_name}__*"), emit: ab_data optional true
         tuple val(sample_name), path("${sample_name}__Gene_Expression/barcodes.tsv.gz"), path("${sample_name}__Gene_Expression/features.tsv.gz"), path("${sample_name}__Gene_Expression/matrix.mtx.gz"), emit: channel__file_paths_10x
  
     script:
 
         """
-        
+
             strip_citeseq.py --raw_data ${cellranger_raw} -o ${sample_name}
         """
 }
@@ -166,6 +159,8 @@ process VDJ_INTEGRATION{
     
     output:
         path("*all_samples_integrated.vdj.RDS"), emit: all_data_integrated_vdj_rds
+        path("*all_samples_integrated.BCR.RDS"), emit: all_data_integrated_BCR_rds
+        path("*all_samples_integrated.TCR.RDS"), emit: all_data_integrated_TCR_rds
 
     input:
         path(all_cellranger_samples)

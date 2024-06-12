@@ -58,7 +58,7 @@ workflow qc {
                 params.sample_qc.outlier_filtering_strategy
             )
             file__anndata_merged = OUTLIER_FILTER.out.anndata
-            file__cells_filtered = OUTLIER_FILTER.out.cells_filtered
+            // file__cells_filtered = OUTLIER_FILTER.out.cells_filtered
                 
         }
         
