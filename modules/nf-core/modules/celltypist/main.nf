@@ -5,8 +5,7 @@ process CELLTYPIST {
     publishDir "${params.outdir}/celltype/celltypist/${model}/${sample}/", mode: "${params.celltypist.copy_mode}", overwrite: true,
 	  saveAs: {filename -> filename.replaceFirst("outputs/","").replaceFirst("figures/","") }
     
-    if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/scrna_deconvolution_v3.img"
+    if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/scrna_deconvolution_v3.img"
         //// container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_latest.img"
     } else {
         container "mercury/nf_scrna_deconv:v3"
