@@ -125,8 +125,7 @@ process merge_samples {
     
     tag "${samplename}"
     
-    label 'process_medium'
-    label 'process_high_memory'
+    label 'process_high'
     publishDir  path: "${outdir}/merged_h5ad",
                 saveAs: {filename -> filename.replaceAll("-", "pre_QC_")},
                 mode: "${params.copy_mode}",

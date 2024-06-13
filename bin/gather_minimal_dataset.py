@@ -504,7 +504,7 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
     #Cell-type assignments
     #############
 
-    azt = pd.read_csv(f'{args.results_dir}/celltype/All_Celltype_Assignments.csv',sep='\t',index_col=0)
+    azt = pd.read_csv(f'{args.results_dir}/celltype/All_Celltype_Assignments.tsv',sep='\t',index_col=0)
     ##########################
     # Scrublet
     #########################
