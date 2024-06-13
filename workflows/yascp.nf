@@ -19,6 +19,7 @@ include {MULTIPLET} from "$projectDir/subworkflows/doublet_detection"
 include { SPLIT_CITESEQ_GEX; SPLIT_CITESEQ_GEX as SPLIT_CITESEQ_GEX_FILTERED; SPLIT_CITESEQ_GEX as PREPOCESS_FILES } from '../modules/nf-core/modules/citeseq/main'
 include { GENOTYPE_MATCHER } from "$projectDir/modules/nf-core/modules/vireo/main"
 include { RETRIEVE_RECOURSES } from "$projectDir/subworkflows/local/retrieve_recourses"
+include { PREPROCESS_GENOME } from "$projectDir/modules/nf-core/modules/subset_bam_per_barcodes_and_variants/main"
 /*
 ========================================================================================
     RUN MAIN WORKFLOW
@@ -46,10 +47,12 @@ workflow YASCP {
         }
         if (params.reference_assembly_fasta_dir=='https://yascp.cog.sanger.ac.uk/public/10x_reference_assembly'){
             RETRIEVE_RECOURSES()  
-            genome = RETRIEVE_RECOURSES.out.reference_assembly
+            genome1 = RETRIEVE_RECOURSES.out.reference_assembly
         }else{
-            genome = "${params.reference_assembly_fasta_dir}"
+            genome1 = "${params.reference_assembly_fasta_dir}"
         }
+        genome = PREPROCESS_GENOME(genome1)
+
         // vcf_input.subscribe { println "vcf_input: $it" }
         // ###################################
         // ################################### Readme
@@ -166,7 +169,7 @@ workflow YASCP {
                         scrublet_paths,
                         vcf_input,
                         genome)
-                    vireo_paths = main_deconvolution.out.vireo_paths
+                    vireo_paths = main_deconvolution.out.vireo_paths2
                     matched_donors = main_deconvolution.out.matched_donors
                     ch_poolid_csv_donor_assignments = main_deconvolution.out.ch_poolid_csv_donor_assignments
                     bam_split_channel = main_deconvolution.out.sample_possorted_bam_vireo_donor_ids
@@ -197,7 +200,6 @@ workflow YASCP {
                 assignments_all_pools = Channel.from("$projectDir/assets/fake_file.fq")
 
                 if (params.citeseq){
-                    vireo_paths = Channel.fromPath( "${params.outdir}/deconvolution/vireo/*/vireo_*")
 
                     vireo_paths = params.outdir
                         ? Channel.fromPath("${params.outdir}/deconvolution/vireo/*/vireo_*", checkIfExists:true, type: 'dir')
@@ -205,7 +207,6 @@ workflow YASCP {
 
                     GENOTYPE_MATCHER(vireo_paths.collect())
                     matched_donors = GENOTYPE_MATCHER.out.matched_donors
-                    matched_donors.subscribe { println "matched_donors: $it" }
                 }else{
                     vireo_paths = Channel.from("$projectDir/assets/fake_file.fq")
                     matched_donors = Channel.from("$projectDir/assets/fake_file.fq")

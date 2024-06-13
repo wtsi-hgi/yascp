@@ -23,12 +23,16 @@ process OUTLIER_FILTER {
                 saveAs: {filename ->
                     if (filename.contains("___sample_QCd_adata.h5ad")) {
                         null
-                    } else {
+                    } else if(filename.contains("outlier_filtered_adata.h5ad"))  {
+                        filename = "4.outlier_filtered_adata.h5ad"
+                    }else{
                         filename
                     }
                 },
                 mode: "${params.copy_mode}",
                 overwrite: "true"
+
+
 
     input:
         val(outdir_prev)

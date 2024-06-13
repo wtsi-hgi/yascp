@@ -2,9 +2,28 @@ process CELLTYPE_FILE_MERGE{
     tag "${samplename}"    
     label 'process_medium'
     publishDir  path: "${params.outdir}/celltype/",
-            saveAs: {filename -> filename},
+            saveAs: {filename ->
+                    if (filename.contains("adata.h5ad")) {
+                        null
+                    } else {
+                        filename
+                    }
+                },
             mode: "${params.copy_mode}",
             overwrite: "true"  
+
+    publishDir  path: "${params.outdir}/merged_h5ad/",
+            saveAs: {filename ->
+                    if (filename.contains("adata.h5ad")) {
+                        filename = "2.celltype_anotated_merged.h5ad"
+                    } else {
+                        null
+                    }
+                },
+            mode: "${params.copy_mode}",
+            overwrite: "true"  
+
+
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "https://yascp.cog.sanger.ac.uk/public/singularity_images/wtsihgi_nf_scrna_qc_6bb6af5-2021-12-23-3270149cf265.sif"
         // container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/nf_qc_cluster_2.4.img"

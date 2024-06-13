@@ -96,9 +96,7 @@ process DSB_INTEGRATE{
 
 
     input:
-        path(vireo)
         path(tmp_rsd)
-        path(matched_donors)
         each vars_to_regress
         val(k_anchor)
         val(dims)
@@ -177,6 +175,44 @@ process VDJ_INTEGRATION{
 }
 
 
+process PREPROCESS_PROCESS {
+    label 'process_medium'
+    tag "${sample_name}"
+    if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
+        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/azimuth_dsb_6_03_2024.sif"
+    } else {
+        container "mercury/azimuth_dsb:6_03_2024"
+    }
+
+    publishDir  path: "${params.outdir}/citeseq/DSB/${sample_name}",      
+        saveAs: {filename ->
+        if (filename.contains("tmp_rds_files__")) {
+            null
+        }else {
+            filename
+        }
+      }, mode: "${params.copy_mode}",
+      overwrite: "true"
+
+    input:
+        tuple val(sample_name), path(vireo_path), path(rds_path),path(matched_donors)
+        each vars_to_regress
+
+    output:
+        path("normalised__${sample_name}.withADT.RDS"), emit: tmp_rsd
+
+    script:
+
+
+        if (vars_to_regress == ''){
+            vars_to_regress='NONE'
+        }
+        """
+            2.process_donor_data_for_integration.R ${sample_name} ${vireo_path} ${matched_donors} ${rds_path} ${vars_to_regress}
+        """
+}
+
+
 process DSB_PROCESS {
     label 'process_medium'
     tag "${sample_name}"
@@ -204,6 +240,7 @@ process DSB_PROCESS {
     output:
         path("CITE__*"), emit: citeseq_rsd
         path("tmp_rds_files__*/*/${sample_name}*.RDS"), emit: tmp_rsd
+        tuple val(sample_name), path("tmp_rds_files__*/*/${sample_name}*.RDS"), emit: ch_for_norm
     script:
         """
   
