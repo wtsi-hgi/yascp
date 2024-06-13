@@ -167,7 +167,7 @@ process GENOTYPE_MATCHER{
         matcher.py \
         \$PWD \
         \$PWD \
-        -m 0.4
+        -m 0.9
       """
 
 }

@@ -9,7 +9,7 @@ library("RColorBrewer")
 library(tidyverse)
 library(patchwork)
 library(future)
-options(future.globals.maxSize= 1020971520000)
+# options(future.globals.maxSize= 128849018880)
 if (future::supportsMulticore()) {
   future::plan(future::multicore)
 } else {

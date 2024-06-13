@@ -4,11 +4,17 @@ library(Seurat)
 library(ggplot2)
 library("RColorBrewer")
 library(future)
-options(future.globals.maxSize= 1020971520000)
+options(future.globals.maxSize = 60 * 1024^3)
 args = commandArgs(trailingOnly=TRUE)
-
-args=vector(mode='list', length=6); args[[1]]='FOXP3_G1_BM'; args[[2]]='vireo_FOXP3_G1_BM'; args[[3]]='matched_donors.txt'; args[[4]]='FOXP3_G1_BM.withADT.RDS';args[[5]]= 'NONE'
+# STAT3_A1_BM vireo_STAT3_A1_BM matched_donors.txt STAT3_A1_BM.withADT.RDS NONE
+# args=vector(mode='list', length=6); args[1]='FOXP3_G1_BM'; args[[2]]='vireo_FOXP3_G1_BM'; args[[3]]='matched_donors.txt'; args[[4]]='FOXP3_G1_BM.withADT.RDS';args[[5]]= 'NONE'
 # FOXP3_G1_BM vireo_FOXP3_G1_BM matched_donors.txt FOXP3_G1_BM.withADT.RDS NONE
+sample_name <- 'STAT3_A1_BM'
+vireo_input = 'vireo_STAT3_A1_BM'
+matched_donor_files = 'matched_donors.txt'
+rds_file = 'STAT3_A1_BM.withADT.RDS'
+vars_regress ='NONE'
+
 sample_name = args[1]
 vireo_input = args[2]
 matched_donor_files = args[3]
@@ -71,23 +77,23 @@ sobj@meta.data$donor.vireo <- this_donor_cells[match(paste0(rownames(sobj@meta.d
                                                     paste0(this_donor_cells$cell,
                                                             '_',this_donor_cells$sample)),]$matched.donor
 
-# remove NA values as these are either doublet or unassigned
-sobj <- sobj[,rownames(sobj@meta.data[!is.na(sobj$donor.vireo),])]
+# Subset the Seurat object to exclude donors with NA in donor.vireo
+sobj <- sobj[, rownames(sobj@meta.data[!is.na(sobj$donor.vireo), ])]
 
-# make one seurat object per donor for this pool  
+# Split the Seurat object by donor
 sobj_per_donor <- SplitObject(sobj, split.by = "donor.vireo")
+donors_to_drop <- c()
 
-for(donor in names(sobj_per_donor)){
+for (donor in names(sobj_per_donor)) {
     print(donor)
-    # Regress only percent mito,
-    # because sctransform should already control for read count and n genes
-    # Using glmGamPoi because faster and more robust (see also https://genomebiology.biomedcentral.com/articles/10.1186/s13059-021-02584-9)
-    # return all genes so that more can be used for calculating cell cycle score
-    sobj_per_donor[[donor]] <-SCTransform(sobj_per_donor[[donor]], 
-                        vars.to.regress=vars_to_regress, 
-                        method = "glmGamPoi",
-                        verbose = F, return.only.var.genes = F)
-    # Calculate cell cycle scores
+
+    # SCTransform with glmGamPoi method
+    sobj_per_donor[[donor]] <- SCTransform(sobj_per_donor[[donor]], 
+                                           vars.to.regress = vars_to_regress, 
+                                           method = "glmGamPoi",
+                                           verbose = FALSE, return.only.var.genes = FALSE)
+
+    # Normalize and calculate cell cycle scores
     sobj_per_donor[[donor]] <- CellCycleScoring(
         NormalizeData(sobj_per_donor[[donor]]),
         s.features = cc.genes$s.genes,
@@ -95,14 +101,26 @@ for(donor in names(sobj_per_donor)){
         assay = 'SCT',
         set.ident = TRUE
     )
-    # Calculate and plot PCA on cell cycle genes only first
-    sobj_per_donor[[donor]] <-  RunPCA(sobj_per_donor[[donor]], features = c(cc.genes$s.genes, cc.genes$g2m.genes),verbose=F)
-    p1 <- DimPlot(sobj_per_donor[[donor]])+ggtitle('Before cell cycle correction (cell cycle genes only)')
-    # Then also on all variable genes
-    sobj_per_donor[[donor]] <-  RunPCA(sobj_per_donor[[donor]], dims=1:10,verbose=F)
-    p2 <- DimPlot(sobj_per_donor[[donor]])+ggtitle('Before cell cycle correction (all genes)')
-    sobj_per_donor[[donor]]@project.name <- paste0(sample_name,'-',donor)
+
+    # Run PCA on cell cycle genes
+    sobj_per_donor[[donor]] <- RunPCA(sobj_per_donor[[donor]], features = c(cc.genes$s.genes, cc.genes$g2m.genes), verbose = FALSE)
+    p1 <- DimPlot(sobj_per_donor[[donor]]) + ggtitle('Before cell cycle correction (cell cycle genes only)')
+
+    # Check number of PCs
+    dims2 <- dim(sobj_per_donor[[donor]]@assays$RNA$counts)
+    num_pcs <- min(20, dims2[2] - 1)
+    if (num_pcs < 20) {
+        donors_to_drop <- append(donors_to_drop, donor)
+    }
+
+    # Run PCA on all variable genes
+    sobj_per_donor[[donor]] <- RunPCA(sobj_per_donor[[donor]], dims = 1:10, npcs = 20, verbose = FALSE)
+    p2 <- DimPlot(sobj_per_donor[[donor]]) + ggtitle('Before cell cycle correction (all genes)')
+    sobj_per_donor[[donor]]@project.name <- paste0(sample_name, '-', donor)
 }
 
-saveRDS(sobj_per_donor, file=paste0('normalised__',rds_file))
+# Drop the specified donors
+sobj_per_donor <- sobj_per_donor[!names(sobj_per_donor) %in% donors_to_drop]
 
+# Save the result
+saveRDS(sobj_per_donor, file = paste0('normalised__', rds_file))

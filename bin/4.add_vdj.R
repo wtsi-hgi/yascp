@@ -10,7 +10,7 @@ library(immunarch)
 library("RColorBrewer")
 library('Seurat')
 library(future)
-options(future.globals.maxSize= 1020971520000)
+# options(future.globals.maxSize = 60 * 1024^3)
 if (future::supportsMulticore()) {
   future::plan(future::multicore)
 } else {

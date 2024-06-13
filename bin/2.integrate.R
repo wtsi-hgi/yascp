@@ -11,12 +11,12 @@ library(Seurat)
 library(ggplot2)
 library("RColorBrewer")
 library(future)
-options(future.globals.maxSize= 1020971520000)
-if (future::supportsMulticore()) {
-  future::plan(future::multicore)
-} else {
-  future::plan(future::multisession)
-}
+# options(future.globals.maxSize= 300 * 1024^3)
+# if (future::supportsMulticore()) {
+#   future::plan(future::multicore)
+# } else {
+#   future::plan(future::multisession)
+# }
 future.seed=TRUE
 args = commandArgs(trailingOnly=TRUE)
 
@@ -62,19 +62,31 @@ cite_files <- list.files(pattern='.RDS',
 sobj_list <- list()
 sample_names <- c()
 i <- 1
+i2 <- 1
 for(f in cite_files){
+  i2 <- i2+1
+
   sample_id <- gsub('.withADT|.RDS','',basename(f))
   sample_name <- sample_id
   print(paste0(sample_id,': sample'))
   sobj_per_donor <- readRDS(f)  #// Here we actually dont have the doublets anymore since they were not merged back in the files.
+  # print(sobj_per_donor)
   for(donor in names(sobj_per_donor)){
     print(donor)
+    don = sobj_per_donor[[donor]]
     # Then add this pool-donor seurat object to list so that sobj_list
     # will contain seurat objects for all donors of all pools
-    sobj_list[[i]] <- sobj_per_donor[[donor]]
-    sample_names <- c(sample_names,  paste0(sample_name,'-',donor))
-    i <- i+1
+    # if ("CITE" %in% Assays(don)){
+      sobj_list[[i]] <- don
+      sample_names <- c(sample_names,  paste0(sample_name,'-',donor))     
+      i <- i+1
+    # }else{
+    #   print("CITE assay is not present")
+    # }
   }
+  # if (i2>5){
+  #     break
+  # }
 }
 
 
@@ -117,6 +129,8 @@ integrate_sct <- function(slist, reference_samples, k.anchor=5, dims=30){
                                     reference=reference_sample_index)
   print('Integrate data')
   integrated.sct <- IntegrateData(anchorset = anchors, normalization.method = "SCT", dims = 1:dims)
+  rm(anchors, features)
+  gc() 
   return(integrated.sct)
 }
 
