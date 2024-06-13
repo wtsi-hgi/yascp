@@ -52,6 +52,8 @@ x = 0
 for f in glob.glob(f"{args.cellSNP_dirs}/*/GT_donors.vireo.vcf.gz"):
     x += 1
     print(f)
+    # if x>5:
+    #     break
     if not args.nonverbose:
         print('Reading '+str(f)+'...')
     with gzip.open(f,'rt') as input_file:
@@ -69,6 +71,8 @@ for f in glob.glob(f"{args.cellSNP_dirs}/*/GT_donors.vireo.vcf.gz"):
                 donor_IDs = line[9:]
                 # File is a VCF format so donor IDs can be retrieved from #CHROM line
                 for donor in donor_IDs:
+                    if (donor=='doublet'):
+                        continue
                     # The donor is added to the sample so each sample.donor combination will have a list of genotypes
                     donor_genotypes[name+'<SPLIT>'+donor] = []
                     donors.add(name+'<SPLIT>'+donor)
@@ -83,7 +87,7 @@ for f in glob.glob(f"{args.cellSNP_dirs}/*/GT_donors.vireo.vcf.gz"):
             all_chr_pos.add(chr+'_'+pos)
             for index, donor in enumerate(line[9:]):
                 alleles = donor.split(':')[gt_index]
-                print(alleles)
+                # print(alleles)
                 # for later comparison reasons, encode the alleles as dosages
                 if alleles == '1/0':
                     genotype = 1

@@ -26,7 +26,7 @@ cols <- myPallette(10)
 
 #### set up directories, colors paths, read data ####
 data_dir <- './'
-# args = list()
+# args = list() 
 # args[1]='figures__regress__pct_counts_gene_group__mito_transcript'
 # args[2]='out'
 # args[3] ='tmp_rds_files'

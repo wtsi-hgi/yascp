@@ -12,11 +12,11 @@ process MERGE_GENOTYPES_IN_ONE_VCF_IDX_PAN{
     }
 
     input:
-       tuple val(panel), path(vireo_gt_vcf), path(vireo_gt_vcf_csi)
+       tuple val(panel), path(vireo_gt_vcf), path(vireo_gt_vcf_csi),path(barcodes)
        val(mode)
 
     output:
-       tuple  val(pn1), path("${mode}.${panel}.vcf.gz"),path("${mode}.${panel}.vcf.gz.csi"), emit: gt_pool
+       tuple  val(pn1), path("${mode}.${panel}.vcf.gz"),path("${mode}.${panel}.vcf.gz.csi"),path(barcodes), emit: gt_pool
       //  path("${mode}.${panel}.vcf.gz"), emit: study_merged_vcf optional true
       // here we want to make it look like its a vireo output file
     script:
@@ -44,8 +44,27 @@ process MERGE_GENOTYPES_IN_ONE_VCF_FREEBAYES{
 
     label 'process_medium'
     publishDir  path: "${params.outdir}/${mode}_genotypes",
+              saveAs: {filename ->
+                    if (filename.endsWith("vireo_${panel}")) {
+                        null
+                    } else{
+                        filename
+                    }
+                },
           mode: "${params.copy_mode}",
           overwrite: "true"
+
+    publishDir  path: "${params.outdir}/deconvolution/vireo",
+          saveAs: {filename ->
+                    if (filename.endsWith("vireo_${panel}")) {
+                        filename
+                    } else{
+                        null
+                    }
+                },
+          mode: "${params.copy_mode}",
+          overwrite: "true"
+    
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         // println "container: /software/hgi/containers/wtsihgi-nf_genotype_match-1.0.sif\n"
         container "https://yascp.cog.sanger.ac.uk/public/singularity_images/wtsihgi-nf_yascp_htstools-1.1.sif"
@@ -54,7 +73,7 @@ process MERGE_GENOTYPES_IN_ONE_VCF_FREEBAYES{
     }
 
     input:
-       tuple val(panel), path(vireo_gt_vcf), path(vireo_gt_vcf_csi)
+       tuple val(panel), path(vireo_gt_vcf), path(vireo_gt_vcf_csi),path(barcodes)
        val(mode)
 
     output:
@@ -77,9 +96,9 @@ process MERGE_GENOTYPES_IN_ONE_VCF_FREEBAYES{
         bcftools index ${mode}.${panel}.vcf.gz
       fi
 
-
+      process_barcodes.sh
       mkdir vireo_${panel}
-      cd vireo_${panel} && ln -s ../${mode}.${panel}.vcf.gz ./GT_donors.vireo.vcf.gz
+      cd vireo_${panel} && ln -s ../${mode}.${panel}.vcf.gz ./GT_donors.vireo.vcf.gz && mv ../donor_ids.tsv ./
     """
 
 }

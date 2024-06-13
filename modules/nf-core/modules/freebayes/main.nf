@@ -13,7 +13,7 @@ process FREEBAYES {
         path(genome)
     output:
         tuple val(sample), path("${sample}.${donor}.reg${region}__vcf_freebayes_output_2.vcf.gz"), emit:freebayes_vcf
-        tuple val("${sample}.${donor}"), path("${sample}.${donor}.reg${region}__vcf_freebayes_output_2.vcf.gz"),path("${sample}.${donor}.reg${region}__vcf_freebayes_output_2.vcf.gz.csi"), emit: gt_pool
+        tuple val("${sample}.${donor}"), path("${sample}.${donor}.reg${region}__vcf_freebayes_output_2.vcf.gz"),path("${sample}.${donor}.reg${region}__vcf_freebayes_output_2.vcf.gz.csi"),path(barcodes), emit: gt_pool
 
     script:
         """

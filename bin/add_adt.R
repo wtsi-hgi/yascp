@@ -24,8 +24,8 @@ if (future::supportsMulticore()) {
 } else {
   future::plan(future::multisession)
 }
-# args=vector(mode='list', length=6); args[[1]]='LDP58'; args[[2]]='raw_feature_bc_matrix'; args[[3]]='filtered_feature_bc_matrix'; args[[4]]='LDP58___sample_QCd_adata.h5ad'
-   
+# args=vector(mode='list', length=6); args[[1]]='STAT3_A1_BM'; args[[2]]='raw_feature_bc_matrix'; args[[3]]='filtered_feature_bc_matrix'; args[[4]]='STAT3_A1_BM___sample_QCd_adata.h5ad'
+  #  STAT3_A1_BM raw_feature_bc_matrix filtered_feature_bc_matrix STAT3_A1_BM___sample_QCd_adata.h5ad
 #####
 args = commandArgs(trailingOnly=TRUE)
 #### set up directories, colors paths ####
@@ -47,10 +47,10 @@ outdir <- getwd()
 # filtered_feature_file = cellranger_filepath = args[2]
 #    
 # filtered_cellranger = '/lustre/scratch123/hgi/teams/hgi/mo11/tmp_projects/jaguar_yascp/nieks_pipeline/fetch/results_old/cellranger_data/cellranger700_multi_bc45a1c2fe2a3fbbcde46cf984cf42e2/per_sample_outs/cellranger700_multi_bc45a1c2fe2a3fbbcde46cf984cf42e2/count/sample_filtered_feature_bc_matrix.h5'
-sample_name <- 'LDP58'
+sample_name <- 'LDP69'
 cellranger_rawfile_path <- 'raw_feature_bc_matrix'
 filtered_cellranger = 'filtered_feature_bc_matrix'
-file_with_qc_applied = 'LDP58___sample_QCd_adata.h5ad'
+file_with_qc_applied = 'LDP69___sample_QCd_adata.h5ad'
 sample_name <- args[1]
 cellranger_rawfile_path <- args[2]
 filtered_cellranger = args[3][1]
@@ -214,7 +214,11 @@ Convert(
   
   # remove barcodes with no evidence of capture in the experiment
   md = md[md$rna.size > 0 & md$prot.size > 0, ]
-  
+  if(dim(md)[1]<1){
+    print(paste0(sample_name,' CITE assay hasnt captured anything'))
+    quit() 
+  }
+  print(paste0(sample_name,' has CITE assay and its also expressed, start processing'))
   # Set minimum and maximum protein levels and rnaseq level that will be used as
   # background. Any droplet with
   #   min_prot_size < droplet < max_prot_size & droplet < rna_size
@@ -239,7 +243,7 @@ Convert(
     ylab('log10(total RNA count')+
     theme(legend.position='right')
   ggsave(paste0(cite_data_dir,sample_name,'.background-vs-cell.pdf'),
-         width=6, height=3)
+         width=6, height=2)
 
   # Set the background drops with above thresholds
   background_drops = rownames(
@@ -297,4 +301,10 @@ Convert(
     ScaleData(verbose=F) %>% FindVariableFeatures(verbose=F) %>% RunPCA(verbose=F)
   DefaultAssay(qced_cells) <- current_assay
 
+  saveRDS(cells.dsb.norm$dsb_normalized_matrix,file=paste0(cite_data_dir,'/',sample_name,'.DSB_norm_matrix.RDS'))
+  matrix_dsb = as.data.frame(t(as.matrix(cells.dsb.norm$dsb_normalized_matrix)))
+  saveRDS(prot_qced_cells,file=paste0(cite_data_dir,'/',sample_name,'.matrix.RDS'))
+  matrix_dsb = as.data.frame(t(as.matrix(prot_qced_cells)))
+  rownames(matrix_dsb) = paste0(rownames(matrix_dsb), "-",sample_name)
+  write.csv(matrix_dsb,file=paste0(cite_data_dir,'/',sample_name,'.matrix.csv'))
   saveRDS(qced_cells, file=cite_file)

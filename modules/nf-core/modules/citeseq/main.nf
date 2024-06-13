@@ -195,8 +195,7 @@ process PREPROCESS_PROCESS {
       overwrite: "true"
 
     input:
-        tuple val(sample_name), path(vireo_path), path(rds_path)
-        path(matched_donors)
+        tuple val(sample_name), path(vireo_path), path(rds_path),path(matched_donors)
         each vars_to_regress
 
     output:
@@ -244,7 +243,7 @@ process DSB_PROCESS {
         tuple val(sample_name), path("tmp_rds_files__*/*/${sample_name}*.RDS"), emit: ch_for_norm
     script:
         """
-  
+   
             add_adt.R ${sample_name} ${cellranger_rawfile_path} ${filtered_feature_bc_matrix} ${sample_QCd_adata}
         """
 }
