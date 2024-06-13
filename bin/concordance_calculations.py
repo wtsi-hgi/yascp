@@ -1119,8 +1119,12 @@ class Donor(Concordances):
         # Cells_to_keep_pre = Cells_to_keep_pre[:13]
         list_df = [Cells_to_keep_pre[i:i+n] for i in range(0,len(Cells_to_keep_pre),n)]
         # results = []
+        i=0
         for chunk_df in list_df:
+            if i>2:
+                continue
             pool.apply_async(self.analyse_cells,args =([chunk_df,exclusive_cell_variants,expected_vars_norm,donor_gt_match,vars_per_donor_gt,donor_cohorts,all_donor_data,donor_assignments_table,donor_gt_match_cohort]),callback=self.combine_results)
+            i+=1
             # results.append(result)
         # while True:
         #     time.sleep(1)

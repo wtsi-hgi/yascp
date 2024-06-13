@@ -205,7 +205,13 @@ process VIREO {
       tuple val(samplename), path("sub_${samplename}_Expected.vcf.gz"), emit: exp_sub_gt optional true
     script:
       vcf_file = ""
-      if (params.genotype_input.vireo_with_gt){
+      if (donors_gt_vcf.empty){
+         vcf = ""
+         vcf_file = donors_gt_vcf
+         com2 = ""
+         subset=""
+         reference_expansion_with_piled_up_positions = ""
+      }else{
         vcf = " -d sub_${samplename}_Expected.vcf.gz --forceLearnGT"
         subset = "bcftools view ${donors_gt_vcf} -R ${cell_data}/cellSNP.cells.vcf.gz -Oz -o sub_${samplename}_Expected.vcf.gz"
         vcf_file = donors_gt_vcf
@@ -213,12 +219,6 @@ process VIREO {
         com2 = ""
         // We need to make sure that the genotyes are only informative and not limmiting - for this reason we add in a subset all the variat sites that vireo currently doesnt contain.
         reference_expansion_with_piled_up_positions = "bcftools view ${cell_data}/cellSNP.cells.vcf.gz -G -Oz -o cellsp_piled_up_sites.vcf.gz && bcftools sort cellsp_piled_up_sites.vcf.gz -Oz -o cellsp_piled_up_sites_srt.vcf.gz && bcftools index cellsp_piled_up_sites_srt.vcf.gz && bcftools index sub_${samplename}_Expected.vcf.gz && bcftools merge cellsp_piled_up_sites_srt.vcf.gz sub_${samplename}_Expected.vcf.gz -Oz -o sub_Expected.vcf.gz"
-      }else{
-         vcf = ""
-         vcf_file = donors_gt_vcf
-         com2 = ""
-         subset=""
-         reference_expansion_with_piled_up_positions = ""
       }
 
     """
@@ -257,24 +257,16 @@ process POSTPROCESS_SUMMARY{
 
 process CAPTURE_VIREO{
   label 'process_tiny'
-  publishDir "${params.outdir}/deconvolution/vireo/",  mode: "${params.copy_mode}", overwrite: true
+  publishDir "${params.outdir}/deconvolution/vireo/",  mode: "${params.copy_mode}", overwrite: true,
+  saveAs: {filename -> filename.replaceFirst("vireo_/","") }
 
   input:
     path(vireo_location)
    
   output:
-    // tuple val(pool_id), path("${vireo_fixed_vcf}"), path("${vireo_fixed_vcf}.tbi"), emit: gt_pool
-    // path("output_vireo.csv"),emit:vireo_loc
-    path("${vireo_location}/*/vireo_*"), emit: output_dir
-    path("${vireo_location}/*/vireo_*"), emit: output_dir2
-      // tuple val(samplename), path("vireo_${samplename}"), emit: output_dir_subsampling
-      // tuple val(samplename), path("vireo_${samplename}/donor_ids.tsv"), emit: sample_donor_ids
-      // tuple val(samplename), path("vireo_${samplename}/GT_donors.vireo.vcf.gz"), path(vcf_file),path(donor_gt_csi), emit: sample_donor_vcf
-      // tuple val(samplename), path("vireo_${samplename}/GT_donors.vireo.vcf.gz"), emit: infered_vcf
-      // path("vireo_${samplename}/${samplename}.sample_summary.txt"), emit: sample_summary_tsv
-      // path("vireo_${samplename}/${samplename}__exp.sample_summary.txt"), emit: sample__exp_summary_tsv
-      // tuple  val(samplename), path("vireo_${samplename}/GT_donors.vireo.vcf.gz"), path("vireo_${samplename}/${samplename}.sample_summary.txt"),path("vireo_${samplename}/${samplename}__exp.sample_summary.txt"),path("vireo_${samplename}/donor_ids.tsv"),path(vcf_file),path(donor_gt_csi), emit: all_required_data
-      // tuple val(samplename), path("sub_${samplename}_Expected.vcf.gz"), emit: exp_sub_gt optional true
+    path("${vireo_location}/*/vireo_*"), emit: output_dir optional true
+    path("${vireo_location}/*/vireo_*"), emit: output_dir2  optional true
+
   script:
   """
 

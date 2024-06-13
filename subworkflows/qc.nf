@@ -14,6 +14,7 @@ include {UMAP; UMAP as UMAP_HARMONY; UMAP as UMAP_BBKNN;} from "$projectDir/modu
 include {CLUSTERING; CLUSTERING as CLUSTERING_HARMONY; CLUSTERING as CLUSTERING_BBKNN;} from "$projectDir/modules/nf-core/modules/clustering/main"
 include {CELL_HARD_FILTERS} from "$projectDir/modules/nf-core/modules/cell_hard_filters/main"
 include {DONT_INTEGRATE} from "$projectDir/modules/nf-core/modules/reduce_dims/main"
+include {TOTAL_VI_INTEGRATION} from "$projectDir/modules/nf-core/modules/totalVi/main"
 include { DSB_PROCESS; PREPROCESS_PROCESS; DSB_INTEGRATE; MULTIMODAL_INTEGRATION; VDJ_INTEGRATION } from '../modules/nf-core/modules/citeseq/main'
 
 workflow qc {
@@ -81,11 +82,19 @@ workflow qc {
                 params.reduced_dims.vars_to_regress.value
             )
 
+
+
             if (params.citeseq){
                 log.info """---Integrating data using Seurat integration method----"""
                 NORMALISE_AND_PCA.out.sample_QCd_adata.flatten().map{sample -> tuple("${sample}".replaceFirst(/___sample_QCd_adata.h5ad/,"").replaceFirst(/.*\//,""),sample)}.set{alt_input}
                 channel_dsb2 = channel_dsb.combine(alt_input, by: 0)
                 DSB_PROCESS(channel_dsb2)
+
+
+                if(params.totalVi.run_process){
+                    TOTAL_VI_INTEGRATION(NORMALISE_AND_PCA.out.anndata,DSB_PROCESS.out.citeseq_rsd.collect())
+                }
+
 
                 DSB_PROCESS.out.ch_for_norm.subscribe { println "1:: DSB_PROCESS.out.ch_for_norm: $it" }
                 
@@ -173,6 +182,9 @@ workflow qc {
         } else {
             channel__cluster__known_markers = tuple('', '')
         }
+
+
+
 
         // "Correct" PCs using Harmony or BBKNN
         if (params.harmony.run_process) {

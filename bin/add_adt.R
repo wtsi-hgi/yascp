@@ -47,10 +47,10 @@ outdir <- getwd()
 # filtered_feature_file = cellranger_filepath = args[2]
 #    
 # filtered_cellranger = '/lustre/scratch123/hgi/teams/hgi/mo11/tmp_projects/jaguar_yascp/nieks_pipeline/fetch/results_old/cellranger_data/cellranger700_multi_bc45a1c2fe2a3fbbcde46cf984cf42e2/per_sample_outs/cellranger700_multi_bc45a1c2fe2a3fbbcde46cf984cf42e2/count/sample_filtered_feature_bc_matrix.h5'
-sample_name <- 'STAT3_A1_T'
+sample_name <- 'LDP69'
 cellranger_rawfile_path <- 'raw_feature_bc_matrix'
 filtered_cellranger = 'filtered_feature_bc_matrix'
-file_with_qc_applied = 'STAT3_A1_T___sample_QCd_adata.h5ad'
+file_with_qc_applied = 'LDP69___sample_QCd_adata.h5ad'
 sample_name <- args[1]
 cellranger_rawfile_path <- args[2]
 filtered_cellranger = args[3][1]
@@ -243,7 +243,7 @@ Convert(
     ylab('log10(total RNA count')+
     theme(legend.position='right')
   ggsave(paste0(cite_data_dir,sample_name,'.background-vs-cell.pdf'),
-         width=2, height=1)
+         width=6, height=2)
 
   # Set the background drops with above thresholds
   background_drops = rownames(
@@ -301,4 +301,10 @@ Convert(
     ScaleData(verbose=F) %>% FindVariableFeatures(verbose=F) %>% RunPCA(verbose=F)
   DefaultAssay(qced_cells) <- current_assay
 
+  saveRDS(cells.dsb.norm$dsb_normalized_matrix,file=paste0(cite_data_dir,'/',sample_name,'.DSB_norm_matrix.RDS'))
+  matrix_dsb = as.data.frame(t(as.matrix(cells.dsb.norm$dsb_normalized_matrix)))
+  saveRDS(prot_qced_cells,file=paste0(cite_data_dir,'/',sample_name,'.matrix.RDS'))
+  matrix_dsb = as.data.frame(t(as.matrix(prot_qced_cells)))
+  rownames(matrix_dsb) = paste0(rownames(matrix_dsb), "-",sample_name)
+  write.csv(matrix_dsb,file=paste0(cite_data_dir,'/',sample_name,'.matrix.csv'))
   saveRDS(qced_cells, file=cite_file)

@@ -27,7 +27,7 @@ workflow match_genotypes {
     cellsnp_cell_vcfs2
     cell_assignments
     subsampling_donor_swap
-    informative_uninformative_sitesFREPLA
+    informative_uninformative_sites
   main:
 
        

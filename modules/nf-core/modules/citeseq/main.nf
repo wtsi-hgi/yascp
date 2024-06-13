@@ -243,7 +243,7 @@ process DSB_PROCESS {
         tuple val(sample_name), path("tmp_rds_files__*/*/${sample_name}*.RDS"), emit: ch_for_norm
     script:
         """
-  
+   
             add_adt.R ${sample_name} ${cellranger_rawfile_path} ${filtered_feature_bc_matrix} ${sample_QCd_adata}
         """
 }

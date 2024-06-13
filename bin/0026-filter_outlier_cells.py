@@ -445,7 +445,7 @@ def main():
         
         for outlier_filtering_strategy in outlier_filtering_strategys:
             metadata_columns = metadata_columns_original.copy()
-            if method == 'IsolationForest':
+            if method == 'IsolationForest' and outlier_filtering_strategy == 'all_together':
                 if outlier_filtering_strategy == 'all_together':
                     cell_qc_column = options.cell_qc_column
                     cell_qc_column_score = options.cell_qc_column+':score'
@@ -455,14 +455,11 @@ def main():
             else:
                 cell_qc_column = f'{options.cell_qc_column}-{nmethod}-per:{outlier_filtering_strategy}'
                 cell_qc_column_score = f'{options.cell_qc_column}-{nmethod}-per:{outlier_filtering_strategy}:score' 
-                           
+            metadata_columns.append(cell_qc_column)               
             if (outlier_filtering_strategy == 'all_together'):
 
                 adata.obs[cell_qc_column] = True
                 adata.obs[cell_qc_column_score] = None
-                       
-                metadata_columns.append(cell_qc_column)
-                
                 prediction_score, fail_pass = perform_adaptiveQC_Filtering(clf,adata,method,metadata_columns)
                 adata.obs[cell_qc_column] = fail_pass
                 adata.obs[cell_qc_column_score] = prediction_score
@@ -565,7 +562,7 @@ def main():
             
             generate_plots(adata,cell_qc_column,metadata_columns,metadata_columns_original,options.of)
 
-
+    
     adata.write(
         '{}.h5ad'.format(options.of),
         compression='gzip',
