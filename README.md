@@ -3,6 +3,9 @@
 </p>
 
 ## Introduction
+<p align="center">
+  <img src="https://github.com/wtsi-hgi/yascp/blob/main/assets/images/yascp_workflow.png" width="100%"/>
+</p>
 
 **nf-core/yascp** is a bioinformatics best-practice analysis pipeline tailored for robuts donor deconvolutions, doublet detections, celltype assignemts, quality control, integration, clustering of single-cell datasets.  YASCP enhances productivity by automating data preprocessing, quality control, and advanced analyses, ensuring high-quality results with minimal manual intervention. All you have to prepeare is a simple tsv file indicating the number of donors in pools and the path to cellrange folder:
 
@@ -76,9 +79,6 @@ Pipeline has a modular design ensuring that the bits and piecies can be run inde
 15. Citeseq DSB normalisations, 
 16. Cell genotype concordance Calculations
 
-<p align="center">
-  <img src="https://github.com/wtsi-hgi/yascp/blob/main/assets/images/yascp_workflow.png" width="100%"/>
-</p>
 
 You can run pipeline blocks independently:
 
