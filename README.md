@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://github.com/wtsi-hgi/yascp/blob/main/assets/images/YASCP_Logo.png" width="80%"/>
+  <img src="assets/images/YASCP_Logo.png" width="50%"/>
 </p>
 
 ## Introduction
