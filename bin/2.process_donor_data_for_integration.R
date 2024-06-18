@@ -108,13 +108,13 @@ for (donor in names(sobj_per_donor)) {
 
     # Check number of PCs
     dims2 <- dim(sobj_per_donor[[donor]]@assays$RNA$counts)
-    num_pcs <- min(20, dims2[2] - 1)
-    if (num_pcs < 20) {
+    num_pcs <- min(50, dims2[2] - 1)
+    if (num_pcs < 50) {
         donors_to_drop <- append(donors_to_drop, donor)
     }
 
     # Run PCA on all variable genes
-    sobj_per_donor[[donor]] <- RunPCA(sobj_per_donor[[donor]], dims = 1:10, npcs = 20, verbose = FALSE)
+    sobj_per_donor[[donor]] <- RunPCA(sobj_per_donor[[donor]], dims = 1:10, npcs = num_pcs, verbose = FALSE)
     p2 <- DimPlot(sobj_per_donor[[donor]]) + ggtitle('Before cell cycle correction (all genes)')
     sobj_per_donor[[donor]]@project.name <- paste0(sample_name, '-', donor)
 }

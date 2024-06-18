@@ -75,8 +75,7 @@ process DSB {
         """
 }
 
-process DSB_INTEGRATE{
-
+process COMBINE_INTEGRATIONS{
     label 'process_medium'
     tag "${sample_name}"
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
@@ -91,6 +90,36 @@ process DSB_INTEGRATE{
     output:
         // path("out"), emit: outdir
         path("*all_samples_integrated.RDS"), emit: tmp_rds_file
+
+    input:
+        path(rds_files)
+
+    script:
+
+        """
+        echo 'running1'
+        2.combine.R
+        """
+
+}
+
+
+process DSB_INTEGRATE{
+
+    label 'process_high'
+    tag "${sample_name}"
+    if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
+        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/azimuth_dsb_6_03_2024.sif"
+    } else {
+        container "mercury/azimuth_dsb:6_03_2024"
+    }
+
+    publishDir  path: "${params.outdir}/citeseq/all_data_integrated", mode: "${params.copy_mode}",
+      overwrite: "true"
+    
+    output:
+        // path("out"), emit: outdir
+        path("*__integration_*.RDS"), emit: tmp_rds_file
         path("figures__*/*"), emit: figs
         
 
@@ -103,6 +132,7 @@ process DSB_INTEGRATE{
         val(ndim_sct)
         val(ndim_citeBgRemoved)
         val(ndim_cite_integrated)
+        val(method)
     script:
 
         if (vars_to_regress == ''){
@@ -111,7 +141,7 @@ process DSB_INTEGRATE{
         
         """
         echo 'running1'
-        2.integrate.R ${vars_to_regress} ${k_anchor} ${dims} ${ndim_sct} ${ndim_citeBgRemoved} ${ndim_cite_integrated}
+        2.integrate.R ${vars_to_regress} ${k_anchor} ${dims} ${ndim_sct} ${ndim_citeBgRemoved} ${ndim_cite_integrated} ${method}
         """
 
 }

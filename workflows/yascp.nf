@@ -201,10 +201,16 @@ workflow YASCP {
 
                 if (params.citeseq){
 
-                    vireo_paths = params.outdir
-                        ? Channel.fromPath("${params.outdir}/deconvolution/vireo/*/vireo_*", checkIfExists:true, type: 'dir')
-                        : Channel.fromPath("${launchDir}/${params.outdir}/deconvolution/vireo/*/vireo_*", type: 'dir')
-
+                    // vireo_paths1 = params.outdir
+                    //     ? Channel.fromPath("${params.outdir}/deconvolution/vireo/*/vireo_*", checkIfExists:true, type: 'dir')
+                    //     : Channel.fromPath("${launchDir}/${params.outdir}/deconvolution/vireo/*/vireo_*", checkIfExists:true, type: 'dir')
+                    vireo_paths2 = params.outdir
+                        ? Channel.fromPath("${params.outdir}/deconvolution/vireo/vireo_*", checkIfExists:true, type: 'dir')
+                        : Channel.fromPath("${launchDir}/${params.outdir}/deconvolution/vireo/vireo_*", checkIfExists:true, type: 'dir')
+                    vireo_paths3 = params.outdir
+                        ? Channel.fromPath("${params.outdir}/deconvolution/vireo/*/*/vireo_*", checkIfExists:true, type: 'dir')
+                        : Channel.fromPath("${launchDir}/${params.outdir}/deconvolution/vireo/*/*/vireo_*", checkIfExists:true, type: 'dir')
+                    vireo_paths = vireo_paths3.mix(vireo_paths2)//.mix(vireo_paths3)
                     GENOTYPE_MATCHER(vireo_paths.collect())
                     matched_donors = GENOTYPE_MATCHER.out.matched_donors
                 }else{
