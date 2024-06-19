@@ -9,9 +9,16 @@
 <summary><b>Sanger Specific Exacution (you dont have to clone the repo):</b></summary>
 
 * In Sanger you do not need to set up anything. All you need is an input file:
+  
+  Test dataset run:
+    ```
+      module load HGI/pipelines/yascp/1.6.1
+      yascp -c input.nf
   ```
-      module load HGI/pipelines/yascp/1.5
-      yascp clean -c input.nf
+  Your own dataset run:
+  ```
+      module load HGI/pipelines/yascp/1.6.1
+      yascp -c input.nf
   ```
 
 </details>
