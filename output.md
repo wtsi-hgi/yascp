@@ -197,6 +197,7 @@ Performs cellype assignment using celltypist Imule Low and Imune High profiles (
 #### [Keras celltype transfer](#Keras) - This is utilising pretrained reference panels for celltype assignment - curently only works in Sanger.
 
 #### Combined File - A combined Celltypes file is produced by pipeline where all different references are combined in one spreadsheet.:
+* Output:
 
     * ![Screenshot 2024-04-10 at 16 57 28](https://github.com/wtsi-hgi/yascp/assets/22347136/56436a16-fca4-4c4c-a95a-ec399825ccdb)
 
