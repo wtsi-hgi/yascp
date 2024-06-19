@@ -65,6 +65,7 @@ Cellsnp profiles each of the droplets for the variants in them, which is later u
 <details markdown="1">
 <summary>Cellsnp Output files:</summary>
 
+* Output:
     * ![Screenshot 2024-04-10 at 16 52 31](https://github.com/wtsi-hgi/yascp/assets/22347136/63c5c540-2082-4e1e-ad9e-c931c92ce300)
 
 </details>
@@ -73,6 +74,8 @@ Cellsnp profiles each of the droplets for the variants in them, which is later u
 Vireo takes the cellsnp variant pileups and assigns donors the particular cell to the donor cluster:
 <details markdown="1">
 <summary>Vireo Output files:</summary>
+
+* Output:
     * ![Screenshot 2024-04-10 at 16 52 58](https://github.com/wtsi-hgi/yascp/assets/22347136/c58cdc11-f674-494e-870e-81576fe7765e)
 
 </details>
