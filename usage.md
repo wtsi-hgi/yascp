@@ -1,13 +1,20 @@
 # nf-core/yascp: Usage
 <!-- TODO nf-core: Add documentation about anything specific to running your pipeline. For general topics, please point to (and add to) the main nf-core website. -->
 ## Installation
-YASCP requires 
-[Nextflow](https://www.nextflow.io/)
 
-and one of the container platforms
-[Docker](https://docker.com/) or [Singularity](https://sylabs.io/)
+<details markdown="1">
+<summary><b>Sanger-Specific installation:</b></summary>
+If you are working on Sanger FARM, you only need to load the module HGI/pipelines/yascp/1.6.1 and you are ready to run the pipeline (see Sanger-Specific Execution) 
 
-You only need to clone the repository:
+</details>
+
+
+1. Install [`Nextflow`](https://www.nextflow.io/docs/latest/getstarted.html#installation) (`>=21.04.0`)
+
+2. Install any of [`Docker`](https://docs.docker.com/engine/installation/), [`Singularity`](https://www.sylabs.io/guides/3.0/user-guide/)for full pipeline reproducibility.
+
+3. Download/clone the pipeline:
+
 ```console
     git clone https://github.com/wtsi-hgi/yascp.git
 ```
@@ -15,8 +22,8 @@ The YASCP pipeline is ready to run.
 
 ## Running the pipeline
 
-<details markdown="1">
-<summary><b>Sanger-Specific Execution (you don't need to set up anything):</b></summary>
+<details markdown="2">
+<summary><b>Sanger-Specific Execution:</b></summary>
 
 
   Test dataset run:
@@ -36,15 +43,12 @@ To run the whole pipeline use the next commands:
 
 For a test dataset run:
 ```console
-   nextflow run /path/to/cloned/yascp -profile sanger,test,singularity
+   nextflow run /path/to/cloned/yascp -profile test,<docker/singularity,institute>
 ```
 For your dataset run:
 ```console
-   nextflow run /path/to/cloned/yascp -profile sanger,singularity -c inputs.nf -resume
+   nextflow run /path/to/cloned/yascp -profile <docker/singularity,institute> -c inputs.nf -resume
 ```
-
-These commands will launch the pipeline with the `sanger` configuration profile. Instead of the sanger profile please select your institution profile - the available profiles are here: https://github.com/nf-core/configs/tree/master/conf .
-More information about profiles is bellow.
 
 ## Core Nextflow arguments
 
@@ -54,7 +58,7 @@ More information about profiles is bellow.
 
 Use this parameter to choose a configuration profile. Profiles can give configuration presets for different computing environments.
 
-Several generic profiles are bundled with the pipeline which instruct the pipeline to use software packaged using different methods (Docker, Singularity, Podman, Shifter, Charliecloud, Conda) - see below. When using Biocontainers, most of these software packaging methods pull Docker containers from quay.io e.g
+Several generic profiles are bundled with the pipeline which instruct the pipeline to use software packaged using different methods (Docker, Singularity) - see below. When using Biocontainers, most of these software packaging methods pull Docker containers from quay.io e.g
  <!-- [FastQC](https://quay.io/repository/biocontainers/fastqc) except for Singularity which directly downloads Singularity images via https hosted by the [Galaxy project](https://depot.galaxyproject.org/singularity/) and Conda which downloads and installs software locally from [Bioconda](https://bioconda.github.io/). -->
 
 > You will need to use Docker or Singularity containers for full pipeline reproducibility as currently, we do not support Conda.
@@ -73,8 +77,11 @@ If `-profile` is not specified, the pipeline will run locally and expect all sof
 * `test`
     * A profile with a complete configuration for automated testing
     * Includes links to test data so needs no other parameters
-
-```#COMMENT what about institute profiles?```
+* `institute`
+    * A profile with a complete configuration for your institute resources
+    * To use your institution profile, replace `institute` with your institution profile name
+    * Many institutions provide profiles (look for yours https://github.com/nf-core/configs/tree/master/conf)
+    * If there is no profile for your institution you can create your configure file and specify it using `-c`
 
 ### `-resume`
 
@@ -85,40 +92,40 @@ You can also supply a run name to resume a specific run: `-resume [run-name]`. U
 
 Specify the path to a specific config file (this is a core Nextflow command). See the [nf-core website documentation](https://nf-co.re/usage/configuration) for more information.
 
-## Input declaration config file
-An [example samplesheet](../sample_input/inputs.nf) has been provided with the pipeline.
+## Input declaration config file (input.nf)
 
-Since we have multiple inputs in the pipeline we point to each of them in a sample config file. There are multiple required/optional inputs that are described below.
+This file specifies all inputs to the pipeline and general pipeline parameters.
+
+Multiple required/optional inputs are described below. Also, an example input declaration file has been provided with the pipeline [example samplesheet](../sample_input/inputs.nf).
 
 ```console
 params {
-    extra_metadata = '/path/to/extra_metadata.tsv'   //Sometimes users may want to merge extra known metadata for a pool in the h5ad files prior to qc
+    //REQUIRED parameters
+    input_data_table = '/path/to/input.tsv' //This points to all the cellranger files and pool definition files.
 
-    extra_sample_metadata ="/path/to/donor_extra_metadata.tsv"  //Sometimes users may want to merge extra known metadata for a donor within pool prior to qc
+    split_ad_per_bach=true //Decide whether cell type assignment is run on the full dataset together (false) or per batch (true)
 
-    input_data_table = '/lustre/scratch123/hgi/teams/hgi/mo11/tmp_projects/OneK1k/onek1k_test_dataset/input.tsv' //Required!! This points to all the cellranger files and pool definition files.
+    //OPTIONAL parameters
+    extra_metadata = '/path/to/extra_metadata.tsv'   //Sometimes users may want to merge extra known metadata for a pool in the h5ad files prior to QC
 
-    split_ad_per_bach=true //if not splitting the celltype assignment will be run on full dataset together
-    //cellbender_location='/path/to/existing/folder/nf-preprocessing/cellbender' //!!!!! uncoment and change path if already have results - if cellbender is run already then can skip this by selecting  input = 'existing_cellbender' instead input = 'cellbender'
+    extra_sample_metadata ='/path/to/donor_extra_metadata.tsv'  //Sometimes users may want to merge extra known metadata for a donor within a pool prior to QC
 
-    existing_cellsnp="" // if we have run cellsnp before we can skip this process by letting yascp capture the files
+
+    //cellbender_location='/path/to/existing/folder/nf-preprocessing/cellbender' //!!!!! Uncomment this and edit the path, if cellbender results are already available then can skip this by selecting  input = 'existing_cellbender' instead input = 'cellbender'
+
+    existing_cellsnp="" // if cellsnp results are already available, provide a path to the files to skip cellsnp step
 
     genotype_input {
         run_with_genotype_input=true //if false do not need the genotype_input parameters.
-        vireo_with_gt=false // Vireo is capable in runing both with genotypes and without. Here we define in which mode we want to run it.
-        posterior_assignment = false //if this is set to true, we will perform the genotype donor matching after the deconvolution is performed.
-        subset_genotypes = false
-        tsv_donor_panel_vcfs = "/path/to/reference/panel/vcf_inputs.tsv" //this is a panel of vcf files that we want to compar the genotypes with
+        vireo_with_gt=false // Define whether Vireo is run with a priori known genotypes (true) or not (false)
+        posterior_assignment = false //if this is set to true, and a priori known genotypes are provided, after deconvolution the genotypes will be matched to Vireo-detected donors
+        subset_genotypes = false // description???
+        tsv_donor_panel_vcfs = "/path/to/reference/panel/vcf_inputs.tsv" //this is a panel of vcf files with a priori known genotypes that we want to compare the genotypes with
     }
 }
 
 
 ```
-
-This input.nf file will be provided when the pipeline is executed:
-    ```
-    nextflow run /path/to/cloned/nfCore_scRNA -profile sanger -resume -c input.nf
-    ```
 
 ## Samplesheet input
 An [example samplesheet](../sample_input/input_table.tsv) has been provided with the pipeline.
