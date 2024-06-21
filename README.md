@@ -14,6 +14,7 @@ Welcome to the documentation for `nf-core/yascp`, a versatile pipeline designed 
     - explore various usage scenarios
 
 ## Getting Started
+- ### **[Install](instalation.md)**
 - ### **[Usage](usage.md)** 
  Detailed guide on operating the pipeline, including an overview of its functionality, instructions for execution, and explanations of command-line options.
 ## Understanding Your Results
