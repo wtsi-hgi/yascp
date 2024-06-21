@@ -1,6 +1,4 @@
 # nf-core/yascp: Usage
-## Introduction
-
 <!-- TODO nf-core: Add documentation about anything specific to running your pipeline. For general topics, please point to (and add to) the main nf-core website. -->
 ## Installation
 YASCP requires 
