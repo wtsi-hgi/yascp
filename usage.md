@@ -191,7 +191,7 @@ You could also provide a path to this file by using a flag:
 
 ## Genotypesheet input (optional)
 An [example genotypesheet](../sample_input/vcf_inputs.tsv) has been provided with the pipeline.
-Genotypesheet can be provided to the pipeline to perform a better sample deconvolution and detect whether the sample you are expecting is really the sample (through the GT match).```#COMMENT I didn't understand the part with "is really the sample"```
+Genotypesheet can be provided to the pipeline to perform a better sample deconvolution and detect whether the sample you are expecting is really the sample (through the GT match).
 The pipeline will figure out which cohort the deconvoluted sample comes from (if any). In the following example, we have 3 cohorts: Cohort1 has genotypes for each of the chromosomes - this is ok as the pipeline will use all chromosome files to figure out whether the sample is part of this. The other 2 cohorts have a merged VCF file for all the chromosomes. This is also ok as it will figure out whether the sample belongs to this cohort in one go. After looking at all these cohorts the pipeline will assign only 1 donor corresponding to which one is the most likely real match.
 
 | label   | vcf_file_path    |
@@ -243,7 +243,7 @@ Sometimes IDs that we expect in our [input files](../sample_input/genotype_pheno
 
 ## Some tricks to avoid rerunning the pipeline over and over if you already have some partial data
 
-1. You can avoid running cellbender multiple times. If you have even partial cellbender results you can provide a path to the folder that contains them. cellbender will be run on all the samples besides the ones that are captured by [cellbender_location='/full/path/to/results/nf-preprocessing/cellbender']. Other options - [cellranger] - which avoids ambient RNA removal and proceeds with deconvolution based on cellranger. If you are providing a path to cellbender_location ='??' - specify location to the results directory containing:
+1. You can avoid running cellbender multiple times. If you have even partial cellbender results you can provide a path to the folder that contains them. cellbender will be run on all the samples besides the ones that are captured by [cellbender_location='/full/path/to/results/nf-preprocessing/cellbender']. Other options - [cellranger] - which avoids ambient RNA removal and proceeds with deconvolution based on cellranger.
 ```
 params{
     cellbender_location='/full/path/to/results/nf-preprocessing/cellbender'
@@ -260,7 +260,7 @@ This should contain:
         file_paths_10x-*FPR_0pt01
 ```
 
-2. existing_cellsnp = '' - If you point to the path of partial cellsnp files these will be captured in the pipeline and utilised in downstream processes, and only cellsnp of the files that don't have the runs performed on cellsnp will proceed:
+2. existing_cellsnp = '' - If you specify a path to partial cellsnp files these will be captured in the pipeline and utilised in downstream processes, and cellsnp will work only with the files that haven't yet been run:
 
 ``` console
 params{
