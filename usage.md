@@ -91,11 +91,11 @@ You can also supply a run name to resume a specific run: `-resume [run-name]`. U
 
 Specify the path to a specific config file (this is a core Nextflow command). See the [nf-core website documentation](https://nf-co.re/usage/configuration) for more information.
 
-## Input declaration config file (input.nf)
+## Input declaration config file
 
 This file specifies all inputs to the pipeline and general pipeline parameters.
 
-Multiple required/optional inputs are described below. Also, an example input declaration file has been provided with the pipeline [example samplesheet](../sample_input/inputs.nf).
+Multiple required/optional inputs are described below. Also, an [example input declaration](../sample_input/inputs.nf) has been provided with the pipeline.
 
 ```console
 params {
@@ -149,8 +149,9 @@ params {
 `tsv_donor_panel_vcfs` - a file containing paths to vcf files with a priori known genotypes that we want to compare the genotypes from samples with
 
 ## Samplesheet input
+This file specifies sample IDs, the number of pooled donors, IDs of individuals with priori known genotypes, and paths to 10x files.
+
 An [example samplesheet](../sample_input/input_table.tsv) has been provided with the pipeline.
-As per the above main file required is a file containing paths to 10x files in a format:
 
 
 | experiment_id   | n_pooled | donor_vcf_ids    |  data_path_10x_format   |
@@ -190,9 +191,10 @@ You could also provide a path to this file by using a flag:
 ```
 
 ## Genotypesheet input (optional)
-An [example genotypesheet](../sample_input/vcf_inputs.tsv) has been provided with the pipeline.
 Genotypesheet can be provided to the pipeline to perform a better sample deconvolution and detect whether the sample you are expecting is really the sample (through the GT match).
 The pipeline will figure out which cohort the deconvoluted sample comes from (if any). In the following example, we have 3 cohorts: Cohort1 has genotypes for each of the chromosomes - this is ok as the pipeline will use all chromosome files to figure out whether the sample is part of this. The other 2 cohorts have a merged VCF file for all the chromosomes. This is also ok as it will figure out whether the sample belongs to this cohort in one go. After looking at all these cohorts the pipeline will assign only 1 donor corresponding to which one is the most likely real match.
+
+An [example genotypesheet](../sample_input/vcf_inputs.tsv) has been provided with the pipeline.
 
 | label   | vcf_file_path    |
 |-----------------|----------|
@@ -204,9 +206,9 @@ The pipeline will figure out which cohort the deconvoluted sample comes from (if
 
 
 ## Extra pool metadata sheet (optional)
-An [example pool metadata](../sample_input/extra_metadata.tsv) has been provided with the pipeline.
-
 Users may want to provide extra metadata for each of the pools that can be used for clustering, regression or plotting purposes.
+
+An [example pool metadata](../sample_input/extra_metadata.tsv) has been provided with the pipeline.
 
 | experiment_id   | Experimental design | Library prep date | Stimulation time    | ...   |
 |-----------------|----------|------------------|-------------------------|-----|
@@ -214,9 +216,10 @@ Users may want to provide extra metadata for each of the pools that can be used 
 | Pool2|   2      | 21/01/2023        | 48h      |  |
 
 ## Extra donor within pool metadata sheet (optional)
+If users have used genotypes in the pipeline then upon deconvolution and gt match we will be able to tell which donor is which. In this case, if users have any extra information for each of the donors within a pool then this extra metadata information can also be provided in the same format as above. To make sure that the correct metadata gets attached to the correct donor the experiment_id should contain experiment_id__donor_genotype_id  
+
 An [example metadata for donors in a pool](../sample_input/extra_metadata_donors.tsv) has been provided with the pipeline.
 
-If users have used genotypes in the pipeline then upon deconvolution and gt match we will be able to tell which donor is which. In this case, if users have any extra information for each of the donors within a pool then this extra metadata information can also be provided in the same format as above. To make sure that the correct metadata gets attached to the correct donor the experiment_id should contain experiment_id__donor_genotype_id  
 (Note: if you provided a bridging file this should be experiment_id__phenotype_id) 
 
 | experiment_id   | Sex | Age | Condition    | ...   |
@@ -230,9 +233,11 @@ If users have used genotypes in the pipeline then upon deconvolution and gt matc
 | Pool2__donorN|   M      | 88        | AH      |  |
 
 ## Genotype to phenotype bridging file (optional)
-An [genotype to phenotype bridging file](../sample_input/genotype_phenotype_bridge.tsv) has been provided with the pipeline.
 
-Sometimes IDs that we expect in our [input files](../sample_input/genotype_phenotype_bridge.tsv) donor_vcf_ids may correspond to phenotype IDs instead of genotype IDs. Since the pipeline performs the checks of whether the donor that we get is the one we expect according to this field (very important step for the Cardinal project) we want to map the genotype IDs to phenotype IDs. This will be handled by the pipeline.
+
+Sometimes IDs that we expect in donor_vcf_ids column of our samplesheet may correspond to phenotype IDs instead of genotype IDs. Since the pipeline performs the checks of whether the donor that we get is the one we expect according to this field (very important step for the Cardinal project) we want to map the genotype IDs to phenotype IDs. This will be handled by the pipeline.
+
+An [genotype to phenotype bridging file](../sample_input/genotype_phenotype_bridge.tsv) has been provided with the pipeline.
 
 | oragene_id   | s00046_id    |
 |-----------------|----------|
@@ -284,4 +289,22 @@ First, go to the [nf-core/yascp releases page](https://github.com/nf-core/yascp/
 This version number will be logged in reports when you run the pipeline so that you'll know what you used when you look back in the future. -->
 
 ## Pipeline custom configuration
-Whilst the default requirements set within the pipeline will hopefully work for most people and with most input data, you may find that you want to customise the pipeline. Read **[Custom configuration](Custom_configuration.md)** for more details.
+If you need to customise the pipeline please read **[Custom configuration](Custom_configuration.md)** for more details.
+
+## Running in the background
+
+Nextflow handles job submissions and supervises the running jobs. The Nextflow process must run until the pipeline is finished.
+
+The Nextflow `-bg` flag launches Nextflow in the background, detached from your terminal so that the workflow does not stop if you log out of your session. The logs are saved to a file.
+
+Alternatively, you can use `screen` / `tmux` or a similar tool to create a detached session which you can log back into at a later time.
+Some HPC setups also allow you to run nextflow within a cluster job submitted by your job scheduler (from where it submits more jobs).
+
+## Nextflow memory requirements
+
+In some cases, the Nextflow Java virtual machines can start to request a large amount of memory.
+We recommend adding the following line to your environment to limit this (typically in `~/.bashrc` or `~./bash_profile`):
+
+```console
+NXF_OPTS='-Xms1g -Xmx4g'
+```
