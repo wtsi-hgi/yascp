@@ -3,7 +3,7 @@
 ## Installation
 
 <details markdown="1">
-<summary><b>Sanger-Specific installation:</b></summary>
+<summary><b>Sanger-Specific Installation:</b></summary>
 If you are working on Sanger FARM, you only need to load the module HGI/pipelines/yascp/1.6.1 and you are ready to run the pipeline (see Sanger-Specific Execution) 
 
 </details>
