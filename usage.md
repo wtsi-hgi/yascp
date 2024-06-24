@@ -170,8 +170,9 @@ You could also provide a path to this file by using a flag:
 ```
 
 ## Genotypesheet input (optional)
-Genotypesheet can be provided to the pipeline to perform a better sample deconvolution and detect whether the sample you are expecting is really the sample (through the GT match).
-The pipeline will figure out which cohort the deconvoluted sample comes from (if any). In the following example, we have 3 cohorts: Cohort1 has genotypes for each of the chromosomes - this is ok as the pipeline will use all chromosome files to figure out whether the sample is part of this. The other 2 cohorts have a merged VCF file for all the chromosomes. This is also ok as it will figure out whether the sample belongs to this cohort in one go. After looking at all these cohorts the pipeline will assign only 1 donor corresponding to which one is the most likely real match.
+This file contains paths to VCFs and cohort labels associated with them.
+A genotypesheet can be provided to the pipeline to improve sample deconvolution and detect whether the expected sample is indeed the correct one through genotype (GT) matching.
+The pipeline will determine which cohort the deconvoluted sample comes from (if any). In the following example, we have 3 cohorts: Cohort1 has genotypes for each of the chromosomes - this is acceptable, as the pipeline will use all chromosome files to identify whether the sample is part of this cohort. The other 2 cohorts have a merged VCF file for all the chromosomes. This is also acceptable, as it will determine whether the sample belongs to this cohort in one step. After evaluating all cohorts the pipeline will assign the sample to the single donor that is the most likely real match.
 
 You can find an example genotypesheet [here](../sample_input/vcf_inputs.tsv).
 
@@ -185,7 +186,7 @@ You can find an example genotypesheet [here](../sample_input/vcf_inputs.tsv).
 
 
 ## Extra pool metadata sheet (optional)
-Users may want to provide extra metadata for each of the pools that can be used for clustering, regression or plotting purposes.
+This file contains extra metadata for each of the pools that can be used for clustering, regression or plotting purposes.
 
 You can find an example file with pool metadata [here](../sample_input/extra_metadata.tsv).
 
@@ -195,7 +196,7 @@ You can find an example file with pool metadata [here](../sample_input/extra_met
 | Pool2|   2      | 21/01/2023        | 48h      |  |
 
 ## Extra donor within pool metadata sheet (optional)
-If users have used genotypes in the pipeline then upon deconvolution and gt match we will be able to tell which donor is which. In this case, if users have any extra information for each of the donors within a pool then this extra metadata information can also be provided in the same format as above. To make sure that the correct metadata gets attached to the correct donor the experiment_id should contain experiment_id__donor_genotype_id  
+This file contains extra metadata for each of the donors within a pool. To make sure that the correct metadata gets attached to the correct donor the experiment_id should contain experiment_id__donor_genotype_id  
 
 You can find an example file with metadata for donors in a pool [here](../sample_input/extra_metadata_donors.tsv).
 
@@ -213,7 +214,6 @@ You can find an example file with metadata for donors in a pool [here](../sample
 
 ## Genotype to phenotype bridging file (optional)
 
-
 Sometimes IDs that we expect in donor_vcf_ids column of our samplesheet may correspond to phenotype IDs instead of genotype IDs. Since the pipeline performs the checks of whether the donor that we get is the one we expect according to this field (very important step for the Cardinal project) we want to map the genotype IDs to phenotype IDs. This will be handled by the pipeline.
 
 You can find an example genotype to phenotype bridging file [here](../sample_input/genotype_phenotype_bridge.tsv).
@@ -226,7 +226,7 @@ You can find an example genotype to phenotype bridging file [here](../sample_inp
 
 
 ## Some tricks to avoid rerunning the pipeline over and over if you already have some partial data
-To avoid rerunning time-consuming steps of the pipeline when you have partial results from those steps you can specify the next parameters in the input declaration config file:
+To avoid rerunning time-consuming steps of the pipeline when you have complete or partial results from those steps you can specify the next parameters in the input declaration config file:
 
 ###1. cellbender_location
 You can avoid running cellbender multiple times if you have complete or partial cellbender results.
