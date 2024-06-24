@@ -79,8 +79,7 @@ If `-profile` is not specified, the pipeline will run locally and expect all sof
     * Includes links to test data so needs no other parameters
 * `institute`
     * A profile with a complete configuration for your institute resources
-    * To use your institution profile, replace `institute` with your institution profile name
-    * Many institutions provide profiles (look for yours https://github.com/nf-core/configs/tree/master/conf)
+    * To use your institution profile, replace `institute` with your institution profile name. Many institutions provide profiles (look for yours https://github.com/nf-core/configs/tree/master/conf)
     * If there is no profile for your institution you can create your configure file and specify it using `-c`
 
 ### `-resume`
