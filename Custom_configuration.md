@@ -121,21 +121,3 @@ In most cases, you will only need to create a custom config as a one-off but if 
 See the main [Nextflow documentation](https://www.nextflow.io/docs/latest/config.html) for more information about creating your own configuration files.
 
 If you have any questions or issues please send a message on [Slack](https://nf-co.re/join/slack) on the [`#configs` channel](https://nfcore.slack.com/channels/configs).
-
-## Running in the background
-
-Nextflow handles job submissions and supervises the running jobs. The Nextflow process must run until the pipeline is finished.
-
-The Nextflow `-bg` flag launches Nextflow in the background, detached from your terminal so that the workflow does not stop if you log out of your session. The logs are saved to a file.
-
-Alternatively, you can use `screen` / `tmux` or a similar tool to create a detached session which you can log back into at a later time.
-Some HPC setups also allow you to run nextflow within a cluster job submitted by your job scheduler (from where it submits more jobs).
-
-## Nextflow memory requirements
-
-In some cases, the Nextflow Java virtual machines can start to request a large amount of memory.
-We recommend adding the following line to your environment to limit this (typically in `~/.bashrc` or `~./bash_profile`):
-
-```console
-NXF_OPTS='-Xms1g -Xmx4g'
-```
