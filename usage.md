@@ -100,57 +100,57 @@ Multiple required/optional inputs are described below. Also, an example input de
 ```console
 params {
     //REQUIRED parameters
-    input_data_table = '/path/to/input.tsv' //This points to all the cellranger files and pool definition files.
+    input_data_table = '/path/to/input.tsv' //A samplesheet file containing paths to all the cellranger and pool definition files
 
-    split_ad_per_bach=true //Decide whether cell type assignment is run on the full dataset together (false) or per batch (true)
+    split_ad_per_bach=true //This parameter defines whether cell type assignment is run on the full dataset together (false) or per batch (true)
 
     //OPTIONAL parameters
-    extra_metadata = '/path/to/extra_metadata.tsv'   //Sometimes users may want to merge extra known metadata for a pool in the h5ad files prior to QC
+    extra_metadata = '/path/to/extra_metadata.tsv' //A file with extra known metadata to merge for a pool in the h5ad files prior to QC
 
-    extra_sample_metadata ='/path/to/donor_extra_metadata.tsv'  //Sometimes users may want to merge extra known metadata for a donor within a pool prior to QC
-
+    extra_sample_metadata ='/path/to/donor_extra_metadata.tsv' //A file with extra known metadata to merge for a donor within a pool prior to QC
 
     //cellbender_location='/path/to/existing/folder/nf-preprocessing/cellbender' //!!!!! Uncomment this and edit the path, if cellbender results are already available then can skip this by selecting  input = 'existing_cellbender' instead input = 'cellbender'
 
     existing_cellsnp="" // if cellsnp results are already available, provide a path to the files to skip cellsnp step
 
     genotype_input {
-        run_with_genotype_input=true //if false do not need the genotype_input parameters.
-        vireo_with_gt=false // Define whether Vireo is run with a priori known genotypes (true) or not (false)
+        run_with_genotype_input=true //This parameter defines whether the genotype_input is used (true) or not(false). If true the parameters below have to be specified
+        vireo_with_gt=false //This parameter defines whether Vireo is run with a priori known genotypes (true) or not (false)
         posterior_assignment = false //if this is set to true, and a priori known genotypes are provided, after deconvolution the genotypes will be matched to Vireo-detected donors
         subset_genotypes = false // description???
-        tsv_donor_panel_vcfs = "/path/to/reference/panel/vcf_inputs.tsv" //this is a panel of vcf files with a priori known genotypes that we want to compare the genotypes with
+        tsv_donor_panel_vcfs = "/path/to/reference/panel/vcf_inputs.tsv" //A file containing paths to vcf files with a priori known genotypes that we want to compare the genotypes from samples with
     }
 }
 
 
 ```
 ### `REQUIRED parameters`
-`input_data_table` This points to all the cellranger files and pool definition files.
+`input_data_table` - a samplesheet file containing paths to all the cellranger and pool definition files.
 
-`split_ad_per_bach` Decide whether cell type assignment is run on the full dataset together (false) or per batch (true)
+`split_ad_per_bach` - this parameter defines whether cell type assignment is run on the full dataset together (false) or per batch (true).
+
 ### `OPTIONAL parameters`
-`extra_metadata` Sometimes users may want to merge extra known metadata for a pool in the h5ad files prior to QC
+`extra_metadata` - a file with extra known metadata to merge for a pool in the h5ad files prior to QC.
 
-`extra_sample_metadata` Sometimes users may want to merge extra known metadata for a donor within a pool prior to QC
+`extra_sample_metadata` - a file with extra known metadata to merge for a donor within a pool prior to QC.
 
 `cellbender_location` Uncomment this and edit the path, if cellbender results are already available then can skip this by selecting  input = 'existing_cellbender' instead input = 'cellbender'
 
 `existing_cellsnp` if cellsnp results are already available, provide a path to the files to skip cellsnp step
 
-`run_with_genotype_input` if false do not need the genotype_input parameters.
+`run_with_genotype_input` - this parameter defines whether the genotype_input is used (true) or not(false). If true the parameters below have to be specified.
 
-`vireo_with_gt` Define whether Vireo is run with a priori known genotypes (true) or not (false)
+`vireo_with_gt` - this parameter defines whether Vireo is run with a priori known genotypes (true) or not (false)
 
 `posterior_assignment` if this is set to true, and a priori known genotypes are provided, after deconvolution the genotypes will be matched to Vireo-detected donors
 
 `subset_genotypes` description???
 
-`tsv_donor_panel_vcfs` this is a panel of vcf files with a priori known genotypes that we want to compare the genotypes with
+`tsv_donor_panel_vcfs` - a file containing paths to vcf files with a priori known genotypes that we want to compare the genotypes from samples with
 
 ## Samplesheet input
 An [example samplesheet](../sample_input/input_table.tsv) has been provided with the pipeline.
-As per above main file required is a file containing paths to 10x files in a format:
+As per the above main file required is a file containing paths to 10x files in a format:
 
 
 | experiment_id   | n_pooled | donor_vcf_ids    |  data_path_10x_format   |
