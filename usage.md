@@ -125,6 +125,28 @@ params {
 
 
 ```
+### `REQUIRED parameters`
+`input_data_table` This points to all the cellranger files and pool definition files.
+
+`split_ad_per_bach` Decide whether cell type assignment is run on the full dataset together (false) or per batch (true)
+### `OPTIONAL parameters`
+`extra_metadata` Sometimes users may want to merge extra known metadata for a pool in the h5ad files prior to QC
+
+`extra_sample_metadata` Sometimes users may want to merge extra known metadata for a donor within a pool prior to QC
+
+`cellbender_location` Uncomment this and edit the path, if cellbender results are already available then can skip this by selecting  input = 'existing_cellbender' instead input = 'cellbender'
+
+`existing_cellsnp` if cellsnp results are already available, provide a path to the files to skip cellsnp step
+
+`run_with_genotype_input` if false do not need the genotype_input parameters.
+
+`vireo_with_gt` Define whether Vireo is run with a priori known genotypes (true) or not (false)
+
+`posterior_assignment` if this is set to true, and a priori known genotypes are provided, after deconvolution the genotypes will be matched to Vireo-detected donors
+
+`subset_genotypes` description???
+
+`tsv_donor_panel_vcfs` this is a panel of vcf files with a priori known genotypes that we want to compare the genotypes with
 
 ## Samplesheet input
 An [example samplesheet](../sample_input/input_table.tsv) has been provided with the pipeline.
@@ -144,7 +166,7 @@ Where:
 * **donor_vcf_ids** - if using genotypes, here an id of individuals can be added to subset VCFs used to deconvolute samples (need to be as listed in VCF file provided)
 * **data_path_10x_format** - path to a 10x folder containing bam, bai, metrics_summary.csv files and raw_barcodes folder
 
-**path/to/10x_folder** these outputs can be outputs from both cellranger 6 and cellranger 7. Overall we need the following files for the pipeline to run smoothly:
+**path/to/10x_folder** can contain output files from both cellranger 6 and cellranger 7. Overall we need the following files for the pipeline to run smoothly:
 
 ```console
 10x_folder/
@@ -170,7 +192,7 @@ You could also provide a path to this file by using a flag:
 ## Genotypesheet input (optional)
 An [example genotypesheet](../sample_input/vcf_inputs.tsv) has been provided with the pipeline.
 Genotypesheet can be provided to the pipeline to perform a better sample deconvolution and detect whether the sample you are expecting is really the sample (through the GT match).```#COMMENT I didn't understand the part with "is really the sample"```
-The pipeline will figure out which cohort the deconvoluted sample comes from (if any). In the following example, we have 3 cohorts: Cohort1 has genotypes for each of the chromosomes - this is ok as the pipeline will use all chromosome files to figure out whether the sample is part of this. The other 2 cohorts have a merged VCF file for all the chromosomes. This is also ok as it will figure out whether the sample belongs to this cohort in one go. After looking at all these cohorts the pipeline will assign only 1 donor corresponding to which one is the most likely real match
+The pipeline will figure out which cohort the deconvoluted sample comes from (if any). In the following example, we have 3 cohorts: Cohort1 has genotypes for each of the chromosomes - this is ok as the pipeline will use all chromosome files to figure out whether the sample is part of this. The other 2 cohorts have a merged VCF file for all the chromosomes. This is also ok as it will figure out whether the sample belongs to this cohort in one go. After looking at all these cohorts the pipeline will assign only 1 donor corresponding to which one is the most likely real match.
 
 | label   | vcf_file_path    |
 |-----------------|----------|
@@ -261,4 +283,5 @@ First, go to the [nf-core/yascp releases page](https://github.com/nf-core/yascp/
 
 This version number will be logged in reports when you run the pipeline so that you'll know what you used when you look back in the future. -->
 
-
+## Pipeline custom configuration
+Whilst the default requirements set within the pipeline will hopefully work for most people and with most input data, you may find that you want to customise the pipeline. Read **[Custom configuration](Custom_configuration.md)** for more details.
