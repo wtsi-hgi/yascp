@@ -99,12 +99,12 @@ Multiple required/optional inputs are described below. Also, an example input de
 
 ```console
 params {
-    //REQUIRED parameters
+    //REQUIRED
     input_data_table = '/path/to/input.tsv' //A samplesheet file containing paths to all the cellranger and pool definition files
 
     split_ad_per_bach=true //This parameter defines whether cell type assignment is run on the full dataset together (false) or per batch (true)
 
-    //OPTIONAL parameters
+    //OPTIONAL
     extra_metadata = '/path/to/extra_metadata.tsv' //A file with extra known metadata to merge for a pool in the h5ad files prior to QC
 
     extra_sample_metadata ='/path/to/donor_extra_metadata.tsv' //A file with extra known metadata to merge for a donor within a pool prior to QC
@@ -124,12 +124,12 @@ params {
 
 
 ```
-### `REQUIRED parameters`
+### Required parameters
 `input_data_table` - a samplesheet file containing paths to all the cellranger and pool definition files.
 
 `split_ad_per_bach` - this parameter defines whether cell type assignment is run on the full dataset together (false) or per batch (true).
 
-### `OPTIONAL parameters`
+### Optional parameters
 `extra_metadata` - a file with extra known metadata to merge for a pool in the h5ad files prior to QC.
 
 `extra_sample_metadata` - a file with extra known metadata to merge for a donor within a pool prior to QC.
