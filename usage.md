@@ -2,13 +2,6 @@
 <!-- TODO nf-core: Add documentation about anything specific to running your pipeline. For general topics, please point to (and add to) the main nf-core website. -->
 ## Installation
 
-<details markdown="1">
-<summary><b>Sanger-Specific Installation:</b></summary>
-If you are working on Sanger FARM, you only need to load the module HGI/pipelines/yascp/1.6.1 and you are ready to run the pipeline (see Sanger-Specific Execution) 
-
-</details>
-
-
 1. Install [`Nextflow`](https://www.nextflow.io/docs/latest/getstarted.html#installation) (`>=21.04.0`)
 
 2. Install [`Docker`](https://docs.docker.com/engine/installation/) or [`Singularity`](https://www.sylabs.io/guides/3.0/user-guide/) for full pipeline reproducibility.
@@ -22,23 +15,6 @@ The YASCP pipeline is ready to run.
 
 ## Running the pipeline
 
-<details markdown="2">
-<summary><b>Sanger-Specific Execution:</b></summary>
-
-
-  Test dataset run:
-  ```
-      module load HGI/pipelines/yascp/1.6.1
-      yascp test
-  ```
-  Your dataset run:
-  ```
-      module load HGI/pipelines/yascp/1.6.1
-      yascp -c input.nf
-  ```
-
-</details>
-
 To run the whole pipeline use the next commands:
 
 For a test dataset run:
@@ -51,6 +27,9 @@ For your dataset run:
 ```
 
 ## Core Nextflow arguments
+To run YASCP you need to specify several core Nextflow arguments like in the example command above.
+
+All core Nextflow arguments used in YASCP are described in detail below.
 
 > **NB:** These options are part of Nextflow and use a _single_ hyphen (pipeline parameters use a double-hyphen).
 
@@ -93,9 +72,9 @@ Specify the path to a specific config file (this is a core Nextflow command). Se
 
 ## Input declaration config file
 
-This file specifies all inputs to the pipeline and general pipeline parameters.
+This file specifies all inputs to the pipeline and general pipeline parameters. You can find an example input declaration [here](../sample_input/inputs.nf).
 
-Multiple required/optional inputs are described below. Also, an [example input declaration](../sample_input/inputs.nf) has been provided with the pipeline.
+Multiple required/optional inputs are described below. 
 
 ```console
 params {
@@ -151,7 +130,7 @@ params {
 ## Samplesheet input
 This file specifies sample IDs, the number of pooled donors, IDs of individuals with priori known genotypes, and paths to 10x files.
 
-An [example samplesheet](../sample_input/input_table.tsv) has been provided with the pipeline.
+You can find an example samplesheet [here](../sample_input/input_table.tsv).
 
 
 | experiment_id   | n_pooled | donor_vcf_ids    |  data_path_10x_format   |
@@ -194,7 +173,7 @@ You could also provide a path to this file by using a flag:
 Genotypesheet can be provided to the pipeline to perform a better sample deconvolution and detect whether the sample you are expecting is really the sample (through the GT match).
 The pipeline will figure out which cohort the deconvoluted sample comes from (if any). In the following example, we have 3 cohorts: Cohort1 has genotypes for each of the chromosomes - this is ok as the pipeline will use all chromosome files to figure out whether the sample is part of this. The other 2 cohorts have a merged VCF file for all the chromosomes. This is also ok as it will figure out whether the sample belongs to this cohort in one go. After looking at all these cohorts the pipeline will assign only 1 donor corresponding to which one is the most likely real match.
 
-An [example genotypesheet](../sample_input/vcf_inputs.tsv) has been provided with the pipeline.
+You can find an example genotypesheet [here](../sample_input/vcf_inputs.tsv).
 
 | label   | vcf_file_path    |
 |-----------------|----------|
@@ -208,7 +187,7 @@ An [example genotypesheet](../sample_input/vcf_inputs.tsv) has been provided wit
 ## Extra pool metadata sheet (optional)
 Users may want to provide extra metadata for each of the pools that can be used for clustering, regression or plotting purposes.
 
-An [example pool metadata](../sample_input/extra_metadata.tsv) has been provided with the pipeline.
+You can find an example file with pool metadata [here](../sample_input/extra_metadata.tsv).
 
 | experiment_id   | Experimental design | Library prep date | Stimulation time    | ...   |
 |-----------------|----------|------------------|-------------------------|-----|
@@ -218,7 +197,7 @@ An [example pool metadata](../sample_input/extra_metadata.tsv) has been provided
 ## Extra donor within pool metadata sheet (optional)
 If users have used genotypes in the pipeline then upon deconvolution and gt match we will be able to tell which donor is which. In this case, if users have any extra information for each of the donors within a pool then this extra metadata information can also be provided in the same format as above. To make sure that the correct metadata gets attached to the correct donor the experiment_id should contain experiment_id__donor_genotype_id  
 
-An [example metadata for donors in a pool](../sample_input/extra_metadata_donors.tsv) has been provided with the pipeline.
+You can find an example file with metadata for donors in a pool [here](../sample_input/extra_metadata_donors.tsv).
 
 (Note: if you provided a bridging file this should be experiment_id__phenotype_id) 
 
@@ -237,7 +216,7 @@ An [example metadata for donors in a pool](../sample_input/extra_metadata_donors
 
 Sometimes IDs that we expect in donor_vcf_ids column of our samplesheet may correspond to phenotype IDs instead of genotype IDs. Since the pipeline performs the checks of whether the donor that we get is the one we expect according to this field (very important step for the Cardinal project) we want to map the genotype IDs to phenotype IDs. This will be handled by the pipeline.
 
-An [genotype to phenotype bridging file](../sample_input/genotype_phenotype_bridge.tsv) has been provided with the pipeline.
+You can find an example genotype to phenotype bridging file [here](../sample_input/genotype_phenotype_bridge.tsv).
 
 | oragene_id   | s00046_id    |
 |-----------------|----------|
@@ -247,14 +226,17 @@ An [genotype to phenotype bridging file](../sample_input/genotype_phenotype_brid
 
 
 ## Some tricks to avoid rerunning the pipeline over and over if you already have some partial data
+To avoid rerunning time-consuming steps of the pipeline when you have partial results from those steps you can specify the next parameters in the input declaration config file:
 
-1. You can avoid running cellbender multiple times. If you have even partial cellbender results you can provide a path to the folder that contains them. cellbender will be run on all the samples besides the ones that are captured by [cellbender_location='/full/path/to/results/nf-preprocessing/cellbender']. Other options - [cellranger] - which avoids ambient RNA removal and proceeds with deconvolution based on cellranger.
+###1. cellbender_location
+You can avoid running cellbender multiple times if you have complete or partial cellbender results.
+If you specify a path to the folder with cellbender results in the input declaration config file, cellbender will be run on all the samples without results.
 ```
 params{
     cellbender_location='/full/path/to/results/nf-preprocessing/cellbender'
 }
 ```
-This should contain: 
+The cellbender results folder structure should look like this: 
 ```console
     Sample1
     Sample2
@@ -265,7 +247,9 @@ This should contain:
         file_paths_10x-*FPR_0pt01
 ```
 
-2. existing_cellsnp = '' - If you specify a path to partial cellsnp files these will be captured in the pipeline and utilised in downstream processes, and cellsnp will work only with the files that haven't yet been run:
+###2. existing_cellsnp
+You can avoid running cellsnp multiple times if you have complete or partial cellsnp results.
+If you specify a path to cellsnp files in the input declaration config file, cellsnp will work only with the files that haven't yet been run:
 
 ``` console
 params{
