@@ -109,12 +109,12 @@ params {
 
     extra_sample_metadata ='/path/to/donor_extra_metadata.tsv' //A file with extra known metadata to merge for a donor within a pool prior to QC
 
-    //cellbender_location='/path/to/existing/folder/nf-preprocessing/cellbender' //!!!!! Uncomment this and edit the path, if cellbender results are already available then can skip this by selecting  input = 'existing_cellbender' instead input = 'cellbender'
+    //cellbender_location='/path/to/existing/folder/nf-preprocessing/cellbender' //!!!!! Uncomment this and edit the path, if cellbender results are already available (even partial results). The pipeline will skip the cellbender step for samples that already have cellbender results.
 
-    existing_cellsnp="" // if cellsnp results are already available, provide a path to the files to skip cellsnp step
+    existing_cellsnp="" //Provide a path to cellsnp results (if they are already available, even partial results) to skip cellsnp step for the files with results.
 
     genotype_input {
-        run_with_genotype_input=true //This parameter defines whether the genotype_input is used (true) or not(false). If true the parameters below have to be specified
+        run_with_genotype_input=true //This parameter defines whether the genotype_input is used (true) or not(false). If this is set to true the parameters below have to be specified
         vireo_with_gt=false //This parameter defines whether Vireo is run with a priori known genotypes (true) or not (false)
         posterior_assignment = false //if this is set to true, and a priori known genotypes are provided, after deconvolution the genotypes will be matched to Vireo-detected donors
         subset_genotypes = false // description???
@@ -134,11 +134,11 @@ params {
 
 `extra_sample_metadata` - a file with extra known metadata to merge for a donor within a pool prior to QC.
 
-`cellbender_location` Uncomment this and edit the path, if cellbender results are already available then can skip this by selecting  input = 'existing_cellbender' instead input = 'cellbender'
+`cellbender_location` - uncomment this and edit the path, if cellbender results are already available (even partial results). The pipeline will skip the cellbender step for samples that already have cellbender results. For more details see `Some tricks to avoid rerunning the pipeline over and over if you already have some partial data`
 
-`existing_cellsnp` if cellsnp results are already available, provide a path to the files to skip cellsnp step
+`existing_cellsnp` - provide a path to cellsnp results (if they are already available, even partial results) to skip cellsnp step for the files whth results. For more details see `Some tricks to avoid rerunning the pipeline over and over if you already have some partial data`
 
-`run_with_genotype_input` - this parameter defines whether the genotype_input is used (true) or not(false). If true the parameters below have to be specified.
+`run_with_genotype_input` - this parameter defines whether the genotype_input is used (true) or not(false). If this is set to true the parameters below have to be specified.
 
 `vireo_with_gt` - this parameter defines whether Vireo is run with a priori known genotypes (true) or not (false)
 
