@@ -1,15 +1,8 @@
 # nf-core/yascp: Usage
 <!-- TODO nf-core: Add documentation about anything specific to running your pipeline. For general topics, please point to (and add to) the main nf-core website. -->
 ## Installation
+### General Installation Instruction:
 
-<details markdown="1">
-<summary><b>Sanger-Specific Installation</b></summary>
-
-You don't need to install anything. YASCP is already installed on Farm and can be loaded as a module
-  
-</details>
-
-Installation if you don't work at Sanger Institute:
 1. Install [`Nextflow`](https://www.nextflow.io/docs/latest/getstarted.html#installation) (`>=21.04.0`)
 
 2. Install [`Docker`](https://docs.docker.com/engine/installation/) or [`Singularity`](https://www.sylabs.io/guides/3.0/user-guide/) for full pipeline reproducibility.
@@ -21,10 +14,29 @@ Installation if you don't work at Sanger Institute:
 ```
 The YASCP pipeline is ready to run.
 
+<details markdown="1">
+<summary><b>Sanger-Specific Installation:</b></summary>
+
+You don't need to install anything. YASCP is already installed on Farm and can be loaded as a module
+  
+</details>
+
 ## Running the pipeline
+### General Execution Instruction:
+
+To run the whole pipeline use the next commands:
+
+For a test dataset run:
+```console
+   nextflow run /path/to/cloned/yascp -profile test,<docker/singularity,institute>
+```
+For your dataset run:
+```console
+   nextflow run /path/to/cloned/yascp -profile <docker/singularity,institute> -c inputs.nf -resume
+```
 
 <details markdown="2">
-<summary><b>Sanger-Specific Execution.</b></summary>
+<summary><b>Sanger-Specific Execution:</b></summary>
 
 * If you work on Farm you can run YASCP using the next commands:
   
@@ -41,19 +53,6 @@ The YASCP pipeline is ready to run.
 
 </details>
 
-Execution outside of Sanger Institute.
-
-To run the whole pipeline use the next commands:
-
-For a test dataset run:
-```console
-   nextflow run /path/to/cloned/yascp -profile test,<docker/singularity,institute>
-```
-For your dataset run:
-```console
-   nextflow run /path/to/cloned/yascp -profile <docker/singularity,institute> -c inputs.nf -resume
-```
-
 ## Core Nextflow arguments
 To run YASCP you need to specify several core Nextflow arguments like in the example command above.
 
@@ -65,7 +64,7 @@ All core Nextflow arguments used in YASCP are described in detail below.
 
 Use this parameter to choose a configuration profile. Profiles can give configuration presets for different computing environments.
 
-Several generic profiles are bundled with the pipeline which instruct the pipeline to use software packaged using different methods (Docker, Singularity) - see below. When using Biocontainers, most of these software packaging methods pull Docker containers from quay.io e.g
+Several generic profiles are included with the pipeline, guiding it to use software packaged via various methods such as Docker and Singularity (see below). When using Biocontainers, most of these software packaging methods pull Docker containers from quay.io e.g
  <!-- [FastQC](https://quay.io/repository/biocontainers/fastqc) except for Singularity which directly downloads Singularity images via https hosted by the [Galaxy project](https://depot.galaxyproject.org/singularity/) and Conda which downloads and installs software locally from [Bioconda](https://bioconda.github.io/). -->
 
 > You will need to use Docker or Singularity containers for full pipeline reproducibility as currently, we do not support Conda.
@@ -102,7 +101,7 @@ Specify the path to a specific config file (this is a core Nextflow command). Se
 
 This file specifies all inputs to the pipeline and general pipeline parameters. You can find an example input declaration [here](../sample_input/inputs.nf).
 
-Multiple required/optional inputs are described below. 
+Core required/optional inputs are described below. 
 
 ```console
 params {
@@ -110,11 +109,7 @@ params {
     input_data_table = '/path/to/input.tsv' //A samplesheet file containing paths to all the cellranger and pool definition files
 
     //OPTIONAL
-    split_ad_per_bach=true //This parameter defines whether cell type assignment is run on the full dataset together (false) or per batch (true)
-
-    extra_metadata = '/path/to/extra_metadata.tsv' //A file with extra known metadata to merge for a pool in the h5ad files prior to QC
-
-    extra_sample_metadata ='/path/to/donor_extra_metadata.tsv' //A file with extra known metadata to merge for a donor within a pool prior to QC
+    citeseq = true //NEEDS DESCRIPTION! Default false
 
     //cellbender_location='/path/to/existing/folder/nf-preprocessing/cellbender' //!!!!! Uncomment this and edit the path, if cellbender results are already available (even partial results). The pipeline will skip the cellbender step for samples that already have cellbender results.
 
@@ -123,9 +118,6 @@ params {
     genotype_input {
         run_with_genotype_input=true //This parameter defines whether the genotype_input is used (true) or not(false). If this is set to true tsv_donor_panel_vcfs has to be specified
         tsv_donor_panel_vcfs = "/path/to/reference/panel/vcf_inputs.tsv" //A file containing paths to vcf files with a priori known genotypes that we want to compare the genotypes from samples with
-        vireo_with_gt=false //This parameter defines whether Vireo is run with a priori known genotypes (true) or not (false)
-        posterior_assignment = false //if this is set to true, and a priori known genotypes are provided, after deconvolution the genotypes will be matched to Vireo-detected donors
-        subset_genotypes = false //This parameter defines whether to subset a large genotype file to include only the genotypes expected in a pool to reduce the deconvolution time (true) or not (false).
     }
 }
 
@@ -135,29 +127,21 @@ params {
 `input_data_table` - a samplesheet file containing paths to all the cellranger and pool definition files.
 
 ### Optional parameters
-`split_ad_per_bach` - this parameter defines whether cell type assignment is run on the full dataset together (false) or per batch (true).
+`citeseq` - NEEDS DESCRIPTION! Default false
 
-`extra_metadata` - a file with extra known metadata to merge for a pool in the h5ad files prior to QC.
+`cellbender_location` - uncomment this and edit the path, if cellbender results are already available (even partial results). The pipeline will skip the cellbender step for samples that already have cellbender results. For more details see `Tips to avoid rerunning the pipeline with partial data` below.
 
-`extra_sample_metadata` - a file with extra known metadata to merge for a donor within a pool prior to QC.
-
-`cellbender_location` - uncomment this and edit the path, if cellbender results are already available (even partial results). The pipeline will skip the cellbender step for samples that already have cellbender results. For more details see `Some tricks to avoid rerunning the pipeline over and over if you already have some partial data`
-
-`existing_cellsnp` - provide a path to cellsnp results (if they are already available, even partial results) to skip cellsnp step for the files whth results. For more details see `Some tricks to avoid rerunning the pipeline over and over if you already have some partial data`
+`existing_cellsnp` - provide a path to cellsnp results (if they are already available, even partial results) to skip cellsnp step for the files whth results. For more details see `Tips to avoid rerunning the pipeline with partial data` below.
 
 `run_with_genotype_input` - this parameter defines whether the genotype_input is used (true) or not(false). If this is set to true tsv_donor_panel_vcfs has to be specified.
 
 `tsv_donor_panel_vcfs` - a file containing paths to vcf files with a priori known genotypes that we want to compare the genotypes from samples with.
 
-`vireo_with_gt` - this parameter defines whether Vireo is run with a priori known genotypes (true) or not (false).
-
-`posterior_assignment` if this is set to true, and a priori known genotypes are provided, after deconvolution the genotypes will be matched to Vireo-detected donors
-
-`subset_genotypes` - this parameter defines whether to subset a large genotype file to include only the genotypes expected in a pool to reduce the deconvolution time (true) or not (false).
+### You can find more optional parameters [here](Optional_parameters.md).
 
 ## Samplesheet input
 This file specifies sample IDs, the number of pooled donors, IDs of individuals with priori known genotypes, and paths to 10x files.
-
+It has to be a tab-separated file with 4 columns and a header as shown in the example below.
 You can find an example samplesheet [here](../sample_input/input_table.tsv).
 
 
@@ -165,10 +149,9 @@ You can find an example samplesheet [here](../sample_input/input_table.tsv).
 |-----------------|----------|------------------|-------------------------|
 | Pool1 |   1      | "id3"            | path/to/10x_folder      |
 | Pool2|   2      | "id1,id2"        | path/to/10x_folder      |
+ 
 
-You will need to create a samplesheet with information about the samples you would like to analyse before running the pipeline. Use this parameter to specify its location. It has to be a tab-separated file with 4 columns and a header as shown in the example above.
-
-Where:
+Columns description:
 * **experiment_id** - is the name of the sample
 * **n_pooled** - indicates how many donors are pooled in the 10x run (if only 1 then scrubblet will be used to remove doublets)
 * **donor_vcf_ids** - if using genotypes, here an id of individuals can be added to subset VCFs used to deconvolute samples (need to be as listed in VCF file provided)
@@ -199,8 +182,10 @@ You could also provide a path to this file by using a flag:
 
 ## Genotypesheet input (optional)
 This file contains paths to VCFs and cohort labels associated with them.
-A genotypesheet can be provided to the pipeline to improve sample deconvolution and detect whether the expected sample is indeed the correct one through genotype (GT) matching.
-The pipeline will determine which cohort the deconvoluted sample comes from (if any). In the following example, we have 3 cohorts: Cohort1 has genotypes for each of the chromosomes - this is acceptable, as the pipeline will use all chromosome files to identify whether the sample is part of this cohort. The other 2 cohorts have a merged VCF file for all the chromosomes. This is also acceptable, as it will determine whether the sample belongs to this cohort in one step. After evaluating all cohorts the pipeline will assign the sample to the single donor that is the most likely real match.
+A genotypesheet can be provided to the pipeline to improve sample deconvolution and detect whether the sample you have is the sample you are expecting (through genotype matching).
+The pipeline will determine which cohort the deconvoluted sample comes from (if any).
+
+In the following example, we have 3 cohorts: Cohort1 has genotypes for each of the chromosomes - this is acceptable, as the pipeline will use all chromosome files to identify whether the sample is part of this cohort. The other 2 cohorts have a merged VCF file for all the chromosomes. This is also acceptable, as it will determine whether the sample belongs to this cohort in one step. After evaluating all cohorts the pipeline will assign the sample to the single donor that is the most likely real match.
 
 You can find an example genotypesheet [here](../sample_input/vcf_inputs.tsv).
 
@@ -213,54 +198,15 @@ You can find an example genotypesheet [here](../sample_input/vcf_inputs.tsv).
 | Cohort3 |   /ful/path/to/vcf_bcf/file/in/hg38/format/without/chr/prefix/full_cohort2_for_all_chr.vcf.gz      |
 
 
-## Extra pool metadata sheet (optional)
-This file contains extra metadata for each of the pools that can be used for clustering, regression or plotting purposes.
-
-You can find an example file with pool metadata [here](../sample_input/extra_metadata.tsv).
-
-| experiment_id   | Experimental design | Library prep date | Stimulation time    | ...   |
-|-----------------|----------|------------------|-------------------------|-----|
-| Pool1 |   1      |   20/01/2023          | 24h      |  |
-| Pool2|   2      | 21/01/2023        | 48h      |  |
-
-## Extra donor within pool metadata sheet (optional)
-This file contains extra metadata for each of the donors within a pool. To make sure that the correct metadata gets attached to the correct donor the experiment_id should contain experiment_id__donor_genotype_id  
-
-You can find an example file with metadata for donors in a pool [here](../sample_input/extra_metadata_donors.tsv).
-
-(Note: if you provided a bridging file this should be experiment_id__phenotype_id) 
-
-| experiment_id   | Sex | Age | Condition    | ...   |
-|-----------------|----------|------------------|-------------------------|-----|
-| Pool1__donor1 |   M      |   67          | PAH      |  |
-| Pool1__donor2|   M      | 22        | CD      |  |
-| Pool1__donor3|   F      | 43        | CD      |  |
-| ...|   ...      | ...        | ...      |  |
-| Pool2__donor1|   F      | 12        | PAH      |  |
-| ...|   ...      | ...        | ...      | ... |
-| Pool2__donorN|   M      | 88        | AH      |  |
-
-## Genotype to phenotype bridging file (optional)
-
-Sometimes IDs that we expect in donor_vcf_ids column of our samplesheet may correspond to phenotype IDs instead of genotype IDs. Since the pipeline performs the checks of whether the donor that we get is the one we expect according to this field (very important step for the Cardinal project) we want to map the genotype IDs to phenotype IDs. This will be handled by the pipeline.
-
-You can find an example genotype to phenotype bridging file [here](../sample_input/genotype_phenotype_bridge.tsv).
-
-| oragene_id   | s00046_id    |
-|-----------------|----------|
-| 682_683 |   pheno_682_683      |
-| 684_684 |   pheno_682_683      |
-| .... |   ....      |
-
-
-## Some tricks to avoid rerunning the pipeline over and over if you already have some partial data
+## Tips to avoid rerunning the pipeline with partial data
 To avoid rerunning time-consuming steps of the pipeline when you have complete or partial results from those steps you can specify the next parameters in the input declaration config file:
 
-###1. cellbender_location
+### 1. cellbender_location
 You can avoid running cellbender multiple times if you have complete or partial cellbender results.
 If you specify a path to the folder with cellbender results in the input declaration config file, cellbender will be run on all the samples without results.
 ```
 params{
+    input_data_table = '/path/to/input.tsv' //A samplesheet file containing paths to all the cellranger and pool definition files
     cellbender_location='/full/path/to/results/nf-preprocessing/cellbender'
 }
 ```
@@ -274,13 +220,24 @@ The cellbender results folder structure should look like this:
         file_paths_10x-*FPR_0pt05
         file_paths_10x-*FPR_0pt01
 ```
+### 2. input
+You can skip ambient RNA removal step by adding `input = 'cellranger'` to the input declaration config file.
+The pipeline will skipp ambient RNA removal and proceed with deconvolution based on cellranger. For more details see [optional parameters](Optional_parameters.md)
 
-###2. existing_cellsnp
+``` console
+params{
+    input_data_table = '/path/to/input.tsv' //A samplesheet file containing paths to all the cellranger and pool definition files
+    input = 'cellranger'
+}
+```
+
+### 3. existing_cellsnp
 You can avoid running cellsnp multiple times if you have complete or partial cellsnp results.
 If you specify a path to cellsnp files in the input declaration config file, cellsnp will work only with the files that haven't yet been run:
 
 ``` console
 params{
+    input_data_table = '/path/to/input.tsv' //A samplesheet file containing paths to all the cellranger and pool definition files
     existing_cellsnp='/full/path/to/results/cellsnp'
 }
 ```
