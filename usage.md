@@ -12,7 +12,7 @@
 ```console
     git clone https://github.com/wtsi-hgi/yascp.git
 ```
-The YASCP pipeline is ready to run.
+4. The YASCP pipeline is ready to run.
 
 <details markdown="1">
 <summary><b>Sanger-Specific Installation:</b></summary>
@@ -54,9 +54,7 @@ For your dataset run:
 </details>
 
 ## Core Nextflow arguments
-To run YASCP you need to specify several core Nextflow arguments like in the example command above.
-
-All core Nextflow arguments used in YASCP are described in detail below.
+To run YASCP you need to specify several core Nextflow arguments like in the example commands above.
 
 > **NB:** These options are part of Nextflow and use a _single_ hyphen (pipeline parameters use a double-hyphen).
 
@@ -95,7 +93,7 @@ You can also supply a run name to resume a specific run: `-resume [run-name]`. U
 
 ### `-c`
 
-Specify the path to a specific config file (this is a core Nextflow command). See the [nf-core website documentation](https://nf-co.re/usage/configuration) for more information.
+Specify the path to a config file (including the input declaration config file). See the [nf-core website documentation](https://nf-co.re/usage/configuration) for more information.
 
 ## Input declaration config file
 
@@ -110,6 +108,8 @@ params {
 
     //OPTIONAL
     citeseq = true //NEEDS DESCRIPTION! Default false
+
+    input = 'cellbender' //This parameter defines whether the ambient RNA removal is skipped ('cellranger') or not ('cellbender'). The default value is 'cellbender'.
 
     //cellbender_location='/path/to/existing/folder/nf-preprocessing/cellbender' //!!!!! Uncomment this and edit the path, if cellbender results are already available (even partial results). The pipeline will skip the cellbender step for samples that already have cellbender results.
 
@@ -129,11 +129,13 @@ params {
 ### Optional parameters
 `citeseq` - NEEDS DESCRIPTION! Default false
 
-`cellbender_location` - uncomment this and edit the path, if cellbender results are already available (even partial results). The pipeline will skip the cellbender step for samples that already have cellbender results. For more details see `Tips to avoid rerunning the pipeline with partial data` below.
+`input` - This parameter defines whether the ambient RNA removal is skipped ('cellranger') or not ('cellbender'). The default value is 'cellbender'. This option can be useful if you can't use GPUs. For more details see `Tips to avoid rerunning time-consuming parts of the pipeline.` below.
 
-`existing_cellsnp` - provide a path to cellsnp results (if they are already available, even partial results) to skip cellsnp step for the files whth results. For more details see `Tips to avoid rerunning the pipeline with partial data` below.
+`cellbender_location` - uncomment this and edit the path, if cellbender results are already available (even partial results). The pipeline will skip the cellbender step for samples that already have cellbender results. For more details see `Tips to avoid rerunning time-consuming parts of the pipeline.` below.
 
-`run_with_genotype_input` - this parameter defines whether the genotype_input is used (true) or not(false). If this is set to true tsv_donor_panel_vcfs has to be specified.
+`existing_cellsnp` - provide a path to cellsnp results (if they are already available, even partial results) to skip cellsnp step for the files whth results. For more details see `Tips to avoid rerunning time-consuming parts of the pipeline.` below.
+
+`run_with_genotype_input` - this parameter defines whether the genotype_input is used (true) or not(false). If this is set to true `tsv_donor_panel_vcfs` has to be specified.
 
 `tsv_donor_panel_vcfs` - a file containing paths to vcf files with a priori known genotypes that we want to compare the genotypes from samples with.
 
@@ -182,7 +184,7 @@ You could also provide a path to this file by using a flag:
 
 ## Genotypesheet input (optional)
 This file contains paths to VCFs and cohort labels associated with them.
-A genotypesheet can be provided to the pipeline to improve sample deconvolution and detect whether the sample you have is the sample you are expecting (through genotype matching).
+A genotypesheet can be provided to the pipeline to improve sample deconvolution and detect whether the sample you have is the sample you are expecting (through GT matching).
 The pipeline will determine which cohort the deconvoluted sample comes from (if any).
 
 In the following example, we have 3 cohorts: Cohort1 has genotypes for each of the chromosomes - this is acceptable, as the pipeline will use all chromosome files to identify whether the sample is part of this cohort. The other 2 cohorts have a merged VCF file for all the chromosomes. This is also acceptable, as it will determine whether the sample belongs to this cohort in one step. After evaluating all cohorts the pipeline will assign the sample to the single donor that is the most likely real match.
@@ -198,10 +200,21 @@ You can find an example genotypesheet [here](../sample_input/vcf_inputs.tsv).
 | Cohort3 |   /ful/path/to/vcf_bcf/file/in/hg38/format/without/chr/prefix/full_cohort2_for_all_chr.vcf.gz      |
 
 
-## Tips to avoid rerunning the pipeline with partial data
-To avoid rerunning time-consuming steps of the pipeline when you have complete or partial results from those steps you can specify the next parameters in the input declaration config file:
+## Tips to avoid rerunning time-consuming parts of the pipeline.
+To avoid rerunning time-consuming steps of the pipeline you can specify the next parameters in the input declaration config file:
 
-### 1. cellbender_location
+### 1. input
+You can skip the cellbender step by adding `input = 'cellranger'` to the input declaration config file. You might consider this option because the cellbender step is time-consuming and requires GPUs.
+The pipeline will skip ambient RNA removal and proceed with deconvolution based on cellranger. For more details see [optional parameters](Optional_parameters.md)
+
+``` console
+params{
+    input_data_table = '/path/to/input.tsv' //A samplesheet file containing paths to all the cellranger and pool definition files
+    input = 'cellranger'
+}
+```
+
+### 2. cellbender_location
 You can avoid running cellbender multiple times if you have complete or partial cellbender results.
 If you specify a path to the folder with cellbender results in the input declaration config file, cellbender will be run on all the samples without results.
 ```
@@ -219,16 +232,6 @@ The cellbender results folder structure should look like this:
         file_paths_10x-*FPR_0pt1
         file_paths_10x-*FPR_0pt05
         file_paths_10x-*FPR_0pt01
-```
-### 2. input
-You can skip ambient RNA removal step by adding `input = 'cellranger'` to the input declaration config file.
-The pipeline will skipp ambient RNA removal and proceed with deconvolution based on cellranger. For more details see [optional parameters](Optional_parameters.md)
-
-``` console
-params{
-    input_data_table = '/path/to/input.tsv' //A samplesheet file containing paths to all the cellranger and pool definition files
-    input = 'cellranger'
-}
 ```
 
 ### 3. existing_cellsnp
@@ -248,7 +251,10 @@ params{
 7. extra_metadata = any extra metadata to be added for samples.
 8. input_data_table = is a file pointing to the 10x files as per: -->
 
-### Reproducibility
+## Pipeline custom configuration
+If you need to customise the pipeline please read **[Custom configuration](Custom_configuration.md)** for more details.
+
+## Reproducibility
 It is a good idea to specify a pipeline version (or a checkout tag indicated when running `git log`) when running the pipeline on your data. This ensures that a specific version of the pipeline code and software are used when you run your pipeline. If you keep using the same tag, you'll be running the same version of the pipeline, even if there have been changes to the code since.
 <!-- TODO - add a description about reproducibility something like this: currently we don't have a release;
 It is a good idea to specify a pipeline version when running the pipeline on your data. This ensures that a specific version of the pipeline code and software are used when you run your pipeline. If you keep using the same tag, you'll be running the same version of the pipeline, even if there have been changes to the code since.
@@ -256,9 +262,6 @@ It is a good idea to specify a pipeline version when running the pipeline on you
 First, go to the [nf-core/yascp releases page](https://github.com/nf-core/yascp/releases) and find the latest version number - numeric only (eg. `1.3.1`). Then specify this when running the pipeline with `-r` (one hyphen) - eg. `-r 1.3.1`.
 
 This version number will be logged in reports when you run the pipeline so that you'll know what you used when you look back in the future. -->
-
-## Pipeline custom configuration
-If you need to customise the pipeline please read **[Custom configuration](Custom_configuration.md)** for more details.
 
 ## Running in the background
 
