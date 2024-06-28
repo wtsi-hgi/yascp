@@ -190,10 +190,10 @@ integrate_cite <- function(slist, reference_samples, normalize, assay, k.anchor=
       # Normalize the data
       # slist[[donor_name]] <- NormalizeData(slist[[donor_name]])
       # print(paste("Normalized data for Sample", donor_name))
-      
+      slist[[donor_name]] <- ScaleData(x, features = seurat.features.adt, verbose = FALSE)
       # # Perform PCA
       # print('run pca:')
-      # slist[[donor_name]] <- RunPCA(slist[[donor_name]], features = variable_features)
+      slist[[donor_name]] <- RunPCA(slist[[donor_name]], features = variable_features)
       # print(paste("PCA completed for Sample", donor_name))
       print(DefaultAssay(slist[[donor_name]]))
 
@@ -218,8 +218,8 @@ integrate_cite <- function(slist, reference_samples, normalize, assay, k.anchor=
   
   print('Scale data and run PCA and UMAP')
   integrated.adt <- ScaleData(integrated.adt)
-  integrated.adt <- RunPCA(integrated.adt, npcs = dims)
-  integrated.adt <- RunUMAP(integrated.adt, dims = 1:dims)
+  # integrated.adt <- RunPCA(integrated.adt, npcs = dims)
+  # integrated.adt <- RunUMAP(integrated.adt, dims = 1:dims)
   
   return(integrated.adt)
 }
