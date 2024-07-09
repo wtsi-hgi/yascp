@@ -145,8 +145,7 @@ workflow YASCP {
                 // ###################################
                 if (params.filter_multiplets.run_process){
                     MULTIPLET(
-                        channel__file_paths_10x_gex,
-                        gex_h5ad
+                        channel__file_paths_10x_gex
                     )
                     scrublet_paths = MULTIPLET.out.scrublet_paths
                 }else{
