@@ -107,8 +107,6 @@ params {
     input_data_table = '/path/to/input.tsv' //A samplesheet file containing paths to all the cellranger and pool definition files
 
     //OPTIONAL
-    citeseq = true //NEEDS DESCRIPTION! Default false
-
     input = 'cellbender' //This parameter defines whether the ambient RNA removal is skipped ('cellranger') or not ('cellbender'). The default value is 'cellbender'.
 
     //cellbender_location='/path/to/existing/folder/nf-preprocessing/cellbender' //!!!!! Uncomment this and edit the path, if cellbender results are already available (even partial results). The pipeline will skip the cellbender step for samples that already have cellbender results.
@@ -127,8 +125,6 @@ params {
 `input_data_table` - a samplesheet file containing paths to all the cellranger and pool definition files.
 
 ### Optional parameters
-`citeseq` - NEEDS DESCRIPTION! Default false
-
 `input` - This parameter defines whether the ambient RNA removal is skipped ('cellranger') or not ('cellbender'). The default value is 'cellbender'. This option can be useful if you can't use GPUs. For more details see `Tips to avoid rerunning time-consuming parts of the pipeline.` below.
 
 `cellbender_location` - uncomment this and edit the path, if cellbender results are already available (even partial results). The pipeline will skip the cellbender step for samples that already have cellbender results. For more details see `Tips to avoid rerunning time-consuming parts of the pipeline.` below.
@@ -139,7 +135,7 @@ params {
 
 `tsv_donor_panel_vcfs` - a file containing paths to vcf files with a priori known genotypes that we want to compare the genotypes from samples with.
 
-### You can find more optional parameters [here](Optional_parameters.md).
+### You can find more optional parameters [here](optional_parameters.md).
 
 ## Samplesheet input
 This file specifies sample IDs, the number of pooled donors, IDs of individuals with priori known genotypes, and paths to 10x files.
@@ -252,7 +248,7 @@ params{
 8. input_data_table = is a file pointing to the 10x files as per: -->
 
 ## Pipeline custom configuration
-If you need to customise the pipeline please read **[Custom configuration](Custom_configuration.md)** for more details.
+If you need to customise the pipeline please read **[Custom configuration](custom_configuration.md)** for more details.
 
 ## Reproducibility
 It is a good idea to specify a pipeline version (or a checkout tag indicated when running `git log`) when running the pipeline on your data. This ensures that a specific version of the pipeline code and software are used when you run your pipeline. If you keep using the same tag, you'll be running the same version of the pipeline, even if there have been changes to the code since.
