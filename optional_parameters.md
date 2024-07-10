@@ -1,4 +1,4 @@
-# Work on this part of the documentation is ongoing
+# Work on this part of the documentation is in progress
 Multiple required/optional inputs are described below. 
 
 ```console
