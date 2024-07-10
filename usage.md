@@ -248,7 +248,7 @@ params{
 8. input_data_table = is a file pointing to the 10x files as per: -->
 
 ## Pipeline custom configuration
-If you need to customise the pipeline please read **[Custom configuration](custom_configuration.md)** for more details.
+If you need to customise the pipeline please read **[custom configuration](custom_configuration.md)** for more details.
 
 ## Reproducibility
 It is a good idea to specify a pipeline version (or a checkout tag indicated when running `git log`) when running the pipeline on your data. This ensures that a specific version of the pipeline code and software are used when you run your pipeline. If you keep using the same tag, you'll be running the same version of the pipeline, even if there have been changes to the code since.
