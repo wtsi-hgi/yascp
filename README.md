@@ -7,6 +7,10 @@
   <img src="https://github.com/wtsi-hgi/yascp/blob/main/assets/images/yascp_workflow.png" width="100%"/>
 </p>
 
+You can run pipeline blocks independently:
+
+<img width="100%" alt="Screenshot 2024-06-03 at 17 01 01" src="https://github.com/wtsi-hgi/yascp/assets/22347136/c724f731-42ab-4880-9666-eeb3384fd5e6">
+
 **nf-core/yascp** is a bioinformatics best-practice analysis pipeline designed for high-quality deconvolution, scRNA data quality control, doublet detection, cell type assignment, clustering, and integration of single-cell datasets. YASCP stands for "Yet Another Single Cell Pipeline." The sequence from Y to A in the acronym, referring to the alphabet, symbolizes the continuous journey of learning and discovery, with no Z to represent the ultimate knowledge that remains just out of reach, motivating us to keep exploring.
 
 | experiment_id   | n_pooled | donor_vcf_ids    |  data_path_10x_format   |
@@ -79,9 +83,6 @@ Pipeline has a modular design ensuring that the bits and piecies can be run inde
 16. Cell genotype concordance Calculations
 
 
-You can run pipeline blocks independently:
-
-<img width="100%" alt="Screenshot 2024-06-03 at 17 01 01" src="https://github.com/wtsi-hgi/yascp/assets/22347136/c724f731-42ab-4880-9666-eeb3384fd5e6">
 
 
 ## Documentation: Prepearing your own data and interpreting the results
