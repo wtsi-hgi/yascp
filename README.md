@@ -73,7 +73,7 @@ Easyest to do is using a conda enviroment.
 
 ## Credits
 
-Yascp was originally written by Matiss Ozols as part of the Cardinal project but is applicable to many other projects with contributions from Leland Taylor, Guillaume Noell, Hannes Ponstingl, Vivek Iyer,  Henry Taylor, Tobi Alegbe, Monika Krzak, Alessandro Raveane, Carl Anderson, Anna Lorenc, Haerin Jang, Niek de Klein, Stephen Watt, Nicole Soranzo.
+Yascp was originally written by Matiss Ozols; Leland Taylor, Guillaume Noell, Hannes Ponstingl, Vivek Iyer,  Henry Taylor, Tobi Alegbe, Monika Krzak, Alessandro Raveane, Carl Anderson, Anna Lorenc, Haerin Jang, Niek de Klein, Stephen Watt, Nicole Soranzo, Oliver Stegle.
 <!-- TODO nf-core: If applicable, make list of people who have also contributed -->
 
 The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool to run tasks across multiple compute infrastructures in a very portable manner. It uses Docker/Singularity containers making installation trivial and results highly reproducible. The [Nextflow DSL2](https://www.nextflow.io/docs/latest/dsl2.html) implementation of this pipeline uses one container per process which makes it much easier to maintain and update software dependencies. Where possible, these processes have been submitted to and installed from [nf-core/modules](https://github.com/nf-core/modules) in order to make them available to all nf-core pipelines, and to everyone within the Nextflow community!

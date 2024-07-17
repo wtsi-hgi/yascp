@@ -29,7 +29,7 @@ SMVAL = float(1e-9)
 # ZSCORE_THRESH = float(3)
 # ZSCORE_DIST_THRESH = float(3)
 
-DONOR_CELLINE_MATCHSTR = re.compile("^celline_(\S+)$")
+DONOR_CELLINE_MATCHSTR = re.compile(".*celline_.*")
 FNAM_MATCHSTR = re.compile("^pool_(\S+)_panel_(\S+)_gtcheck_donor_assignments")
 
 class AssignmentTables:
@@ -84,8 +84,11 @@ class AssignmentTables:
                 assigned_donor = dtup[0]
                 score = float(dtup[1])
                 score1 = float(dtup[2])
-                cm = DONOR_CELLINE_MATCHSTR.match(assigned_donor)
-                if cm:
+                # Its not only celline panels bu in general if there is only a binary donor panel.
+                z1 = float(dtup[3])
+                z0 = float(dtup[4])
+                # cm = DONOR_CELLINE_MATCHSTR.match(assigned_donor)
+                if ((z1 ==1 or z0==1) and z1-z0==1):
                     if is_cell_line is None:
                         is_cell_line = True
                         # if fnam_cell_line is not None and fnam_cell_line != nam:
@@ -95,7 +98,7 @@ class AssignmentTables:
                         self.cell_line_panel.append(fnam_cell_line)
                     else:
                         is_error = not is_cell_line
-                    cell_line = cm.group(1)
+                    cell_line = assigned_donor
                     if fnam_cell_line not in self.cell_lines:
                         self.cell_lines[fnam_cell_line]={}
                     if cell_line in self.cell_lines[fnam_cell_line]:
@@ -162,6 +165,7 @@ class AssignmentTables:
     def make_panel_assignment(self, panel, donor):
         donor_assigned, score0, score1, z0, z1 ,score_n, n, mean, sd= self.panels[panel][donor]
         is_confident_assignment = float(z0) > ZSCORE_THRESH and float(z0)-float(z1) > ZSCORE_DIST_THRESH
+        # is_confident_assignment = True
         if is_confident_assignment:
             assignment = donor_assigned
         else:

@@ -400,8 +400,8 @@ if __name__ == "__main__":
     cellsnp.index=cellsnp[0]+'_'+cellsnp[1]
     
 
-    informative_sites_covered_in_default_panel = set(exta_snps.index)-set(cellsnp.index)
-    constant_sites_covered_in_default_panel = set(constant_sites.index)-set(cellsnp.index)
+    informative_sites_covered_in_default_panel = set(exta_snps.index).intersection(set(cellsnp.index))
+    constant_sites_covered_in_default_panel = set(constant_sites.index).intersection(set(cellsnp.index))
     
     constant_sites.columns = cellsnp.columns
     exta_snps.columns = cellsnp.columns

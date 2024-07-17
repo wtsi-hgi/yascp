@@ -87,6 +87,7 @@ for f in glob.glob(f"{args.cellSNP_dirs}/*/GT_donors.vireo.vcf.gz"):
             all_chr_pos.add(chr+'_'+pos)
             for index, donor in enumerate(line[9:]):
                 alleles = donor.split(':')[gt_index]
+                alleles = alleles.replace('|',"/")
                 # print(alleles)
                 # for later comparison reasons, encode the alleles as dosages
                 if alleles == '1/0':

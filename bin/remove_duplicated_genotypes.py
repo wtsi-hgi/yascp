@@ -90,6 +90,15 @@ for don1 in donors[0]:
                 donors.loc[donors[0]==don1,'mapping']=mapping
                 # there are cases where two genotype ids map to same expected donor. In this case we should pick the one expected.
                 continue
+            
+    mappings = bridge[bridge['oragene_id']==don1.split('_')[1]]['s00046_id']
+    if len(mappings)>0:
+        mapping=mappings.values[0]
+        for mapping in mappings:
+            if mapping in input_expected:
+                donors.loc[donors[0]==don1,'mapping']=mapping
+                # there are cases where two genotype ids map to same expected donor. In this case we should pick the one expected.
+                continue
         
 donors = donors.sort_values('mapping')
 donors = donors.drop_duplicates(subset=['mapping'])

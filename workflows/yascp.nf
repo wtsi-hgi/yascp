@@ -310,8 +310,6 @@ workflow YASCP {
 
         if (!params.skip_handover){
 
-
-
             data_handover(out_ch,input_channel,
                             process_finish_check_channel,
                             ch_poolid_csv_donor_assignments,
