@@ -32,37 +32,41 @@ def write_h5_out_for_ct(ad,oufn_list_AZ,oufnam,oufn_list,samples,samples_AZ,bl,c
     # assumes that cells failing qc already were stripped out
     # ad.obs = ad.obs[['convoluted_samplename', 'cell_passes_qc']]
     # ad.var = ad.var[['feature_types', 'genome', 'gene_symbols']]
-    adb.obs['log10_ngenes_by_count'] = np.log10(adb.obs['n_genes_by_counts']) / np.log10(adb.obs['total_counts'])
+    try:
+        adb.obs['log10_ngenes_by_count'] = np.log10(adb.obs['n_genes_by_counts']) / np.log10(adb.obs['total_counts'])
+    except:
+        print('some cols dont exist')
+        
     adb_AZ = adb.copy()
     # disable
     adb_AZ.obs = pandas.DataFrame(adb_AZ.obs.index, index = adb_AZ.obs.index, columns = ["cell_barcode"])
 
-    adb.layers['counts'] = adb.X.copy()
+    # adb.layers['counts'] = adb.X.copy()
 
-    # Total-count normalize (library-size correct) the data matrix X to
-    # counts per million, so that counts become comparable among cells.
-    scanpy.pp.normalize_total(
-        adb,
-        target_sum=1e4,
-        exclude_highly_expressed=False,
-        key_added='normalization_factor',  # add to adata.obs
-        inplace=True
-    )
-    # Logarithmize the data: X = log(X + 1) where log = natural logorithm.
-    # Numpy has a nice function to undo this np.expm1(adata.X).
-    scanpy.pp.log1p(adb)
-    # Delete automatically added uns - UPDATE: bad idea to delete as this slot
-    # is used in _highly_variable_genes_single_batch.
-    # del adata.uns['log1p']
-    # Add record of this operation.
-    # adata.layers['log1p_cpm'] = adata.X.copy()
-    # adata.uns['log1p_cpm'] = {'transformation': 'ln(CPM+1)'}
-    adb.layers['log1p_cp10k'] = adb.X.copy()
-    adb.uns['log1p_cp10k'] = {'transformation': 'ln(CP10k+1)'}
+    # # Total-count normalize (library-size correct) the data matrix X to
+    # # counts per million, so that counts become comparable among cells.
+    # scanpy.pp.normalize_total(
+    #     adb,
+    #     target_sum=1e4,
+    #     exclude_highly_expressed=False,
+    #     key_added='normalization_factor',  # add to adata.obs
+    #     inplace=True
+    # )
+    # # Logarithmize the data: X = log(X + 1) where log = natural logorithm.
+    # # Numpy has a nice function to undo this np.expm1(adata.X).
+    # scanpy.pp.log1p(adb)
+    # # Delete automatically added uns - UPDATE: bad idea to delete as this slot
+    # # is used in _highly_variable_genes_single_batch.
+    # # del adata.uns['log1p']
+    # # Add record of this operation.
+    # # adata.layers['log1p_cpm'] = adata.X.copy()
+    # # adata.uns['log1p_cpm'] = {'transformation': 'ln(CPM+1)'}
+    # adb.layers['log1p_cp10k'] = adb.X.copy()
+    # adb.uns['log1p_cp10k'] = {'transformation': 'ln(CP10k+1)'}
 
-    # Reset X to counts
-    adb.X = adb.layers['counts'].copy()  
-    del adb.layers["counts"] #Since counts are set as an X we dont need it as part of the andata - this saves space.
+    # # Reset X to counts
+    # adb.X = adb.layers['counts'].copy()  
+    # del adb.layers["counts"] #Since counts are set as an X we dont need it as part of the andata - this saves space.
 
     try:
         vdf = adb_AZ.var[["feature_types", "genome"]]
@@ -70,7 +74,10 @@ def write_h5_out_for_ct(ad,oufn_list_AZ,oufnam,oufn_list,samples,samples_AZ,bl,c
         adb_AZ.var['genome']='GRCh38'
         vdf = adb_AZ.var[["feature_types", "genome"]]
     vdf.insert(1,"gene_ids", vdf.index)
-    vdf.index = pandas.Index(adb_AZ.var['gene_symbols'].astype('str'))
+    try:
+        vdf.index = pandas.Index(adb_AZ.var['gene_symbols'].astype('str'))
+    except:
+        print('gene_symbols not available')
     #ad.var = vdf.set_index("gene_symbols", drop = True, verify_integrity = False)
     adb_AZ.var = vdf
 
@@ -103,6 +110,12 @@ def split_h5ad_by_batch(ad, oufnprfx, colnam_batch = 'batch', anndata_compressio
     oufn_list_fnam = '{}_files.txt'.format(oufnprfx)
     oufn_list = []
     oufn_list_AZ = []
+    try:
+        print(set(ad.obs[colnam_batch]))
+        # here we do not have a batch id since the data is not deconvoluted yet
+    except:
+        ad.obs[colnam_batch] = oufnprfx
+        
     batch_labels = pandas.Categorical(ad.obs[colnam_batch].apply(lambda a: a.split('__')[0])) # <class 'pandas.core.series.Series'>
     samples = {}
     samples_AZ = {}

@@ -83,6 +83,7 @@ def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res
                     print('missing6')
     # Fetch Gather
     df_raw = pd.read_table(input_table, index_col = 'experiment_id')
+
     # 'Note that the names for the future projects may be different - have to be handled on the Nextflow modules'
     print('prepearing fetch folder')
     try:
@@ -90,40 +91,69 @@ def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res
     except:
         print('exists')
     metadata_table = pd.DataFrame()
-    d1 = glob.glob(f"{results_dir}/*/web_summary.html")
-    d2 = glob.glob(f"{results_dir}/*/*/web_summary.html")
-    d3 = glob.glob(f"{results_dir}/*/*/*/web_summary.html")
-    d4 =glob.glob(f"{results_dir}/*/*/*/*/web_summary.html")
-    ts3 = [*d1, *d2,*d3,*d4]
-    ts3 = pd.DataFrame(ts3,columns=['col'])
-    for folder in df_raw.index:
-        dir3 = f"{df_raw.loc[folder, 'data_path_10x_format']}"
-        try:
-            copyfile(f'{dir3}/web_summary.html', f'{name_dir}/Fetch Pipeline/html_{folder}.html')
-            metadata = pd.read_csv(f'{dir3}/metrics_summary.csv',sep=',',index_col=False)
-            metadata['Sample_id']=folder
+    
+    ts3 = []
+    c1 =0
+    for i,p2 in  df_raw.iterrows():
+        # print(p1)
+        p1 = p2['data_path_10x_format']
+        
+        d1 = glob.glob(f"{p1}/*/web_summary.html")
+        d2 = glob.glob(f"{p1}/*/*/web_summary.html")
+        d3 = glob.glob(f"{p1}/*/*/*/web_summary.html")
+        d4 =glob.glob(f"{p1}/*/*/*/*/web_summary.html")
+        ts3 = [ *d1, *d2,*d3,*d4]
+        for t1 in ts3:
+            copyfile(t1, f'{name_dir}/Fetch Pipeline/html_{i}.html')
+        
+        d1 = glob.glob(f"{p1}/*/metrics_summary.csv")
+        d2 = glob.glob(f"{p1}/*/*/metrics_summary.csv")
+        d3 = glob.glob(f"{p1}/*/*/*/metrics_summary.csv")
+        d4 =glob.glob(f"{p1}/*/*/*/*/metrics_summary.csv")
+        ts3 = [ *d1, *d2,*d3,*d4]
+        for t1 in ts3:   
+            metadata = pd.read_csv(t1,sep=',',index_col=False)
+            metadata['Sample_id']=i
             metadata.set_index('Sample_id',drop=True,inplace=True)
-            metadata_table=pd.concat([metadata_table,metadata])
-        except:
             try:
-                try:
-                    copyfile(f'{results_dir}/handover/{name_dir}/Fetch Pipeline/html_{folder}.html', f'{name_dir}/Fetch Pipeline/html_{folder}.html')
-                except:
-                    try:
-                        copyfile(ts3[ts3['col'].str.contains(f'{folder}')]['col'].values[0], f'{name_dir}/Fetch Pipeline/html_{folder}.html')
-                    except:    
-                        copyfile(f'/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/qc/{name}/results_rsync2/results/handover/{name_dir}/Fetch Pipeline/html_{folder}.html', f'{name_dir}/Fetch Pipeline/html_{folder}.html')
+                if all(metadata_table.columns == metadata.columns):
+                    metadata_table=pd.concat([metadata_table,metadata.T]) 
+                else:      
+                    metadata_table=pd.concat([metadata_table,metadata]) 
             except:
-                _='pass'
-            try:
-                metadata_table = pd.read_csv(f'{results_dir}/handover/{name_dir}/Fetch Pipeline/CSV/Submission_Data_Pilot_UKB.file_metadata.tsv',sep='\t')
-                metadata_table.set_index('Sample_id',drop=True,inplace=True)
-            except:
-                try:
-                    metadata_tablemetadata_table = pd.read_csv(f'{results_dir}/handover/{name_dir}/Fetch Pipeline/Submission_Data_Pilot_UKB.file_metadata.tsv',sep=',')
-                    metadata_table.set_index('Sample_id',drop=True,inplace=True)
-                except:
-                    metadata_table = pd.DataFrame()
+                metadata_table=pd.concat([metadata_table,metadata]) 
+    # ts3 = pd.DataFrame(ts3,columns=['col'])
+    
+    # for
+    
+    # for folder in df_raw.index:
+    #     dir3 = f"{df_raw.loc[folder, 'data_path_10x_format']}"
+    #     try:
+    #         copyfile(f'{dir3}/web_summary.html', f'{name_dir}/Fetch Pipeline/html_{folder}.html')
+    #         metadata = pd.read_csv(f'{dir3}/metrics_summary.csv',sep=',',index_col=False)
+    #         metadata['Sample_id']=folder
+    #         metadata.set_index('Sample_id',drop=True,inplace=True)
+    #         metadata_table=pd.concat([metadata_table,metadata])
+    #     except:
+    #         try:
+    #             try:
+    #                 copyfile(f'{results_dir}/handover/{name_dir}/Fetch Pipeline/html_{folder}.html', f'{name_dir}/Fetch Pipeline/html_{folder}.html')
+    #             except:
+    #                 try:
+    #                     copyfile(ts3[ts3['col'].str.contains(f'{folder}')]['col'].values[0], f'{name_dir}/Fetch Pipeline/html_{folder}.html')
+    #                 except:    
+    #                     copyfile(f'/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/qc/{name}/results_rsync2/results/handover/{name_dir}/Fetch Pipeline/html_{folder}.html', f'{name_dir}/Fetch Pipeline/html_{folder}.html')
+    #         except:
+    #             _='pass'
+    #         try:
+    #             metadata_table = pd.read_csv(f'{results_dir}/handover/{name_dir}/Fetch Pipeline/CSV/Submission_Data_Pilot_UKB.file_metadata.tsv',sep='\t')
+    #             metadata_table.set_index('Sample_id',drop=True,inplace=True)
+    #         except:
+    #             try:
+    #                 metadata_tablemetadata_table = pd.read_csv(f'{results_dir}/handover/{name_dir}/Fetch Pipeline/Submission_Data_Pilot_UKB.file_metadata.tsv',sep=',')
+    #                 metadata_table.set_index('Sample_id',drop=True,inplace=True)
+    #             except:
+    #                 metadata_table = pd.DataFrame()
     try:
         os.mkdir(f'{name_dir}/Fetch Pipeline/CSV')
     except:
@@ -167,6 +197,26 @@ def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res
         for folder in Folders:
             copyfile(f'{folder1}/{folder}/Vireo_plots.pdf', f'{name_dir}/Deconvolution/Vireo_plots_{folder}.pdf')
         
+        
+        
+    folder1 = f'{directory}/doublets'
+    if os.path.isdir(folder1):
+        print('prepearing Doublet folder')
+        try:
+            os.mkdir(f'{name_dir}/Doublets___301')
+        except:
+            print('dire exists')
+        files = glob.glob(f'{folder1}/*.tsv')
+
+        for file1 in files:
+            print(file1)
+            try:
+                copy(file1, f'{name_dir}/Doublets___301')
+            except:
+                print('picked up directory')
+                continue
+                    
+        
     folder1 = f'{directory}/celltype/celltypist'
     if os.path.isdir(folder1):
         print('prepearing celltype folder')
@@ -205,6 +255,8 @@ def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res
         #     print('dire exists')
         # copyfile(fil1, f'{name_dir}/QC metrics/plot_ecdf-x_log10.var=total_counts.color=experiment_id-adata.png')
         files = glob.glob(f'{folder1}/*[!.gz]')
+        files2 = glob.glob(f'{folder1}/*/*[!.gz]')
+        files = files + files2
         for file1 in files:
             print(file1)
             try:
@@ -212,8 +264,12 @@ def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res
             except:
                 print('picked up directory')
                 continue
-
-
+    try:
+        copy(f'{directory}/celltype/All_Celltype_Assignments.csv', f'{name_dir}/Cell-type assignment/All_Celltype_Assignments.csv')
+    except:
+        print('doesnt exist')    
+    
+    
     folder1 = f'{directory}/plots/per_celltype_outliers'
     if os.path.isdir(folder1):
         print('yes')

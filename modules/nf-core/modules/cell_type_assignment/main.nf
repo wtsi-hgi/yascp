@@ -42,7 +42,7 @@ workflow CELL_TYPE_ASSIGNEMT{
             az_out = Channel.of()
         }
 
-        if (params.celltype_assignment.run_azimuth){
+        if (params.celltype_assignment.run_celltypist){
             Channel.fromList(params.celltypist.models)
                 .set{ch_celltypist_models}
             CELLTYPIST(az_ch_experiment_filth5.combine(ch_celltypist_models))

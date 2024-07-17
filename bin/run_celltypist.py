@@ -61,10 +61,12 @@ logging.info("Free: %d GiB" % (free // (2**30)))
 @click.option('-g','--input_h5_genome_version', default="GRCh38", show_default=True, type=str,
               help='True or False: whether to write donor level scanpy hdf5 objects to dir --output_dir')
 
-
+# Optional arguments:
+@click.option('-p','--sample_plot_probs', is_flag=True, default=False, type=bool,
+              help='True or False: whether or not to plot probabilities per cell types and per sample')
 
 def run_celltypist(samplename, filtered_matrix_h5, celltypist_model,
-                   output_dir, anndata_compression_level,input_h5_genome_version):
+                   output_dir, anndata_compression_level,input_h5_genome_version, sample_plot_probs):
     """process cellranger output filtered h5 so that it can be fed to Celltypist"""
     logging.info('running run_celltypist() function..')
 
@@ -125,7 +127,7 @@ def run_celltypist(samplename, filtered_matrix_h5, celltypist_model,
     #       try the .raw.X attribute.
     # If none of them fit into the desired data type or the expression matrix is not properly normalised, an error will be raised.
     logging.info('... running sc.pp.normalize_total(adata, target_sum=1e4)')
-    sc.pp.normalize_total(adata, target_sum=1e4)
+    sc.pp.normalize_per_cell(adata, counts_per_cell_after=1e4)
     logging.info('... running sc.pp.log1p(adata, copy = False)')
     sc.pp.log1p(adata, copy = False)
 
@@ -185,10 +187,11 @@ def run_celltypist(samplename, filtered_matrix_h5, celltypist_model,
     predictions.to_plots(folder = output_dir, prefix = samplename + '_')
     ###predictions.to_plots(folder = os.getcwd())
     # Visualise the decision scores and probabilities of each cell type overlaid onto the UMAP as well.
-    folder_plot_probs = output_dir + '/plot_prob'
-    if not os.path.exists(folder_plot_probs):
-        os.makedirs(folder_plot_probs)
-    predictions.to_plots(folder = folder_plot_probs, prefix = samplename + '_prob_', plot_probability = True)
+    if sample_plot_probs:
+        folder_plot_probs = output_dir + '/plot_prob'
+        if not os.path.exists(folder_plot_probs):
+            os.makedirs(folder_plot_probs)
+        predictions.to_plots(folder = folder_plot_probs, prefix = samplename + '_prob_', plot_probability = True)
 
     # Get an `AnnData` with predicted labels embedded into the cell metadata columns.
     # logging.info("... running predictions.to_adata()")

@@ -11,7 +11,7 @@ process SPLIT_BATCH_H5AD {
     }
     
     input:
-        path(file__anndata) // anndata h5ad file seurat_azimuth_pbmc_1.0
+        tuple val(name), path(file__anndata) // anndata h5ad file seurat_azimuth_pbmc_1.0
         val(mode)
 
     output:

@@ -14,7 +14,8 @@ include {UMAP; UMAP as UMAP_HARMONY; UMAP as UMAP_BBKNN;} from "$projectDir/modu
 include {CLUSTERING; CLUSTERING as CLUSTERING_HARMONY; CLUSTERING as CLUSTERING_BBKNN;} from "$projectDir/modules/nf-core/modules/clustering/main"
 include {CELL_HARD_FILTERS} from "$projectDir/modules/nf-core/modules/cell_hard_filters/main"
 include {DONT_INTEGRATE} from "$projectDir/modules/nf-core/modules/reduce_dims/main"
-include { DSB_PROCESS; DSB_INTEGRATE; MULTIMODAL_INTEGRATION; VDJ_INTEGRATION } from '../modules/nf-core/modules/citeseq/main'
+include {TOTAL_VI_INTEGRATION} from "$projectDir/modules/nf-core/modules/totalVi/main"
+include { DSB_PROCESS; PREPROCESS_PROCESS; DSB_INTEGRATE; MULTIMODAL_INTEGRATION; VDJ_INTEGRATION } from '../modules/nf-core/modules/citeseq/main'
 
 workflow qc {
     take:
@@ -36,10 +37,14 @@ workflow qc {
         //     log.info '''--- No extra metadata to add to h5ad ---'''
         // }
 
-        CELL_HARD_FILTERS(file__anndata_merged,params.hard_filters_drop)
-        if(params.sample_qc.cell_filters.experiment.value != '' | params.sample_qc.cell_filters.all_samples.value != '' | params.sample_qc.downsample_cells_fraction.value != '' | params.sample_qc.downsample_cells_n.value != '' | params.sample_qc.downsample_feature_counts.value != ''){
-            file__anndata_merged = CELL_HARD_FILTERS.out.anndata
+        if (params.cell_hard_filters){
+            if(params.sample_qc.cell_filters.experiment.value != '' | params.sample_qc.cell_filters.all_samples.value != '' | params.sample_qc.downsample_cells_fraction.value != '' | params.sample_qc.downsample_cells_n.value != '' | params.sample_qc.downsample_feature_counts.value != ''){
+                log.info """---Flagging/filtering hard filters.----"""
+                CELL_HARD_FILTERS(file__anndata_merged,params.hard_filters_drop)
+                file__anndata_merged = CELL_HARD_FILTERS.out.anndata
+            }
         }
+
         
         //FILTERING OUTLIER CELLS
         if (params.filter_outliers) {
@@ -58,12 +63,13 @@ workflow qc {
                 params.sample_qc.outlier_filtering_strategy
             )
             file__anndata_merged = OUTLIER_FILTER.out.anndata
-            file__cells_filtered = OUTLIER_FILTER.out.cells_filtered
+            // file__cells_filtered = OUTLIER_FILTER.out.cells_filtered
                 
         }
         
         
         if (params.normalise_andata){
+            log.info """---Normalising data For data clustering and integration.----"""
             NORMALISE_AND_PCA(
                 file__anndata_merged,
                 params.normalise.mode,
@@ -76,20 +82,35 @@ workflow qc {
                 params.reduced_dims.vars_to_regress.value
             )
 
+
+
             if (params.citeseq){
+                log.info """---Integrating data using Seurat integration method----"""
                 NORMALISE_AND_PCA.out.sample_QCd_adata.flatten().map{sample -> tuple("${sample}".replaceFirst(/___sample_QCd_adata.h5ad/,"").replaceFirst(/.*\//,""),sample)}.set{alt_input}
                 channel_dsb2 = channel_dsb.combine(alt_input, by: 0)
                 DSB_PROCESS(channel_dsb2)
+
+
+                if(params.totalVi.run_process){
+                    TOTAL_VI_INTEGRATION(NORMALISE_AND_PCA.out.anndata,DSB_PROCESS.out.citeseq_rsd.collect())
+                }
+
+
+                DSB_PROCESS.out.ch_for_norm.subscribe { println "1:: DSB_PROCESS.out.ch_for_norm: $it" }
+                
+                // PREPROCESS_PROCESS()
                 // DSB_PROCESS.out.citeseq_rsd.subscribe { println "1:: DSB_PROCESS.out.citeseq_rsd: $it" }
-                // vireo_paths.subscribe { println "1:: vireo_paths input: $it" }
-                // assignments_all_pools.subscribe { println "1:: assignments_all_pools input: $it" }
-                // DSB_PROCESS.out.tmp_rsd.subscribe { println "1:: DSB_PROCESS.out.tmp_rsd input: $it" }
-                // matched_donors.subscribe { println "1:: matched_donors.out.tmp_rsd input: $it" }
+                vireo_paths_map = vireo_paths.flatten().map{row->tuple("${row}".replaceFirst(/.*vireo_/,""), row)}
+                vireo_paths_map.subscribe { println "1:: vireo_paths_map $it" }
+                DSB_PROCESS.out.ch_for_norm.subscribe { println "1:: vireo_paths_map $it" }
+                vireo_paths_map.combine(DSB_PROCESS.out.ch_for_norm, by: 0).set{norm_chanel}
+                norm_chanel.combine(matched_donors).set{inp4}
+                inp4.subscribe { println "1:: inp4 $it" }
+                matched_donors.subscribe { println "1:: matched_donors $it" }
+                PREPROCESS_PROCESS(inp4,params.reduced_dims.vars_to_regress.value)
 
                 DSB_INTEGRATE(
-                    vireo_paths.collect(),
-                    DSB_PROCESS.out.tmp_rsd.collect(),
-                    matched_donors,
+                    PREPROCESS_PROCESS.out.tmp_rsd.collect(),
                     params.reduced_dims.vars_to_regress.value,
                     params.reduced_dims.seurat_integration.k_anchor,
                     params.reduced_dims.seurat_integration.dims,
@@ -118,8 +139,9 @@ workflow qc {
             LI4 = Channel.of([1, 'dummy_lisi'])
         }
 
-        PCA(andata,outdir,params.normalise.layer)
 
+        log.info """---Estimating PCA elbow.----"""
+        PCA(andata,outdir,params.normalise.layer)
         ESTIMATE_PCA_ELBOW(
             PCA.out.outdir,
             PCA.out.anndata,
@@ -148,7 +170,7 @@ workflow qc {
                     SUBSET_PCS.out.outdir,
                     SUBSET_PCS.out.anndata,
                     n_pcs)
-
+                    
         file__anndata_merged = PCA.out.anndata
         
         LI4 = PLOT_STATS.out.LI
@@ -160,6 +182,9 @@ workflow qc {
         } else {
             channel__cluster__known_markers = tuple('', '')
         }
+
+
+
 
         // "Correct" PCs using Harmony or BBKNN
         if (params.harmony.run_process) {

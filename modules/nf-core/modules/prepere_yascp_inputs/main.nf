@@ -16,6 +16,7 @@ process YASCP_INPUTS {
     input:
         path(input_file)
 
+
     // the output for this is a correct format input files as per cb 6.1
     output:
         path("input_file_corectly_formatted.tsv"), emit: input_file_corectly_formatted

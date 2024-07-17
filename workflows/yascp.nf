@@ -16,8 +16,10 @@ include { CREATE_ARTIFICIAL_BAM_CHANNEL } from "$projectDir/modules/local/create
 include {MERGE_SAMPLES} from "$projectDir/modules/nf-core/modules/merge_samples/main"
 include {dummy_filtered_channel} from "$projectDir/modules/nf-core/modules/merge_samples/functions"
 include {MULTIPLET} from "$projectDir/subworkflows/doublet_detection"
-include { SPLIT_CITESEQ_GEX; SPLIT_CITESEQ_GEX as SPLIT_CITESEQ_GEX_FILTERED } from '../modules/nf-core/modules/citeseq/main'
+include { SPLIT_CITESEQ_GEX; SPLIT_CITESEQ_GEX as SPLIT_CITESEQ_GEX_FILTERED; SPLIT_CITESEQ_GEX as PREPOCESS_FILES } from '../modules/nf-core/modules/citeseq/main'
 include { GENOTYPE_MATCHER } from "$projectDir/modules/nf-core/modules/vireo/main"
+include { RETRIEVE_RECOURSES } from "$projectDir/subworkflows/local/retrieve_recourses"
+include { PREPROCESS_GENOME } from "$projectDir/modules/nf-core/modules/subset_bam_per_barcodes_and_variants/main"
 /*
 ========================================================================================
     RUN MAIN WORKFLOW
@@ -43,6 +45,13 @@ workflow YASCP {
             // here we have rerun something upstream - done for freeze1
             assignments_all_pools = mode
         }
+        if (params.reference_assembly_fasta_dir=='https://yascp.cog.sanger.ac.uk/public/10x_reference_assembly'){
+            RETRIEVE_RECOURSES()  
+            genome1 = RETRIEVE_RECOURSES.out.reference_assembly
+        }else{
+            genome1 = "${params.reference_assembly_fasta_dir}"
+        }
+        genome = PREPROCESS_GENOME(genome1)
 
         // vcf_input.subscribe { println "vcf_input: $it" }
         // ###################################
@@ -57,8 +66,8 @@ workflow YASCP {
         bam_split_channel = Channel.of()
         out_ch = params.outdir
             ? Channel.fromPath(params.outdir, checkIfExists:true)
-            : Channel.fromPath("${launchDir}/${params.outdir}")
-                
+            : Channel.from("${launchDir}/${params.outdir}")
+
         // out_ch.map{row->"${row[0]}/possorted_genome_bam.bam" }
         prepare_inputs(input_channel)
         chanel_cr_outs = prepare_inputs.out.chanel_cr_outs
@@ -85,6 +94,7 @@ workflow YASCP {
                 ch_experimentid_paths10x_raw = prepare_inputs.out.ch_experimentid_paths10x_raw
                 ch_experiment_filth5 = ch_experimentid_paths10x_filtered = prepare_inputs.out.ch_experimentid_paths10x_filtered
 
+
                 if (params.citeseq){
                     // If citeseq data is present in the 10x mtx then we strip it before the ambient rna correction.
                     SPLIT_CITESEQ_GEX( prepare_inputs.out.ch_experimentid_paths10x_raw,'raw')
@@ -94,8 +104,6 @@ workflow YASCP {
                     channel__file_paths_10x=SPLIT_CITESEQ_GEX_FILTERED.out.channel__file_paths_10x
                     channel__file_paths_10x_single=SPLIT_CITESEQ_GEX_FILTERED.out.gex_data
                     ch_experiment_filth5 = SPLIT_CITESEQ_GEX.out.gex_data
-                }else{
-                    ab_data = Channel.of()
                 }
 
                 // Either run ambient RNA removal with cellbender or use cellranger filtered reads (cellbender|cellranger)
@@ -123,6 +131,11 @@ workflow YASCP {
                 }
 
 
+                PREPOCESS_FILES( channel__file_paths_10x_single,'preprocess')
+                channel__file_paths_10x_gex = PREPOCESS_FILES.out.channel__file_paths_10x
+                gex_h5ad = PREPOCESS_FILES.out.gex_h5ad
+                
+
 
                 // ###################################
                 // ###################################
@@ -132,7 +145,7 @@ workflow YASCP {
                 // ###################################
                 if (params.filter_multiplets.run_process){
                     MULTIPLET(
-                        channel__file_paths_10x_single
+                        channel__file_paths_10x_gex
                     )
                     scrublet_paths = MULTIPLET.out.scrublet_paths
                 }else{
@@ -153,8 +166,9 @@ workflow YASCP {
                         ch_experiment_filth5,
                         prepare_inputs.out.ch_experiment_donorsvcf_donorslist,
                         scrublet_paths,
-                        vcf_input)
-                    vireo_paths = main_deconvolution.out.vireo_paths
+                        vcf_input,
+                        genome)
+                    vireo_paths = main_deconvolution.out.vireo_paths2
                     matched_donors = main_deconvolution.out.matched_donors
                     ch_poolid_csv_donor_assignments = main_deconvolution.out.ch_poolid_csv_donor_assignments
                     bam_split_channel = main_deconvolution.out.sample_possorted_bam_vireo_donor_ids
@@ -185,16 +199,13 @@ workflow YASCP {
                 assignments_all_pools = Channel.from("$projectDir/assets/fake_file.fq")
 
                 if (params.citeseq){
-                    vireo_paths = Channel.fromPath( "${params.outdir}/deconvolution/vireo/*/vireo_*")
 
                     vireo_paths = params.outdir
                         ? Channel.fromPath("${params.outdir}/deconvolution/vireo/*/vireo_*", checkIfExists:true, type: 'dir')
                         : Channel.fromPath("${launchDir}/${params.outdir}/deconvolution/vireo/*/vireo_*", type: 'dir')
 
-                    
                     GENOTYPE_MATCHER(vireo_paths.collect())
                     matched_donors = GENOTYPE_MATCHER.out.matched_donors
-                    matched_donors.subscribe { println "matched_donors: $it" }
                 }else{
                     vireo_paths = Channel.from("$projectDir/assets/fake_file.fq")
                     matched_donors = Channel.from("$projectDir/assets/fake_file.fq")
@@ -232,11 +243,12 @@ workflow YASCP {
             // This step of the pipeline also performs celltype assignments and removes cells that fail adaptive filtering.
             // ###################################
             // ###################################
-
+            // file__anndata_merged_ct = gex_h5ad.map{row-> tuple('all_together',row[0]) }
+            // file__anndata_merged_ct.subscribe { println "file__anndata_merged_ct: $it" }
             if (params.celltype_assignment.run_celltype_assignment){
-                celltype(file__anndata_merged)
+                file__anndata_merged.map{val1 -> tuple('full_ct', val1)}.set{file__anndata_merged2}
+                celltype(file__anndata_merged2)
                 file__anndata_merged=celltype.out.file__anndata_merged2
-                
             }
 
             // ###################################
@@ -298,14 +310,10 @@ workflow YASCP {
 
         if (!params.skip_handover){
 
-            out_ch = params.outdir
-            ? Channel.fromPath(params.outdir, checkIfExists:true)
-            : Channel.fromPath("${launchDir}/${outdir}")
-
             data_handover(out_ch,input_channel,
                             process_finish_check_channel,
                             ch_poolid_csv_donor_assignments,
-                            bam_split_channel) 
+                            bam_split_channel,genome) 
         }
                         
                         

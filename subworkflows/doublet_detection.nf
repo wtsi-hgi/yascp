@@ -5,6 +5,7 @@ include {SC_DBLFINDER} from "$projectDir/modules/nf-core/modules/scDblFinder/mai
 include { DOUBLET_FINDER} from "$projectDir/modules/nf-core/modules/doubletfinder/main"
 include { SCDS} from "$projectDir/modules/nf-core/modules/scds/main"
 include { SPLIT_CITESEQ_GEX; SPLIT_CITESEQ_GEX as SPLIT_CITESEQ_GEX_FILTERED } from "$projectDir/modules/nf-core/modules/citeseq/main"
+include { CONVERT_MTX_TO_H5AD } from "$projectDir/modules/local/convert_h5ad_to_mtx/main"
 
 def random_hex(n) {
     Long.toUnsignedString(new Random().nextLong(), n).toUpperCase()
@@ -73,13 +74,10 @@ process MERGE_DOUBLET_RESULTS{
 workflow MULTIPLET {
     take:
         channel__file_paths_10x
+        
     main:
         // Identify multiplets using scrublet.
-
-        SPLIT_CITESEQ_GEX( channel__file_paths_10x,'filterd')
-        channel__file_paths_10x = SPLIT_CITESEQ_GEX.out.channel__file_paths_10x
-        gex_h5ad = SPLIT_CITESEQ_GEX.out.gex_h5ad
-
+        gex_h5ad = CONVERT_MTX_TO_H5AD(channel__file_paths_10x).gex_h5ad
         input_channel = Channel.of()
         if (params.filter_multiplets.scrublet.run_process){
             SCRUBLET(
