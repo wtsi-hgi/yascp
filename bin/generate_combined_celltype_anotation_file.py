@@ -146,8 +146,8 @@ def main():
         
     # ad2 = adatasets2[0].concatenate(*adatasets2[1:])
     # ad = scanpy.read(adata)
-    ad.obs = ad.obs.merge(Data_All, left_index=True, right_index=True)
-
+    ad.obs = ad.obs.merge(Data_All, left_index=True, right_index=True, how='left')
+    # set(ad.obs.index)-set(Data_All.index)
     donor_celltype_report={}
     tranche_exp_report={}
     for id1 in set(Data_All['Exp']):

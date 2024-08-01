@@ -47,33 +47,30 @@ workflow YASCP {
         }
 
         if (!params.input_data_table.contains('fake_file')){
-
-        // vcf_input.subscribe { println "vcf_input: $it" }
-        // ###################################
-        // ################################### Readme
-        // AMBIENT RNA REMOVAL USING CELLBENDER
-        // There are 2 modes of running YASCP pipeline:
-        // (option 1) users can run it from existing cellbender if the analysis has already been performed by providing a parth to existing cellbender files : note a specific folder structure is required
-        // (option 2) users can run it from cellranger - skipping the cellbender. params.input == 'cellranger'
-        // ###################################
-        // ###################################
-        prepare_inputs(input_channel)
-        channel__file_paths_10x=prepare_inputs.out.channel__file_paths_10x
-        channel__file_paths_10x_single=prepare_inputs.out.ch_experimentid_paths10x_filtered
-        input_channel = prepare_inputs.out.channel_input_data_table
-        if (params.reference_assembly_fasta_dir=='https://yascp.cog.sanger.ac.uk/public/10x_reference_assembly'){
+            prepare_inputs(input_channel)
+            channel__file_paths_10x=prepare_inputs.out.channel__file_paths_10x
+            channel__file_paths_10x_single=prepare_inputs.out.ch_experimentid_paths10x_filtered
+            input_channel = prepare_inputs.out.channel_input_data_table
+            if (params.reference_assembly_fasta_dir=='https://yascp.cog.sanger.ac.uk/public/10x_reference_assembly'){
                 RETRIEVE_RECOURSES()  
-                genome = RETRIEVE_RECOURSES.out.reference_assembly
+                genome1 = RETRIEVE_RECOURSES.out.reference_assembly
             }else{
-                genome = "${params.reference_assembly_fasta_dir}"
-        }       
-            
-        chanel_cr_outs = prepare_inputs.out.chanel_cr_outs
-        channel_dsb = prepare_inputs.out.channel_dsb
+                genome1 = "${params.reference_assembly_fasta_dir}"
+            }
+            genome = PREPROCESS_GENOME(genome1)
+                
+            chanel_cr_outs = prepare_inputs.out.chanel_cr_outs
+            channel_dsb = prepare_inputs.out.channel_dsb
         }
-        vireo_paths = Channel.from("$projectDir/assets/fake_file.fq")
-        matched_donors = Channel.from("$projectDir/assets/fake_file.fq")
-        
+            vireo_paths = Channel.from("$projectDir/assets/fake_file.fq")
+            matched_donors = Channel.from("$projectDir/assets/fake_file.fq")
+
+            ch_poolid_csv_donor_assignments = Channel.empty()
+            bam_split_channel = Channel.of()
+            out_ch = params.outdir
+                ? Channel.fromPath(params.outdir, checkIfExists:true)
+                : Channel.from("${launchDir}/${params.outdir}")
+                 
         if(!params.just_reports){
             // sometimes we just want to rerun report generation as a result of alterations, hence if we set params.just_reports =True pipeline will use the results directory and generate a new reports.
 

@@ -98,11 +98,17 @@ COLUMNS_DATASET = {
     'chromium_lane': 'chromium.lane',
     'instrument':'instrument'
     }
+
 COLUMNS_SCRUBLET = {
     'scrublet__multiplet_scores': 'scrublet.scores',
     'scrublet__predicted_multiplet': 'scrublet.multiplet',
-    'scrublet__multiplet_zscores': 'scrublet.zscores'
+    'scrublet__multiplet_zscores': 'scrublet.zscores',
+    'scds_DropletType':'scds.multiplet','scds_score':'scds.score',
+    'scDblFinder_DropletType':'scDblFinder.multiplet','scDblFinder_Score':'scDblFinder.score',
+    'DoubletDecon_DropletType':'DoubletDecon.multiplet',
+    'DoubletFinder_DropletType':'DoubletFinder.multiplet','DoubletFinder_score':'DoubletFinder.score'
     }
+
 COLUMNS_OUTPUT = \
     {**COLUMNS_DATASET, **COLUMNS_CELLBENDER, **COLUMNS_DECONV, **COLUMNS_QC, **COLUMNS_AZIMUTH}
 COLUMNS_OUTPUT_WITH_SCRUBLET = \
@@ -354,7 +360,7 @@ def gather_donor(donor_id, ad, ad_lane_raw, azimuth_annot, qc_obs, columns_outpu
         dt = pandas.concat([df,dfqc], axis = 1, join = 'inner')
 
         colnams = list(columns_output.keys())
-        colnams_overlap = set(colnams).intersection(set(dt.columns))
+        colnams_overlap = sorted(set(colnams).intersection(set(dt.columns)))
         ad.obs = dt[colnams_overlap].rename(columns = columns_output)
         dt = pandas.concat([df, dfqc], axis = 1, join = 'outer')[colnams_overlap]
         dt.rename(columns = columns_output, inplace = True)
@@ -377,9 +383,11 @@ def gather_donor(donor_id, ad, ad_lane_raw, azimuth_annot, qc_obs, columns_outpu
 
     dt.index.name = 'barcode'
     ad.obs.index.name = 'barcode'
-    dt.to_csv(os.path.join(outdir, oufnam + '.tsv'), sep = "\t", na_rep = "N/A")
-    sys.stderr.write("writing file {} ...\n".format(oufnam))
     ad.obs = ad.obs.loc[:,~ad.obs.columns.duplicated()]
+    dt = dt.loc[:,~dt.columns.duplicated()].copy()
+    dt[set(dt.columns)].to_csv(os.path.join(outdir, oufnam + '.tsv'), sep = "\t", na_rep = "N/A")
+    sys.stderr.write("writing file {} ...\n".format(oufnam))
+    
     if write_h5:
         path1=os.path.join(outdir, oufnam + '.h5ad')
         try:
@@ -505,6 +513,13 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
     #############
 
     azt = pd.read_csv(f'{args.results_dir}/celltype/All_Celltype_Assignments.tsv',sep='\t',index_col=0)
+    azt_cols_to_add = azt.columns[azt.columns.str.contains('Azimuth')]
+    ct_cols_to_add = azt.columns[azt.columns.str.contains('Celltypist')]
+    for i3 in set(azt_cols_to_add) - set(columns_output.keys()):
+        columns_output = {**columns_output,  **{i3:i3}}
+    for i3 in set(ct_cols_to_add) - set(columns_output.keys()):
+        columns_output = {**columns_output,  **{i3:i3}}
+    # scpred_to_add = azt.columns[azt.columns.str.contains('Scpred')]
     ##########################
     # Scrublet
     #########################
@@ -516,21 +531,26 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
         d2 = pd.read_csv(f1,sep='\t')
         d2['Exp']=pool_name
         doublet_data_combined = pd.concat([doublet_data_combined,d2])
+    doublet_data_combined = doublet_data_combined.drop_duplicates(subset='barcodes')
+    scb = doublet_data_combined.set_index('barcodes')
+    columns_output = {**columns_output,  **COLUMNS_SCRUBLET}    
         
-    datadir_scrublet=glob.glob(f'{args.results_dir}/*/multiplet.method=scrublet')[0]
-    if os.path.isdir(datadir_scrublet):
-        # Scrublet loading QC
-        try:
-            scb = load_scrublet_assignments(
-                expid,
-                datadir_scrublet=datadir_scrublet
-            )
-            columns_output = {**columns_output,  **COLUMNS_SCRUBLET}
-        except:
-            print('Scrubblet was not performed for this pool - potential reason is that there are not enough cells for assignment')
-            scb = None
-    else:
-        scb = None
+    # doublet_data_combined.iloc[0]
+    # datadir_scrublet=glob.glob(f'{args.results_dir}/*/multiplet.method=scrublet')[0]
+    # if os.path.isdir(datadir_scrublet):
+    #     # Scrublet loading QC
+    #     try:
+    #         scb = load_scrublet_assignments(
+    #             expid,
+    #             datadir_scrublet=datadir_scrublet
+    #         )
+    #         columns_output = {**columns_output,  **COLUMNS_SCRUBLET}
+    #         scb = pd.concat([scb,doublet_data_combined.loc[scb.index]],axis=1)
+    #     except:
+    #         print('Scrubblet was not performed for this pool - potential reason is that there are not enough cells for assignment')
+    #         scb = None
+    # else:
+    #     scb = None
         
     
     ############################################################

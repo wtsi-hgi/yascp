@@ -975,7 +975,12 @@ class Concordances:
     
 
     def combine_concordances(self,result,other_donor_concordance,donor_gt_match,analyse_donor):
-        pd.DataFrame(other_donor_concordance).sort_values(by=['cell']).to_csv(f'{donor_gt_match}-{analyse_donor}--each_cells_comparison_with_other_donor.tsv',sep='\t',index=False)
+        try:
+            pd.DataFrame(other_donor_concordance).sort_values(by=['cell']).to_csv(f'{donor_gt_match}-{analyse_donor}--each_cells_comparison_with_other_donor.tsv',sep='\t',index=False)
+        except:
+            print('We do not have any cells to analyse for this donor')
+            pd.DataFrame(other_donor_concordance).to_csv(f'{donor_gt_match}-{analyse_donor}--each_cells_comparison_with_other_donor.tsv',sep='\t',index=False)
+        
         self.cell_concordance_table = {**self.cell_concordance_table, **result}
 
     def combine_dict(self,cell_concordance_table,result): 

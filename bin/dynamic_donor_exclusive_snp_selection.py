@@ -339,7 +339,8 @@ if __name__ == "__main__":
     subs['full'] = subs['full'].str.replace(".|.",';', regex=False).str.replace(";+",';')
     subs['full'] = subs['full'].str.replace("./.",';', regex=False).str.replace(";+",';')
     subs['full'] = subs['full'].str.replace(".",';', regex=False).str.replace(";+",';')
-    
+    subs['full'] = subs['full'].str.replace("/",'|', regex=False)
+
     # all informative indexes
     # now we need to locate which variants actually has a change in the genotype. 
     all_informative_site_index = set()
