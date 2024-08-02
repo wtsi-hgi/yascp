@@ -74,12 +74,7 @@ workflow celltype{
         }        
         all_extra_fields2 = all_extra_fields.mix(sc_out)
         
-        CELLTYPE_FILE_MERGE(az_out,ct_out,all_extra_fields2,keras_files) 
-        
-        if (params.remap_celltypes){
-            REMAP_AZIMUTH(CELLTYPE_FILE_MERGE.out.celltype_assignments,params.mapping_file)
-            file__anndata_merged2 = REMAP_AZIMUTH.out.predicted_celltype_labels.collect()   
-        }
+        CELLTYPE_FILE_MERGE(az_out.collect(),ct_out.collect(),all_extra_fields2.collect(),keras_files.collect()) 
 
         file__anndata_merged2=CELLTYPE_FILE_MERGE.out.file__anndata_merged2
 

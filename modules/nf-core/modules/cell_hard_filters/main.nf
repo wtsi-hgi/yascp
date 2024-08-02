@@ -10,17 +10,19 @@ process CELL_HARD_FILTERS{
     } else {
         container "wtsihgi/nf_scrna_qc:6bb6af5"
     }
-    
+
+
     publishDir  path: "${params.outdir}/merged_h5ad/",
-            saveAs: {filename ->
-                    if (filename.contains("hard_filters_*.h5ad")) {
+                saveAs: {filename ->
+                    if (filename.contains("hard_filters_")) {
                         filename = '3.hard_filters_annotated_h5ad.h5ad'
-                    } else {
-                        null
+                    }else{
+                        filename
                     }
                 },
-            mode: "${params.copy_mode}",
-            overwrite: "true"  
+                mode: "${params.copy_mode}",
+                overwrite: "true"
+
 
     input:
         path(file_paths_h5ad)

@@ -500,10 +500,9 @@ def main():
                     generate_plots(subset_ad,cell_qc_column,metadata_columns,metadata_columns_original,of)
                     del subset_ad
             adata.uns['cell_outlier_estimator'] = method  
-            adata.obs[['cell_id', cell_qc_column]].to_csv(
-                f'{options.of}-outliers_filtered__{cell_qc_column}.tsv.gz',
+            adata.obs[['cell_id', cell_qc_column,cell_qc_column_score]].to_csv(
+                f'{options.of}-outliers_filtered__{cell_qc_column}.tsv',
                 sep='\t',
-                compression=compression_opts,
                 index=False,
                 header=True
             )
@@ -553,9 +552,8 @@ def main():
             )
             # Save the final dataframe
             df_cell_filt_per_exp.to_csv(
-                f'{options.of}-cell_filtered_per_experiment__{cell_qc_column}.tsv.gz',
+                f'{options.of}-cell_filtered_per_experiment__{cell_qc_column}.tsv',
                 sep='\t',
-                compression=compression_opts,
                 index=False,
                 header=True
             )
@@ -563,11 +561,11 @@ def main():
             generate_plots(adata,cell_qc_column,metadata_columns,metadata_columns_original,options.of)
 
     
-    adata.write(
-        '{}.h5ad'.format(options.of),
-        compression='gzip',
-        compression_opts=options.anndata_compression_opts
-    )
+    # adata.write(
+    #     '{}.h5ad'.format(options.of),
+    #     compression='gzip',
+    #     compression_opts=options.anndata_compression_opts
+    # )
     
     
 

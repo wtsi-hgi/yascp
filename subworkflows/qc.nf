@@ -1,7 +1,7 @@
 
 // Load base.config by default for all pipelines - typically included in the nextflow config.
 // Modules to include.
-include {OUTLIER_FILTER} from "$projectDir/modules/nf-core/modules/outlier_filter/main"
+include {OUTLIER_FILTER; MERGE_OUTLIER_FILES} from "$projectDir/modules/nf-core/modules/outlier_filter/main"
 include {PLOT_STATS} from "$projectDir/modules/nf-core/modules/plot_stats/main"
 include {ESTIMATE_PCA_ELBOW} from "$projectDir/modules/nf-core/modules/estimate_pca_elbow/main"
 include {SUBSET_PCS} from "$projectDir/modules/nf-core/modules/subset_pcs/main"
@@ -53,16 +53,17 @@ workflow qc {
                 params.outdir,
                 file__anndata_merged,
                 file__cells_filtered,
-                params.sample_qc.cell_filters.filter_outliers.metadata_columns,
-                params.sample_qc.cell_filters.filter_outliers.method,
                 params.sample_qc.cell_filters.filter_outliers.outliers_fraction,
                 params.sample_qc.cell_filters.filter_outliers.max_samples,
                 params.anndata_compression_opts,
                 gt_outlier_input,
                 params.sample_qc.gt_match_based_adaptive_qc_exclusion_pattern,
-                params.sample_qc.outlier_filtering_strategy
+                params.sample_qc.cell_filters.filter_outliers.methods_thresholds
             )
-            file__anndata_merged = OUTLIER_FILTER.out.anndata
+            OUTLIER_FILTER.out.cells_filtered.collect().set{test2}
+
+            MERGE_OUTLIER_FILES(file__anndata_merged,test2 )
+            file__anndata_merged = MERGE_OUTLIER_FILES.out.anndata
             // file__cells_filtered = OUTLIER_FILTER.out.cells_filtered
                 
         }

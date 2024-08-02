@@ -304,7 +304,7 @@ process ENHANCE_STATS_GT_MATCH{
     if(params.genotype_phenotype_mapping_file==''){
       in=""
     }else if (params.use_phenotype_ids_for_gt_match){
-      in="--genotype_phenotype_mapping ${params.genotype_phenotype_mapping_file2}"
+      in="--genotype_phenotype_mapping ${params.genotype_phenotype_mapping_file}"
       // in=""
     }else{
       in=""
