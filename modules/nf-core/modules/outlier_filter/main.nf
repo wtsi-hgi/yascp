@@ -65,7 +65,7 @@ process OUTLIER_FILTER {
                     } else if(filename.contains("outlier_filtered_adata.h5ad"))  {
                         filename = "4.outlier_filtered_adata.h5ad"
                     }else{
-                        filename
+                        null
                     }
                 },
                 mode: "${params.copy_mode}",

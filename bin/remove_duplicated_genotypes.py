@@ -118,7 +118,7 @@ try:
         all_definite_donors = set(d2['donor_gt original'])
         donors2 = donors[donors[0].isin(all_definite_donors)]
         missing=set(donors['mapping'])-set(donors2['mapping'])
-        missing=set(['30007480246'])
+        # missing=set(['30007480246'])
         miss = donors[donors['mapping'].isin(missing)]
         donors = pd.concat([donors2,miss])
 except:

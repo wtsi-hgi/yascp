@@ -88,7 +88,8 @@ COLUMNS_QC = {
     'pct_counts_in_top_100_genes':'pct_counts_in_top_100_genes',
     'pct_counts_in_top_200_genes':'pct_counts_in_top_200_genes',
     'pct_counts_in_top_500_genes':'pct_counts_in_top_500_genes',
-    
+    'S_score':'S_score', 'G2M_score':'G2M_score',
+    'phase':'phase'
     }
 COLUMNS_CELLBENDER = {'cellbender_latent_probability': 'cellbender.latent.probability'}
 COLUMNS_DATASET = {
@@ -515,10 +516,19 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
     azt = pd.read_csv(f'{args.results_dir}/celltype/All_Celltype_Assignments.tsv',sep='\t',index_col=0)
     azt_cols_to_add = azt.columns[azt.columns.str.contains('Azimuth')]
     ct_cols_to_add = azt.columns[azt.columns.str.contains('Celltypist')]
+    sc_cols_to_add = azt.columns[azt.columns.str.contains('scpred_prediction')]
     for i3 in set(azt_cols_to_add) - set(columns_output.keys()):
+        columns_output = {**columns_output,  **{i3:i3}}
+    for i3 in set(sc_cols_to_add) - set(columns_output.keys()):
         columns_output = {**columns_output,  **{i3:i3}}
     for i3 in set(ct_cols_to_add) - set(columns_output.keys()):
         columns_output = {**columns_output,  **{i3:i3}}
+        
+        
+    cols = pd.DataFrame(adqc.obs.columns)
+    cols =cols[cols[0].str.contains('cell_passes_qc')]
+    for i3 in set(cols[0]) - set(columns_output.keys()):
+        columns_output = {**columns_output,  **{i3:i3}}   
     # scpred_to_add = azt.columns[azt.columns.str.contains('Scpred')]
     ##########################
     # Scrublet
@@ -533,6 +543,8 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
         doublet_data_combined = pd.concat([doublet_data_combined,d2])
     doublet_data_combined = doublet_data_combined.drop_duplicates(subset='barcodes')
     scb = doublet_data_combined.set_index('barcodes')
+    
+
     columns_output = {**columns_output,  **COLUMNS_SCRUBLET}    
         
     # doublet_data_combined.iloc[0]
