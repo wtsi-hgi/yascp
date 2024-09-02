@@ -17,7 +17,7 @@ process MERGE_OUTLIER_FILES{
         container "wtsihgi/nf_scrna_qc:6bb6af5"
     }
 
-    publishDir  path: "${outdir}",
+    publishDir  path: "${params.outdir}",
                 saveAs: {filename ->
                     if (filename.contains("___sample_QCd_adata.h5ad")) {
                         null

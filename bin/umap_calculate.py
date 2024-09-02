@@ -322,18 +322,38 @@ def main():
     # Saved to adata.uns['umap'] and adata.obsm['X_umap']
     # NOTE: If umap_init == X_pca, then X_umap will have an equal number
     #       of n_components to X_pca (n_components is overridden).
-    sc.tl.umap(
-        adata,
-        n_components=2,
-        min_dist=i__min_dist,  # Scanpy default = 0.05
-        spread=i__spread,  # Scanpy default = 1.0
-        init_pos=umap_init,  # Scanpy default = spectral
-        # For some reason cannot access neighbors key slot, thus we
-        # must keep uns['neighbors'] until we have run this.
-        # neighbors_key='neighbors__{}'.format(plt__label),
-        copy=False,
-        random_state=0
-    )
+    try:
+        sc.tl.umap(
+            adata,
+            n_components=2,
+            min_dist=i__min_dist,  # Scanpy default = 0.05
+            spread=i__spread,  # Scanpy default = 1.0
+            init_pos=umap_init,  # Scanpy default = spectral
+            # For some reason cannot access neighbors key slot, thus we
+            # must keep uns['neighbors'] until we have run this.
+            # neighbors_key='neighbors__{}'.format(plt__label),
+            copy=False,
+            random_state=0
+        )
+    except:
+        # there are some cases getting this error. fix it by random init.
+        #           File "/home/container_user/conda/envs/cenv/lib/python3.8/site-packages/umap/spectral.py", line 194, in multi_component_layout
+        #     meta_embedding = component_layout(
+        #   File "/home/container_user/conda/envs/cenv/lib/python3.8/site-packages/umap/spectral.py", line 133, in component_layout
+        #     affinity_matrix = np.exp(-(distance_matrix ** 2))
+        # FloatingPointError: underflow encountered in exp
+        sc.tl.umap(
+            adata,
+            n_components=2,
+            min_dist=i__min_dist,  # Scanpy default = 0.05
+            spread=i__spread,  # Scanpy default = 1.0
+            init_pos='random',  # Scanpy default = spectral
+            # For some reason cannot access neighbors key slot, thus we
+            # must keep uns['neighbors'] until we have run this.
+            # neighbors_key='neighbors__{}'.format(plt__label),
+            copy=False,
+            random_state=2
+        )
     # Add umap info to params stash
     # adata.uns['umap']['params']['tsv_reduced_dims'] = options.pc
     adata.uns['umap']['params']['n_reduced_dims_input'] = n_pcs

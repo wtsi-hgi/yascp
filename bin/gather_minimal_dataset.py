@@ -117,9 +117,16 @@ COLUMNS_OUTPUT_WITH_SCRUBLET = \
 
 def get_df_from_mangled_index(df, expid):
     idx = df.index.str.split(pat='-{}__'.format(expid))
-    xf = pandas.DataFrame.from_records(idx, columns = ('barcode', 'donor'), index = df.index)
-    if xf.shape[0] != df.shape[0]:
-        sys.exit("ERROR: when untangling mangled index.")
+    try:
+        xf = pandas.DataFrame.from_records(idx, columns = ('barcode', 'donor'), index = df.index)
+        if xf.shape[0] != df.shape[0]:
+            sys.exit("ERROR: when untangling mangled index.")
+    except:
+        df['barcode_idx']= df.index+'-'+expid+'__'+df['donor_id'].astype(str)
+        df2 = df.reset_index() 
+        df2 = df2.rename({'index':'barcode','donor_id':'donor'},axis=1)
+        xf = df2[['barcode','donor']]
+        xf.index=df2['barcode']
     return xf
 
 def load_deconv_file_table(fnam):
@@ -430,29 +437,23 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
             print('File already linked')
     
     except:
-        adata_cellranger_raw = scanpy.read_10x_h5(f"/lustre/scratch123/hgi/projects/cardinal_analysis/qc/{args.experiment_name}/Donor_Quantification/{expid}/Cellranger_raw_feature_bc_matrix__{expid}.h5")
+        adata_cellranger_raw = scanpy.read_10x_mtx(f"{df_raw.loc[expid, 'data_path_10x_format']}/raw_feature_bc_matrix")
         try:
             if write_h5:
-                os.symlink(f"/lustre/scratch123/hgi/projects/cardinal_analysis/qc/{args.experiment_name}/Donor_Quantification/{expid}/Cellranger_raw_feature_bc_matrix__{expid}.h5", f"./{outdir}/Cellranger_raw_feature_bc_matrix__{expid}.h5")
+                os.symlink(f"{df_raw.loc[expid, 'data_path_10x_format']}/raw_feature_bc_matrix.h5", f"./{outdir}/Cellranger_raw_feature_bc_matrix__{expid}.h5")
         except:
             print('File already linked')
+
      
     # Reading filtered cellranger files
+
+    adata_cellranger_filtered = scanpy.read_10x_mtx(f"{df_raw.loc[expid, 'data_path_10x_format']}/filtered_feature_bc_matrix")
     try:
-        adata_cellranger_filtered = scanpy.read_10x_mtx(f"{df_raw.loc[expid, 'data_path_10x_format']}/filtered_feature_bc_matrix")
-        try:
-            if write_h5:
-                os.symlink(f"{df_raw.loc[expid, 'data_path_10x_format']}/filtered_feature_bc_matrix.h5",f"{outdir}/Cellranger_filtered_feature_bc_matrix__{expid}.h5")  
-        except:
-            print('File already linked')
-    
+        if write_h5:
+            os.symlink(f"{df_raw.loc[expid, 'data_path_10x_format']}/filtered_feature_bc_matrix.h5",f"{outdir}/Cellranger_filtered_feature_bc_matrix__{expid}.h5")  
     except:
-        adata_cellranger_filtered = scanpy.read_10x_h5(f"/lustre/scratch123/hgi/projects/cardinal_analysis/qc/{args.experiment_name}/Donor_Quantification/{expid}/Cellranger_filtered_feature_bc_matrix__{expid}.h5")
-        try:
-            if write_h5:
-                os.symlink(f"/lustre/scratch123/hgi/projects/cardinal_analysis/qc/{args.experiment_name}/Donor_Quantification/{expid}/Cellranger_filtered_feature_bc_matrix__{expid}.h5",f"{outdir}/Cellranger_filtered_feature_bc_matrix__{expid}.h5")  
-        except:
-            print('File already linked')
+        print('File already linked')
+
                
     zero_count_cells_cellranger_raw = adata_cellranger_raw.obs_names[np.where(adata_cellranger_raw.X.sum(axis=1) == 0)[0]]
     ad_lane_raw = adata_cellranger_raw[adata_cellranger_raw.obs_names.difference(zero_count_cells_cellranger_raw, sort=False)]
@@ -503,11 +504,9 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
     #############
     #Cellranger Metrics Datasheet
     #############
-    try:
-        metrics = pd.read_csv(df_raw.loc[expid, 'data_path_10x_format']+'/metrics_summary.csv')
-    except:
-        metrics = pd.read_csv(f'/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/qc/{args.experiment_name}/results_rsync2/results/handover/Summary_plots/{args.experiment_name}/Fetch Pipeline/CSV/Submission_Data_Pilot_UKB.file_metadata.tsv',sep='\t')
-        metrics = metrics[metrics['Sample_id']==expid]
+
+    metrics = pd.read_csv(df_raw.loc[expid, 'data_path_10x_format']+'/metrics_summary.csv')
+
     
     #############
     #Cell-type assignments

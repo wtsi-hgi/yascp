@@ -74,7 +74,7 @@ process VIREO_SUBSAMPLING {
         subset_processing="""
             bcftools view ${donors_gt_vcf} -R ${cell_data}/cellSNP.base.vcf.gz  -Oz -o pre_Overlapping.vcf.gz
             bcftools view -G ${cell_data}/cellSNP.cells.vcf.gz -Oz -o pre_cellSNP.cells.vcf.gz 
-            bcftools sort pre_cellSNP.cells.vcf.gz -Oz -o pre_cellSNP3.cells.vcf.gz
+            bcftools sort -T \$PWD  pre_cellSNP.cells.vcf.gz -Oz -o pre_cellSNP3.cells.vcf.gz
             bcftools index pre_cellSNP3.cells.vcf.gz
             bcftools view pre_cellSNP3.cells.vcf.gz -R pre_Overlapping.vcf.gz -Oz -o pre_cellSNP4.cells.vcf.gz
             random_variants.py --random_state ${itteration} --vcf pre_cellSNP4.cells.vcf.gz --rate ${params.vireo.rate} --order ${cell_data}/cellSNP.base.vcf.gz
@@ -218,7 +218,7 @@ process VIREO {
         com2 = "cd vireo_${samplename} && ln -s ../${donors_gt_vcf} GT_donors.vireo.vcf.gz"
         com2 = ""
         // We need to make sure that the genotyes are only informative and not limmiting - for this reason we add in a subset all the variat sites that vireo currently doesnt contain.
-        reference_expansion_with_piled_up_positions = "bcftools view ${cell_data}/cellSNP.cells.vcf.gz -G -Oz -o cellsp_piled_up_sites.vcf.gz && bcftools sort cellsp_piled_up_sites.vcf.gz -Oz -o cellsp_piled_up_sites_srt.vcf.gz && bcftools index cellsp_piled_up_sites_srt.vcf.gz && bcftools index sub_${samplename}_Expected.vcf.gz && bcftools merge cellsp_piled_up_sites_srt.vcf.gz sub_${samplename}_Expected.vcf.gz -Oz -o sub_Expected.vcf.gz"
+        reference_expansion_with_piled_up_positions = "bcftools view ${cell_data}/cellSNP.cells.vcf.gz -G -Oz -o cellsp_piled_up_sites.vcf.gz && bcftools sort -T \$PWD cellsp_piled_up_sites.vcf.gz -Oz -o cellsp_piled_up_sites_srt.vcf.gz && bcftools index cellsp_piled_up_sites_srt.vcf.gz && bcftools index sub_${samplename}_Expected.vcf.gz && bcftools merge cellsp_piled_up_sites_srt.vcf.gz sub_${samplename}_Expected.vcf.gz -Oz -o sub_Expected.vcf.gz"
       }
 
     """

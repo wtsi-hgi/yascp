@@ -645,66 +645,67 @@ Main_Doublet_Decon<-function(rawDataFile, groupsFile, filename, location, fullDa
 }
 
 ## Run Doublet Decon ##
+# Define the rhop values to test
+rhop_values <- c(0.9, 0.64, 0.5, 0.4, 0.3, 0.2, 0.1)
+success <- FALSE
 
-tryCatch({
-  print(paste0('trying rhop: ',args$rhop))
-  results <- Main_Doublet_Decon(rawDataFile = processed$newExpressionFile, 
-    groupsFile = processed$newGroupsFile, 
-    filename = "DoubletDecon_results",
-    location = paste0(args$out, "/"),
-    fullDataFile = NULL, 
-    removeCC = args$removeCC, 
-    species = args$species, 
-    rhop = args$rhop,
-    write = TRUE, 
-    PMF = args$pmf, 
-    useFull = FALSE, 
-    heatmap = args$heatmap, 
-    centroids=args$centroids, 
-    num_doubs=args$num_doubs, 
-    only50=args$only50, 
-    min_uniq=args$min_uniq, 
-    nCores = args$nCores)
-
-}, error = function(e) {
+# Loop over the rhop values
+for (rhop in rhop_values) {
   tryCatch({
-    print(paste0('trying rhop: ',0.64))
-    results <- Main_Doublet_Decon(rawDataFile = processed$newExpressionFile, 
+    print(paste0('trying rhop: ', rhop))
+    results <- Main_Doublet_Decon(
+      rawDataFile = processed$newExpressionFile, 
       groupsFile = processed$newGroupsFile, 
       filename = "DoubletDecon_results",
       location = paste0(args$out, "/"),
       fullDataFile = NULL, 
       removeCC = args$removeCC, 
       species = args$species, 
-      rhop =  0.64,
+      rhop = rhop,
       write = TRUE, 
       PMF = args$pmf, 
       useFull = FALSE, 
       heatmap = args$heatmap, 
-      centroids=args$centroids, 
-      num_doubs=args$num_doubs, 
-      only50=args$only50, 
-      min_uniq=args$min_uniq, 
-      nCores = args$nCores)
+      centroids = args$centroids, 
+      num_doubs = args$num_doubs, 
+      only50 = args$only50, 
+      min_uniq = args$min_uniq, 
+      nCores = args$nCores
+    )
+    success <- TRUE  # If no error occurs, set success to TRUE
+    break  # Exit the loop as we found a working rhop value
+
+    # results <- Main_Doublet_Decon(
+    #   rawDataFile = processed$newExpressionFile, 
+    #   groupsFile = processed$newGroupsFile, 
+    #   filename = "DoubletDecon_results",
+    #   location = paste0('DoubletDecon_039312-s14-Z0032-CTCTGTATTGCAGAT', "/"),
+    #   fullDataFile = NULL, 
+    #   removeCC = FALSE, 
+    #   species = 'hsa', 
+    #   rhop = rhop,
+    #   write = TRUE, 
+    #   PMF = TRUE, 
+    #   useFull = FALSE, 
+    #   heatmap = FALSE, 
+    #   centroids = FALSE, 
+    #   num_doubs = 10, 
+    #   only50 = FALSE, 
+    #   min_uniq = 4, 
+    #   nCores = 1
+    # )
+
   }, error = function(e) {
-      print(paste0('trying rhop: ',0.5))
-      results <- Main_Doublet_Decon(rawDataFile = processed$newExpressionFile, 
-        groupsFile = processed$newGroupsFile, 
-        filename = "DoubletDecon_results",
-        location = paste0('.', "/"),
-        fullDataFile = NULL, 
-        removeCC = FALSE, 
-        species = args$species, 
-        rhop =  0.5,
-        write = TRUE, 
-        PMF = args$pmf, 
-        useFull = FALSE, 
-        heatmap =  args$heatmap, 
-        nCores = 3)
-  }
-  )
+    print(paste0('Error with rhop: ', rhop))
+    # The loop will continue to the next rhop value
+  })
 }
-)
+
+if (!success) {
+  print("All rhop values failed.")
+} else {
+  print("DoubletDecon ran successfully.")
+}
 
 
 doublets <- read.table(paste0(args$out, "/Final_doublets_groups_DoubletDecon_results.txt"))

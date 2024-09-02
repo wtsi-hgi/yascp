@@ -120,6 +120,13 @@ try:
         missing=set(donors['mapping'])-set(donors2['mapping'])
         # missing=set(['30007480246'])
         miss = donors[donors['mapping'].isin(missing)]
+        miss['miss2'] = miss[0].str.replace("^1_","", regex=True)
+        miss2 = miss[miss['miss2'].isin(all_definite_donors)]
+        miss2 = miss2.drop('miss2',axis=1)
+        # now filter missing based on the partial naming
+        donors2 = pd.concat([donors2,miss2])
+        missing=set(donors['mapping'])-set(donors2['mapping'])
+        miss = donors[donors['mapping'].isin(missing)]
         donors = pd.concat([donors2,miss])
 except:
     print('this is not available')
