@@ -22,7 +22,7 @@ process DOUBLET_FINDER {
     output:
         path("plots/*.pdf") optional true
         path("plots/*.png") optional true
-        tuple val(experiment_id), path("${experiment_id}__DoubletFinder_doublets_singlets.tsv"), emit: result
+        tuple val(experiment_id), path("${experiment_id}__DoubletFinder_doublets_singlets.tsv"), emit: result optional true
         // path("${experiment_id}__DoubletDetection_results.txt"), emit: doubletDetection_results
 
     script:
@@ -33,6 +33,10 @@ process DOUBLET_FINDER {
 
         """
             DoubletFinder.R -s ${h5ad} -c FALSE -o DoubletFinder_${experiment_id} --expected_multiplet_rate ${expected_multiplet_rate}
-            ln -s DoubletFinder_${experiment_id}/DoubletFinder_doublets_singlets.tsv ${experiment_id}__DoubletFinder_doublets_singlets.tsv
+            if [ -e "DoubletFinder_${experiment_id}/DoubletFinder_doublets_singlets.tsv" ]; then
+                ln -s "DoubletFinder_${experiment_id}/DoubletFinder_doublets_singlets.tsv" "${experiment_id}__DoubletFinder_doublets_singlets.tsv"
+            else
+                echo "File DoubletFinder_${experiment_id}/DoubletFinder_doublets_singlets.tsv does not exist. Skipping symlink creation."
+            fi
         """
 }

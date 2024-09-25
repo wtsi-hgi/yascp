@@ -21,7 +21,7 @@ process DOUBLET_DECON{
     output:
         path("plots/*.pdf") optional true
         path("plots/*.png") optional true
-        tuple val(experiment_id), path("${experiment_id}__DoubletDecon_doublets_singlets.tsv"), emit: result
+        tuple val(experiment_id), path("${experiment_id}__DoubletDecon_doublets_singlets.tsv"), emit: result  optional true
         // path("${experiment_id}__DoubletDetection_results.txt"), emit: doubletDetection_results
 
     script:
@@ -32,6 +32,11 @@ process DOUBLET_DECON{
 
         """
             DoubletDecon.R -s ${h5ad} -o DoubletDecon_${experiment_id}
-            ln -s DoubletDecon_${experiment_id}/DoubletDecon_doublets_singlets.tsv ${experiment_id}__DoubletDecon_doublets_singlets.tsv
+            
+            if [ -e "DoubletDecon_${experiment_id}/DoubletDecon_doublets_singlets.tsv" ]; then
+                ln -s DoubletDecon_${experiment_id}/DoubletDecon_doublets_singlets.tsv ${experiment_id}__DoubletDecon_doublets_singlets.tsv
+            else
+                echo "File DoubletDecon_${experiment_id}/DoubletDecon_doublets_singlets.tsv does not exist. Skipping symlink creation."
+            fi
         """
 }

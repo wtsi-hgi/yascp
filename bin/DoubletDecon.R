@@ -11,6 +11,9 @@ parser <- ArgumentParser()
 # by default ArgumentParser will add an help option 
 parser$add_argument("-o", "--out", required = TRUE, help="The output directory where results will be saved")
 parser$add_argument("-s", "--seurat_object", required = TRUE, type = "character", help = "A QC, normalized seurat object with classifications/clusters as Idents() saved as an rds object.")
+# parser$add_argument("-o", "--out", required = FALSE, default = "DoubletDecon_CRD_CMB13196639", help = "The output directory where results will be saved")
+# parser$add_argument("-s", "--seurat_object", required = FALSE, type = "character", default = "CRD_CMB13196639.h5ad", help = "A QC, normalized seurat object with classifications/clusters as Idents() saved as an rds object.")
+
 parser$add_argument("-g", "--num_genes", required = FALSE, type = "integer", default=50, help = "Number  of genes to use in \'Improved_Seurat_Pre_Process\' function.")
 parser$add_argument("-r", "--rhop", required = FALSE, type="double", default=0.9, help="rhop to use in DoubletDecon - the number of SD from the mean to identify upper limit to blacklist")
 parser$add_argument("-p", "--species", required = FALSE, type = "character", default="hsa", help = "The species of your sample. Can be scientific species name, KEGG ID, three letter species abbreviation, or NCBI ID.")
@@ -64,7 +67,13 @@ all.genes <- rownames(seurat)
 seurat <- ScaleData(seurat, features = all.genes)
 print('Scaled')
 seurat <- FindVariableFeatures(object = seurat)
-seurat <- RunPCA(seurat, features = VariableFeatures(object = seurat))
+# Check the number of variable features
+num_samples <- ncol(seurat)
+# Determine the number of PCs to use
+npcs_to_use <- ifelse(num_samples > 50, 50, num_samples-1)
+
+# Run PCA with the determined number of PCs
+seurat <- RunPCA(seurat, features = VariableFeatures(object = seurat), npcs = npcs_to_use)
 print('PCA performed')
 seurat <- FindNeighbors(seurat, dims = 1:10)
 print('Neighbors found')
@@ -74,8 +83,17 @@ print(seurat[["pca"]], dims = 1:5, nfeatures = 5)
 # seurat <- Read10X('TMP_DIR')
 # seurat_object = CreateSeuratObject(counts = seurat)
 ## Preprocess ##
-processed <- Improved_Seurat_Pre_Process(seurat, num_genes=args$num_genes, write_files=FALSE)
-
+if (num_samples > 50) {
+    # Proceed with the regular pipeline
+    processed <- Improved_Seurat_Pre_Process(seurat, num_genes = args$num_genes, write_files = FALSE)
+} else {
+    message("Skipping clustering due to insufficient cell count.")
+    # You can still preprocess without clustering or simply use the normalized data
+    seurat <- NormalizeData(seurat)
+    seurat <- FindVariableFeatures(seurat, selection.method = "vst", nfeatures = args$num_genes)
+    seurat <- ScaleData(seurat)
+    processed <- seurat  # Assign the preprocessed data
+}
 DeconRNASeq = function(datasets, signatures, proportions=NULL, checksig=FALSE, known.prop = FALSE, use.scale = TRUE, fig = TRUE){
 
   if (is.null(datasets)) 
@@ -703,6 +721,7 @@ for (rhop in rhop_values) {
 
 if (!success) {
   print("All rhop values failed.")
+  quit(status = 0) 
 } else {
   print("DoubletDecon ran successfully.")
 }
