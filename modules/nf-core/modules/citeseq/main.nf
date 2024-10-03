@@ -26,6 +26,49 @@ process SPLIT_CITESEQ_GEX {
     script:
 
         """
+            matrix_file="${cellranger_raw}/matrix.mtx"
+            compressed_file="${cellranger_raw}/matrix.mtx.gz"
+
+            # Check if the compressed file exists
+            if [ ! -f "\$compressed_file" ]; then
+                echo "\$compressed_file does not exist. Compressing \$matrix_file..."
+            
+                # Compress the file without deleting the original
+                gzip -c "\$matrix_file" > "\$compressed_file"
+            
+                echo "Compression complete. \$matrix_file has been compressed to \$compressed_file"
+            else
+                echo "\$compressed_file already exists. No action needed."
+            fi
+
+            matrix_file="${cellranger_raw}/barcodes.tsv"
+            compressed_file="${cellranger_raw}/barcodes.tsv.gz"
+            # Check if the compressed file exists
+            if [ ! -f "\$compressed_file" ]; then
+                echo "\$compressed_file does not exist. Compressing \$matrix_file..."
+            
+                # Compress the file without deleting the original
+                gzip -c "\$matrix_file" > "\$compressed_file"
+            
+                echo "Compression complete. \$matrix_file has been compressed to \$compressed_file"
+            else
+                echo "\$compressed_file already exists. No action needed."
+            fi
+
+            features_file="${cellranger_raw}/features.tsv.gz"
+            peaks_file="${cellranger_raw}/peaks.bed"
+
+            # Check if the features.tsv.gz file exists
+            if [ ! -f "\$features_file" ]; then
+            echo "\$features_file does not exist. Creating it from \$peaks_file..."
+
+            # Create the features.tsv file from the peaks.bed file
+            awk 'BEGIN{OFS="\t"} {print \$1 ":" \$2 "-" \$3, \$1 ":" \$2 "-" \$3, "Gene Expression"}' "\$peaks_file" | gzip > "\$features_file"
+
+            echo "Creation of \$features_file is complete."
+            else
+            echo "\$features_file already exists. No action needed."
+            fi
 
             strip_citeseq.py --raw_data ${cellranger_raw} -o ${sample_name}
         """

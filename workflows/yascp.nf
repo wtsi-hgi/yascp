@@ -169,6 +169,10 @@ workflow YASCP {
 
                     if (!params.skip_merge){
                         MERGE_SAMPLES(main_deconvolution.out.out_h5ad,main_deconvolution.out.vireo_out_sample__exp_summary_tsv,'h5ad')
+                    }else{
+                        file__anndata_merged = main_deconvolution.out.out_h5ad
+                        dummy_filtered_channel(file__anndata_merged,params.id_in)
+                        file__cells_filtered = dummy_filtered_channel.out.anndata_metadata
                     }
                 }else{
                     channel__metadata = prepare_inputs.out.channel__metadata

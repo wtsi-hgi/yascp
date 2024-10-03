@@ -128,6 +128,13 @@ process CELLSNP {
       }else{
         MAF=" --minMAF ${params.cellsnp.min_maf}"
       }
+
+      if (params.atac){
+        umi_tag=' --UMItag None '
+      }else{
+        umi_tag=""
+      }
+
     """
       echo ${n_pooled}
       umask 2 # make files group_writable
@@ -146,6 +153,6 @@ process CELLSNP {
         -O cellsnp_${samplename} \\
         -R region_vcf_no_MHC.vcf.gz \\
         -p ${task.cpus} \\
-        --minCOUNT ${params.cellsnp.min_count} ${MAF} --gzip ${genotype_file}
+        --minCOUNT ${params.cellsnp.min_count} ${MAF} --gzip ${genotype_file} ${umi_tag}
     """
 }
