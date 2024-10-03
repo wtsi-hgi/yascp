@@ -18,7 +18,13 @@ process HARMONY{
     //cache false        // cache results from run
     scratch false      // use tmp directory
     // storeDir '/tmp'
-    label 'process_medium'
+
+    memory { 
+            sizeInGB = file__anndata.size() / 1e9 * 1.2 * task.attempt
+            return (sizeInGB ).toString() + 'GB' 
+        }
+
+    // label 'process_medium'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "https://yascp.cog.sanger.ac.uk/public/singularity_images/wtsihgi_nf_scrna_qc_6bb6af5-2021-12-23-3270149cf265.sif"
         //// container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/nf_qc_cluster_2.4.img"

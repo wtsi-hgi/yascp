@@ -5,7 +5,10 @@ import matplotlib.pyplot as plt
 Data=pd.read_csv('all_doublet_results_combined.tsv',sep='\t')
 
 Data = Data.filter(regex='^(?!.*[s|S]core).*$')
-Data = Data.drop(columns=['scrublet__predicted_multiplet'])
+try:
+    Data = Data.drop(columns=['scrublet__predicted_multiplet'])
+except:
+    _='not run'
 # Data= Data.set_index('barcodes')
 count_data = Data.apply(pd.Series.value_counts).fillna(0)
 count_data = count_data.drop(columns=['barcodes'])

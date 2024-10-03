@@ -86,8 +86,14 @@ doublet_ratio <- ncol(sce)/1000*0.008
 
 
 ### Calculate Singlets and Doublets ###
-sce <- scDblFinder(sce, dbr=doublet_ratio)
+sce <- try(scDblFinder(sce, dbr = doublet_ratio), silent = TRUE)
 
+# Check if the scDblFinder function was successful
+if (inherits(sce, "try-error")) {
+#   stop("Error running scDblFinder, exiting.")
+  cat("Failed to run scDblFinder. Exiting script.\n")
+  quit(save = "no")  # Exit the R script without an error
+}
 
  
 ### Make a dataframe of the results ###
