@@ -1,7 +1,7 @@
 process DOUBLET_DECON{
 
     tag "${experiment_id}"
-    label 'process_medium'
+    // label 'process_medium'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "https://yascp.cog.sanger.ac.uk/public/singularity_images/azimuth_dsb_6_03_2024.sif"
     } else {
@@ -11,12 +11,18 @@ process DOUBLET_DECON{
     publishDir  path: "${params.outdir}/doublets/multiplet.method=DoubletDecon",
                 mode: "${params.copy_mode}",
                 overwrite: "true"
-
+    memory { 
+            sizeInGB = h5ad.size() / 1e9 * 5 * task.attempt
+            return (sizeInGB ).toString() + 'GB' 
+        }
+        
     input:
         tuple(
             val(experiment_id),
             path(h5ad)
         )
+
+
 
     output:
         path("plots/*.pdf") optional true
