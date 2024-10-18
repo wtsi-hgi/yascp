@@ -26,7 +26,25 @@ params {
 }
 ```
 
+So your final input.nf file will look something like this:
+```
+params {
+    input_data_table = '/path/to/input.tsv' //Required!! This points to all the cellranger files and pool definition files.
+    do_deconvolution = false
+    celltype_assignment.run_celltype_assignment = false
+    skip_qc = true
+    skip_handover = true
+    skip_merge = true
 
+    cellbender_rb{
+        description = 'Parameters for cellbender remove background.'
+        per_sample_thresholds = [
+                [ name : 'cellranger700_multi_850906bde9153135a2abd77d0227353e', low_count_threshold : 5, epochs : 100 , learning_rate : 0.0001, zdim : 100, zlayers : 500],
+                [ name : 'sample2', low_count_threshold : "", epochs : "" , learning_rate : "", zdim : 100, zlayers : 500],
+        ]
+    }
+}
+```
 And then you can run the pipeline as:
 ```
     nextflow run /path/to/cloned/yascp -profile sanger -entry JUST_CELLBENDER -c input.nf
