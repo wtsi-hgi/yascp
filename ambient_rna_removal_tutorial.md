@@ -55,6 +55,6 @@ And then you can run the pipeline as:
 
 * In Sanger you do not need to clone the repo. All you need is an input file:
   ```
-      module load HGI/pipelines/yascp/1.5
+      module load HGI/pipelines/yascp/1.7
       yascp cellbender -c input.nf
   ```
