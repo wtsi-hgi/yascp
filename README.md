@@ -37,10 +37,10 @@ How to tailor nf-core/yascp to specific needs -  tutorials covering a wide range
   <!---
       - ### [GT (Genotype) Matching](gt_match_tutorial.md)
 
--->
+
     - ### [Integration, Clustering, and Cluster Assignments](cluster_integrate_tutorial.md)
     - ### [Cleaning Up Result](clean_up_results.md)
-  
+  -->
 
 ## Additional Resources
 
