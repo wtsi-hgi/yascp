@@ -34,13 +34,6 @@ How to tailor nf-core/yascp to specific needs -  tutorials covering a wide range
     - ### [Celltype Assignment](celltype_tutorial.md)
     - ### [Cellbender Ambient RNA Removal](ambient_rna_removal_tutorial.md)
     - ### [Doublet Detection](doublet_detection_tutorial.md)
-  <!---
-      - ### [GT (Genotype) Matching](gt_match_tutorial.md)
-
-
-    - ### [Integration, Clustering, and Cluster Assignments](cluster_integrate_tutorial.md)
-    - ### [Cleaning Up Result](clean_up_results.md)
-  -->
 
 ## Additional Resources
 
