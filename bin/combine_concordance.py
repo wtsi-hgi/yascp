@@ -72,10 +72,14 @@ Cell_Concordance = pd.read_csv(cc,sep='\t')
 Swap_Quant = pd.read_csv(sq,sep='\t')
 
 Swap_Quant = Swap_Quant.set_index('cell')
-Cell_Concordance = Cell_Concordance.set_index('GT 1')
+try:
+    Cell_Concordance = Cell_Concordance.set_index('GT 1')
 
-Joined_Df = Swap_Quant.join(Cell_Concordance,how='inner')
-Joined_Df['pool id']= name
+    Joined_Df = Swap_Quant.join(Cell_Concordance,how='inner')
+    Joined_Df['pool id']= name
+except:
+    print('Too little cells and cell concordances were not calculated.')
+    exit()
 
 try:
     cell_ambientness=pd.read_csv(f'/lustre/scratch123/hgi/projects/cardinal_analysis/qc/{run}/Donor_Quantification/{name}/ambientness_per_cell_{name}.tsv',sep='\t')

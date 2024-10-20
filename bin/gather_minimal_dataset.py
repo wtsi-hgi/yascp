@@ -88,7 +88,8 @@ COLUMNS_QC = {
     'pct_counts_in_top_100_genes':'pct_counts_in_top_100_genes',
     'pct_counts_in_top_200_genes':'pct_counts_in_top_200_genes',
     'pct_counts_in_top_500_genes':'pct_counts_in_top_500_genes',
-    
+    'S_score':'S_score', 'G2M_score':'G2M_score',
+    'phase':'phase'
     }
 COLUMNS_CELLBENDER = {'cellbender_latent_probability': 'cellbender.latent.probability'}
 COLUMNS_DATASET = {
@@ -98,11 +99,17 @@ COLUMNS_DATASET = {
     'chromium_lane': 'chromium.lane',
     'instrument':'instrument'
     }
+
 COLUMNS_SCRUBLET = {
     'scrublet__multiplet_scores': 'scrublet.scores',
     'scrublet__predicted_multiplet': 'scrublet.multiplet',
-    'scrublet__multiplet_zscores': 'scrublet.zscores'
+    'scrublet__multiplet_zscores': 'scrublet.zscores',
+    'scds_DropletType':'scds.multiplet','scds_score':'scds.score',
+    'scDblFinder_DropletType':'scDblFinder.multiplet','scDblFinder_Score':'scDblFinder.score',
+    'DoubletDecon_DropletType':'DoubletDecon.multiplet',
+    'DoubletFinder_DropletType':'DoubletFinder.multiplet','DoubletFinder_score':'DoubletFinder.score'
     }
+
 COLUMNS_OUTPUT = \
     {**COLUMNS_DATASET, **COLUMNS_CELLBENDER, **COLUMNS_DECONV, **COLUMNS_QC, **COLUMNS_AZIMUTH}
 COLUMNS_OUTPUT_WITH_SCRUBLET = \
@@ -110,9 +117,16 @@ COLUMNS_OUTPUT_WITH_SCRUBLET = \
 
 def get_df_from_mangled_index(df, expid):
     idx = df.index.str.split(pat='-{}__'.format(expid))
-    xf = pandas.DataFrame.from_records(idx, columns = ('barcode', 'donor'), index = df.index)
-    if xf.shape[0] != df.shape[0]:
-        sys.exit("ERROR: when untangling mangled index.")
+    try:
+        xf = pandas.DataFrame.from_records(idx, columns = ('barcode', 'donor'), index = df.index)
+        if xf.shape[0] != df.shape[0]:
+            sys.exit("ERROR: when untangling mangled index.")
+    except:
+        df['barcode_idx']= df.index+'-'+expid+'__'+df['donor_id'].astype(str)
+        df2 = df.reset_index() 
+        df2 = df2.rename({'index':'barcode','donor_id':'donor'},axis=1)
+        xf = df2[['barcode','donor']]
+        xf.index=df2['barcode']
     return xf
 
 def load_deconv_file_table(fnam):
@@ -354,7 +368,7 @@ def gather_donor(donor_id, ad, ad_lane_raw, azimuth_annot, qc_obs, columns_outpu
         dt = pandas.concat([df,dfqc], axis = 1, join = 'inner')
 
         colnams = list(columns_output.keys())
-        colnams_overlap = set(colnams).intersection(set(dt.columns))
+        colnams_overlap = sorted(set(colnams).intersection(set(dt.columns)))
         ad.obs = dt[colnams_overlap].rename(columns = columns_output)
         dt = pandas.concat([df, dfqc], axis = 1, join = 'outer')[colnams_overlap]
         dt.rename(columns = columns_output, inplace = True)
@@ -377,9 +391,11 @@ def gather_donor(donor_id, ad, ad_lane_raw, azimuth_annot, qc_obs, columns_outpu
 
     dt.index.name = 'barcode'
     ad.obs.index.name = 'barcode'
-    dt.to_csv(os.path.join(outdir, oufnam + '.tsv'), sep = "\t", na_rep = "N/A")
-    sys.stderr.write("writing file {} ...\n".format(oufnam))
     ad.obs = ad.obs.loc[:,~ad.obs.columns.duplicated()]
+    dt = dt.loc[:,~dt.columns.duplicated()].copy()
+    dt[set(dt.columns)].to_csv(os.path.join(outdir, oufnam + '.tsv'), sep = "\t", na_rep = "N/A")
+    sys.stderr.write("writing file {} ...\n".format(oufnam))
+    
     if write_h5:
         path1=os.path.join(outdir, oufnam + '.h5ad')
         try:
@@ -421,29 +437,23 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
             print('File already linked')
     
     except:
-        adata_cellranger_raw = scanpy.read_10x_h5(f"/lustre/scratch123/hgi/projects/cardinal_analysis/qc/{args.experiment_name}/Donor_Quantification/{expid}/Cellranger_raw_feature_bc_matrix__{expid}.h5")
+        adata_cellranger_raw = scanpy.read_10x_mtx(f"{df_raw.loc[expid, 'data_path_10x_format']}/raw_feature_bc_matrix")
         try:
             if write_h5:
-                os.symlink(f"/lustre/scratch123/hgi/projects/cardinal_analysis/qc/{args.experiment_name}/Donor_Quantification/{expid}/Cellranger_raw_feature_bc_matrix__{expid}.h5", f"./{outdir}/Cellranger_raw_feature_bc_matrix__{expid}.h5")
+                os.symlink(f"{df_raw.loc[expid, 'data_path_10x_format']}/raw_feature_bc_matrix.h5", f"./{outdir}/Cellranger_raw_feature_bc_matrix__{expid}.h5")
         except:
             print('File already linked')
+
      
     # Reading filtered cellranger files
+
+    adata_cellranger_filtered = scanpy.read_10x_mtx(f"{df_raw.loc[expid, 'data_path_10x_format']}/filtered_feature_bc_matrix")
     try:
-        adata_cellranger_filtered = scanpy.read_10x_mtx(f"{df_raw.loc[expid, 'data_path_10x_format']}/filtered_feature_bc_matrix")
-        try:
-            if write_h5:
-                os.symlink(f"{df_raw.loc[expid, 'data_path_10x_format']}/filtered_feature_bc_matrix.h5",f"{outdir}/Cellranger_filtered_feature_bc_matrix__{expid}.h5")  
-        except:
-            print('File already linked')
-    
+        if write_h5:
+            os.symlink(f"{df_raw.loc[expid, 'data_path_10x_format']}/filtered_feature_bc_matrix.h5",f"{outdir}/Cellranger_filtered_feature_bc_matrix__{expid}.h5")  
     except:
-        adata_cellranger_filtered = scanpy.read_10x_h5(f"/lustre/scratch123/hgi/projects/cardinal_analysis/qc/{args.experiment_name}/Donor_Quantification/{expid}/Cellranger_filtered_feature_bc_matrix__{expid}.h5")
-        try:
-            if write_h5:
-                os.symlink(f"/lustre/scratch123/hgi/projects/cardinal_analysis/qc/{args.experiment_name}/Donor_Quantification/{expid}/Cellranger_filtered_feature_bc_matrix__{expid}.h5",f"{outdir}/Cellranger_filtered_feature_bc_matrix__{expid}.h5")  
-        except:
-            print('File already linked')
+        print('File already linked')
+
                
     zero_count_cells_cellranger_raw = adata_cellranger_raw.obs_names[np.where(adata_cellranger_raw.X.sum(axis=1) == 0)[0]]
     ad_lane_raw = adata_cellranger_raw[adata_cellranger_raw.obs_names.difference(zero_count_cells_cellranger_raw, sort=False)]
@@ -494,17 +504,31 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
     #############
     #Cellranger Metrics Datasheet
     #############
-    try:
-        metrics = pd.read_csv(df_raw.loc[expid, 'data_path_10x_format']+'/metrics_summary.csv')
-    except:
-        metrics = pd.read_csv(f'/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/qc/{args.experiment_name}/results_rsync2/results/handover/Summary_plots/{args.experiment_name}/Fetch Pipeline/CSV/Submission_Data_Pilot_UKB.file_metadata.tsv',sep='\t')
-        metrics = metrics[metrics['Sample_id']==expid]
+
+    metrics = pd.read_csv(df_raw.loc[expid, 'data_path_10x_format']+'/metrics_summary.csv')
+
     
     #############
     #Cell-type assignments
     #############
 
     azt = pd.read_csv(f'{args.results_dir}/celltype/All_Celltype_Assignments.tsv',sep='\t',index_col=0)
+    azt_cols_to_add = azt.columns[azt.columns.str.contains('Azimuth')]
+    ct_cols_to_add = azt.columns[azt.columns.str.contains('Celltypist')]
+    sc_cols_to_add = azt.columns[azt.columns.str.contains('scpred_prediction')]
+    for i3 in set(azt_cols_to_add) - set(columns_output.keys()):
+        columns_output = {**columns_output,  **{i3:i3}}
+    for i3 in set(sc_cols_to_add) - set(columns_output.keys()):
+        columns_output = {**columns_output,  **{i3:i3}}
+    for i3 in set(ct_cols_to_add) - set(columns_output.keys()):
+        columns_output = {**columns_output,  **{i3:i3}}
+        
+        
+    cols = pd.DataFrame(adqc.obs.columns)
+    cols =cols[cols[0].str.contains('cell_passes_qc')]
+    for i3 in set(cols[0]) - set(columns_output.keys()):
+        columns_output = {**columns_output,  **{i3:i3}}   
+    # scpred_to_add = azt.columns[azt.columns.str.contains('Scpred')]
     ##########################
     # Scrublet
     #########################
@@ -516,21 +540,28 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
         d2 = pd.read_csv(f1,sep='\t')
         d2['Exp']=pool_name
         doublet_data_combined = pd.concat([doublet_data_combined,d2])
+    doublet_data_combined = doublet_data_combined.drop_duplicates(subset='barcodes')
+    scb = doublet_data_combined.set_index('barcodes')
+    
+
+    columns_output = {**columns_output,  **COLUMNS_SCRUBLET}    
         
-    datadir_scrublet=glob.glob(f'{args.results_dir}/*/multiplet.method=scrublet')[0]
-    if os.path.isdir(datadir_scrublet):
-        # Scrublet loading QC
-        try:
-            scb = load_scrublet_assignments(
-                expid,
-                datadir_scrublet=datadir_scrublet
-            )
-            columns_output = {**columns_output,  **COLUMNS_SCRUBLET}
-        except:
-            print('Scrubblet was not performed for this pool - potential reason is that there are not enough cells for assignment')
-            scb = None
-    else:
-        scb = None
+    # doublet_data_combined.iloc[0]
+    # datadir_scrublet=glob.glob(f'{args.results_dir}/*/multiplet.method=scrublet')[0]
+    # if os.path.isdir(datadir_scrublet):
+    #     # Scrublet loading QC
+    #     try:
+    #         scb = load_scrublet_assignments(
+    #             expid,
+    #             datadir_scrublet=datadir_scrublet
+    #         )
+    #         columns_output = {**columns_output,  **COLUMNS_SCRUBLET}
+    #         scb = pd.concat([scb,doublet_data_combined.loc[scb.index]],axis=1)
+    #     except:
+    #         print('Scrubblet was not performed for this pool - potential reason is that there are not enough cells for assignment')
+    #         scb = None
+    # else:
+    #     scb = None
         
     
     ############################################################

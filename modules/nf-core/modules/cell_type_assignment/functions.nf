@@ -42,7 +42,7 @@ process CELLTYPE_FILE_MERGE{
         path(all_other_paths)
         path(file__anndata_input)
     script:
-        def merged_files_outpath = "${params.outdir}/celltype/merged_files/"
+        def merged_files_outpath = workflow.workDir.toString()
         file(merged_files_outpath).mkdirs()
         def azimuth_files_path = "${merged_files_outpath}/azimuth_files.tsv"
         def celltypist_files_path = "${merged_files_outpath}/celltypist_files.tsv"

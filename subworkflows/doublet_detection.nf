@@ -58,7 +58,7 @@ process MERGE_DOUBLET_RESULTS{
 
     output:
         // path("plots/*.pdf") optional true
-        // path("plots/*.png") optional true
+        path("*.png") optional true
         // path("${experiment_id}__DoubletDecon_doublets_singlets.tsv"), emit: results
         tuple val(experiment_id), path("${experiment_id}__doublet_results_combined.tsv"), emit: result
 
@@ -68,6 +68,8 @@ process MERGE_DOUBLET_RESULTS{
             echo 'Lets combine'
             combine_doublets.py --list ${all_doublet_files}
             ln -s all_doublet_results_combined.tsv ${experiment_id}__doublet_results_combined.tsv
+            doublet_plots.py
+            mv droplet_type_distribution.png ${experiment_id}__droplet_type_distribution.png
         """
 }
 

@@ -146,8 +146,8 @@ def main():
         
     # ad2 = adatasets2[0].concatenate(*adatasets2[1:])
     # ad = scanpy.read(adata)
-    ad.obs = ad.obs.merge(Data_All, left_index=True, right_index=True)
-
+    ad.obs = ad.obs.merge(Data_All, left_index=True, right_index=True, how='left')
+    # set(ad.obs.index)-set(Data_All.index)
     donor_celltype_report={}
     tranche_exp_report={}
     for id1 in set(Data_All['Exp']):
@@ -158,7 +158,7 @@ def main():
         for donor in set(Exp_Data['Donor']):
             dict_donor_cells = {}
             for col in Exp_Data.columns:
-                if not 'score' in col and not 'probability' in col and not 'majority_voting' in col and not 'over_clustering' in col and not 'conf_score' in col and not 'n_counts' in col and not 'ver_clustering' in col and col !='Exp' and col !='Donor' and col !='n_counts':
+                if not 'score' in col and not ':idx' in col and not 'probability' in col and not 'majority_voting' in col and not 'over_clustering' in col and not 'conf_score' in col and not 'n_counts' in col and not 'ver_clustering' in col and col !='Exp' and col !='Donor' and col !='n_counts':
                     print(col)
                     # col='Celltypist:over_clustering'
                     # col='Azimuth:predicted.celltype.l2'

@@ -29,9 +29,8 @@ process DYNAMIC_DONOR_EXCLUSIVE_SNP_SELECTION{
     } else {
         container "mercury/scrna_deconvolution:62bd56a"
     }
-    publishDir  path: "${params.outdir}/concordances/${samplename}",
-                mode: "${params.copy_mode}",
-                overwrite: "true"
+    publishDir "${params.outdir}/cellsnp/cellsnp_${samplename}", mode: "${params.copy_mode}", pattern: "cellsnp_${samplename}", overwrite: true
+    
     input: 
         val(add_dynamic_sites_or_not_to_panel)
         tuple val(samplename), path(vcf_file),path(csi),path(cellsnp_primary_file)

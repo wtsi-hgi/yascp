@@ -62,7 +62,17 @@ all.genes <- rownames(seurat)
 seurat <- ScaleData(seurat, features = all.genes)
 print('Scaled')
 seurat <- FindVariableFeatures(object = seurat)
-seurat <- RunPCA(seurat, features = VariableFeatures(object = seurat))
+# Check the number of variable features
+num_samples <- ncol(seurat)
+if (num_samples < 50) {
+    print("No sufficinet number of cells to detect doublets.")
+    quit(status = 0) 
+}
+# Determine the number of PCs to use
+npcs_to_use <- ifelse(num_samples > 50, 50, num_samples-1)
+
+# Run PCA with the determined number of PCs
+seurat <- RunPCA(seurat, features = VariableFeatures(object = seurat), npcs = npcs_to_use)
 print('PCA performed')
 seurat <- FindNeighbors(seurat, dims = 1:10)
 print('Neighbors found')

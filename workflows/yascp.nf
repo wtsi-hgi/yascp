@@ -45,39 +45,32 @@ workflow YASCP {
             // here we have rerun something upstream - done for freeze1
             assignments_all_pools = mode
         }
-        if (params.reference_assembly_fasta_dir=='https://yascp.cog.sanger.ac.uk/public/10x_reference_assembly'){
-            RETRIEVE_RECOURSES()  
-            genome1 = RETRIEVE_RECOURSES.out.reference_assembly
-        }else{
-            genome1 = "${params.reference_assembly_fasta_dir}"
+
+        if (!params.input_data_table.contains('fake_file')){
+            prepare_inputs(input_channel)
+            channel__file_paths_10x=prepare_inputs.out.channel__file_paths_10x
+            channel__file_paths_10x_single=prepare_inputs.out.ch_experimentid_paths10x_filtered
+            input_channel = prepare_inputs.out.channel_input_data_table
+            if (params.reference_assembly_fasta_dir=='https://yascp.cog.sanger.ac.uk/public/10x_reference_assembly'){
+                RETRIEVE_RECOURSES()  
+                genome1 = RETRIEVE_RECOURSES.out.reference_assembly
+            }else{
+                genome1 = "${params.reference_assembly_fasta_dir}"
+            }
+            genome = PREPROCESS_GENOME(genome1)
+                
+            chanel_cr_outs = prepare_inputs.out.chanel_cr_outs
+            channel_dsb = prepare_inputs.out.channel_dsb
         }
-        genome = PREPROCESS_GENOME(genome1)
+            vireo_paths = Channel.from("$projectDir/assets/fake_file.fq")
+            matched_donors = Channel.from("$projectDir/assets/fake_file.fq")
 
-        // vcf_input.subscribe { println "vcf_input: $it" }
-        // ###################################
-        // ################################### Readme
-        // AMBIENT RNA REMOVAL USING CELLBENDER
-        // There are 2 modes of running YASCP pipeline:
-        // (option 1) users can run it from existing cellbender if the analysis has already been performed by providing a parth to existing cellbender files : note a specific folder structure is required
-        // (option 2) users can run it from cellranger - skipping the cellbender. params.input == 'cellranger'
-        // ###################################
-        // ###################################
-        ch_poolid_csv_donor_assignments = Channel.empty()
-        bam_split_channel = Channel.of()
-        out_ch = params.outdir
-            ? Channel.fromPath(params.outdir, checkIfExists:true)
-            : Channel.from("${launchDir}/${params.outdir}")
-
-        // out_ch.map{row->"${row[0]}/possorted_genome_bam.bam" }
-        prepare_inputs(input_channel)
-        chanel_cr_outs = prepare_inputs.out.chanel_cr_outs
-        channel__file_paths_10x=prepare_inputs.out.channel__file_paths_10x
-        channel__file_paths_10x_single=prepare_inputs.out.ch_experimentid_paths10x_filtered
-        input_channel = prepare_inputs.out.channel_input_data_table
-        vireo_paths = Channel.from("$projectDir/assets/fake_file.fq")
-        matched_donors = Channel.from("$projectDir/assets/fake_file.fq")
-        channel_dsb = prepare_inputs.out.channel_dsb
-        
+            ch_poolid_csv_donor_assignments = Channel.empty()
+            bam_split_channel = Channel.of()
+            out_ch = params.outdir
+                ? Channel.fromPath(params.outdir, checkIfExists:true)
+                : Channel.from("${launchDir}/${params.outdir}")
+                 
         if(!params.just_reports){
             // sometimes we just want to rerun report generation as a result of alterations, hence if we set params.just_reports =True pipeline will use the results directory and generate a new reports.
 

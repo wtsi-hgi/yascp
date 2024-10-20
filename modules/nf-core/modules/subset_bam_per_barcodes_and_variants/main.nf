@@ -3,7 +3,7 @@ process SUBSET_BAM_PER_BARCODES_AND_VARIANTS {
     label 'process_low'
    
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/carls_data/analysis/bam_tool_processing_05_04_2024.sif"
+        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/bam_tool_processing_05_04_2024.sif"
     } else {
         container " mercury/bam_tool_processing:05_04_2024"
     }
@@ -51,7 +51,7 @@ process PREPROCESS_GENOME{
     label 'process_low'
    
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/carls_data/analysis/bam_tool_processing_05_04_2024.sif"
+        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/bam_tool_processing_05_04_2024.sif"
     } else {
         container " mercury/bam_tool_processing:05_04_2024"
     }
@@ -78,7 +78,7 @@ process SUBSET_BAM_PER_BARCODES{
     label 'process_low'
    
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/carls_data/analysis/bam_tool_processing_05_04_2024.sif"
+        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/bam_tool_processing_05_04_2024.sif"
     } else {
         container "mercury/bam_tool_processing:05_04_2024"
     }

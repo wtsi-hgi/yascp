@@ -41,13 +41,21 @@ process AZIMUTH{
     script:
     
     
-    // output file prefix: strip random hex number form beginning of file name
-    outfil_prfx = "${file_h5ad_batch}".minus(".h5ad")
-    //outfil_prfx = "${file_h5ad_batch}".minus(".h5ad")
+        // output file prefix: strip random hex number form beginning of file name
+        outfil_prfx = "${file_h5ad_batch}".minus(".h5ad")
+        //outfil_prfx = "${file_h5ad_batch}".minus(".h5ad")
+        if (refset.refset =='PBMC' && params.mapping_file!='' && params.remap_celltypes){
+
+            com="remap_azimuth_l2.R --out_file ${samplename}_predicted_celltype_l2.tsv --mapping ${params.mapping_file} --az_file ${samplename}_predicted_celltype_l2.tsv"
+        }else{
+            com=""
+        }
     
     """ 
         azimuth.R ./${file_h5ad_batch} ${refset.refset} ${refset.annotation_labels} ${samplename}
-
+        echo ${params.mapping_file}
+        echo ${params.remap_celltypes}
+        ${com}
     """
 }
 

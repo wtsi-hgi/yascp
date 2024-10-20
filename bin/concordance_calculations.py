@@ -217,8 +217,6 @@ class Concordances:
                 for site in DonorDiscordant_Sites_that_are_atributed_to_other_donor:
                     total_reads_for_site,discordant_reads_for_site,concordant_for_site,\
                         _,_,_= self.read_extraction([site],expected_vars_norm_of_other_donor,cell_vars_norm_otherDonor)
-                    # if discordant_reads_for_site>0:
-                    #     print('here')
                     if concordant_for_site==0:
                         pass
                     try:
@@ -977,7 +975,12 @@ class Concordances:
     
 
     def combine_concordances(self,result,other_donor_concordance,donor_gt_match,analyse_donor):
-        pd.DataFrame(other_donor_concordance).sort_values(by=['cell']).to_csv(f'{donor_gt_match}-{analyse_donor}--each_cells_comparison_with_other_donor.tsv',sep='\t',index=False)
+        try:
+            pd.DataFrame(other_donor_concordance).sort_values(by=['cell']).to_csv(f'{donor_gt_match}-{analyse_donor}--each_cells_comparison_with_other_donor.tsv',sep='\t',index=False)
+        except:
+            print('We do not have any cells to analyse for this donor')
+            pd.DataFrame(other_donor_concordance).to_csv(f'{donor_gt_match}-{analyse_donor}--each_cells_comparison_with_other_donor.tsv',sep='\t',index=False)
+        
         self.cell_concordance_table = {**self.cell_concordance_table, **result}
 
     def combine_dict(self,cell_concordance_table,result): 
@@ -1105,49 +1108,21 @@ class Donor(Concordances):
         for cell1 in chunk_df:
             count+=1
             cell_vars = exclusive_cell_variants[cell1]
-            # try:
             result1, other_donor_concordances = self.concordance_table_production(expected_vars_norm,cell_vars,cell1,donor_gt_match,donor_gt_match_cohort, vars_per_donor_gt, donor_cohorts, count,all_donor_data,donor_assignments_table)
             donor_concordance_table,other_donor_concordance_table = self.append_results_cell_concordances(result1,donor_concordance_table,other_donor_concordances,other_donor_concordance_table)
-            # except:
-            #     continue
         return [donor_concordance_table, other_donor_concordance_table]
     
     def analyse_donor(self,Cells_to_keep_pre,donor_gt_match,donor_gt_match_cohort,vars_per_donor_gt,donor_cohorts,all_donor_data,expected_vars_norm,donor_assignments_table,exclusive_cell_variants):
-        n=200
-        print(f'-- Using {cpus} cpus ---')
+        n=round(len(Cells_to_keep_pre)/cpus+1)
+        # 200 # How many cells to analyse on a paralel cpu.
+        print(f'-- Using {cpus} cpus; and analysing {n} cells on each CPU ---')
         pool = mp.Pool(cpus)
-        # Cells_to_keep_pre = Cells_to_keep_pre[:13]
         list_df = [Cells_to_keep_pre[i:i+n] for i in range(0,len(Cells_to_keep_pre),n)]
-        # results = []
         i=0
         for chunk_df in list_df:
-            if i>2:
-                continue
             pool.apply_async(self.analyse_cells,args =([chunk_df,exclusive_cell_variants,expected_vars_norm,donor_gt_match,vars_per_donor_gt,donor_cohorts,all_donor_data,donor_assignments_table,donor_gt_match_cohort]),callback=self.combine_results)
             i+=1
-            # results.append(result)
-        # while True:
-        #     time.sleep(1)
-        #     # catch exception if results are not ready yet
-        #     try:
-        #         ready = [result.ready() for result in results]
-        #         successful = [result.successful() for result in results]
-        #     except Exception:
-        #         continue
-        #     # exit loop if all tasks returned success
-        #     if all(successful):
-        #         break
-        #     # raise exception reporting exceptions received from workers
-        #     if all(ready) and not all(successful):
-        #         raise Exception(f'Workers raised following exceptions {[result._value for result in results if not result.successful()]}')
-        # self.pool.join()
-            # try:
-            #     [result.wait() for result in results]        
-            # except:
-            #     print('done')             
-            # r1,r2 = self.analyse_cells(chunk_df,exclusive_cell_variants,expected_vars_norm,donor_gt_match,vars_per_donor_gt,donor_cohorts,all_donor_data,donor_assignments_table,donor_gt_match_cohort)
-            # self.combine_results(r1,r2)
-        print('Done') 
+        print('-- Done --') 
         pool.close()
         pool.join() 
         return self.donor_concordance_table,self.other_donor_concordance,donor_gt_match,self.donor_id 
@@ -1504,8 +1479,7 @@ if __name__ == "__main__":
                             sparse=False, format_list=['GT', 'DP', 'AD', 'OTH'])
         exclusive_cell_variants = loader1.load_VCF_batch_paralel()
         del loader1
-        with open(f'tmp_exclusive_cell_variants.pkl', 'wb') as f:
-            pickle.dump(exclusive_cell_variants, f)
+
 
         print('---Loading expected VCF----')
         loader3 = VCF_Loader(expected_vcf, biallelic_only=True,
@@ -1527,12 +1501,24 @@ if __name__ == "__main__":
     GT_Matched_variants = {key: GT_Matched_variants[key] for key in content}
     
     exclusive_don_variants = GT_Expected_variants
+    all_interesting_vars = set()
     for key in GT_Matched_variants.keys():
         if key in exclusive_don_variants.keys():
             _=''
         else:
             exclusive_don_variants[key]=GT_Matched_variants[key]
+        df1 = pd.DataFrame(exclusive_don_variants[key],columns=['col1'])
+        vars_of_interest = set(df1['col1'].str.split('_').str[:2].str.join('_'))
+        all_interesting_vars = all_interesting_vars.union(vars_of_interest)
     
+    # Now filter cell vars to all of the interesting vars
+    for key in exclusive_cell_variants.keys():
+        # list(exclusive_cell_variants.keys()).index(key)
+        df1 = pd.DataFrame(exclusive_cell_variants[key],columns=['col1'])
+        df1['decission'] = df1['col1'].str.split('_').str[:2].str.join('_')
+        exclusive_cell_variants[key] = list(df1[df1['decission'].isin(all_interesting_vars)]['col1'])
+    with open(f'tmp_exclusive_cell_variants.pkl', 'wb') as f:
+        pickle.dump(exclusive_cell_variants, f)
     with open(f'tmp_exclusive_don_variants.pkl', 'wb') as f:
         pickle.dump(exclusive_don_variants, f)
     donor_distinct_sites = donor_exclusive_sites(exclusive_don_variants)

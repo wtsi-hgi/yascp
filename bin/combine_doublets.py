@@ -22,8 +22,11 @@ for f1 in all_files:
     df1 = pd.read_csv(f1, index_col=0, sep='\t')
     all_combo = pd.concat([all_combo, df1], axis=1)
 all_combo.index.name = 'barcodes'
-all_combo['Scrublet_DropletType'] = all_combo['scrublet__predicted_multiplet']
-all_combo.loc[all_combo['Scrublet_DropletType'] == True, 'Scrublet_DropletType'] = 'doublet'
-all_combo.loc[all_combo['Scrublet_DropletType'] == False, 'Scrublet_DropletType'] = 'singlet'
+try:
+  all_combo['Scrublet_DropletType'] = all_combo['scrublet__predicted_multiplet']
+  all_combo.loc[all_combo['Scrublet_DropletType'] == True, 'Scrublet_DropletType'] = 'doublet'
+  all_combo.loc[all_combo['Scrublet_DropletType'] == False, 'Scrublet_DropletType'] = 'singlet'
+except:
+  print('Scrublet wast exacuted')
 all_combo.to_csv('all_doublet_results_combined.tsv',sep='\t') 
 print('Done')
