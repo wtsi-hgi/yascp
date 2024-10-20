@@ -91,9 +91,9 @@ process COMBINE_FILES{
         path(concordance_table))
 
     output:
-        path("*.png")
-        tuple val(pool_id), path("*joined_df_for_plots.tsv"), emit: joined_df_for_plots
-        path("*joined_df_for_plots.tsv"), emit: file_joined_df_for_plots
+        path("*.png") optional true
+        tuple val(pool_id), path("*joined_df_for_plots.tsv"), emit: joined_df_for_plots optional true
+        path("*joined_df_for_plots.tsv"), emit: file_joined_df_for_plots optional true
 
     script:
 
