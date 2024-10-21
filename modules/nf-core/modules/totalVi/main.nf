@@ -1,9 +1,8 @@
 process TOTAL_VI_INTEGRATION{
     
     if (params.utilise_gpu){
-        label 'gpu'
+        label 'process_low'
     }else{
-        label 'process_medium'
         label 'process_low'
     }
 
