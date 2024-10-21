@@ -7,6 +7,7 @@ import pandas as pd
 import argparse
 import pandas as pd
 import re
+import glob
 # Vireo is not working well if multiple same donor genotypes are provided.
 # For this reasone we have to ensure they are removed.
 parser = argparse.ArgumentParser(
@@ -71,30 +72,73 @@ for i in mylist:
         duplist.append(i) 
 
 donors['mapping']=''
-for don1 in donors[0]:
+# donors[0] = donors[0].str.replace("^1_",'')
+for don2 in donors[0]:
     # print(don1)
-    mappings = bridge[bridge['oragene_id']==don1]['s00046_id']
+    mappings=[]    
+    # don1='1_15002002032964_206862850133_R09C01'
+    mappings = bridge[bridge['oragene_id']==don2]['s00046_id']
     
     if len(mappings)>0:
         mapping=mappings.values[0]
         for mapping in mappings:
+            print(mapping)
             if mapping in input_expected:
-                donors.loc[donors[0]==don1,'mapping']=mapping
+                donors.loc[donors[0]==don2,'mapping']=mapping
                 # there are cases where two genotype ids map to same expected donor. In this case we should pick the one expected.
-                continue
+                break
+    don1=re.sub('^1_','',don2)        
     mappings = bridge[bridge['oragene_id']==don1.split('_')[0]]['s00046_id']
     if len(mappings)>0:
         mapping=mappings.values[0]
         for mapping in mappings:
             if mapping in input_expected:
-                donors.loc[donors[0]==don1,'mapping']=mapping
+                donors.loc[donors[0]==don2,'mapping']=mapping
                 # there are cases where two genotype ids map to same expected donor. In this case we should pick the one expected.
-                continue
+                break
+        # continue
+    try:        
+        mappings = bridge[bridge['oragene_id']==don1.split('_')[1]]['s00046_id']
+        if len(mappings)>0:
+            mapping=mappings.values[0]
+            for mapping in mappings:
+                if mapping in input_expected:
+                    donors.loc[donors[0]==don2,'mapping']=mapping
+                    # there are cases where two genotype ids map to same expected donor. In this case we should pick the one expected.
+                    break
+    except:
+        _='error caused by a single name val'
         
-donors = donors.sort_values('mapping')
+donors = donors.sort_values(0)
+try:
+    g = glob.glob(f'/lustre/scratch123/hgi/projects/cardinal_analysis/freezes/freeze0/qc/*/infered_genotypes/{pool_name}/gt_match_FullGT_Jul2024_final/{pool_name}/GT_replace_stats_{pool_name}_gt_donor_assignments.csv')
+    if len(g)>0:
+        d2=pd.read_csv(g[0],sep='\t')
+        d2=d2[d2['Match Expected']==True]
+        all_definite_donors = set(d2['donor_gt original'])
+        donors2 = donors[donors[0].isin(all_definite_donors)]
+        missing=set(donors['mapping'])-set(donors2['mapping'])
+        # missing=set(['30007480246'])
+        miss = donors[donors['mapping'].isin(missing)]
+        miss['miss2'] = miss[0].str.replace("^1_","", regex=True)
+        miss2 = miss[miss['miss2'].isin(all_definite_donors)]
+        miss2 = miss2.drop('miss2',axis=1)
+        # now filter missing based on the partial naming
+        donors2 = pd.concat([donors2,miss2])
+        missing=set(donors['mapping'])-set(donors2['mapping'])
+        miss = donors[donors['mapping'].isin(missing)]
+        donors = pd.concat([donors2,miss])
+except:
+    print('this is not available')
+    
 donors = donors.drop_duplicates(subset=['mapping'])
+donors[donors['mapping']==donors['mapping']]
+donors = donors[donors['mapping']!='']
 donors[0].to_csv('t.tsv',index=False,header=None)
 expected = set(input_expected.replace("'",'').split(','))
 missing = expected-set(donors['mapping'])
 print('Done')
 
+
+# set(d2['donor_gt original']) - set(donors[0])
+# d2=pd.read_csv("/lustre/scratch123/hgi/projects/cardinal_analysis/freezes/freeze0/qc/Cardinal_45327_Jul_18_2022/infered_genotypes/CRD_CMB13016576/gt_match_FullGT_Jul2024_final/CRD_CMB13016576/GT_replace_stats_CRD_CMB13016576_gt_donor_assignments.csv",sep='\t')

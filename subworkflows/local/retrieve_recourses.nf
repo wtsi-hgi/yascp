@@ -34,6 +34,9 @@ process RETRIEVE_RECOURSES_TEST_DATASET{
     // In nf there is a function collectFile - however if you provide a symlinked file directory tusing nf function will overwrite the source instead of replacing the file
     // This snipped is a replication of the function but as a nf module and hence the problem is avoided.
   publishDir "${params.outdir}/recourses",  mode: "${params.copy_mode}", overwrite: true  
+
+  input:
+    val(outdir)
   output:
     path("full_test_dataset"),emit:recourses, optional: true
     path("input_test_data_file.tsv"),emit:input_channel
@@ -60,8 +63,26 @@ process RETRIEVE_RECOURSES_TEST_DATASET{
         cd \$cwd1
         wget -c ${params.genotype_input.tsv_donor_panel_vcfs} -O  input_test_vcf_file.tsv
         wget -c ${params.input_data_table} -O input_test_data_file.tsv
-        sed -i 's#/path/to/replace/pointing/to/downloaded/files#${params.outdir}/recourses/full_test_dataset/smaller_dataset/genotypes#' input_test_vcf_file.tsv
-        sed -i 's#/path/to/replace/pointing/to/downloaded/files#${params.outdir}/recourses/full_test_dataset#' input_test_data_file.tsv
+        sed -i 's#/path/to/replace/pointing/to/downloaded/files#${outdir}/recourses/full_test_dataset/smaller_dataset/genotypes#' input_test_vcf_file.tsv
+        sed -i 's#/path/to/replace/pointing/to/downloaded/files#${outdir}/recourses/full_test_dataset#' input_test_data_file.tsv
         touch Done > Done.tmp
     """    
+}
+
+
+process STAGE_FILE{
+  label 'process_tiny'
+    // In nf there is a function collectFile - however if you provide a symlinked file directory tusing nf function will overwrite the source instead of replacing the file
+    // This snipped is a replication of the function but as a nf module and hence the problem is avoided.
+  // publishDir "${params.outdir}/recourses",  mode: "${params.copy_mode}", overwrite: true    
+  input:
+    path(file)
+  output:
+    path(file)
+
+  script:
+
+    """
+    echo 'staged'
+    """
 }

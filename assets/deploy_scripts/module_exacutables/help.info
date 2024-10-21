@@ -1,8 +1,9 @@
-#####YASCP 1.5_tmp#####
+#####YASCP 1.6.1_tmp#####
 ###################
 ###################
 ${bold}YASCP (Yet Another Single Cell Pieline)${normal}[https://github.com/wtsi-hgi/yascp]
 Nextflow pipeline that QCs the scRNA Cellranger data by removing ambient RNA, deconvoluting donors, assigning celltypes, analysing concordances vs expected genotypes
+Please refear to the usage and outputs documentation here: https://hgi-projects.pages.internal.sanger.ac.uk/documentation/docs/tutorials/yascp_docs/#getting-started or here: https://github.com/wtsi-hgi/yascp/tree/78df9d94388045bc386ea32c2127abeb154a36c6 
 ###################
 
 Yascp module has been set to run in multiple modes:

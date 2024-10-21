@@ -29,7 +29,7 @@ SMVAL = float(1e-9)
 # ZSCORE_THRESH = float(3)
 # ZSCORE_DIST_THRESH = float(3)
 
-DONOR_CELLINE_MATCHSTR = re.compile("^celline_(\S+)$")
+DONOR_CELLINE_MATCHSTR = re.compile(".*celline_.*")
 FNAM_MATCHSTR = re.compile("^pool_(\S+)_panel_(\S+)_gtcheck_donor_assignments")
 
 class AssignmentTables:
@@ -79,35 +79,66 @@ class AssignmentTables:
             panel = self.panels[nam]
             is_cell_line = None
             is_error = False
+            is_ambiguous= False
+            z_dist = {}
             for donor in panel:
                 dtup = panel[donor]
                 assigned_donor = dtup[0]
                 score = float(dtup[1])
                 score1 = float(dtup[2])
-                cm = DONOR_CELLINE_MATCHSTR.match(assigned_donor)
-                if cm:
-                    if is_cell_line is None:
-                        is_cell_line = True
-                        # if fnam_cell_line is not None and fnam_cell_line != nam:
-                        #     sys.exit("ERROR: there are multiple panels with cell line names in them, e.g. {:s} and {:s}."
-                        #         .format(fnam_cell_line, fnam))
-                        fnam_cell_line = nam
-                        self.cell_line_panel.append(fnam_cell_line)
-                    else:
-                        is_error = not is_cell_line
-                    cell_line = cm.group(1)
+                # Its not only celline panels bu in general if there is only a binary donor panel.
+                z1 = float(dtup[3])
+                z0 = float(dtup[4])
+                z_dist[donor]={'z1':z1,'z0':z0}
+            z_dist = pd.DataFrame(z_dist).T
+            if (all(z_dist['z1'].isin([0, 1])) or all(z_dist['z0'].isin([0, 1]))) and all((z_dist['z1']-z_dist['z0']).isin([0, 1])):
+                
+                fnam_cell_line = nam
+                self.cell_line_panel.append(fnam_cell_line)
+                for donor in panel:
+                    dtup = panel[donor]
+                    assigned_donor = dtup[0]
+                    cell_line = assigned_donor
+                    score = float(dtup[1])
+                    score1 = float(dtup[2])
+                    
                     if fnam_cell_line not in self.cell_lines:
                         self.cell_lines[fnam_cell_line]={}
                     if cell_line in self.cell_lines[fnam_cell_line]:
                         self.cell_lines[fnam_cell_line][cell_line][donor] = (score, score1)
                     else:
                         self.cell_lines[fnam_cell_line][cell_line] = {donor: (score, score1)}
-                elif is_cell_line is None:
-                    is_cell_line = False
-                else:
-                    is_error = is_cell_line
-                if is_error:
-                    sys.exit(f"ERROR: panel {panel} has cell lines mixed with non-cell line labels.")
+            else:
+                _='not a celline'
+                # cm = DONOR_CELLINE_MATCHSTR.match(assigned_donor)
+                # if ((z1 ==0 or z0==0) and z1-z0==0 and not is_cell_line==None):
+                #     continue
+                # if (((z1 ==1 or z0==1) and z1-z0==1) or ((z1 ==0 or z0==0) and z1-z0==0)):
+                        
+                #     if is_cell_line is None:
+                #         is_cell_line = True
+                #         # if fnam_cell_line is not None and fnam_cell_line != nam:
+                #         #     sys.exit("ERROR: there are multiple panels with cell line names in them, e.g. {:s} and {:s}."
+                #         #         .format(fnam_cell_line, fnam))
+                #         fnam_cell_line = nam
+                #         self.cell_line_panel.append(fnam_cell_line)
+                #     else:
+                #         is_error = not is_cell_line
+                #     cell_line = assigned_donor
+                #     if fnam_cell_line not in self.cell_lines:
+                #         self.cell_lines[fnam_cell_line]={}
+                #     if cell_line in self.cell_lines[fnam_cell_line]:
+                #         self.cell_lines[fnam_cell_line][cell_line][donor] = (score, score1)
+                #     else:
+                #         self.cell_lines[fnam_cell_line][cell_line] = {donor: (score, score1)}
+                # elif is_cell_line is None:
+                #     is_cell_line = False
+                # else:
+                #     is_error = is_cell_line
+                # if is_error:
+                    
+                #     sys.exit(f"ERROR: panel {panel} has cell lines mixed with non-cell line labels.")
+                    # in this particular situation i would like to select it as not being a celline.
         
         return fnam_cell_line
 
@@ -138,6 +169,8 @@ class AssignmentTables:
                 m = statistics.mean(scores)
                 if ns > 1:
                     sd = statistics.stdev(scores)
+                    if (sd==0):
+                        sd=0.0000001
                     z = (m - donor_score)/sd
                     is_confident_assignment = z > ZSCORE_THRESH
                     if donor == 'donor8':
@@ -162,6 +195,7 @@ class AssignmentTables:
     def make_panel_assignment(self, panel, donor):
         donor_assigned, score0, score1, z0, z1 ,score_n, n, mean, sd= self.panels[panel][donor]
         is_confident_assignment = float(z0) > ZSCORE_THRESH and float(z0)-float(z1) > ZSCORE_DIST_THRESH
+        # is_confident_assignment = True
         if is_confident_assignment:
             assignment = donor_assigned
         else:

@@ -108,15 +108,21 @@ for ix in GT_Assignments.index:
                 
                 if len(replacements)>1:
                     replacement = ''
+                    r1='NA'
                     for rep1 in replacements.iloc[:,0]:
-                        
+                        # print(rep1)
+                        # if rep1=='S2-046-00570_02':
+                        #     _='here'
                         if len(D2[D2.col1.str.contains(rep1)])>0:
                             GT_Assignments.loc[ix,'Match Expected']='True'
-                            replacement = rep1
-                            remove_from_set = D2[D2.col1.str.contains(replacement)]['col1'].values[0]
+                            r1 = rep1
+                            remove_from_set = D2[D2.col1.str.contains(r1)]['col1'].values[0]
                             All_Expected_set.append(remove_from_set)
                         else:
+                            # print('no')
                             replacement=replacement+rep1+';'
+                    if r1!='NA':
+                        replacement=r1
                 else:
                     replacement = replacements.values[0]
             except:

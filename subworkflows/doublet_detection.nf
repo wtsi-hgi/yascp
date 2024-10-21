@@ -5,6 +5,7 @@ include {SC_DBLFINDER} from "$projectDir/modules/nf-core/modules/scDblFinder/mai
 include { DOUBLET_FINDER} from "$projectDir/modules/nf-core/modules/doubletfinder/main"
 include { SCDS} from "$projectDir/modules/nf-core/modules/scds/main"
 include { SPLIT_CITESEQ_GEX; SPLIT_CITESEQ_GEX as SPLIT_CITESEQ_GEX_FILTERED } from "$projectDir/modules/nf-core/modules/citeseq/main"
+include { CONVERT_MTX_TO_H5AD } from "$projectDir/modules/local/convert_h5ad_to_mtx/main"
 
 def random_hex(n) {
     Long.toUnsignedString(new Random().nextLong(), n).toUpperCase()
@@ -57,7 +58,7 @@ process MERGE_DOUBLET_RESULTS{
 
     output:
         // path("plots/*.pdf") optional true
-        // path("plots/*.png") optional true
+        path("*.png") optional true
         // path("${experiment_id}__DoubletDecon_doublets_singlets.tsv"), emit: results
         tuple val(experiment_id), path("${experiment_id}__doublet_results_combined.tsv"), emit: result
 
@@ -67,19 +68,18 @@ process MERGE_DOUBLET_RESULTS{
             echo 'Lets combine'
             combine_doublets.py --list ${all_doublet_files}
             ln -s all_doublet_results_combined.tsv ${experiment_id}__doublet_results_combined.tsv
+            doublet_plots.py
+            mv droplet_type_distribution.png ${experiment_id}__droplet_type_distribution.png
         """
 }
 
 workflow MULTIPLET {
     take:
         channel__file_paths_10x
+        
     main:
         // Identify multiplets using scrublet.
-
-        SPLIT_CITESEQ_GEX( channel__file_paths_10x,'filterd')
-        channel__file_paths_10x = SPLIT_CITESEQ_GEX.out.channel__file_paths_10x
-        gex_h5ad = SPLIT_CITESEQ_GEX.out.gex_h5ad
-
+        gex_h5ad = CONVERT_MTX_TO_H5AD(channel__file_paths_10x).gex_h5ad
         input_channel = Channel.of()
         if (params.filter_multiplets.scrublet.run_process){
             SCRUBLET(

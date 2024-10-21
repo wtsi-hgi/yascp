@@ -15,6 +15,7 @@ workflow prepare_inputs {
 
 		YASCP_INPUTS(channel_input_data_table)
 		channel_input_data_table = YASCP_INPUTS.out.input_file_corectly_formatted
+        
 
         channel_input_data_table
             .splitCsv(header: true, sep: params.input_tables_column_delimiter)

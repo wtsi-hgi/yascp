@@ -36,9 +36,10 @@ include {VIREO_GT_FIX_HEADER; VIREO_ADD_SAMPLE_PREFIX; MERGE_GENOTYPES_IN_ONE_VC
 include {ENHANCE_STATS_GT_MATCH } from "$projectDir/modules/nf-core/modules/genotypes/main"
 include {collect_file} from "$projectDir/modules/nf-core/modules/collect_file/main"
 include { CELLSNP;capture_cellsnp_files } from "$projectDir/modules/nf-core/modules/cellsnp/main"
+include { CONVERT_H5AD_TO_MTX } from "$projectDir/modules/local/convert_h5ad_to_mtx/main"
 
 
-
+// Channel.of(params.outdir).mkdirs()
 
 ////// WORKFLOW: Run main nf-core/yascp analysis pipeline
 // This is the default entry point, we have others to update ceirtain parts of the results. 
@@ -46,8 +47,12 @@ include { CELLSNP;capture_cellsnp_files } from "$projectDir/modules/nf-core/modu
 
 workflow MAIN {
 
+    out_ch = params.outdir
+            ? Channel.fromPath(params.outdir, checkIfExists:true)
+            : Channel.fromPath("${launchDir}/${outdir}")
+
     if (params.profile=='test_full'){
-        RETRIEVE_RECOURSES_TEST_DATASET()
+        RETRIEVE_RECOURSES_TEST_DATASET(out_ch)
         input_channel = RETRIEVE_RECOURSES_TEST_DATASET.out.input_channel
         vcf_inputs = RETRIEVE_RECOURSES_TEST_DATASET.out.vcf_inputs
     }else{
@@ -62,6 +67,8 @@ workflow MAIN {
             vcf_inputs = Channel.of()
         }
     }
+
+    input_channel.collectFile(name: "$params.outdir/yascp_inputs.tsv")
     YASCP ('default',input_channel,vcf_inputs)
 
 }
@@ -102,25 +109,27 @@ workflow JUST_CELLBENDER{
 
 
 workflow JUST_DOUBLETS{
-    input_channel = Channel.fromPath(params.input_data_table, followLinks: true, checkIfExists: true)
-    YASCP_INPUTS(input_channel)
-    channel_input_data_table = YASCP_INPUTS.out.input_file_corectly_formatted
-    channel__file_paths_10x =  channel_input_data_table
-        .splitCsv(header: true, sep: params.input_tables_column_delimiter)
-        .map{row -> tuple(
-        row.experiment_id,
-        file("${row.data_path_10x_format}/filtered_feature_bc_matrix/barcodes.tsv.gz"),
-        file("${row.data_path_10x_format}/filtered_feature_bc_matrix/features.tsv.gz"),
-        file("${row.data_path_10x_format}/filtered_feature_bc_matrix/matrix.mtx.gz")
-    )}
+    // input_channel = Channel.fromPath(params.input_data_table, followLinks: true, checkIfExists: true)
+    // YASCP_INPUTS(input_channel)
+    // channel_input_data_table = YASCP_INPUTS.out.input_file_corectly_formatted
 
-    channel__file_paths_10x =  channel_input_data_table
-        .splitCsv(header: true, sep: params.input_tables_column_delimiter)
-        .map{row -> tuple(
-        row.experiment_id,
-        file("${row.data_path_10x_format}/filtered_feature_bc_matrix")
-    )}
 
+    // channel__file_paths_10x =  channel_input_data_table
+    //     .splitCsv(header: true, sep: params.input_tables_column_delimiter)
+    //     .map{row -> tuple(
+    //     row.experiment_id,
+    //     file("${row.data_path_10x_format}/filtered_feature_bc_matrix")
+    // )}
+    file__anndata_merged = Channel.from(params.file__anndata_merged)
+    channel__file_paths_10x = CONVERT_H5AD_TO_MTX(file__anndata_merged).channel__file_paths_10x
+
+    channel__file_paths_10x =  channel__file_paths_10x
+        .map{row -> tuple(
+        row[0],
+        file("${row[1]}/barcodes.tsv.gz"),
+        file("${row[1]}/features.tsv.gz"),
+        file("${row[1]}/matrix.mtx.gz")
+    )}
 
     MULTIPLET(
         channel__file_paths_10x

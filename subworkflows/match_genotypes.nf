@@ -71,7 +71,7 @@ workflow match_genotypes {
     ou1.mix(ou2).set{ou3}
 
     // Now we calculate the concordance/discordance scores of each of the cells against the donors.
-    merged_GT_Matched_genotypes.subscribe { println "merged_GT_Matched_genotypes: $it" }
+    // merged_GT_Matched_genotypes.subscribe { println "merged_GT_Matched_genotypes: $it" }
     // merged_expected_genotypes.subscribe { println "merged_expected_genotypes: $it" }
     MATCH_GT_VIREO.out.donor_match_table_with_pool_id.subscribe { println "MATCH_GT_VIREO.out.donor_match_table_with_pool_id: $it" }
     cell_assignments.subscribe { println "cell_assignments: $it" }

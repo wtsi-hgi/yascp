@@ -7,16 +7,9 @@ process SPLIT_CITESEQ_GEX {
         container "wtsihgi/nf_scrna_qc:6bb6af5"
     }
 
-    publishDir  path: "${params.outdir}/citeseq/${mode}/${sample_name}",
-    //   saveAs: {filename ->
-    //     if (filename.contains("antibody-")) {
-    //         filename.replaceAll("antibody-", "${mode}_antibody-")
-    //     }else {
-    //         null
-    //     }
-    //   },
-      mode: "${params.copy_mode}",
-      overwrite: "true"
+    publishDir  path: "${params.outdir}/data_modalities_split/${mode}/${sample_name}",
+    mode: "${params.copy_mode}",
+    overwrite: "true"
 
     input:
         tuple val(sample_name),path(cellranger_raw) 
@@ -26,13 +19,14 @@ process SPLIT_CITESEQ_GEX {
         tuple val(sample_name), path("${sample_name}__Gene_Expression"), emit:gex_data
         tuple val(sample_name), path("antibody-${sample_name}.h5ad"), emit: ab_data2 optional true
         tuple val(sample_name), path("Gene_Expression-${sample_name}.h5ad"), emit: gex_h5ad optional true
-        tuple val(sample_name), path("${sample_name}__*"), emit: ab_data
+        path("Gene_Expression-${sample_name}.h5ad"), emit: gex_h5ad_2 optional true
+        tuple val(sample_name), path("${sample_name}__*"), emit: ab_data optional true
         tuple val(sample_name), path("${sample_name}__Gene_Expression/barcodes.tsv.gz"), path("${sample_name}__Gene_Expression/features.tsv.gz"), path("${sample_name}__Gene_Expression/matrix.mtx.gz"), emit: channel__file_paths_10x
  
     script:
 
         """
-        
+
             strip_citeseq.py --raw_data ${cellranger_raw} -o ${sample_name}
         """
 }
@@ -102,9 +96,7 @@ process DSB_INTEGRATE{
 
 
     input:
-        path(vireo)
         path(tmp_rsd)
-        path(matched_donors)
         each vars_to_regress
         val(k_anchor)
         val(dims)
@@ -166,6 +158,8 @@ process VDJ_INTEGRATION{
     
     output:
         path("*all_samples_integrated.vdj.RDS"), emit: all_data_integrated_vdj_rds
+        path("*all_samples_integrated.BCR.RDS"), emit: all_data_integrated_BCR_rds
+        path("*all_samples_integrated.TCR.RDS"), emit: all_data_integrated_TCR_rds
 
     input:
         path(all_cellranger_samples)
@@ -178,6 +172,44 @@ process VDJ_INTEGRATION{
     4.add_vdj.R ${wnn_integrated_file}
     """
 
+}
+
+
+process PREPROCESS_PROCESS {
+    label 'process_medium'
+    tag "${sample_name}"
+    if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
+        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/azimuth_dsb_6_03_2024.sif"
+    } else {
+        container "mercury/azimuth_dsb:6_03_2024"
+    }
+
+    publishDir  path: "${params.outdir}/citeseq/DSB/${sample_name}",      
+        saveAs: {filename ->
+        if (filename.contains("tmp_rds_files__")) {
+            null
+        }else {
+            filename
+        }
+      }, mode: "${params.copy_mode}",
+      overwrite: "true"
+
+    input:
+        tuple val(sample_name), path(vireo_path), path(rds_path),path(matched_donors)
+        each vars_to_regress
+
+    output:
+        path("normalised__${sample_name}.withADT.RDS"), emit: tmp_rsd
+
+    script:
+
+
+        if (vars_to_regress == ''){
+            vars_to_regress='NONE'
+        }
+        """
+            2.process_donor_data_for_integration.R ${sample_name} ${vireo_path} ${matched_donors} ${rds_path} ${vars_to_regress}
+        """
 }
 
 
@@ -208,9 +240,10 @@ process DSB_PROCESS {
     output:
         path("CITE__*"), emit: citeseq_rsd
         path("tmp_rds_files__*/*/${sample_name}*.RDS"), emit: tmp_rsd
+        tuple val(sample_name), path("tmp_rds_files__*/*/${sample_name}*.RDS"), emit: ch_for_norm
     script:
         """
-  
+   
             add_adt.R ${sample_name} ${cellranger_rawfile_path} ${filtered_feature_bc_matrix} ${sample_QCd_adata}
         """
 }

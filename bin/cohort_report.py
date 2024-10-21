@@ -184,7 +184,10 @@ if (os.path.exists(f"{path}/deconvolution/vireo_gt_fix")):
                 GR_PANEL = GT_MATCH[GT_MATCH['final_panel'] == confident_panel]
                 GT_CELLINE = GT_MATCH[GT_MATCH['final_panel'] == 'GT_cell_lines']
                 for i,row1 in GT_CELLINE.iterrows():
-                    celline = row1['donor_gt original'].split('_')[1]
+                    try:
+                        celline = row1['donor_gt original'].split('_')[1]
+                    except:
+                        celline = row1['donor_gt original']
                     if celline in row1['Good_ids expected']:
                         GT_CELLINE.loc[i,'Match Expected']=True
 

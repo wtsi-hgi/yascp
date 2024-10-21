@@ -1,14 +1,18 @@
 <p align="center">
-  <img src="https://github.com/wtsi-hgi/yascp/blob/main/assets/images/YASCP_Logo.png" width="80%"/>
+  <img src="assets/images/YASCP_Logo.png" width="50%"/>
 </p>
 
 ## Introduction
+Usage [DOCUMENTATION](https://maxozo.github.io/yascp/)
 <p align="center">
   <img src="https://github.com/wtsi-hgi/yascp/blob/main/assets/images/yascp_workflow.png" width="100%"/>
 </p>
 
-**nf-core/yascp** is a bioinformatics best-practice analysis pipeline tailored for robuts donor deconvolutions, doublet detections, celltype assignemts, quality control, integration, clustering of single-cell datasets.  YASCP enhances productivity by automating data preprocessing, quality control, and advanced analyses, ensuring high-quality results with minimal manual intervention. All you have to prepeare is a simple tsv file indicating the number of donors in pools and the path to cellrange folder:
+You can run pipeline blocks independently:
 
+<img width="100%" alt="Screenshot 2024-06-03 at 17 01 01" src="https://github.com/wtsi-hgi/yascp/assets/22347136/c724f731-42ab-4880-9666-eeb3384fd5e6">
+
+**nf-core/yascp** is a bioinformatics best-practice analysis pipeline designed for high-quality deconvolution, scRNA data quality control, doublet detection, cell type assignment, clustering, and integration of single-cell datasets. YASCP stands for "Yet Another Single Cell Pipeline." The sequence from Y to A in the acronym, referring to the alphabet, symbolizes the continuous journey of learning and discovery, with no Z to represent the ultimate knowledge that remains just out of reach, motivating us to keep exploring.
 
 | experiment_id   | n_pooled | donor_vcf_ids    |  data_path_10x_format   |
 |-----------------|----------|------------------|-------------------------|
@@ -80,9 +84,6 @@ Pipeline has a modular design ensuring that the bits and piecies can be run inde
 16. Cell genotype concordance Calculations
 
 
-You can run pipeline blocks independently:
-
-<img width="100%" alt="Screenshot 2024-06-03 at 17 01 01" src="https://github.com/wtsi-hgi/yascp/assets/22347136/c724f731-42ab-4880-9666-eeb3384fd5e6">
 
 
 ## Documentation: Prepearing your own data and interpreting the results
@@ -92,7 +93,7 @@ To understand how to prepeare your own data and how to interpret the results ple
 
 ## Credits
 
-Yascp was originally written by Matiss Ozols as part of the Cardinal project but is applicable to many other projects with contributions from Leland Taylor, Guillaume Noell, Hannes Ponstingl, Vivek Iyer,  Henry Taylor, Tobi Alegbe, Monika Krzak, Alessandro Raveane, Carl Anderson, Anna Lorenc, Stephen Watt, Nicole Soranzo.
+Yascp was originally written by Matiss Ozols; Leland Taylor, Guillaume Noell, Hannes Ponstingl, Vivek Iyer,  Henry Taylor, Tobi Alegbe, Monika Krzak, Alessandro Raveane, Carl Anderson, Anna Lorenc, Haerin Jang, Niek de Klein, Stephen Watt, Nicole Soranzo, Oliver Stegle.
 <!-- TODO nf-core: If applicable, make list of people who have also contributed -->
 
 The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool to run tasks across multiple compute infrastructures in a very portable manner. It uses Docker/Singularity containers making installation trivial and results highly reproducible. The [Nextflow DSL2](https://www.nextflow.io/docs/latest/dsl2.html) implementation of this pipeline uses one container per process which makes it much easier to maintain and update software dependencies. Where possible, these processes have been submitted to and installed from [nf-core/modules](https://github.com/nf-core/modules) in order to make them available to all nf-core pipelines, and to everyone within the Nextflow community!
