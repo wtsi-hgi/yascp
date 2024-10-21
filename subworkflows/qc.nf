@@ -93,7 +93,7 @@ workflow qc {
 
 
                 if(params.totalVi.run_process){
-                    TOTAL_VI_INTEGRATION(NORMALISE_AND_PCA.out.anndata,DSB_PROCESS.out.citeseq_rsd.collect())
+                    TOTAL_VI_INTEGRATION(NORMALISE_AND_PCA.out.anndata,DSB_PROCESS.out.citeseq_rsd.collect(),NORMALISE_AND_PCA.out.outdir)
                 }
 
 
