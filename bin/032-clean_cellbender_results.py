@@ -214,7 +214,7 @@ def cellbender_to_tenxmatrix(
         data=[
             adata.var.index.values,
             adata.var.loc[:, gene_var].values,
-            ["Gene Expression"] * adata.n_vars
+            adata.var['feature_type']
         ]
     ).T
 
@@ -343,10 +343,13 @@ def main():
                 raise Exception('File does not exist:\t{}'.format(fil))
 
         # Move the unfiltered files
-        os.rename(
-            fil.replace('_filtered', ''),
-            fil.replace('_filtered', '_unfiltered')
-        )
+        try:
+            os.rename(
+                fil.replace('_filtered', ''),
+                fil.replace('_filtered', '_unfiltered')
+            )
+        except:
+            print('Already_moved')
 
         local_outdir = '{}-FPR_{}-filtered_10x_mtx'.format(
             options.cb_outfile_tag,
@@ -364,10 +367,17 @@ def main():
         # Load remove-background output data.
         # We need to do this because of bug here:
         # https://github.com/broadinstitute/CellBender/issues/57
-        adata = anndata_from_h5(
-            fil,
-            analyzed_barcodes_only=True
-        )
+        try:
+            adata = anndata_from_h5(
+                fil,
+                analyzed_barcodes_only=True
+            )
+        except:
+            # issue is fixed in the new cellbender version so this can be loaded differently
+            adata = anndata_from_h5(
+                fil,
+                analyzed_barcodes_only=False
+            )
         print(adata)
 
         # Run the conversion function.

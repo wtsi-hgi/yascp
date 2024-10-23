@@ -237,15 +237,23 @@ process cellbender__remove_background {
 
   tag "${experiment_id}_cb"
   if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-    container "https://yascp.cog.sanger.ac.uk/public/singularity_images/wtsihgi_nf_cellbender_container_3cc9983-2021-12-14-5e3143ef9e66.sif"
-    //// container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/wtsihgi_nf_cellbender_v1.2.img"
+    if (params.cellbender_v = '0.3.1'){
+      container "https://yascp.cog.sanger.ac.uk/public/singularity_images/cellbender_28_02_2024.sif"
+    }else{
+      container "https://yascp.cog.sanger.ac.uk/public/singularity_images/wtsihgi_nf_cellbender_container_3cc9983-2021-12-14-5e3143ef9e66.sif"
+    }
+    
     maxRetries = 1
-    // memory = 250.GB
 	  cpus = 1
 
   } else {
-    container "wtsihgi/nf_cellbender_container:3cc9983"
+    if (params.cellbender_v = '0.3.1'){
+      container "us.gcr.io/broad-dsde-methods/cellbender:0.3.1"
+    }else{
+      container "wtsihgi/nf_cellbender_container:3cc9983"
     }
+    
+  }
     
   // set LD_PRELOAD to fix mkl / anaconda conflict
   // cf. https://stackoverflow.com/questions/36659453/intel-mkl-fatal-error-cannot-load-libmkl-avx2-so-or-libmkl-def-so
@@ -261,7 +269,7 @@ process cellbender__remove_background {
   }else{
     label 'process_medium'
   }
-  
+
   // scratch false    // use tmp directory
   // echo false   // echo output from script
 
@@ -365,7 +373,11 @@ process cellbender__remove_background {
       gpu_text_info = "--cpu-threads ${task.cpus}"
     }
 
-
+    if (params.cellbender_v = '0.3.1'){
+      option1='--checkpoint-mins 100'
+    }else{
+      option1=''
+    }
 
 
 
@@ -396,8 +408,8 @@ process cellbender__remove_background {
     ln --physical ${file_10x_barcodes} txd_input/barcodes.tsv.gz
     ln --physical ${file_10x_features} txd_input/features.tsv.gz
     ln --physical ${file_10x_matrix} txd_input/matrix.mtx.gz
-
-    cellbender remove-background --input txd_input ${gpu_text_info} --output ${outfile} --expected-cells \$(cat ${expected_cells}) --total-droplets-included \$(cat ${total_droplets_include}) --model full --z-dim ${zdims} --z-layers ${zlayers} --low-count-threshold ${low_count_threshold} --epochs ${epochs} --learning-rate ${learning_rate} --fpr ${fpr}
+    export TMPDIR=\$PWD
+    cellbender remove-background --input txd_input ${gpu_text_info} ${option1} --output ${outfile} --expected-cells \$(cat ${expected_cells}) --total-droplets-included \$(cat ${total_droplets_include}) --model full --z-dim ${zdims} --z-layers ${zlayers} --low-count-threshold ${low_count_threshold} --epochs ${epochs} --learning-rate ${learning_rate} --fpr ${fpr}
     # If outfile does not have h5 appended to it, move it.
     [ -f ${outfile} ] && mv ${outfile} ${outfile}.h5
 
