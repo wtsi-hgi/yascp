@@ -93,7 +93,7 @@ workflow qc {
 
 
                 if(params.totalVi.run_process){
-                    TOTAL_VI_INTEGRATION(NORMALISE_AND_PCA.out.anndata,DSB_PROCESS.out.citeseq_rsd.collect())
+                    TOTAL_VI_INTEGRATION(NORMALISE_AND_PCA.out.anndata,DSB_PROCESS.out.citeseq_rsd.collect(),NORMALISE_AND_PCA.out.outdir)
                 }
 
 
@@ -110,24 +110,26 @@ workflow qc {
                 matched_donors.subscribe { println "1:: matched_donors $it" }
                 PREPROCESS_PROCESS(inp4,params.reduced_dims.vars_to_regress.value)
 
-                DSB_INTEGRATE(
-                    PREPROCESS_PROCESS.out.tmp_rsd.collect(),
-                    params.reduced_dims.vars_to_regress.value,
-                    params.reduced_dims.seurat_integration.k_anchor,
-                    params.reduced_dims.seurat_integration.dims,
-                    params.reduced_dims.seurat_integration.ndim_sct,
-                    params.reduced_dims.seurat_integration.ndim_citeBgRemoved,
-                    params.reduced_dims.seurat_integration.ndim_cite_integrated
+                if(params.seurat_integration.run_process){
+                    DSB_INTEGRATE(
+                        PREPROCESS_PROCESS.out.tmp_rsd.collect(),
+                        params.reduced_dims.vars_to_regress.value,
+                        params.reduced_dims.seurat_integration.k_anchor,
+                        params.reduced_dims.seurat_integration.dims,
+                        params.reduced_dims.seurat_integration.ndim_sct,
+                        params.reduced_dims.seurat_integration.ndim_citeBgRemoved,
+                        params.reduced_dims.seurat_integration.ndim_cite_integrated
+                        )
+
+                    MULTIMODAL_INTEGRATION(
+                        DSB_INTEGRATE.out.tmp_rds_file,
                     )
 
-                MULTIMODAL_INTEGRATION(
-                    DSB_INTEGRATE.out.tmp_rds_file,
-                )
-
-                VDJ_INTEGRATION(
-                    chanel_cr_outs.collect(),
-                    MULTIMODAL_INTEGRATION.out.wnn_integrated_file
-                )
+                    VDJ_INTEGRATION(
+                        chanel_cr_outs.collect(),
+                        MULTIMODAL_INTEGRATION.out.wnn_integrated_file
+                    )
+                }
             }    
 
 
