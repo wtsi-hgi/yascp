@@ -380,13 +380,8 @@ workflow  main_deconvolution {
         // vir_inp.subscribe { println "vir_inp: $it" }
         vir_inp2 = vir_inp.collect()
         vir_inp3 = vireo_paths.collect()
-        vireo_paths2 = gt_matcher_inp = vir_inp3.combine(vir_inp2)
-
-        vireo_paths2.subscribe { println "1:: vireo_paths2 $it" }
-        vir_inp2.subscribe { println "1:: vir_inp2 $it" }
-        vir_inp3.subscribe { println "1:: vir_inp2 $it" }
-        
-
+        vireo_paths2 = gt_matcher_inp = vir_inp3.mix(vir_inp2)
+              
         GENOTYPE_MATCHER(gt_matcher_inp)
 
         matched_donors = GENOTYPE_MATCHER.out.matched_donors

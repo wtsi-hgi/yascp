@@ -1,14 +1,17 @@
 process TOTAL_VI_INTEGRATION{
     
     if (params.utilise_gpu){
-        label 'gpu'
+        label 'process_low'
     }else{
         label 'process_medium'
-        label 'process_low'
     }
 
+    publishDir  path: "${outdir_prev}/totalVi",
+                mode: "${params.copy_mode}",
+                overwrite: "true"
+
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "/lustre/scratch123/hgi/teams/hgi/mo11/tmp_projects/sle_project/5.sle_noCB_fullRun_MAD_perPool/yascp_totalvi_v1.sif"
+        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/yascp_totalvi_v1.sif"
     } else {
         container "wtsihgi/nf_scrna_qc:6bb6af5"
     }
@@ -16,9 +19,12 @@ process TOTAL_VI_INTEGRATION{
     input:
         path(adata)
         path(citedata)
+        val(outdir_prev)
 
-    // output:
-    //     val(outdir, emit: outdir)
+    output:
+        path("./figures"), emit: figs, optional: true
+        path("./scvi_model"), emit: scvi_model, optional: true
+        path("./totalVI_integrated.h5ad"), emit: totalVI_integrated, optional: true
         
     script:
 
