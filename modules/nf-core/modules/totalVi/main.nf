@@ -6,7 +6,7 @@ process TOTAL_VI_INTEGRATION{
         label 'process_medium'
     }
 
-    publishDir  path: "${outdir_prev}/clustering/totalVi",
+    publishDir  path: "${outdir_prev}/totalVi",
                 mode: "${params.copy_mode}",
                 overwrite: "true"
 
