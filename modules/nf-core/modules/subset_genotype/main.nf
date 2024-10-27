@@ -91,7 +91,7 @@ process CHECK_DONORS_IN_VCF_HEADER {
 process SELECT_DONOR_GENOTYPES_FROM_VCF {
   label 'process_tiny'
   if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-      container "https://yascp.cog.sanger.ac.uk/public/singularity_images/wtsihgi-nf_yascp_htstools-1.1.sif"
+      container "${params.nf_yascp_htstools_container}"
   } else {
       container "mercury/wtsihgi-nf_yascp_htstools-1.1"
   }
@@ -114,7 +114,7 @@ process CONCAT_STUDY_VCFS {
   label 'process_small'
 
   if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-      container "https://yascp.cog.sanger.ac.uk/public/singularity_images/wtsihgi-nf_yascp_htstools-1.1.sif"
+      container "${params.nf_yascp_htstools_container}"
   } else {
       container "mercury/wtsihgi-nf_yascp_htstools-1.1"
   }
@@ -140,7 +140,7 @@ process SUBSET_GENOTYPE {
 
 
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/wtsihgi-nf_yascp_htstools-1.1.sif"
+        container "${params.nf_yascp_htstools_container}"
     } else {
         container "mercury/wtsihgi-nf_yascp_htstools-1.1"
     }
@@ -170,7 +170,7 @@ process SUBSET_GENOTYPE2 {
 
 
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_62bd56a-2021-12-15-4d1ec9312485.sif"
+        container "${params.scrna_deconvolution}"
     } else {
         container "mercury/wtsihgi-nf_yascp_htstools-1.1"
     }
@@ -213,7 +213,7 @@ process JOIN_CHROMOSOMES{
     publishDir "${params.outdir}/subset_genotypes/", mode: "${params.copy_mode}", pattern: "${samplename}.${sample_subset_file}.subset.vcf.gz"
 
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/scrna_deconvolution_v3.img"
+        container "${params.nf_yascp_celltypist}"
     } else {
         container "mercury/wtsihgi-nf_yascp_htstools-1.1"
     }
@@ -273,7 +273,7 @@ process RESOLVE_POOL_VCFS{
     
     // publishDir "${params.outdir}/subset_genotypes/Genotype_${samplename}", mode: "${params.copy_mode}"
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_62bd56a-2021-12-15-4d1ec9312485.sif"
+        container "${params.scrna_deconvolution}"
     } else {
         container "mercury/wtsihgi-nf_yascp_htstools-1.1"
     }
@@ -303,7 +303,7 @@ process JOIN_STUDIES_MERGE{
 
 
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_62bd56a-2021-12-15-4d1ec9312485.sif"
+        container "${params.scrna_deconvolution}"
     } else {
         container "mercury/wtsihgi-nf_yascp_htstools-1.1"
     }

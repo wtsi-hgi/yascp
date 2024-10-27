@@ -8,7 +8,7 @@ process plot_filtered_cells {
     //cache false        // cache results from run
     label 'process_low'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/wtsihgi_nf_scrna_qc_6bb6af5-2021-12-23-3270149cf265.sif"
+        container "${params.nf_scrna_qc_sif_container}"
         //// container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/nf_qc_cluster_2.4.img"
         
     } else {
@@ -48,7 +48,7 @@ process plot_pcs {
 
     label 'process_medium_memory'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/wtsihgi_nf_scrna_qc_6bb6af5-2021-12-23-3270149cf265.sif"
+        container "${params.nf_scrna_qc_sif_container}"
         //// container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/nf_qc_cluster_2.4.img"
         
     } else {
@@ -100,7 +100,7 @@ process plot_predicted_sex {
     //cache false        // cache results from run
     label 'process_low'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/wtsihgi_nf_scrna_qc_6bb6af5-2021-12-23-3270149cf265.sif"
+        container "${params.nf_scrna_qc_sif_container}"
         //// container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/nf_qc_cluster_2.4.img"
         
     } else {
@@ -137,7 +137,7 @@ process plot_qc {
     label 'process_low'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
 	
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/wtsihgi_nf_scrna_qc_6bb6af5-2021-12-23-3270149cf265.sif"
+        container "${params.nf_scrna_qc_sif_container}"
         //// working but deprecated: container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/nf_qc_cluster_2.4.img"
         
     } else {
@@ -203,7 +203,7 @@ process plot_distributions {
     tag "${samplename}"
     label 'process_low'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/wtsihgi_nf_scrna_qc_6bb6af5-2021-12-23-3270149cf265.sif"
+        container "${params.nf_scrna_qc_sif_container}"
     } else {
         container "wtsihgi/nf_scrna_qc:6bb6af5"
     }

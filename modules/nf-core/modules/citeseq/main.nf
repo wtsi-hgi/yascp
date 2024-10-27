@@ -2,7 +2,7 @@
 process SPLIT_CITESEQ_GEX {
     label 'process_medium'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/wtsihgi_nf_scrna_qc_6bb6af5-2021-12-23-3270149cf265.sif"
+        container "${params.nf_scrna_qc_sif_container}"
     } else {
         container "wtsihgi/nf_scrna_qc:6bb6af5"
     }
@@ -78,7 +78,7 @@ process SPLIT_CITESEQ_GEX {
 process DSB {
     label 'process_medium'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/azimuth_dsb.img"
+        container "${params.azimuth_dsb_container}"
     } else {
         container "mercury/azimuth_dsb:latest"
     }
@@ -123,7 +123,7 @@ process DSB_INTEGRATE{
     label 'process_medium'
     tag "${sample_name}"
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/azimuth_dsb_6_03_2024.sif"
+        container "${params.azimuth_dsb_container}"
     } else {
         container "mercury/azimuth_dsb:6_03_2024"
     }
@@ -164,7 +164,7 @@ process MULTIMODAL_INTEGRATION{
     label 'process_medium'
     tag "${sample_name}"
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/azimuth_dsb_6_03_2024.sif"
+        container "${params.azimuth_dsb_container}"
     } else {
         container "mercury/azimuth_dsb:6_03_2024"
     }
@@ -191,7 +191,7 @@ process VDJ_INTEGRATION{
     label 'process_medium'
     tag "${sample_name}"
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/azimuth_dsb_6_03_2024.sif"
+        container "${params.azimuth_dsb_container}"
     } else {
         container "mercury/azimuth_dsb:6_03_2024"
     }
@@ -222,7 +222,7 @@ process PREPROCESS_PROCESS {
     label 'process_medium'
     tag "${sample_name}"
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/azimuth_dsb_6_03_2024.sif"
+        container "${params.azimuth_dsb_container}"
     } else {
         container "mercury/azimuth_dsb:6_03_2024"
     }
@@ -260,7 +260,7 @@ process DSB_PROCESS {
     label 'process_medium'
     tag "${sample_name}"
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/azimuth_dsb_6_03_2024.sif"
+        container "${params.azimuth_dsb_container}"
     } else {
         container "mercury/azimuth_dsb:6_03_2024"
     }

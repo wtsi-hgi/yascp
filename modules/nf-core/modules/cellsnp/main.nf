@@ -1,6 +1,12 @@
 process capture_cellsnp_files{
-  publishDir  path: "${params.outdir}"
-  // cache false
+  publishDir  path: "${params.outdir}",
+        saveAs: {filename ->
+        if (filename == "output_cellsnp.csv") {
+          null
+        } else {
+          filename
+        } 
+        }
   label 'process_tiny'
   input:
     path(cellsnp_location)
@@ -17,15 +23,14 @@ process capture_cellsnp_files{
     echo "\$samplename1 \$PWD/${cellsnp_location}/\$OUTPUT" >> output_cellsnp.csv
     done
   """    
-
 }
 
 
 process DYNAMIC_DONOR_EXCLUSIVE_SNP_SELECTION{
     label 'process_medium'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_62bd56a-2021-12-15-4d1ec9312485.sif"
-        //// container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_latest.img"
+        container "${params.scrna_deconvolution}"
+
     } else {
         container "mercury/scrna_deconvolution:62bd56a"
     }
@@ -71,7 +76,7 @@ process ASSESS_CALL_RATE{
     label 'process_tiny'
 
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_62bd56a-2021-12-15-4d1ec9312485.sif"
+        container "${params.scrna_deconvolution}"
     } else {
         container "mercury/scrna_deconvolution:62bd56a"
     }
@@ -105,8 +110,7 @@ process CELLSNP {
 
     
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_62bd56a-2021-12-15-4d1ec9312485.sif"
-        //// container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_latest.img"
+        container "${params.scrna_deconvolution}"
     } else {
         container "mercury/scrna_deconvolution:62bd56a"
     }

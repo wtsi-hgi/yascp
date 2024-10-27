@@ -3,7 +3,7 @@ process DOUBLET_DETECTION {
     tag "${experiment_id}"
     label 'process_low'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/nf_scrna_qc_v3.img"
+        container "${params.nf_scrna_qc_v3_container}"
     } else {
         container "mercury/nf_scrna_qc:v3"
     }

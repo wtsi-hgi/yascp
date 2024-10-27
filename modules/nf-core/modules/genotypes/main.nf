@@ -6,7 +6,7 @@ process MERGE_GENOTYPES_IN_ONE_VCF_IDX_PAN{
           overwrite: "true"
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         // println "container: /software/hgi/containers/wtsihgi-nf_genotype_match-1.0.sif\n"
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/wtsihgi-nf_yascp_htstools-1.1.sif"
+        container "${params.nf_yascp_htstools_container}"
     } else {
         container "mercury/wtsihgi-nf_yascp_htstools-1.1"
     }
@@ -67,7 +67,7 @@ process MERGE_GENOTYPES_IN_ONE_VCF_FREEBAYES{
     
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         // println "container: /software/hgi/containers/wtsihgi-nf_genotype_match-1.0.sif\n"
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/wtsihgi-nf_yascp_htstools-1.1.sif"
+        container "${params.nf_yascp_htstools_container}"
     } else {
         container "mercury/wtsihgi-nf_yascp_htstools-1.1"
     }
@@ -111,7 +111,7 @@ process MERGE_GENOTYPES_IN_ONE_VCF{
           overwrite: "true"
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         // println "container: /software/hgi/containers/wtsihgi-nf_genotype_match-1.0.sif\n"
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/wtsihgi-nf_yascp_htstools-1.1.sif"
+        container "${params.nf_yascp_htstools_container}"
     } else {
         container "mercury/wtsihgi-nf_yascp_htstools-1.1"
     }
@@ -156,7 +156,7 @@ process VIREO_ADD_SAMPLE_PREFIX{
 
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         // println "container: /software/hgi/containers/wtsihgi-nf_genotype_match-1.0.sif\n"
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/wtsihgi-nf_yascp_htstools-1.1.sif"
+        container "${params.nf_yascp_htstools_container}"
     } else {
         container "mercury/wtsihgi-nf_yascp_htstools-1.1"
     }
@@ -184,7 +184,7 @@ process VIREO_GT_FIX_HEADER
         overwrite: "true"
   if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
       // println "container: /software/hgi/containers/wtsihgi-nf_genotype_match-1.0.sif\n"
-      container "https://yascp.cog.sanger.ac.uk/public/singularity_images/scrna_deconvolution_v3.img"
+      container "${params.nf_yascp_celltypist}"
   } else {
       container "mercury/wtsihgi-nf_yascp_htstools-1.1"
   }
@@ -239,8 +239,7 @@ process REPLACE_GT_DONOR_ID2{
           mode: "${params.copy_mode}",
           overwrite: "true"
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_62bd56a-2021-12-15-4d1ec9312485.sif"
-        //// container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_latest.img"
+        container "${params.scrna_deconvolution}"
     } else {
         container "mercury/scrna_deconvolution:62bd56a"
     }
@@ -281,8 +280,7 @@ process REPLACE_GT_DONOR_ID2{
 process ENHANCE_STATS_GT_MATCH{
 
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_62bd56a-2021-12-15-4d1ec9312485.sif"
-        //// container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_latest.img"
+        container "${params.scrna_deconvolution}"
     } else {
         container "mercury/scrna_deconvolution:62bd56a"
     }
@@ -330,7 +328,7 @@ process GT_MATCH_POOL_IBD
           overwrite: "true"
 
   if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-      container "https://yascp.cog.sanger.ac.uk/public/singularity_images/nf_qc_scrna_v2.img"
+      container "${params.nf_scrna_qc_v3_container}"
   } else {
       container "mercury/nf_qc_scrna:v2"
   }
@@ -361,7 +359,7 @@ process GT_MATCH_POOL_AGAINST_PANEL
 
   if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
       // println "container: /software/hgi/containers/wtsihgi-nf_genotype_match-1.0.sif\n"
-      container "https://yascp.cog.sanger.ac.uk/public/singularity_images/wtsihgi-nf_yascp_htstools-1.1.sif"
+      container "${params.nf_yascp_htstools_container}"
   } else {
       container "mercury/wtsihgi-nf_yascp_htstools-1.1"
   }
@@ -406,7 +404,7 @@ process ASSIGN_DONOR_FROM_PANEL
           overwrite: "true"
   if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
       // println "container: /software/hgi/containers/wtsihgi-nf_genotype_match-1.0.sif\n"
-      container "https://yascp.cog.sanger.ac.uk/public/singularity_images/wtsihgi-nf_genotype_match-1.0.sif"
+      container "${params.nf_scrna_qc_v3_container}"
   } else {
       container "mercury/wtsihgi-nf_genotype_match-1.0"
   }
@@ -442,7 +440,7 @@ process ASSIGN_DONOR_OVERALL
 
   if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
       // println "container: /software/hgi/containers/wtsihgi-nf_genotype_match-1.0.sif\n"
-      container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_62bd56a-2021-12-15-4d1ec9312485.sif"
+      container "${params.scrna_deconvolution}"
   } else {
       container "mercury/wtsihgi-nf_genotype_match-1.0"
   }
@@ -477,8 +475,7 @@ process REPLACE_GT_ASSIGNMENTS_WITH_PHENOTYPE{
           overwrite: "true"
 
   if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-      container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_62bd56a-2021-12-15-4d1ec9312485.sif"
-      //// container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_latest.img"
+      container "${params.scrna_deconvolution}"
   } else {
       container "mercury/scrna_deconvolution:62bd56a"
   }
@@ -507,8 +504,7 @@ process ENHANCE_STATS_FILE{
 
 
   if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-      container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_62bd56a-2021-12-15-4d1ec9312485.sif"
-      //// container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_latest.img"
+      container "${params.scrna_deconvolution}"
   } else {
       container "mercury/scrna_deconvolution:62bd56a"
   }
@@ -548,8 +544,7 @@ process ENHANCE_STATS_FILE{
 
 process ENHANCE_VIREO_METADATA_WITH_DONOR{
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_62bd56a-2021-12-15-4d1ec9312485.sif"
-        //// container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_latest.img"
+        container "${params.scrna_deconvolution}"
     } else {
         container "mercury/scrna_deconvolution:62bd56a"
     }
@@ -574,8 +569,7 @@ process ENHANCE_VIREO_METADATA_WITH_DONOR{
 
 process COMBINE_MATCHES_IN_EXPECTED_FORMAT{
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_62bd56a-2021-12-15-4d1ec9312485.sif"
-        //// container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_latest.img"
+        container "${params.scrna_deconvolution}"
     } else {
         container "mercury/scrna_deconvolution:62bd56a"
     }

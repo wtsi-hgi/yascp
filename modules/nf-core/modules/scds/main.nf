@@ -3,7 +3,7 @@ process SCDS {
     tag "${experiment_id}"
     label 'process_medium'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/azimuth_dsb_6_03_2024.sif"
+        container "${params.azimuth_dsb_container}"
     } else {
         container "mercury/azimuth_dsb:6_03_2024"
     }

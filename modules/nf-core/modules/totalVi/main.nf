@@ -11,7 +11,7 @@ process TOTAL_VI_INTEGRATION{
                 overwrite: "true"
 
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/yascp_totalvi_v1.sif"
+        container "${params.total_vi_container}"
     } else {
         container "wtsihgi/nf_scrna_qc:6bb6af5"
     }

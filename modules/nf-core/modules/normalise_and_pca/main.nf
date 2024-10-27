@@ -7,7 +7,7 @@ process PCA {
 
     label 'process_medium'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/nf_qc_scrna_v1.img"
+        container "${params.nf_scrna_qc_sif_container}"
         // /software/hgi/containers/nf_qc_scrna_v1.img
     } else {
         container "mercury/nf_qc_scrna:v3"
@@ -84,8 +84,7 @@ process NORMALISE_AND_PCA {
     scratch false      // use tmp directory
     label 'process_medium'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/nf_qc_scrna_v1.img"
-        // /software/hgi/containers/nf_qc_scrna_v1.img
+        container "${params.nf_scrna_qc_sif_container}"
     } else {
         container "mercury/nf_qc_scrna:v3"
     }
