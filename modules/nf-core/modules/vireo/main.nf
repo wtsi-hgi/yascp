@@ -163,7 +163,7 @@ process GENOTYPE_MATCHER{
         matcher.py \
         \$PWD \
         \$PWD \
-        -m 0.9
+        -m ${params.genotype_input.genotype_correlation_threshold}
       """
 
 }
