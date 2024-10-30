@@ -380,7 +380,7 @@ process GT_MATCH_POOL_AGAINST_PANEL
   panel_filnam = "${ref_gt_vcf}" - (~/\.[bv]cf(\.gz)?$/)
   gt_check_output_txt = "${pool_id}_gtcheck_${panel_filnam}.txt"
   """
-    STR=\$(bcftools index -s ${ref_gt_vcf} | cut -f1 | head -n1)
+    STR=\$(bcftools index -s ${ref_gt_vcf} | cut -f1 | head -n1 || echo "no_chr")
     SUB='chr'
     if [[ "\$STR" == *"\$SUB"* ]]; then
         # echo -e "1 chr1\\n2 chr2\\n3 chr3\\n4 chr4\\n5 chr5\\n6 chr6\\n7 chr7\\n8 chr8\\n9 chr9\\n10 chr10\\n11 chr11\\n12 chr12\\n13 chr13\\n14 chr14\\n15 chr15\\n16 chr16\\n17 chr17\\n18 chr18\\n19 chr19\\n20 chr20\\n21 chr21\\n22 chr22\\n23 chr23" >> chr_name2_conv.txt
