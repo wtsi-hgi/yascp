@@ -373,7 +373,7 @@ process cellbender__remove_background {
       gpu_text_info = "--cpu-threads ${task.cpus}"
     }
 
-    if (params.cellbender_v = '0.3.1'){
+    if (params.cellbender_v == '0.3.1'){
       option1='--checkpoint-mins 100'
     }else{
       option1=''
