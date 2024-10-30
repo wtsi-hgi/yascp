@@ -237,7 +237,7 @@ process cellbender__remove_background {
 
   tag "${experiment_id}_cb"
   if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-    if (params.cellbender_v = '0.3.1'){
+    if (params.cellbender_v == '0.3.1'){
       container "${params.nf_cellbender_container_032}"
     }else{
       container "${params.nf_cellbender_container}"
@@ -247,7 +247,7 @@ process cellbender__remove_background {
 	  cpus = 1
 
   } else {
-    if (params.cellbender_v = '0.3.1'){
+    if (params.cellbender_v == '0.3.1'){
       container "us.gcr.io/broad-dsde-methods/cellbender:0.3.1"
     }else{
       container "wtsihgi/nf_cellbender_container:3cc9983"

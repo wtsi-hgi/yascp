@@ -33,7 +33,9 @@ for i,row1 in Data.iterrows():
     data_10x_format = row1.data_path_10x_format
     os.listdir(data_10x_format)
     outdir='input__'+row1.experiment_id
-    if os.path.isdir(data_10x_format+'/multi/count'):
+    if '/multi/count' in data_10x_format:
+        data_10x_format = data_10x_format.split('/multi/count')[0]
+    if os.path.isdir(data_10x_format+'/multi/count') or '/multi/count' in data_10x_format:
         # Cellranger 7
         os.mkdir(outdir)
         # Any vdj files?
