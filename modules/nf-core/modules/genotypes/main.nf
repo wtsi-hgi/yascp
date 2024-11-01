@@ -407,7 +407,7 @@ process PREPROCESS_GENOTYPES
 
   """
     renamed_vcf_basename=\$(basename "${ref_gt_vcf}" | sed -E 's/\\.(vcf|bcf)(\\.gz)?\$//')
-    renamed_vcf="renamed_\${renamed_vcf_basename}.vcf"
+    renamed_vcf="renamed_\${renamed_vcf_basename}.vcf" 
 
     # Check if the VCF file has chromosome prefixes
     STR=\$(bcftools index -s ${ref_gt_vcf} | cut -f1 | head -n1 || echo "no_chr")

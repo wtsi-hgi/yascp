@@ -170,10 +170,12 @@ process SUBSET_GENOTYPE2 {
 
 
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_62bd56a-2021-12-15-4d1ec9312485.sif"
+        // println "container: /software/hgi/containers/wtsihgi-nf_genotype_match-1.0.sif\n"
+        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/wtsihgi-nf_yascp_htstools-1.1.sif"
     } else {
         container "mercury/wtsihgi-nf_yascp_htstools-1.1"
     }
+
     // [CRD_CMB13101669, 'S2-998-90008,0030007538435,S2-998-90009', GT_UKBB, /lustre/scratch123/hgi/projects/ukbiobank_genotypes/FullRelease/Imputed/VCFs/hg38_1kg_AF05_exons/sorted_hg38_ukb_imp_chr8_v3_1kgAF05coding.bcf.gz, /lustre/scratch123/hgi/projects/ukbiobank_genotypes/FullRelease/Imputed/VCFs/hg38_1kg_AF05_exons/sorted_hg38_ukb_imp_chr8_v3_1kgAF05coding.bcf.gz.csi]
 
     input:
