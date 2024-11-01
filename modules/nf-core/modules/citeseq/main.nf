@@ -71,7 +71,7 @@ process SPLIT_CITESEQ_GEX {
             echo "\$features_file already exists. No action needed."
             fi
 
-            strip_citeseq.py --raw_data ${cellranger_raw} -o ${sample_name}
+            strip_citeseq.py --raw_data ${cellranger_raw} -o ${sample_name} -h ${params.citeseq_config.citeseq_labels}
         """
 }
 

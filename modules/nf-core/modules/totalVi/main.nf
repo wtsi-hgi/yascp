@@ -5,6 +5,10 @@ process TOTAL_VI_INTEGRATION{
     }else{
         label 'process_medium'
     }
+    memory { 
+            sizeInGB = adata.size() / 1e9 * 2 * task.attempt
+            return (sizeInGB ).toString() + 'GB' 
+        }
 
     publishDir  path: "${outdir_prev}/totalVi",
                 mode: "${params.copy_mode}",
