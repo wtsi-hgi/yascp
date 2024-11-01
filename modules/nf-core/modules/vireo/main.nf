@@ -151,6 +151,7 @@ process GENOTYPE_MATCHER{
     output:
       path("correlations.png"), emit: correlations
       path("matched_donors.txt"), emit: matched_donors
+      path("donor_corelations_matrix.tsv"), emit: donor_corelations_matrix
 
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "${params.scrna_deconvolution}"

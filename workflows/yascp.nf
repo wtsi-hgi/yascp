@@ -73,8 +73,6 @@ workflow YASCP {
                  
         if(!params.just_reports){
             // sometimes we just want to rerun report generation as a result of alterations, hence if we set params.just_reports =True pipeline will use the results directory and generate a new reports.
-
-
             if (!params.skip_preprocessing){
                 // The input table should contain the folowing columns - experiment_id	n_pooled	donor_vcf_ids	data_path_10x_format
                 // prepearing the inputs from a standard 10x dataset folders.
@@ -105,7 +103,6 @@ workflow YASCP {
                     log.info ' ---- using existing cellbender output for deconvolution---'
                     ambient_RNA( ch_experimentid_paths10x_raw,
                         ch_experimentid_paths10x_filtered,prepare_inputs.out.channel__metadata)
-                    // ambient_RNA.out.cellbender_path.subscribe { println "vcf_input: $it" }
                     DECONV_INPUTS(ambient_RNA.out.cellbender_path,prepare_inputs)
 
                     channel__file_paths_10x = DECONV_INPUTS.out.channel__file_paths_10x

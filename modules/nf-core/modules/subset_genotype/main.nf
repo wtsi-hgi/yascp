@@ -170,10 +170,11 @@ process SUBSET_GENOTYPE2 {
 
 
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "${params.scrna_deconvolution}"
+        container "${params.nf_yascp_htstools_container}"
     } else {
         container "mercury/wtsihgi-nf_yascp_htstools-1.1"
     }
+
     // [CRD_CMB13101669, 'S2-998-90008,0030007538435,S2-998-90009', GT_UKBB, /lustre/scratch123/hgi/projects/ukbiobank_genotypes/FullRelease/Imputed/VCFs/hg38_1kg_AF05_exons/sorted_hg38_ukb_imp_chr8_v3_1kgAF05coding.bcf.gz, /lustre/scratch123/hgi/projects/ukbiobank_genotypes/FullRelease/Imputed/VCFs/hg38_1kg_AF05_exons/sorted_hg38_ukb_imp_chr8_v3_1kgAF05coding.bcf.gz.csi]
 
     input:
