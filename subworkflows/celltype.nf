@@ -11,7 +11,7 @@ workflow celltype{
     
     take:
         file__anndata_merged
-        // cb_ab_raw
+        hastag_labels
         
     main:
 
@@ -72,7 +72,7 @@ workflow celltype{
         }else{
             sc_out = Channel.of()
         }        
-        all_extra_fields2 = all_extra_fields.mix(sc_out)
+        all_extra_fields2 = all_extra_fields.mix(sc_out).mix(hastag_labels)
         
         CELLTYPE_FILE_MERGE(az_out.collect(),ct_out.collect(),all_extra_fields2.collect(),keras_files.collect()) 
 

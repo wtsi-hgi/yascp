@@ -16,7 +16,7 @@ include { CREATE_ARTIFICIAL_BAM_CHANNEL } from "$projectDir/modules/local/create
 include {MERGE_SAMPLES} from "$projectDir/modules/nf-core/modules/merge_samples/main"
 include {dummy_filtered_channel} from "$projectDir/modules/nf-core/modules/merge_samples/functions"
 include {MULTIPLET} from "$projectDir/subworkflows/doublet_detection"
-include { SPLIT_CITESEQ_GEX; SPLIT_CITESEQ_GEX as SPLIT_CITESEQ_GEX_FILTERED; SPLIT_CITESEQ_GEX as PREPOCESS_FILES } from '../modules/nf-core/modules/citeseq/main'
+include { SPLIT_CITESEQ_GEX; SPLIT_CITESEQ_GEX as SPLIT_CITESEQ_GEX_FILTERED; SPLIT_CITESEQ_GEX as PREPOCESS_FILES; HASTAG_DEMULTIPLEX } from '../modules/nf-core/modules/citeseq/main'
 include { GENOTYPE_MATCHER } from "$projectDir/modules/nf-core/modules/vireo/main"
 include { RETRIEVE_RECOURSES } from "$projectDir/subworkflows/local/retrieve_recourses"
 include { PREPROCESS_GENOME } from "$projectDir/modules/nf-core/modules/subset_bam_per_barcodes_and_variants/main"
@@ -89,12 +89,23 @@ workflow YASCP {
                 if (params.citeseq){
                     // If citeseq data is present in the 10x mtx then we strip it before the ambient rna correction.
                     SPLIT_CITESEQ_GEX( prepare_inputs.out.ch_experimentid_paths10x_raw,'raw')
+                    // if we have multiplexing capture file then we proceed with hastag deconvolution
+                    SPLIT_CITESEQ_GEX.out.multiplexing_capture_channel_for_demultiplexing
+                        .map { sample_name, path1, path2 ->
+                            def directories = path1.findAll { it.isDirectory() }
+                            tuple(sample_name, directories, path2)
+                        }
+                        .set { filtered_multiplexing_capture_channel }
+                    HASTAG_DEMULTIPLEX(filtered_multiplexing_capture_channel)
+                    hastag_labels = HASTAG_DEMULTIPLEX.out.results
                     SPLIT_CITESEQ_GEX_FILTERED(prepare_inputs.out.ch_experimentid_paths10x_filtered,'filterd')
                     
                     ch_experimentid_paths10x_raw = SPLIT_CITESEQ_GEX.out.gex_data
                     channel__file_paths_10x=SPLIT_CITESEQ_GEX_FILTERED.out.channel__file_paths_10x
                     channel__file_paths_10x_single=SPLIT_CITESEQ_GEX_FILTERED.out.gex_data
                     ch_experiment_filth5 = SPLIT_CITESEQ_GEX.out.gex_data
+                }else{
+                    hastag_labels = Channel.of()
                 }
 
                 // Either run ambient RNA removal with cellbender or use cellranger filtered reads (cellbender|cellranger)
@@ -241,7 +252,7 @@ workflow YASCP {
             // file__anndata_merged_ct.subscribe { println "file__anndata_merged_ct: $it" }
             if (params.celltype_assignment.run_celltype_assignment){
                 file__anndata_merged.map{val1 -> tuple('full_ct', val1)}.set{file__anndata_merged2}
-                celltype(file__anndata_merged2)
+                celltype(file__anndata_merged2,hastag_labels)
                 file__anndata_merged=celltype.out.file__anndata_merged2
             }
 

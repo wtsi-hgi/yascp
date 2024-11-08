@@ -16,6 +16,7 @@ process SPLIT_CITESEQ_GEX {
         val(mode)
 
     output:
+        tuple val(sample_name), path("${sample_name}__*"), path("*__Multiplexing_Capture.tsv"), emit: multiplexing_capture_channel_for_demultiplexing  optional true
         tuple val(sample_name), path("${sample_name}__Gene_Expression"), emit:gex_data
         tuple val(sample_name), path("antibody-${sample_name}.h5ad"), emit: ab_data2 optional true
         tuple val(sample_name), path("Gene_Expression-${sample_name}.h5ad"), emit: gex_h5ad optional true
@@ -71,7 +72,7 @@ process SPLIT_CITESEQ_GEX {
             echo "\$features_file already exists. No action needed."
             fi
 
-            strip_citeseq.py --raw_data ${cellranger_raw} -o ${sample_name} -h ${params.citeseq_config.citeseq_labels}
+            strip_citeseq.py --raw_data ${cellranger_raw} -o ${sample_name} -ha ${params.citeseq_config.citeseq_labels}
         """
 }
 
@@ -116,6 +117,28 @@ process DSB {
 
             dsb_process_extr.R ${cellbender_filtered} ${cellranger_raw} ${antibody_data} ${sample_name}
             echo 'lets process data with DSB background removal' > output.tmp
+        """
+}
+
+process HASTAG_DEMULTIPLEX {
+    label 'process_medium'
+    if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
+        container "${params.azimuth_dsb_container}"
+    } else {
+        container "mercury/azimuth_dsb:latest"
+    }
+
+    publishDir  path: "${params.outdir}/deconvolution/hastag_demultiplex/${sample_name}", mode: "${params.copy_mode}",
+      overwrite: "true"
+
+    input:
+        tuple val(sample_name), path(paths), path(multiplexing_capture)
+    output:
+        path("${sample_name}__hastag_demux_results.tsv"), emit: results
+    script:
+        """
+            hastag_demultiplex.R
+            ln -s hastag_demux_results.tsv ${sample_name}__hastag_demux_results.tsv
         """
 }
 
