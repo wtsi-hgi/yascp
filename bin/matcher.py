@@ -49,7 +49,7 @@ donors = set([])
 # Recursively search the args.cellSNP_dirs directory for files that are called GT_donors.vireo.vcf.gz
 # This is where Vireo put the genotypes
 x = 0 
-for f in glob.glob(f"{args.cellSNP_dirs}/*/GT_donors.vireo.vcf.gz"):
+for f in glob.glob(f"{args.cellSNP_dirs}/*/*T_donors.vire*.vcf.gz"):
     x += 1
     print(f)
     # if x>5:

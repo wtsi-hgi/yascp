@@ -204,8 +204,7 @@ workflow  main_deconvolution {
         VIREO.out.summary.mix(vireo_out_sample_summary_tsv_cap).set{summary_files}
         POSTPROCESS_SUMMARY(summary_files)
         
-        // combine the outputs of the capture_vireo and Vireo
-        vireo_paths_0.concat(VIREO.out.output_dir).set{vireo_paths}
+
 
         //But to make it consistent we still randomly assign donor IDs per pool for each of the names.
         vireo_with_gt = Channel.of(params.genotype_input.vireo_with_gt)
@@ -218,7 +217,9 @@ workflow  main_deconvolution {
         replacement_input.combine(vireo_with_gt).set{vir_repl_input}
 
         REPLACE_GT_DONOR_ID2(vir_repl_input)
-        // cell_assignments = REPLACE_GT_DONOR_ID2.out.cell_assignments
+        // combine the outputs of the capture_vireo and Vireo
+        vireo_paths_0.concat(VIREO.out.output_dir).set{vireo_paths}
+        
         VIREO_GT_FIX_HEADER(REPLACE_GT_DONOR_ID2.out.infered_vcf,genome)
         VIREO_ADD_SAMPLE_PREFIX(VIREO_GT_FIX_HEADER.out.infered_vcf)
         
