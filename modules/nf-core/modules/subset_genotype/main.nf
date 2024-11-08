@@ -171,7 +171,7 @@ process SUBSET_GENOTYPE2 {
 
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         // println "container: /software/hgi/containers/wtsihgi-nf_genotype_match-1.0.sif\n"
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/wtsihgi-nf_yascp_htstools-1.1.sif"
+        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/nf_scrna_qc_v3.img"
     } else {
         container "mercury/wtsihgi-nf_yascp_htstools-1.1"
     }

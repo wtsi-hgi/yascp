@@ -249,14 +249,6 @@ process REPLACE_GT_DONOR_ID2{
 
   input:
     tuple val(samplename), path(gt_donors), path(vireo_sample_summary),path(vireo___exp_sample_summary),path(vireo__donor_ids),path(vcf_file),path(donor_gt_csi),val(mode)
-      // [pool76, 
-      // /lustre/scratch125/humgen/teams/hgi/mo11/oneK1k/work/d7/1335406a9dcd23d0f1a66241124dd4/vireo_pool76/GT_donors.vireo.vcf.gz, 
-      // /lustre/scratch125/humgen/teams/hgi/mo11/oneK1k/work/d7/1335406a9dcd23d0f1a66241124dd4/vireo_pool76/pool76.sample_summary.txt, 
-      // /lustre/scratch125/humgen/teams/hgi/mo11/oneK1k/work/d7/1335406a9dcd23d0f1a66241124dd4/vireo_pool76/pool76__exp.sample_summary.txt, 
-      // /lustre/scratch125/humgen/teams/hgi/mo11/oneK1k/work/d7/1335406a9dcd23d0f1a66241124dd4/vireo_pool76/donor_ids.tsv, 
-      // /lustre/scratch125/humgen/teams/hgi/mo11/oneK1k/work/d7/1335406a9dcd23d0f1a66241124dd4/Study_Merge_AllExpectedGT_F2708B7QS_out.vcf.gz,
-      //  /lustre/scratch125/humgen/teams/hgi/mo11/oneK1k/work/d7/1335406a9dcd23d0f1a66241124dd4/Study_Merge_AllExpectedGT_F2708B7QS_out.vcf.gz.csi, 
-      // true]
 
   output:
     tuple val(samplename), path("GT_replace_donor_ids_${mode}.tsv"), emit: sample_donor_ids
@@ -267,6 +259,7 @@ process REPLACE_GT_DONOR_ID2{
     path("GT_replace_${samplename}_assignments_${mode}.tsv"), emit: assignments
     tuple  val(samplename), path("GT_replace_GT_donors.vireo_${mode}.vcf.gz"), path("GT_replace_${samplename}.sample_summary_${mode}.txt"),path("GT_replace_${samplename}__exp.sample_summary_${mode}.txt"),path("GT_replace_donor_ids_${mode}.tsv"),path(vcf_file),path(donor_gt_csi), emit: all_required_data
     tuple val(samplename), path("GT_replace_donor_ids_${mode}.tsv"), emit: cell_assignments
+    path("vireo_gt_rep_${samplename}"), emit: output_dir
   script:
 
     in=""
@@ -275,6 +268,8 @@ process REPLACE_GT_DONOR_ID2{
       bcftools query -l ${gt_donors} > ${mode}_donors_in_vcf.tsv
       replace_donors.py -id ${samplename} ${in} --input_file "${params.input_data_table}" -m ${mode}
       bcftools view ${gt_donors} | bcftools reheader --samples replacement_assignments_${mode}.tsv -o GT_replace_GT_donors.vireo_${mode}.vcf.gz
+      mkdir -p "vireo_gt_rep_${samplename}"
+      ln -sf "\$(realpath "GT_replace_GT_donors.vireo_${mode}.vcf.gz")" "vireo_gt_rep_${samplename}/GT_replace_GT_donors.vireo_${mode}.vcf.gz"
     """
 }
 
