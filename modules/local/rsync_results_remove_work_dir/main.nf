@@ -5,7 +5,7 @@ process RSYNC_RESULTS_REMOVE_WORK_DIR {
     
     tag "${pool_id}"
     label 'process_low'
-    publishDir  path: "${params.outdir}/concordances/${pool_id}",
+    publishDir  path: "${params.outdir}/deconvolution/concordances/${pool_id}",
                 mode: "copy",
                 overwrite: "true"
 

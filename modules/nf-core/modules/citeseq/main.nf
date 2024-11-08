@@ -7,7 +7,7 @@ process SPLIT_CITESEQ_GEX {
         container "wtsihgi/nf_scrna_qc:6bb6af5"
     }
 
-    publishDir  path: "${params.outdir}/data_modalities_split/${mode}/${sample_name}",
+    publishDir  path: "${params.outdir}/preprocessing/data_modalities_split/${mode}/${sample_name}",
     mode: "${params.copy_mode}",
     overwrite: "true"
 

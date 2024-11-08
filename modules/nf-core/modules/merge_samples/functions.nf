@@ -61,7 +61,7 @@ process merge_samples_from_h5ad {
     // NOTE: use path here and not file see:
     //       https://github.com/nextflow-io/nextflow/issues/1414
     output:
-        path("pre_QC_adata.h5ad", emit: anndata)
+        path("1.pre_QC_adata.h5ad", emit: anndata)
         // path(
         //     "pre_QC_adata-cell_filtered_per_experiment.tsv.gz",
         //     emit: cells_filtered
@@ -108,7 +108,7 @@ process merge_samples_from_h5ad {
             --sample_metadata_columns_delete "sample_status,study,study_id" \
             --metadata_key ${metadata_key} \
             --number_cpu ${task.cpus} \
-            --output_file pre_QC_adata \
+            --output_file 1.pre_QC_adata \
             --anndata_compression_opts ${anndata_compression_opts} \
             ${cmd__params} \
             ${cmd__cellmetadata} ${extra_metadata}

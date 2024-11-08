@@ -54,7 +54,7 @@ process MERGE_GENOTYPES_IN_ONE_VCF_FREEBAYES{
           mode: "${params.copy_mode}",
           overwrite: "true"
 
-    publishDir  path: "${params.outdir}/deconvolution/vireo",
+    publishDir  path: "${params.outdir}/deconvolution/deconvolution_results/vireo",
           saveAs: {filename ->
                     if (filename.endsWith("vireo_${panel}")) {
                         filename
@@ -179,7 +179,7 @@ process VIREO_ADD_SAMPLE_PREFIX{
 process VIREO_GT_FIX_HEADER
 {
   tag "${pool_id}"
-  publishDir  path: "${params.outdir}/infered_genotypes/${pool_id}/",
+  publishDir  path: "${params.outdir}/deconvolution/infered_genotypes/${pool_id}/",
         mode: "${params.copy_mode}",
         overwrite: "true"
   if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
@@ -234,7 +234,7 @@ process VIREO_GT_FIX_HEADER
 }
 process REPLACE_GT_DONOR_ID2{
     tag "${samplename}"
-    publishDir  path: "${params.outdir}/deconvolution/vireo_gt_fix/${samplename}/",
+    publishDir  path: "${params.outdir}/deconvolution/deconvolution_results/vireo_gt_fix/${samplename}/",
           pattern: "GT_replace_*",
           mode: "${params.copy_mode}",
           overwrite: "true"
@@ -287,7 +287,7 @@ process ENHANCE_STATS_GT_MATCH{
         container "mercury/scrna_deconvolution:62bd56a"
     }
   tag "${samplename}"
-  publishDir  path: "${params.outdir}/gtmatch/${samplename}",
+  publishDir  path: "${params.outdir}/deconvolution/gtmatch/${samplename}",
           mode: "${params.copy_mode}",
           overwrite: "true"
 
@@ -325,7 +325,7 @@ process GT_MATCH_POOL_IBD
 {
   tag "${pool_id}_ibd"
   label 'process_small'
-  publishDir  path: "${params.outdir}/gtmatch/${pool_id}",
+  publishDir  path: "${params.outdir}/deconvolution/gtmatch/${pool_id}",
           mode: "${params.copy_mode}",
           overwrite: "true"
 
@@ -400,7 +400,7 @@ process ASSIGN_DONOR_FROM_PANEL
   // sum gtcheck discrepancy scores from multiple ouputput files of the same panel
   tag "${pool_panel_id}"
   label 'process_medium'
-  publishDir  path: "${params.outdir}/gtmatch/${pool_id}",
+  publishDir  path: "${params.outdir}/deconvolution/gtmatch/${pool_id}",
           pattern: "*.csv",
           mode: "${params.copy_mode}",
           overwrite: "true"
@@ -435,7 +435,7 @@ process ASSIGN_DONOR_OVERALL
   // decide final donor assignment across different panels from per-panel donor assignments
   tag "${pool_id}"
 
-  publishDir  path: "${params.outdir}/gtmatch/${pool_id}",
+  publishDir  path: "${params.outdir}/deconvolution/gtmatch/${pool_id}",
           pattern: "*.csv",
           mode: "${params.copy_mode}",
           overwrite: "true"
@@ -471,7 +471,7 @@ process ASSIGN_DONOR_OVERALL
 
 process REPLACE_GT_ASSIGNMENTS_WITH_PHENOTYPE{
   label 'process_low'
-  publishDir  path: "${params.outdir}/gtmatch/",
+  publishDir  path: "${params.outdir}/deconvolution/gtmatch/",
           pattern: "*_assignments.csv",
           mode: "${params.copy_mode}",
           overwrite: "true"
@@ -501,7 +501,7 @@ process ENHANCE_STATS_FILE{
 
   tag "${pool_id}"
 
-  publishDir  path: "${params.outdir}/gtmatch/${pool_id}",
+  publishDir  path: "${params.outdir}/deconvolution/gtmatch/${pool_id}",
         mode: "${params.copy_mode}",
         overwrite: "true"
 

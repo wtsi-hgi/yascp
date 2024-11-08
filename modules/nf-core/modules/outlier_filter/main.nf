@@ -17,7 +17,7 @@ process MERGE_OUTLIER_FILES{
         container "wtsihgi/nf_scrna_qc:6bb6af5"
     }
 
-    publishDir  path: "${params.outdir}",
+    publishDir  path: "${params.outdir}/merged_h5ad/",
                 saveAs: {filename ->
                     if (filename.contains("___sample_QCd_adata.h5ad")) {
                         null
@@ -58,7 +58,7 @@ process OUTLIER_FILTER {
         container "wtsihgi/nf_scrna_qc:6bb6af5"
     }
 
-    publishDir  path: "${outdir}",
+    publishDir  path: "${outdir}/merged_h5ad/",
                 saveAs: {filename ->
                     if (filename.contains("___sample_QCd_adata.h5ad")) {
                         null

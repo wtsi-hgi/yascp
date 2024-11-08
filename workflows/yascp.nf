@@ -194,8 +194,8 @@ workflow YASCP {
                 if (params.citeseq){
 
                     vireo_paths = params.outdir
-                        ? Channel.fromPath("${params.outdir}/deconvolution/vireo/*/vireo_*", checkIfExists:true, type: 'dir')
-                        : Channel.fromPath("${launchDir}/${params.outdir}/deconvolution/vireo/*/vireo_*", type: 'dir')
+                        ? Channel.fromPath("${params.outdir}/deconvolution/deconvolution_results/vireo/*/vireo_*", checkIfExists:true, type: 'dir')
+                        : Channel.fromPath("${launchDir}/${params.outdir}/deconvolution/deconvolution_results/vireo/*/vireo_*", type: 'dir')
 
                     GENOTYPE_MATCHER(vireo_paths.collect())
                     matched_donors = GENOTYPE_MATCHER.out.matched_donors

@@ -136,7 +136,7 @@ process CONCAT_STUDY_VCFS {
 process SUBSET_GENOTYPE {
     tag "${samplename}.${sample_subset_file}"
     label 'process_medium'
-    publishDir "${params.outdir}/subset_genotypes/", mode: "${params.copy_mode}", pattern: "${samplename}.${sample_subset_file}.subset.vcf.gz"
+    publishDir "${params.outdir}/preprocessing/subset_genotypes/", mode: "${params.copy_mode}", pattern: "${samplename}.${sample_subset_file}.subset.vcf.gz"
 
 
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
@@ -210,7 +210,7 @@ process SUBSET_GENOTYPE2 {
 process JOIN_CHROMOSOMES{
     tag "${samplename}"
     label 'process_medium'
-    publishDir "${params.outdir}/subset_genotypes/", mode: "${params.copy_mode}", pattern: "${samplename}.${sample_subset_file}.subset.vcf.gz"
+    publishDir "${params.outdir}/preprocessing/subset_genotypes/", mode: "${params.copy_mode}", pattern: "${samplename}.${sample_subset_file}.subset.vcf.gz"
 
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "https://yascp.cog.sanger.ac.uk/public/singularity_images/scrna_deconvolution_v3.img"
@@ -254,7 +254,7 @@ process JOIN_CHROMOSOMES{
 
 process RESOLVE_POOL_VCFS{
     tag "${samplename}"
-    publishDir "${params.outdir}/subset_genotypes", mode: "${params.copy_mode}",
+    publishDir "${params.outdir}/preprocessing/subset_genotypes", mode: "${params.copy_mode}",
     saveAs: {filename ->
           if (filename.contains("AllExpectedGT")) {
             if (filename.contains("Data_Pipeline___")) {
@@ -408,7 +408,7 @@ workflow SUBSET_WORKF{
       // RESOLVE_POOL_VCFS.out.user_data
       // pools_panels.subscribe {println "pools_panels:= ${it}\n"}
       if (mode=='AllExpectedGT'){
-        collect_file1(RESOLVE_POOL_VCFS.out.user_data.collect(),"Genotypes_all_pools.tsv",params.outdir+'/subset_genotypes',1,'')
+        collect_file1(RESOLVE_POOL_VCFS.out.user_data.collect(),"Genotypes_all_pools.tsv",params.outdir+'/preprocessing/subset_genotypes',1,'')
       }
       pools_panels.splitCsv(header: true, sep: '\t').map { row -> tuple(row['Pool_id'], file(row.vcf), file(row.vcf_csi)) }
                 .set{merged_expected_genotypes}

@@ -9,7 +9,7 @@ process CONCORDANCE_CALCLULATIONS {
         container "mercury/scrna_deconvolution:62bd56a"
     }
 
-    publishDir  path: "${params.outdir}/concordances/${pool_id}",
+    publishDir  path: "${params.outdir}/deconvolution/concordances/${pool_id}",
                 mode: "${params.copy_mode}",
                 overwrite: "true"
 
@@ -52,7 +52,7 @@ process OTHER_DONOR_CONCORDANCE_CALCLULATIONS {
         container "mercury/scrna_deconvolution:62bd56a"
     }
 
-    publishDir  path: "${params.outdir}/concordances/${pool_id}",
+    publishDir  path: "${params.outdir}/deconvolution/concordances/${pool_id}",
                 mode: "${params.copy_mode}",
                 overwrite: "true"
 
@@ -80,7 +80,7 @@ process COMBINE_FILES{
         container "mercury/scrna_deconvolution:62bd56a"
     }
 
-    publishDir  path: "${params.outdir}/concordances/${pool_id}",
+    publishDir  path: "${params.outdir}/deconvolution/concordances/${pool_id}",
                 mode: "${params.copy_mode}",
                 overwrite: "true"
 
@@ -115,7 +115,7 @@ process PLOT_CONCORDANCES_ALL{
         container "mercury/scrna_deconvolution:62bd56a"
     }
 
-    publishDir  path: "${params.outdir}/concordances",
+    publishDir  path: "${params.outdir}/deconvolution/concordances",
                 mode: "${params.copy_mode}",
                 overwrite: "true"
 

@@ -140,7 +140,7 @@ workflow  main_deconvolution {
             // Here we assess how many informative sites has been called on. 
             CELLSNP.out.cell_vcfs.combine(DYNAMIC_DONOR_EXCLUSIVE_SNP_SELECTION.out.informative_uninformative_sites, by: 0).set{assess_call_rate_input}
             ASSESS_CALL_RATE(assess_call_rate_input)
-            collect_file9(ASSESS_CALL_RATE.out.variants_description.collect(),"all_variants_description.tsv",params.outdir+'/concordances',1,'')
+            collect_file9(ASSESS_CALL_RATE.out.variants_description.collect(),"all_variants_description.tsv",params.outdir+'/deconvolution/concordances',1,'')
         }
         for_bam_pileups = CELLSNP.out.for_bam_pileups
         
@@ -416,8 +416,8 @@ workflow  main_deconvolution {
             gt_matches = match_genotypes.out.donor_match_table.collect()
 
             ENHANCE_STATS_GT_MATCH(match_genotypes.out.donor_match_table_enhanced,params.input_data_table)
-            collect_file1(ENHANCE_STATS_GT_MATCH.out.assignments.collect(),"assignments_all_pools.tsv",params.outdir+'/deconvolution/vireo_gt_fix',1,'')
-            collect_file10(ENHANCE_STATS_GT_MATCH.out.assignments.collect(),"assignments_all_pools.tsv",params.outdir+'/gtmatch',1,'')
+            collect_file1(ENHANCE_STATS_GT_MATCH.out.assignments.collect(),"assignments_all_pools.tsv",params.outdir+'/deconvolution/deconvolution_results/vireo_gt_fix',1,'')
+            collect_file10(ENHANCE_STATS_GT_MATCH.out.assignments.collect(),"assignments_all_pools.tsv",params.outdir+'/deconvolution/gtmatch',1,'')
             assignments_all_pools = collect_file1.out.output_collection
             gt_matches = Channel.from("$projectDir/assets/fake_file.fq")
             assignments_all_pools = Channel.from("$projectDir/assets/fake_file.fq")
@@ -429,26 +429,26 @@ workflow  main_deconvolution {
 
         // collect file paths to h5ad files in tsv tables:
         header_seed="experiment_id\tdonor\th5ad_filepath"
-        collect_file2(SPLIT_DONOR_H5AD.out.donors_h5ad_tsv.collect(),"donors_h5ad.tsv",params.outdir+'/deconvolution/filepaths',0,header_seed)
+        collect_file2(SPLIT_DONOR_H5AD.out.donors_h5ad_tsv.collect(),"donors_h5ad.tsv",params.outdir+'/deconvolution/deconvolution_results/filepaths',0,header_seed)
 
         header_seed="experiment_id\th5ad_filepath"
-        collect_file3(SPLIT_DONOR_H5AD.out.exp__donors_h5ad_tsv.collect(),"exp__donors_h5ad.tsv",params.outdir+'/deconvolution/filepaths',0,header_seed)
+        collect_file3(SPLIT_DONOR_H5AD.out.exp__donors_h5ad_tsv.collect(),"exp__donors_h5ad.tsv",params.outdir+'/deconvolution/deconvolution_results/filepaths',0,header_seed)
 
         header_seed="experiment_id\tdonor\th5ad_filepath"
-        collect_file4(SPLIT_DONOR_H5AD.out.donors_h5ad_assigned_tsv.collect(),"donors_h5ad_assigned.tsv",params.outdir+'/deconvolution/filepaths',0,header_seed)
+        collect_file4(SPLIT_DONOR_H5AD.out.donors_h5ad_assigned_tsv.collect(),"donors_h5ad_assigned.tsv",params.outdir+'/deconvolution/deconvolution_results/filepaths',0,header_seed)
 
         header_seed="experiment_id\th5ad_filepath"
-        out_h5ad = collect_file5(SPLIT_DONOR_H5AD.out.exp__donors_h5ad_assigned_tsv.collect(),"exp__donors_h5ad_assigned.tsv",params.outdir+'/deconvolution/filepaths',0,header_seed)
+        out_h5ad = collect_file5(SPLIT_DONOR_H5AD.out.exp__donors_h5ad_assigned_tsv.collect(),"exp__donors_h5ad_assigned.tsv",params.outdir+'/deconvolution/deconvolution_results/filepaths',0,header_seed)
 
         header_seed="experiment_id\th5ad_filepath"
-        collect_file6(SPLIT_DONOR_H5AD.out.h5ad_tsv.collect(),"cellranger_as_h5ad.tsv",params.outdir+'/deconvolution/filepaths',0,header_seed)
+        collect_file6(SPLIT_DONOR_H5AD.out.h5ad_tsv.collect(),"cellranger_as_h5ad.tsv",params.outdir+'/deconvolution/deconvolution_results/filepaths',0,header_seed)
 
         header_seed="experiment_id\tdonor\tn_cells"
-        ch_vireo_donor_n_cells_tsv = collect_file7(REPLACE_GT_DONOR_ID2.out.sample_summary_tsv.collect(),"vireo_donor_n_cells.tsv",params.outdir+'/deconvolution/filepaths',0,header_seed)
+        ch_vireo_donor_n_cells_tsv = collect_file7(REPLACE_GT_DONOR_ID2.out.sample_summary_tsv.collect(),"vireo_donor_n_cells.tsv",params.outdir+'/deconvolution/deconvolution_results/filepaths',0,header_seed)
 
         // paste experiment_id and donor ID columns with __ separator
         header_seed="experiment_id\tn_cells"
-        vireo_out_sample__exp_summary_tsv = collect_file8(SPLIT_DONOR_H5AD.out.donor_n_cells.collect(),"vireo_exp__donor_n_cells.tsv",params.outdir+'/deconvolution/filepaths',0,header_seed)
+        vireo_out_sample__exp_summary_tsv = collect_file8(SPLIT_DONOR_H5AD.out.donor_n_cells.collect(),"vireo_exp__donor_n_cells.tsv",params.outdir+'/deconvolution/deconvolution_results/filepaths',0,header_seed)
 
         if (params.genotype_input.run_with_genotype_input & params.genotype_input.posterior_assignment) {
             if (params.extra_sample_metadata!='' & params.add_donor_metadata){
