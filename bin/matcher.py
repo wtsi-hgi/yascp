@@ -56,8 +56,17 @@ for f in glob.glob(f"{args.cellSNP_dirs}/*/*T_donors.vire*.vcf.gz"):
     #     break
     if not args.nonverbose:
         print('Reading '+str(f)+'...')
-    with gzip.open(f,'rt') as input_file:
-        cellranger_id = str(f).split('/')[-2].replace('vireo_','')
+    try:
+        # Try to open as a gzipped file
+        input_file = gzip.open(f, 'rt')
+        line = input_file.readline().strip().split('\t')
+    except gzip.BadGzipFile:
+        # If not gzipped, open as a regular text file
+        input_file = open(f, 'rt')
+        line = input_file.readline().strip().split('\t')
+
+    with input_file:
+        cellranger_id = str(f).split('/')[-2].replace('vireo_','').replace('gt_rep_','')
         # if cellranger_id in sampleid_to_name:
         #     name = sampleid_to_name[cellranger_id]
         # else:

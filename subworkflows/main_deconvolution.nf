@@ -211,15 +211,15 @@ workflow  main_deconvolution {
         VIREO.out.all_required_data.set{replacement_input3}
         replacement_input3.mix(all_required_data_cap).set{replacement_input2}
 
-        POSTPROCESS_SUMMARY.out.summary_tsvs.subscribe { println "POSTPROCESS_SUMMARY.out.summary_tsvs: $it" }
+        
         replacement_input2.combine(POSTPROCESS_SUMMARY.out.summary_tsvs, by: 0).set{replacement_input}
 
         replacement_input.combine(vireo_with_gt).set{vir_repl_input}
 
         REPLACE_GT_DONOR_ID2(vir_repl_input)
         // combine the outputs of the capture_vireo and Vireo
-        vireo_paths_0.concat(VIREO.out.output_dir).set{vireo_paths}
-        
+        vireo_paths_0.concat(REPLACE_GT_DONOR_ID2.out.output_dir).set{vireo_paths}
+
         VIREO_GT_FIX_HEADER(REPLACE_GT_DONOR_ID2.out.infered_vcf,genome)
         VIREO_ADD_SAMPLE_PREFIX(VIREO_GT_FIX_HEADER.out.infered_vcf)
         
