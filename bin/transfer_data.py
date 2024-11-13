@@ -101,6 +101,7 @@ def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res
             p3 = p1.split('iget_study_cellranger')[0]+'iget_study_cellranger/'+p1.split('iget_study_cellranger')[1].split("/")[1]
         except:
             p3 = p1
+        d0 = glob.glob(f"{p1}/web_summary.html")
         d1 = glob.glob(f"{p1}/*/web_summary.html")
         d2 = glob.glob(f"{p1}/*/*/web_summary.html")
         d3 = glob.glob(f"{p1}/*/*/*/web_summary.html")
@@ -109,7 +110,7 @@ def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res
         d2_2 = glob.glob(f"{p3}/*/*/web_summary.html")
         d3_2 = glob.glob(f"{p3}/*/*/*/web_summary.html")
         d4_2 =glob.glob(f"{p3}/*/*/*/*/web_summary.html")
-        ts3 = [ *d1, *d2,*d3,*d4, *d1_2, *d2_2,*d3_2,*d4_2]
+        ts3 = [ *d0,*d1, *d2,*d3,*d4, *d1_2, *d2_2,*d3_2,*d4_2]
         for t1 in ts3:
             copyfile(t1, f'{name_dir}/Fetch Pipeline/html_{i}.html')
         
@@ -121,7 +122,7 @@ def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res
         d2_2 = glob.glob(f"{p3}/*/*/metrics_summary.csv")
         d3_2 = glob.glob(f"{p3}/*/*/*/metrics_summary.csv")
         d4_2 =glob.glob(f"{p3}/*/*/*/*/metrics_summary.csv")
-        ts3 = [ *d1, *d2,*d3,*d4, *d1_2, *d2_2,*d3_2,*d4_2]
+        ts3 = [  *d1, *d2,*d3,*d4, *d1_2, *d2_2,*d3_2,*d4_2]
         for t1 in ts3:   
             metadata = pd.read_csv(t1,sep=',',index_col=False)
             metadata['Sample_id']=i
@@ -209,13 +210,17 @@ def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res
             copyfile(f'{folder1}/{folder}/Vireo_plots.pdf', f'{name_dir}/Deconvolution/Vireo_plots_{folder}.pdf')
         
         
-        copyfile(f'{directory}/deconvolution/vireo/correlations.png', f'{name_dir}/Deconvolution/correlations.png')
+        
         try:
             os.mkdir(f'{name_dir}/Deconvolution/csv')
         except:
             print('dire exists')    
-        copyfile(f'{directory}/deconvolution/vireo/matched_donors.txt', f'{name_dir}/Deconvolution/csv/matched_donors.tsv')
-        copyfile(f'{directory}/deconvolution/vireo/donor_corelations_matrix.tsv', f'{name_dir}/Deconvolution/csv/donor_corelations_matrix.tsv')
+        try:
+            copyfile(f'{directory}/deconvolution/vireo/correlations.png', f'{name_dir}/Deconvolution/correlations.png')
+            copyfile(f'{directory}/deconvolution/vireo/matched_donors.txt', f'{name_dir}/Deconvolution/csv/matched_donors.tsv')
+            copyfile(f'{directory}/deconvolution/vireo/donor_corelations_matrix.tsv', f'{name_dir}/Deconvolution/csv/donor_corelations_matrix.tsv')
+        except:
+            _='corelations not performed'
         
     folder1 = f'{directory}/doublets'
     if os.path.isdir(folder1):

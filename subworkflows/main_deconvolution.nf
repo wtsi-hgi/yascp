@@ -211,7 +211,7 @@ workflow  main_deconvolution {
         VIREO.out.all_required_data.set{replacement_input3}
         replacement_input3.mix(all_required_data_cap).set{replacement_input2}
 
-        POSTPROCESS_SUMMARY.out.summary_tsvs.subscribe { println "POSTPROCESS_SUMMARY.out.summary_tsvs: $it" }
+        
         replacement_input2.combine(POSTPROCESS_SUMMARY.out.summary_tsvs, by: 0).set{replacement_input}
 
         replacement_input.combine(vireo_with_gt).set{vir_repl_input}
