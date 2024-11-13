@@ -1,8 +1,7 @@
 process REMOVE_DUPLICATED_DONORS_FROM_GT{
     label 'process_tiny'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_62bd56a-2021-12-15-4d1ec9312485.sif"
-        //// container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_latest.img"
+        container "${params.scrna_deconvolution}"
     } else {
         container "mercury/scrna_deconvolution:62bd56a"
     }
@@ -43,8 +42,7 @@ process VIREO_SUBSAMPLING {
     label 'medium_cpus'
 
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_62bd56a-2021-12-15-4d1ec9312485.sif"
-        //// container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_latest.img"
+        container "${params.scrna_deconvolution}"
     } else {
         container "mercury/scrna_deconvolution:62bd56a"
     }
@@ -142,8 +140,7 @@ process GENOTYPE_MATCHER{
 	  // saveAs: {filename -> filename.replaceFirst("vireo_${samplename}/","") }
     
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_62bd56a-2021-12-15-4d1ec9312485.sif"
-        //// container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_latest.img"
+        container "${params.scrna_deconvolution}"
     } else {
         container "mercury/scrna_deconvolution:62bd56a"
     } 
@@ -154,10 +151,10 @@ process GENOTYPE_MATCHER{
     output:
       path("correlations.png"), emit: correlations
       path("matched_donors.txt"), emit: matched_donors
+      path("donor_corelations_matrix.tsv"), emit: donor_corelations_matrix
 
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_62bd56a-2021-12-15-4d1ec9312485.sif"
-        //// container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_latest.img"
+        container "${params.scrna_deconvolution}"
     } else {
         container "mercury/scrna_deconvolution:62bd56a"
     }
@@ -167,7 +164,7 @@ process GENOTYPE_MATCHER{
         matcher.py \
         \$PWD \
         \$PWD \
-        -m 0.9
+        -m ${params.genotype_input.genotype_correlation_threshold}
       """
 
 }
@@ -181,8 +178,7 @@ process VIREO {
 
 
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_62bd56a-2021-12-15-4d1ec9312485.sif"
-        //// container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_latest.img"
+        container "${params.scrna_deconvolution}"
     } else {
         container "mercury/scrna_deconvolution:62bd56a"
     }
@@ -290,8 +286,7 @@ process VIREO_SUBSAMPLING_PROCESSING{
 
 
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_62bd56a-2021-12-15-4d1ec9312485.sif"
-        //// container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_latest.img"
+        container "${params.scrna_deconvolution}"
     } else {
         container "mercury/scrna_deconvolution:62bd56a"
     }

@@ -22,6 +22,7 @@ import scanpy as sc
 import click
 import logging
 import os
+import re
 compression_opts = 'gzip'
 filter_0_count_cells=False
 
@@ -281,12 +282,32 @@ def main():
         help='outputname'
     )   
     
+    parser.add_argument(
+        '-ha', '--hastag_labels',
+        action='store',
+        dest='hastag_labels',
+        required=False,default=None,
+        help='outputname'
+    )   
+    
+    
     options = parser.parse_args()
 
     adata_cellranger_filtered = sc.read_10x_mtx(
         options.raw_data, var_names='gene_symbols', make_unique=True,
         cache=False, cache_compression=compression_opts,gex_only=False)
-
+    all_feature_types = set(adata_cellranger_filtered.var['feature_types'])
+    hashtags = set(options.hastag_labels.split(","))
+    hashtags = ['Hashtag_.*']
+    escaped_hashtags = [re.escape(tag) for tag in hashtags]
+    matches = set(adata_cellranger_filtered.var.index[adata_cellranger_filtered.var.index.str.contains('|'.join(escaped_hashtags), regex=True)])
+    matches2 = set(adata_cellranger_filtered.var.index[adata_cellranger_filtered.var.index.str.contains('|'.join(hashtags), regex=True)])
+    combo = matches.union(matches2)
+    if len(combo)>0:
+        multiplexing_capure = adata_cellranger_filtered[:,list(combo)]
+        multiplexing_capure = pd.DataFrame(multiplexing_capure.X.toarray(), index=multiplexing_capure.obs_names, columns=multiplexing_capure.var_names)
+        multiplexing_capure.to_csv(f'{options.outname}__Multiplexing_Capture.tsv',sep='\t')
+        
     for modality1 in set(adata_cellranger_filtered.var.feature_types):
         # {'Gene Expression', 'Multiplexing Capture', 'Antibody Capture'}
         print(f'---- Spliting {modality1}-----')
@@ -296,16 +317,31 @@ def main():
         # adata2 = adata_antibody[adata_antibody.obs_names.difference(zero_count_cells, sort=False)]
         # if(adata2.shape[0]>0):
         #     # Here we have actually captured some of the reads in the antibody dataset.
+
         if (modality=='Gene_Expression'):
             adata_antibody.write(
                 f'{modality}-{options.outname}.h5ad',
                 compression='gzip'
             )
-        _ = cellbender_to_tenxmatrix(
-            adata_antibody,
-            out_file='',
-            out_dir=f'{options.outname}__{modality}'
-        )
+        elif (modality=='Multiplexing_Capture'):
+            all_indexes_multiplexing = set(adata_antibody.var.index).union(set(multiplexing_capure.columns))
+            adata_antibody = adata_cellranger_filtered[:,list(all_indexes_multiplexing)]
+            df = pd.DataFrame(adata_antibody.X.toarray(), index=adata_antibody.obs_names, columns=adata_antibody.var_names)
+            df.to_csv(f'{options.outname}__{modality}.tsv',sep='\t')
+            
+        else:
+            df = pd.DataFrame(adata_antibody.X.toarray(), index=adata_antibody.obs_names, columns=adata_antibody.var_names)
+            df.to_csv(f'{options.outname}__{modality}.tsv',sep='\t')
+            adata_antibody.var.index
+
+        if len(all_feature_types)>1:
+            _ = cellbender_to_tenxmatrix(
+                adata_antibody,
+                out_file='',
+                out_dir=f'{options.outname}__{modality}'
+            )
+        else:
+            os.system(f"ln -s {options.raw_data} {options.outname}__{modality}")
     
     # adata_gex = adata_cellranger_filtered[:,adata_cellranger_filtered.var.query('feature_types=="Gene Expression"').index]
     # adata_cellbender = anndata_from_h5('/lustre/scratch123/hgi/teams/hgi/mo11/tmp_projects/ania/analysis_trego/work/5d/6a30871e864ed7bc03e949ef846a1d/cellbender_FPR_0.1_filtered.h5',

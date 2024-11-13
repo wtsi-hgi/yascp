@@ -23,6 +23,8 @@ suppressMessages(suppressWarnings(library(SingleCellExperiment)))
 
 
 counts <- Seurat::Read10X(args$tenX_matrix)
+counts[counts < 0] <- 0 # Cellbender may generate negative counts due to its model, but they do not have a biological meaning and hence should be removed. 
+
 ## Read in data
 # if (file.exists(args$tenX_matrix)){
 #     message(paste0("Using the following counts: ", args$tenX_matrix))
@@ -35,6 +37,7 @@ counts <- Seurat::Read10X(args$tenX_matrix)
 #     message(paste0("Cannot find the counts matrix ", args$tenX_matrix, ".\n\nExiting"))
 #     q()
 # }
+
 print('Data read')
 
 if (!is.null(args$barcodes_filtered)){

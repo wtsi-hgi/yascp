@@ -5,7 +5,7 @@ def random_hex(n) {
 process dummy_filtered_channel{
     label 'process_low' 
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/wtsihgi_nf_scrna_qc_6bb6af5-2021-12-23-3270149cf265.sif"
+        container "${params.nf_scrna_qc_sif_container}"
         //// container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/nf_qc_cluster_2.4.img"
     } else {
         container "wtsihgi/nf_scrna_qc:6bb6af5"
@@ -42,7 +42,7 @@ process merge_samples_from_h5ad {
                 mode: "${params.copy_mode}",
                 overwrite: "true"
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/wtsihgi_nf_scrna_qc_6bb6af5-2021-12-23-3270149cf265.sif"
+        container "${params.nf_scrna_qc_sif_container}"
         //// container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/nf_qc_cluster_2.4.img"
     } else {
         container "wtsihgi/nf_scrna_qc:6bb6af5"
@@ -131,7 +131,7 @@ process merge_samples {
                 mode: "${params.copy_mode}",
                 overwrite: "true"
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/wtsihgi_nf_scrna_qc_6bb6af5-2021-12-23-3270149cf265.sif"
+        container "${params.nf_scrna_qc_sif_container}"
         //// container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/nf_qc_cluster_2.4.img"
     } else {
         container "wtsihgi/nf_scrna_qc:6bb6af5"

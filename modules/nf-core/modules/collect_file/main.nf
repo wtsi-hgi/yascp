@@ -1,7 +1,7 @@
 process collect_file{
   label 'process_tiny'
   if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-    container "https://yascp.cog.sanger.ac.uk/public/singularity_images/wtsihgi_nf_scrna_qc_6bb6af5-2021-12-23-3270149cf265.sif"
+    container "${params.nf_scrna_qc_sif_container}"
     //// container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/wtsihgi_nf_cellbender_v1.2.img"
   } else {
     container "wtsihgi/nf_scrna_qc:6bb6af5"

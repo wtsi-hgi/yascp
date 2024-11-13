@@ -7,9 +7,7 @@ process PREP_ASSIGNMENTS_FILE{
     
 
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_62bd56a-2021-12-15-4d1ec9312485.sif"
-        //// container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_latest.img"
-	
+        container "${params.scrna_deconvolution}"
     } else {
         container "mercury/scrna_deconvolution:62bd56a"
     }
@@ -52,14 +50,10 @@ process SPLIT_DONOR_H5AD {
     
 
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_62bd56a-2021-12-15-4d1ec9312485.sif"
-        //// container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_latest.img"
-	
+        container "${params.scrna_deconvolution}"
     } else {
         container "mercury/scrna_deconvolution:62bd56a"
     }
-
-    
 
     when: 
       params.split_h5ad_per_donor.run

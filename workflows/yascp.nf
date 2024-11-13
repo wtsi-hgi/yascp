@@ -16,7 +16,7 @@ include { CREATE_ARTIFICIAL_BAM_CHANNEL } from "$projectDir/modules/local/create
 include {MERGE_SAMPLES} from "$projectDir/modules/nf-core/modules/merge_samples/main"
 include {dummy_filtered_channel} from "$projectDir/modules/nf-core/modules/merge_samples/functions"
 include {MULTIPLET} from "$projectDir/subworkflows/doublet_detection"
-include { SPLIT_CITESEQ_GEX; SPLIT_CITESEQ_GEX as SPLIT_CITESEQ_GEX_FILTERED; SPLIT_CITESEQ_GEX as PREPOCESS_FILES } from '../modules/nf-core/modules/citeseq/main'
+include { SPLIT_CITESEQ_GEX; SPLIT_CITESEQ_GEX as SPLIT_CITESEQ_GEX_FILTERED; SPLIT_CITESEQ_GEX as PREPOCESS_FILES; HASTAG_DEMULTIPLEX } from '../modules/nf-core/modules/citeseq/main'
 include { GENOTYPE_MATCHER } from "$projectDir/modules/nf-core/modules/vireo/main"
 include { RETRIEVE_RECOURSES } from "$projectDir/subworkflows/local/retrieve_recourses"
 include { PREPROCESS_GENOME } from "$projectDir/modules/nf-core/modules/subset_bam_per_barcodes_and_variants/main"
@@ -73,8 +73,6 @@ workflow YASCP {
                  
         if(!params.just_reports){
             // sometimes we just want to rerun report generation as a result of alterations, hence if we set params.just_reports =True pipeline will use the results directory and generate a new reports.
-
-
             if (!params.skip_preprocessing){
                 // The input table should contain the folowing columns - experiment_id	n_pooled	donor_vcf_ids	data_path_10x_format
                 // prepearing the inputs from a standard 10x dataset folders.
@@ -91,12 +89,23 @@ workflow YASCP {
                 if (params.citeseq){
                     // If citeseq data is present in the 10x mtx then we strip it before the ambient rna correction.
                     SPLIT_CITESEQ_GEX( prepare_inputs.out.ch_experimentid_paths10x_raw,'raw')
+                    // if we have multiplexing capture file then we proceed with hastag deconvolution
+                    SPLIT_CITESEQ_GEX.out.multiplexing_capture_channel_for_demultiplexing
+                        .map { sample_name, path1, path2 ->
+                            def directories = path1.findAll { it.isDirectory() }
+                            tuple(sample_name, directories, path2)
+                        }
+                        .set { filtered_multiplexing_capture_channel }
+                    HASTAG_DEMULTIPLEX(filtered_multiplexing_capture_channel)
+                    hastag_labels = HASTAG_DEMULTIPLEX.out.results
                     SPLIT_CITESEQ_GEX_FILTERED(prepare_inputs.out.ch_experimentid_paths10x_filtered,'filterd')
                     
                     ch_experimentid_paths10x_raw = SPLIT_CITESEQ_GEX.out.gex_data
                     channel__file_paths_10x=SPLIT_CITESEQ_GEX_FILTERED.out.channel__file_paths_10x
                     channel__file_paths_10x_single=SPLIT_CITESEQ_GEX_FILTERED.out.gex_data
                     ch_experiment_filth5 = SPLIT_CITESEQ_GEX.out.gex_data
+                }else{
+                    hastag_labels = Channel.of()
                 }
 
                 // Either run ambient RNA removal with cellbender or use cellranger filtered reads (cellbender|cellranger)
@@ -105,7 +114,6 @@ workflow YASCP {
                     log.info ' ---- using existing cellbender output for deconvolution---'
                     ambient_RNA( ch_experimentid_paths10x_raw,
                         ch_experimentid_paths10x_filtered,prepare_inputs.out.channel__metadata)
-                    // ambient_RNA.out.cellbender_path.subscribe { println "vcf_input: $it" }
                     DECONV_INPUTS(ambient_RNA.out.cellbender_path,prepare_inputs)
 
                     channel__file_paths_10x = DECONV_INPUTS.out.channel__file_paths_10x
@@ -169,6 +177,10 @@ workflow YASCP {
 
                     if (!params.skip_merge){
                         MERGE_SAMPLES(main_deconvolution.out.out_h5ad,main_deconvolution.out.vireo_out_sample__exp_summary_tsv,'h5ad')
+                    }else{
+                        file__anndata_merged = main_deconvolution.out.out_h5ad
+                        dummy_filtered_channel(file__anndata_merged,params.id_in)
+                        file__cells_filtered = dummy_filtered_channel.out.anndata_metadata
                     }
                 }else{
                     channel__metadata = prepare_inputs.out.channel__metadata
@@ -240,7 +252,7 @@ workflow YASCP {
             // file__anndata_merged_ct.subscribe { println "file__anndata_merged_ct: $it" }
             if (params.celltype_assignment.run_celltype_assignment){
                 file__anndata_merged.map{val1 -> tuple('full_ct', val1)}.set{file__anndata_merged2}
-                celltype(file__anndata_merged2)
+                celltype(file__anndata_merged2,hastag_labels)
                 file__anndata_merged=celltype.out.file__anndata_merged2
             }
 

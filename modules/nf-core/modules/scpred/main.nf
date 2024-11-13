@@ -3,7 +3,7 @@ process SCPRED{
     label 'process_medium'
    
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/cell_classification.sif"
+        container "${params.cell_classification_container}"
     } else {
         container "wtsihgi/nf_scrna_qc_azimuth:d54db9b"
     }

@@ -10,7 +10,7 @@ process MERGE_OUTLIER_FILES{
 
     label 'process_medium'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/wtsihgi_nf_scrna_qc_6bb6af5-2021-12-23-3270149cf265.sif"
+        container "${params.nf_scrna_qc_sif_container}"
         //// container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/nf_qc_cluster_2.4.img"
 
     } else {
@@ -21,15 +21,23 @@ process MERGE_OUTLIER_FILES{
                 saveAs: {filename ->
                     if (filename.contains("___sample_QCd_adata.h5ad")) {
                         null
-                    } else if(filename.contains("outlier_filtered_adata.h5ad"))  {
-                        filename = "4.outlier_filtered_adata.h5ad"
-                    }else{
+                    } else{
                         filename
                     }
                 },
                 mode: "${params.copy_mode}",
                 overwrite: "true"
 
+    publishDir  path: "${outdir}/merged_h5ad",
+                saveAs: {filename ->
+                    if(filename.contains("outlier_filtered_adata.h5ad"))  {
+                        filename = "4.outlier_filtered_adata.h5ad"
+                    }else{
+                        null
+                    }
+                },
+                mode: "${params.copy_mode}",
+                overwrite: "true"
     input:
         path(file__anndata)
         path(file__anndata_files_filtered)
@@ -51,18 +59,18 @@ process OUTLIER_FILTER {
 
     label 'process_medium'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/wtsihgi_nf_scrna_qc_6bb6af5-2021-12-23-3270149cf265.sif"
+        container "${params.nf_scrna_qc_sif_container}"
         //// container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/nf_qc_cluster_2.4.img"
 
     } else {
         container "wtsihgi/nf_scrna_qc:6bb6af5"
     }
 
+
     publishDir  path: "${outdir}/merged_h5ad/",
+
                 saveAs: {filename ->
-                    if (filename.contains("___sample_QCd_adata.h5ad")) {
-                        null
-                    } else if(filename.contains("outlier_filtered_adata.h5ad"))  {
+                    if(filename.contains("outlier_filtered_adata.h5ad"))  {
                         filename = "4.outlier_filtered_adata.h5ad"
                     }else{
                         null
@@ -70,8 +78,6 @@ process OUTLIER_FILTER {
                 },
                 mode: "${params.copy_mode}",
                 overwrite: "true"
-
-
 
     input:
         val(outdir_prev)
@@ -85,14 +91,13 @@ process OUTLIER_FILTER {
         each refset
 
     output:
-        // path("merged_h5ad/outlier_filtered_adata.h5ad", emit: anndata)
-        // path('donor_level_anndata_QCfiltered/*___sample_QCd_adata.h5ad',emit: sample_QCd_adata)
+
         path(
             "outlier_filtered_adata-outliers_filtered*.tsv",
             emit: cells_filtered
         )
         path("plots/*")
-        // path("merged_h5ad/*")
+
 
 
     script:

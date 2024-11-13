@@ -2,7 +2,7 @@
 process SPLIT_CITESEQ_GEX {
     label 'process_medium'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/wtsihgi_nf_scrna_qc_6bb6af5-2021-12-23-3270149cf265.sif"
+        container "${params.nf_scrna_qc_sif_container}"
     } else {
         container "wtsihgi/nf_scrna_qc:6bb6af5"
     }
@@ -16,18 +16,63 @@ process SPLIT_CITESEQ_GEX {
         val(mode)
 
     output:
+        tuple val(sample_name), path("${sample_name}__*"), path("*__Multiplexing_Capture.tsv"), emit: multiplexing_capture_channel_for_demultiplexing  optional true
         tuple val(sample_name), path("${sample_name}__Gene_Expression"), emit:gex_data
         tuple val(sample_name), path("antibody-${sample_name}.h5ad"), emit: ab_data2 optional true
         tuple val(sample_name), path("Gene_Expression-${sample_name}.h5ad"), emit: gex_h5ad optional true
         path("Gene_Expression-${sample_name}.h5ad"), emit: gex_h5ad_2 optional true
+        path("*.tsv"), emit: quants_data optional true
         tuple val(sample_name), path("${sample_name}__*"), emit: ab_data optional true
         tuple val(sample_name), path("${sample_name}__Gene_Expression/barcodes.tsv.gz"), path("${sample_name}__Gene_Expression/features.tsv.gz"), path("${sample_name}__Gene_Expression/matrix.mtx.gz"), emit: channel__file_paths_10x
  
     script:
 
         """
+            matrix_file="${cellranger_raw}/matrix.mtx"
+            compressed_file="${cellranger_raw}/matrix.mtx.gz"
 
-            strip_citeseq.py --raw_data ${cellranger_raw} -o ${sample_name}
+            # Check if the compressed file exists
+            if [ ! -f "\$compressed_file" ]; then
+                echo "\$compressed_file does not exist. Compressing \$matrix_file..."
+            
+                # Compress the file without deleting the original
+                gzip -c "\$matrix_file" > "\$compressed_file"
+            
+                echo "Compression complete. \$matrix_file has been compressed to \$compressed_file"
+            else
+                echo "\$compressed_file already exists. No action needed."
+            fi
+
+            matrix_file="${cellranger_raw}/barcodes.tsv"
+            compressed_file="${cellranger_raw}/barcodes.tsv.gz"
+            # Check if the compressed file exists
+            if [ ! -f "\$compressed_file" ]; then
+                echo "\$compressed_file does not exist. Compressing \$matrix_file..."
+            
+                # Compress the file without deleting the original
+                gzip -c "\$matrix_file" > "\$compressed_file"
+            
+                echo "Compression complete. \$matrix_file has been compressed to \$compressed_file"
+            else
+                echo "\$compressed_file already exists. No action needed."
+            fi
+
+            features_file="${cellranger_raw}/features.tsv.gz"
+            peaks_file="${cellranger_raw}/peaks.bed"
+
+            # Check if the features.tsv.gz file exists
+            if [ ! -f "\$features_file" ]; then
+            echo "\$features_file does not exist. Creating it from \$peaks_file..."
+
+            # Create the features.tsv file from the peaks.bed file
+            awk 'BEGIN{OFS="\t"} {print \$1 ":" \$2 "-" \$3, \$1 ":" \$2 "-" \$3, "Gene Expression"}' "\$peaks_file" | gzip > "\$features_file"
+
+            echo "Creation of \$features_file is complete."
+            else
+            echo "\$features_file already exists. No action needed."
+            fi
+
+            strip_citeseq.py --raw_data ${cellranger_raw} -o ${sample_name} -ha ${params.citeseq_config.citeseq_labels}
         """
 }
 
@@ -35,7 +80,7 @@ process SPLIT_CITESEQ_GEX {
 process DSB {
     label 'process_medium'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/azimuth_dsb.img"
+        container "${params.azimuth_dsb_container}"
     } else {
         container "mercury/azimuth_dsb:latest"
     }
@@ -75,12 +120,34 @@ process DSB {
         """
 }
 
+process HASTAG_DEMULTIPLEX {
+    label 'process_medium'
+    if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
+        container "${params.azimuth_dsb_container}"
+    } else {
+        container "mercury/azimuth_dsb:latest"
+    }
+
+    publishDir  path: "${params.outdir}/deconvolution/hastag_demultiplex/${sample_name}", mode: "${params.copy_mode}",
+      overwrite: "true"
+
+    input:
+        tuple val(sample_name), path(paths), path(multiplexing_capture)
+    output:
+        path("${sample_name}__hastag_demux_results.tsv"), emit: results
+    script:
+        """
+            hastag_demultiplex.R
+            ln -s hastag_demux_results.tsv ${sample_name}__hastag_demux_results.tsv
+        """
+}
+
 process DSB_INTEGRATE{
 
     label 'process_medium'
     tag "${sample_name}"
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/azimuth_dsb_6_03_2024.sif"
+        container "${params.azimuth_dsb_container}"
     } else {
         container "mercury/azimuth_dsb:6_03_2024"
     }
@@ -121,7 +188,7 @@ process MULTIMODAL_INTEGRATION{
     label 'process_medium'
     tag "${sample_name}"
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/azimuth_dsb_6_03_2024.sif"
+        container "${params.azimuth_dsb_container}"
     } else {
         container "mercury/azimuth_dsb:6_03_2024"
     }
@@ -148,7 +215,7 @@ process VDJ_INTEGRATION{
     label 'process_medium'
     tag "${sample_name}"
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/azimuth_dsb_6_03_2024.sif"
+        container "${params.azimuth_dsb_container}"
     } else {
         container "mercury/azimuth_dsb:6_03_2024"
     }
@@ -179,7 +246,7 @@ process PREPROCESS_PROCESS {
     label 'process_medium'
     tag "${sample_name}"
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/azimuth_dsb_6_03_2024.sif"
+        container "${params.azimuth_dsb_container}"
     } else {
         container "mercury/azimuth_dsb:6_03_2024"
     }
@@ -217,7 +284,7 @@ process DSB_PROCESS {
     label 'process_medium'
     tag "${sample_name}"
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/azimuth_dsb_6_03_2024.sif"
+        container "${params.azimuth_dsb_container}"
     } else {
         container "mercury/azimuth_dsb:6_03_2024"
     }

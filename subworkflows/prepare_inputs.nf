@@ -28,7 +28,16 @@ workflow prepare_inputs {
 
         channel_input_data_table
             .splitCsv(header: true, sep: params.input_tables_column_delimiter)
-            .map{row->tuple(row.experiment_id, "${row.data_path_10x_format}/possorted_genome_bam.bam" ,row.data_path_10x_format+'/filtered_feature_bc_matrix/barcodes.tsv.gz')}
+            .map{ row ->
+                def bam_file = "${row.data_path_10x_format}/possorted_genome_bam.bam"
+                def barcodes_file_gz = file("${row.data_path_10x_format}/filtered_feature_bc_matrix/barcodes.tsv.gz")
+                def barcodes_file = file("${row.data_path_10x_format}/filtered_feature_bc_matrix/barcodes.tsv")
+                
+                // Check if barcodes.tsv.gz exists, if not, fall back to barcodes.tsv
+                def selected_barcodes_file = barcodes_file_gz.exists() ? barcodes_file_gz : barcodes_file
+                
+                return tuple(row.experiment_id, bam_file, selected_barcodes_file.toString())
+            }
             .set{pre_ch_experiment_bam_barcodes}
 
         channel__file_paths_10x =  channel_input_data_table

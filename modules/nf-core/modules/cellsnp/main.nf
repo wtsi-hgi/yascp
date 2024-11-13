@@ -1,6 +1,13 @@
 process capture_cellsnp_files{
-  publishDir  path: "${params.outdir}/deconvolution/"
-  // cache false
+
+  publishDir  path: "${params.outdir}/deconvolution/",
+        saveAs: {filename ->
+        if (filename == "output_cellsnp.csv") {
+          null
+        } else {
+          filename
+        } 
+        }
   label 'process_tiny'
   input:
     path(cellsnp_location)
@@ -17,15 +24,14 @@ process capture_cellsnp_files{
     echo "\$samplename1 \$PWD/${cellsnp_location}/\$OUTPUT" >> output_cellsnp.csv
     done
   """    
-
 }
 
 
 process DYNAMIC_DONOR_EXCLUSIVE_SNP_SELECTION{
     label 'process_medium'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_62bd56a-2021-12-15-4d1ec9312485.sif"
-        //// container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_latest.img"
+        container "${params.scrna_deconvolution}"
+
     } else {
         container "mercury/scrna_deconvolution:62bd56a"
     }
@@ -71,7 +77,7 @@ process ASSESS_CALL_RATE{
     label 'process_tiny'
 
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_62bd56a-2021-12-15-4d1ec9312485.sif"
+        container "${params.scrna_deconvolution}"
     } else {
         container "mercury/scrna_deconvolution:62bd56a"
     }
@@ -105,8 +111,7 @@ process CELLSNP {
 
     
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_62bd56a-2021-12-15-4d1ec9312485.sif"
-        //// container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_latest.img"
+        container "${params.scrna_deconvolution}"
     } else {
         container "mercury/scrna_deconvolution:62bd56a"
     }
@@ -128,6 +133,13 @@ process CELLSNP {
       }else{
         MAF=" --minMAF ${params.cellsnp.min_maf}"
       }
+
+      if (params.atac){
+        umi_tag=' --UMItag None '
+      }else{
+        umi_tag=""
+      }
+
     """
       echo ${n_pooled}
       umask 2 # make files group_writable
@@ -146,6 +158,6 @@ process CELLSNP {
         -O cellsnp_${samplename} \\
         -R region_vcf_no_MHC.vcf.gz \\
         -p ${task.cpus} \\
-        --minCOUNT ${params.cellsnp.min_count} ${MAF} --gzip ${genotype_file}
+        --minCOUNT ${params.cellsnp.min_count} ${MAF} --gzip ${genotype_file} ${umi_tag}
     """
 }

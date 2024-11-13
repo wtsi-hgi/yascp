@@ -191,7 +191,7 @@ dataplot.ax_heatmap.set_yticklabels(dataplot.ax_heatmap.get_ymajorticklabels(), 
 #values = dataplot.ax_heatmap.collections[0].get_array().reshape(correlation_dataframe.shape)
 #new_values = numpy.ma.array(values, mask=mask)
 #dataplot.ax_heatmap.collections[0].set_array(new_values)
-
+correlation_dataframe.to_csv('donor_corelations_matrix.tsv',sep='\t')
 
 # displaying heatmap
 #matplotlib.pyplot.show()

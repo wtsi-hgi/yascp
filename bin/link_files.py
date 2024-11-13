@@ -33,7 +33,9 @@ for i,row1 in Data.iterrows():
     data_10x_format = row1.data_path_10x_format
     os.listdir(data_10x_format)
     outdir='input__'+row1.experiment_id
-    if os.path.isdir(data_10x_format+'/multi/count'):
+    if '/multi/count' in data_10x_format:
+        data_10x_format = data_10x_format.split('/multi/count')[0]
+    if os.path.isdir(data_10x_format+'/multi/count') or '/multi/count' in data_10x_format:
         # Cellranger 7
         os.mkdir(outdir)
         # Any vdj files?
@@ -86,6 +88,30 @@ for i,row1 in Data.iterrows():
         web_summary = glob.glob(data_10x_format+'/*/*/web_summary.html')[0]
         os.symlink(web_summary, f"{outdir}/web_summary.html")
         
+    elif os.path.isdir(data_10x_format+'/filtered_peak_bc_matrix'):
+        os.mkdir(outdir)
+        Metrics_file = glob.glob(data_10x_format+'/*summary.csv')[0]
+        os.system(f"ln -s {Metrics_file} '{outdir}/metrics_summary.csv'")
+        # ANalysis folder
+        analysis_folder = glob.glob(data_10x_format+'/analysis')[0]
+        os.symlink(analysis_folder, f"{outdir}/analysis")   
+        # filtered matrix
+        sample_filtered_feature_bc_matrix = glob.glob(data_10x_format+'/*filtered_*bc_matrix')[0]
+        os.symlink(f"{sample_filtered_feature_bc_matrix}", f"{outdir}/filtered_feature_bc_matrix")   
+ 
+        raw_feature_bc_matrix =  glob.glob(data_10x_format+'/*raw_*bc_matrix')[0]
+        os.symlink(raw_feature_bc_matrix, f"{outdir}/raw_feature_bc_matrix")       
+        # sample_alignments.bam
+        possorted_genome_bam = glob.glob(data_10x_format+'/*.bam')[0]
+        os.symlink(possorted_genome_bam, f"{outdir}/possorted_genome_bam.bam")
+        
+        # sample_alignments.bam.bai
+        sample_alignments_bai = glob.glob(data_10x_format+'/*.bai')[0]
+        os.symlink(sample_alignments_bai, f"{outdir}/possorted_genome_bam.bam.bai")        
+        # web_summary
+        web_summary = glob.glob(data_10x_format+'/web_summary.html')[0]
+        os.symlink(web_summary, f"{outdir}/web_summary.html")
+                
     else:
         # Cellranger 6
         os.symlink(data_10x_format,outdir)

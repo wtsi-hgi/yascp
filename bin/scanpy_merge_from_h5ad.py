@@ -655,7 +655,7 @@ def scanpy_merge(
             )
 
     adata_merged = adatasets[0].concatenate(
-        *adatasets[1:],
+        *adatasets[1:], join='outer',
         batch_categories=adatasets__experiment_ids
     )
     try:
@@ -668,16 +668,19 @@ def scanpy_merge(
     # Re-calculate basic qc metrics of var (genes) for the whole dataset.
     # NOTE: we are only changing adata.var
     # obs_prior = adata_merged.obs.copy()
-    sc.pp.calculate_qc_metrics(
-        adata_merged,
-        qc_vars=[
-            'gene_group__mito_transcript',
-            'gene_group__mito_protein',
-            'gene_group__ribo_protein',
-            'gene_group__ribo_rna'
-        ],
-        inplace=True
-    )
+    try:
+        sc.pp.calculate_qc_metrics(
+            adata_merged,
+            qc_vars=[
+                'gene_group__mito_transcript',
+                'gene_group__mito_protein',
+                'gene_group__ribo_protein',
+                'gene_group__ribo_rna'
+            ],
+            inplace=True
+        )
+    except:
+        _='most likely different data format such as ATAC which doesnt have gene IDs'
     # adata_merged.obs = obs_prior
     adata_merged.obs['log10_ngenes_by_count'] = np.log10(adata_merged.obs['n_genes_by_counts']) / np.log10(adata_merged.obs['total_counts'])
     adata_merged.write(

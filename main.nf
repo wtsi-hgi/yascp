@@ -50,7 +50,6 @@ workflow MAIN {
     out_ch = params.outdir
             ? Channel.fromPath(params.outdir, checkIfExists:true)
             : Channel.fromPath("${launchDir}/${outdir}")
-
     if (params.profile=='test_full'){
         RETRIEVE_RECOURSES_TEST_DATASET(out_ch)
         input_channel = RETRIEVE_RECOURSES_TEST_DATASET.out.input_channel
@@ -63,6 +62,9 @@ workflow MAIN {
                 followLinks: true,
                 checkIfExists: true
             )
+        vcf_inputs.splitCsv(header: true, sep: '\t')
+                    .map { row -> tuple(row.label, file(row.vcf_file_path), file("${row.vcf_file_path}.csi")) }
+                    .set { vcf_inputs }
         }else{
             vcf_inputs = Channel.of()
         }
@@ -169,8 +171,12 @@ workflow FREEZE1_GENERATION{
     }else{
         vcf_inputs = Channel.of()
     }
-    
+    vcf_input.splitCsv(header: true, sep: '\t')
+                .map { row -> tuple(row.label, file(row.vcf_file_path), file("${row.vcf_file_path}.csi")) }
+                .set { vcf_input }
     YASCP (GENOTYPE_UPDATE.out.assignments_all_pools,input_channel,vcf_inputs)
+
+
 
 }
 

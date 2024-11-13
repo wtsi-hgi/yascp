@@ -69,7 +69,7 @@ scvi.model.TOTALVI.setup_anndata(SLEmap, protein_expression_obsm_key="protein_ex
 model = scvi.model.TOTALVI(SLEmap,latent_distribution="normal",n_layers_decoder=2)
 
 model.train()
-model.save("./scvi_model_300samples",adata=SLEmap, overwrite=True)
+model.save("./scvi_model",adata=SLEmap, overwrite=True)
 
 
 # Get latent expression from model: used for UMAP calculations
