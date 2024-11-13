@@ -106,8 +106,6 @@ workflow qc {
                 DSB_PROCESS.out.ch_for_norm.subscribe { println "1:: vireo_paths_map $it" }
                 vireo_paths_map.combine(DSB_PROCESS.out.ch_for_norm, by: 0).set{norm_chanel}
                 norm_chanel.combine(matched_donors).set{inp4}
-                inp4.subscribe { println "1:: inp4 $it" }
-                matched_donors.subscribe { println "1:: matched_donors $it" }
                 PREPROCESS_PROCESS(inp4,params.reduced_dims.vars_to_regress.value)
 
                 if(params.seurat_integration.run_process){

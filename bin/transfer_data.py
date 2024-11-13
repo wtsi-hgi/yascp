@@ -97,20 +97,31 @@ def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res
     for i,p2 in  df_raw.iterrows():
         # print(p1)
         p1 = p2['data_path_10x_format']
-        
+        try:
+            p3 = p1.split('iget_study_cellranger')[0]+'iget_study_cellranger/'+p1.split('iget_study_cellranger')[1].split("/")[1]
+        except:
+            p3 = p1
         d1 = glob.glob(f"{p1}/*/web_summary.html")
         d2 = glob.glob(f"{p1}/*/*/web_summary.html")
         d3 = glob.glob(f"{p1}/*/*/*/web_summary.html")
         d4 =glob.glob(f"{p1}/*/*/*/*/web_summary.html")
-        ts3 = [ *d1, *d2,*d3,*d4]
+        d1_2 = glob.glob(f"{p3}/*/web_summary.html")
+        d2_2 = glob.glob(f"{p3}/*/*/web_summary.html")
+        d3_2 = glob.glob(f"{p3}/*/*/*/web_summary.html")
+        d4_2 =glob.glob(f"{p3}/*/*/*/*/web_summary.html")
+        ts3 = [ *d1, *d2,*d3,*d4, *d1_2, *d2_2,*d3_2,*d4_2]
         for t1 in ts3:
             copyfile(t1, f'{name_dir}/Fetch Pipeline/html_{i}.html')
         
         d1 = glob.glob(f"{p1}/*/metrics_summary.csv")
         d2 = glob.glob(f"{p1}/*/*/metrics_summary.csv")
         d3 = glob.glob(f"{p1}/*/*/*/metrics_summary.csv")
-        d4 =glob.glob(f"{p1}/*/*/*/*/metrics_summary.csv")
-        ts3 = [ *d1, *d2,*d3,*d4]
+        d4 =glob.glob(f"{p3}/*/*/*/*/metrics_summary.csv")
+        d1_2 = glob.glob(f"{p3}/*/metrics_summary.csv")
+        d2_2 = glob.glob(f"{p3}/*/*/metrics_summary.csv")
+        d3_2 = glob.glob(f"{p3}/*/*/*/metrics_summary.csv")
+        d4_2 =glob.glob(f"{p3}/*/*/*/*/metrics_summary.csv")
+        ts3 = [ *d1, *d2,*d3,*d4, *d1_2, *d2_2,*d3_2,*d4_2]
         for t1 in ts3:   
             metadata = pd.read_csv(t1,sep=',',index_col=False)
             metadata['Sample_id']=i
@@ -198,17 +209,33 @@ def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res
             copyfile(f'{folder1}/{folder}/Vireo_plots.pdf', f'{name_dir}/Deconvolution/Vireo_plots_{folder}.pdf')
         
         
+        copyfile(f'{directory}/deconvolution/vireo/correlations.png', f'{name_dir}/Deconvolution/correlations.png')
+        try:
+            os.mkdir(f'{name_dir}/Deconvolution/csv')
+        except:
+            print('dire exists')    
+        copyfile(f'{directory}/deconvolution/vireo/matched_donors.txt', f'{name_dir}/Deconvolution/csv/matched_donors.tsv')
+        copyfile(f'{directory}/deconvolution/vireo/donor_corelations_matrix.tsv', f'{name_dir}/Deconvolution/csv/donor_corelations_matrix.tsv')
         
     folder1 = f'{directory}/doublets'
     if os.path.isdir(folder1):
         print('prepearing Doublet folder')
         try:
             os.mkdir(f'{name_dir}/Doublets___301')
+            os.mkdir(f'{name_dir}/Doublets___301/tsv')
         except:
             print('dire exists')
         files = glob.glob(f'{folder1}/*.tsv')
-
+        files2 = glob.glob(f'{folder1}/*.png')
         for file1 in files:
+            print(file1)
+            try:
+                copy(file1, f'{name_dir}/Doublets___301/tsv')
+            except:
+                print('picked up directory')
+                continue
+                    
+        for file1 in files2:
             print(file1)
             try:
                 copy(file1, f'{name_dir}/Doublets___301')
@@ -264,8 +291,38 @@ def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res
             except:
                 print('picked up directory')
                 continue
+            
+    folder1 = f'{directory}/celltype/scpred'        
+    if os.path.isdir(folder1):
+        try:
+            os.mkdir(f'{name_dir}/Cell-type assignment')
+        except:
+            print('dire exists')
+        try:
+            os.mkdir(f'{name_dir}/Cell-type assignment/scpred')
+        except:
+            print('dire exists')
+        # try:
+        #     os.mkdir(f'{name_dir}/Cell-type assignment/azimuth')
+        # except:
+        #     print('dire exists')
+        # copyfile(fil1, f'{name_dir}/QC metrics/plot_ecdf-x_log10.var=total_counts.color=experiment_id-adata.png')
+        files = glob.glob(f'{folder1}/*[!.RDS]')
+        files2 = glob.glob(f'{folder1}/*/*[!.RDS]')
+        files = files + files2
+        for file1 in files:
+            print(file1)
+            try:
+                copy(file1, f'{name_dir}/Cell-type assignment/scpred')
+            except:
+                print('picked up directory')
+                continue
     try:
         copy(f'{directory}/celltype/All_Celltype_Assignments.csv', f'{name_dir}/Cell-type assignment/All_Celltype_Assignments.csv')
+    except:
+        print('doesnt exist')       
+    try:
+        copy(f'{directory}/celltype/All_Celltype_Assignments.tsv', f'{name_dir}/Cell-type assignment/All_Celltype_Assignments.tsv')
     except:
         print('doesnt exist')    
     

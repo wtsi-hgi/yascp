@@ -16,8 +16,14 @@ workflow data_handover{
         log.info 'running data handover'
         // outdir = file(outdir)
         // outdir = file("${launchDir}/${outdir}").ifEmpty(outdir)
-        GATHER_DATA(outdir,qc_input.collect(),input_channel)
-
+        
+        if (params.gather_and_calculate_stats){
+          GATHER_DATA(outdir,qc_input.collect(),input_channel)
+          gh_out  = GATHER_DATA.out.outfiles_dataset
+        }else{
+          // Sometimes we do not want to calculate the statistics in depth
+          gh_out  = Channel.from("$projectDir/assets/fake_file2.fq")
+        }
 
         if (params.split_bam){
             // val(sample), path(barcodes), path(bam)
@@ -49,7 +55,9 @@ workflow data_handover{
               )
         }
 
-        SUMMARY_STATISTICS_PLOTS(outdir,GATHER_DATA.out.outfiles_dataset,params.input_data_table)
+
+
+        SUMMARY_STATISTICS_PLOTS(outdir,gh_out,params.input_data_table)
 
         // We also generate a report.
         // If we run it in sanger we transfer the data to the local website.
