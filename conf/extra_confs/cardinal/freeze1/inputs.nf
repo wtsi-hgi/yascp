@@ -27,7 +27,7 @@ params {
     // input_data_table = "$outdir/handover/Summary_plots/$RUN_ID/Fetch Pipeline/Input/input_table.tsv"
     //!!!!! if cellbender is run already then can skip this by selecting  input = 'existing_cellbender' instead input = 'cellbender'
     existing_cellsnp="/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/qc/Blood_Fresh/results_hard_filters/cellsnp"
-    existing_vireo="$output_dir/infered_genotypes"
+    existing_vireo="$output_dir/deconvolution/infered_genotypes"
     reference_assembly_fasta_dir_bam_split = "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/genotypes/10x_reference_assembly_prefix"
     // output_dir = outdir= "${launchDir}/results_vireo_inp/results"
     webtransfer = true
@@ -44,9 +44,9 @@ params {
     }
     skip_preprocessing{
         value=true
-        gt_match_file="$output_dir/deconvolution/vireo_gt_fix/assignments_all_pools.tsv" //We prvide this if we want to exclude a particular samples matched to a ceirtain GT cohortc from the adaptive qc
+        gt_match_file="$output_dir/deconvolution/deconvolution_results/vireo_gt_fix/assignments_all_pools.tsv" //We prvide this if we want to exclude a particular samples matched to a ceirtain GT cohortc from the adaptive qc
         gt_match_based_adaptive_qc_exclusion_pattern = 'U937;THP1' //We run the adaptive QC on these patterns independently regardless on assigned celltype.
-        file__anndata_merged = "$output_dir/merged_h5ad/pre_QC_adata.h5ad"
+        file__anndata_merged = "$output_dir/merged_h5ad/1.pre_QC_adata.h5ad"
         file__cells_filtered = "$output_dir/merged_h5ad/pre_QC_adata-cell_filtered_per_experiment.tsv.gz"
 
     }

@@ -98,7 +98,7 @@ workflow match_genotypes {
         ch_combine = subsampling_donor_swap.combine(CONCORDANCE_CALCLULATIONS.out.concordances, by: 0)
         COMBINE_FILES(ch_combine) //This step plots scatter plots for each of the pools individually.
         // Now we want to combined all the above files together and make one overall plot for all the tranches.
-        collect_file1(COMBINE_FILES.out.file_joined_df_for_plots.collect(),"joined_df_for_plots.tsv",params.outdir+'/concordances',1,'')
+        collect_file1(COMBINE_FILES.out.file_joined_df_for_plots.collect(),"joined_df_for_plots.tsv",params.outdir+'/deconvolution/concordances',1,'')
         PLOT_CONCORDANCES_ALL(collect_file1.out.output_collection)
     }
 

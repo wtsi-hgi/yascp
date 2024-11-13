@@ -17,7 +17,7 @@ process MERGE_OUTLIER_FILES{
         container "wtsihgi/nf_scrna_qc:6bb6af5"
     }
 
-    publishDir  path: "${params.outdir}",
+    publishDir  path: "${params.outdir}/merged_h5ad/",
                 saveAs: {filename ->
                     if (filename.contains("___sample_QCd_adata.h5ad")) {
                         null
@@ -67,7 +67,8 @@ process OUTLIER_FILTER {
     }
 
 
-    publishDir  path: "${outdir}/merged_h5ad",
+    publishDir  path: "${outdir}/merged_h5ad/",
+
                 saveAs: {filename ->
                     if(filename.contains("outlier_filtered_adata.h5ad"))  {
                         filename = "4.outlier_filtered_adata.h5ad"
@@ -90,14 +91,13 @@ process OUTLIER_FILTER {
         each refset
 
     output:
-        // path("merged_h5ad/outlier_filtered_adata.h5ad", emit: anndata)
-        // path('donor_level_anndata_QCfiltered/*___sample_QCd_adata.h5ad',emit: sample_QCd_adata)
+
         path(
             "outlier_filtered_adata-outliers_filtered*.tsv",
             emit: cells_filtered
         )
         path("plots/*")
-        // path("merged_h5ad/*")
+
 
 
     script:

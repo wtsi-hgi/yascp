@@ -35,7 +35,7 @@ process REMOVE_DUPLICATED_DONORS_FROM_GT{
 process VIREO_SUBSAMPLING {
     // This module is used to make sure that no cells that there are no cells assigned to the wrong donor.
     // We subsample the cellsnp files to the 80% of random SNPs and run vireo with this.
-    publishDir "${params.outdir}/deconvolution/vireo_sub/${samplename}/vireo_____${itteration}/",  mode: "${params.vireo.copy_mode}", overwrite: true
+    publishDir "${params.outdir}/deconvolution/deconvolution_results/vireo_sub/${samplename}/vireo_____${itteration}/",  mode: "${params.vireo.copy_mode}", overwrite: true
 	  // saveAs: {filename -> filename.replaceFirst("vireo_${samplename}/","") }
 
     tag "${samplename}"
@@ -136,7 +136,7 @@ process VIREO_SUBSAMPLING {
 process GENOTYPE_MATCHER{
     tag "${samplename}"
     label 'process_low'
-    publishDir "${params.outdir}/deconvolution/vireo/",  mode: "${params.vireo.copy_mode}", overwrite: true
+    publishDir "${params.outdir}/deconvolution/deconvolution_results/vireo/",  mode: "${params.vireo.copy_mode}", overwrite: true
 	  // saveAs: {filename -> filename.replaceFirst("vireo_${samplename}/","") }
     
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
@@ -172,7 +172,7 @@ process GENOTYPE_MATCHER{
 process VIREO {
     tag "${samplename}"
     label 'medium_cpus'
-    publishDir "${params.outdir}/deconvolution/vireo/${samplename}/",  mode: "${params.vireo.copy_mode}", overwrite: true,
+    publishDir "${params.outdir}/deconvolution/deconvolution_results/vireo/${samplename}/",  mode: "${params.vireo.copy_mode}", overwrite: true,
 	  saveAs: {filename -> filename.replaceFirst("vireo_${samplename}/","") }
 
 
@@ -253,7 +253,7 @@ process POSTPROCESS_SUMMARY{
 
 process CAPTURE_VIREO{
   label 'process_tiny'
-  publishDir "${params.outdir}/deconvolution/vireo/",  mode: "${params.copy_mode}", overwrite: true,
+  publishDir "${params.outdir}/deconvolution/deconvolution_results/vireo/",  mode: "${params.copy_mode}", overwrite: true,
   saveAs: {filename -> filename.replaceFirst("vireo_/","") }
 
   input:
@@ -280,7 +280,7 @@ process CAPTURE_VIREO{
 process VIREO_SUBSAMPLING_PROCESSING{
     tag "${samplename}"
     label 'medium_cpus'
-    publishDir  path: "${params.outdir}/concordances/${samplename}",
+    publishDir  path: "${params.outdir}/deconvolution/concordances/${samplename}",
                 mode: "${params.copy_mode}",
                 overwrite: "true"
 

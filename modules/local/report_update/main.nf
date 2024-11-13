@@ -49,7 +49,7 @@ process replace_donors_posthoc
 
     """
 
-      replace_donors_posthoc.py -i ${results}/deconvolution/vireo_gt_fix/assignments_all_pools.tsv --genotype_phenotype_mapping ${params.genotype_phenotype_mapping_file} --input_file "results/handover/Summary_plots/${exp_id}/Fetch Pipeline/Input/input_table.tsv"
+      replace_donors_posthoc.py -i ${results}/deconvolution/deconvolution_results/vireo_gt_fix/assignments_all_pools.tsv --genotype_phenotype_mapping ${params.genotype_phenotype_mapping_file} --input_file "results/handover/Summary_plots/${exp_id}/Fetch Pipeline/Input/input_table.tsv"
       echo Done > out.txt
     """
 }

@@ -1,5 +1,6 @@
 process capture_cellsnp_files{
-  publishDir  path: "${params.outdir}",
+
+  publishDir  path: "${params.outdir}/deconvolution/",
         saveAs: {filename ->
         if (filename == "output_cellsnp.csv") {
           null
@@ -34,7 +35,7 @@ process DYNAMIC_DONOR_EXCLUSIVE_SNP_SELECTION{
     } else {
         container "mercury/scrna_deconvolution:62bd56a"
     }
-    publishDir "${params.outdir}/cellsnp/cellsnp_${samplename}", mode: "${params.copy_mode}", pattern: "cellsnp_${samplename}", overwrite: true
+    publishDir "${params.outdir}/deconvolution/cellsnp/cellsnp_${samplename}", mode: "${params.copy_mode}", pattern: "cellsnp_${samplename}", overwrite: true
     
     input: 
         val(add_dynamic_sites_or_not_to_panel)
@@ -106,7 +107,7 @@ process CELLSNP {
     
     label 'many_cores_small_mem'
     
-    publishDir "${params.outdir}/cellsnp/", mode: "${params.copy_mode}", pattern: "cellsnp_${samplename}", overwrite: true
+    publishDir "${params.outdir}/deconvolution/cellsnp/", mode: "${params.copy_mode}", pattern: "cellsnp_${samplename}", overwrite: true
 
     
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
