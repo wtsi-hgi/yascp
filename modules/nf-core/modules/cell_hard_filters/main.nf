@@ -12,7 +12,7 @@ process CELL_HARD_FILTERS{
     }
 
 
-    publishDir  path: "${params.outdir}/merged_h5ad/",
+    publishDir  path: "${params.outdir}/handover/merged_h5ad/",
                 saveAs: {filename ->
                     if (filename.contains("hard_filters_")) {
                         filename = '3.hard_filters_annotated_h5ad.h5ad'

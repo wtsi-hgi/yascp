@@ -8,7 +8,7 @@ process SCDS {
         container "mercury/azimuth_dsb:6_03_2024"
     }
     
-    publishDir  path: "${params.outdir}/doublets/multiplet.method=SCDS",
+    publishDir  path: "${params.outdir}/doublet_detection/multiplet.method=SCDS",
                 mode: "${params.copy_mode}",
                 overwrite: "true"
 

@@ -8,7 +8,7 @@ process DOUBLET_DETECTION {
         container "mercury/nf_scrna_qc:v3"
     }
     
-    publishDir  path: "${params.outdir}/doublets/multiplet.method=doubletdetection",
+    publishDir  path: "${params.outdir}/doublet_detection/multiplet.method=doubletdetection",
                 mode: "${params.copy_mode}",
                 overwrite: "true"
 
@@ -27,7 +27,7 @@ process DOUBLET_DETECTION {
 
     script:
         
-        outdir = "${params.outdir}/doublets/multiplet"
+        outdir = "${params.outdir}/doublet_detection/multiplet"
         outdir = "${outdir}.method=doubletdetection"
         outfile = "${experiment_id}"
 

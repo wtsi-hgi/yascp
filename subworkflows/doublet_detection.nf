@@ -46,7 +46,7 @@ process MERGE_DOUBLET_RESULTS{
     } else {
         container "mercury/nf_scrna_qc:v3"
     }
-    publishDir  path: "${params.outdir}/doublets",
+    publishDir  path: "${params.outdir}/doublet_detection",
                 mode: "${params.copy_mode}",
                 overwrite: "true"
 

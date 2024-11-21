@@ -532,7 +532,7 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
     ##########################
     # Scrublet
     #########################
-    doublet_data = glob.glob(f'{args.results_dir}/doublets/*.tsv')
+    doublet_data = glob.glob(f'{args.results_dir}/doublet_detection/*.tsv')
     doublet_data_combined = pd.DataFrame()
     for f1 in doublet_data:
         print(f1)
@@ -1009,7 +1009,7 @@ if __name__ == '__main__':
     
     # Load the final QCd dataset
     try:
-        adqc = anndata.read_h5ad(f'{args.results_dir}/merged_h5ad/outlier_filtered_adata.h5ad')
+        adqc = anndata.read_h5ad(f'{args.results_dir}/handover/merged_h5ad/4.outlier_filtered_adata.h5ad')
     except:
         try:
             adqc = anndata.read_h5ad(f'{args.results_dir}/adata.h5ad')

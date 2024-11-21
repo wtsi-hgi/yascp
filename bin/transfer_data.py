@@ -222,7 +222,7 @@ def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res
         except:
             _='corelations not performed'
         
-    folder1 = f'{directory}/doublets'
+    folder1 = f'{directory}/doublet_detection'
     if os.path.isdir(folder1):
         print('prepearing Doublet folder')
         try:
@@ -350,7 +350,7 @@ def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res
             print('dire exists')
             
         density_files = glob.glob(f'{folder1}/*cell_desity*')
-        density_files2 = glob.glob(f'{folder1}/merged_h5ad/plots/*cell_desity*')
+        density_files2 = glob.glob(f'{folder1}/handover/merged_h5ad/plots/*cell_desity*')
         density_files.extend(density_files2)
         for dens_file in density_files:
             try:
@@ -364,7 +364,7 @@ def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res
                 continue
 
         density_files = glob.glob(f'{folder1}/*adata-outlier_cells*')
-        density_files2 = glob.glob(f'{folder1}/merged_h5ad/plots/*adata-outlier_cells*')
+        density_files2 = glob.glob(f'{folder1}/handover/merged_h5ad/plots/*adata-outlier_cells*')
         density_files.extend(density_files2)
         for dens_file in density_files:
             try:

@@ -12,7 +12,7 @@ process CELLTYPE_FILE_MERGE{
             mode: "${params.copy_mode}",
             overwrite: "true"  
 
-    publishDir  path: "${params.outdir}/merged_h5ad/",
+    publishDir  path: "${params.outdir}/handover/merged_h5ad/",
             saveAs: {filename ->
                     if (filename.contains("adata.h5ad")) {
                         filename = "2.celltype_anotated_merged.h5ad"

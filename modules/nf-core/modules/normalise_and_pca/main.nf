@@ -18,7 +18,7 @@ process PCA {
                 mode: "${params.copy_mode}",
                 overwrite: "true"
     
-    publishDir  path: "${params.outdir}/merged_h5ad/",
+    publishDir  path: "${params.outdir}/handover/merged_h5ad/",
             saveAs: {filename ->
                     if (filename.contains("adata-normalized_pca-counts.h5ad")) {
                         filename = '5.adata-normalized_pca-counts.h5ad'
