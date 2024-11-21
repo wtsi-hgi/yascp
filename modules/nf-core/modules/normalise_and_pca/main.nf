@@ -132,7 +132,7 @@ process NORMALISE_AND_PCA {
             cmd__vars_to_regress = "--vars_to_regress ${vars_to_regress}"
         }
 
-        outdir = "${params.outdir}/clustering/normalize=total_count.${param_details}"
+        outdir = "${params.outdir}/clustering_and_integration/normalize=total_count.${param_details}"
         // Add details on the genes we are exlcuding from hgv list.
         // file_vge = "${file__genes_exclude_hvg}"
         // outdir = "${outdir}.hvg_exclude=${file_vge}"

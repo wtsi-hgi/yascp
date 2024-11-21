@@ -512,7 +512,7 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
     #Cell-type assignments
     #############
 
-    azt = pd.read_csv(f'{args.results_dir}/celltype/All_Celltype_Assignments.tsv',sep='\t',index_col=0)
+    azt = pd.read_csv(f'{args.results_dir}/celltype_assignemt/All_Celltype_Assignments.tsv',sep='\t',index_col=0)
     azt_cols_to_add = azt.columns[azt.columns.str.contains('Azimuth')]
     ct_cols_to_add = azt.columns[azt.columns.str.contains('Celltypist')]
     sc_cols_to_add = azt.columns[azt.columns.str.contains('scpred_prediction')]

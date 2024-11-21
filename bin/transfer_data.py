@@ -249,7 +249,7 @@ def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res
                 continue
                     
         
-    folder1 = f'{directory}/celltype/celltypist'
+    folder1 = f'{directory}/celltype_assignemt/celltypist'
     if os.path.isdir(folder1):
         print('prepearing celltype folder')
         try:
@@ -268,7 +268,7 @@ def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res
                 copyfile(f'{folder1}/{model_type}/{donor}/{donor}_predicted_labels.pdf', f'{name_dir}/Cell-type assignment/celltypist/{model_type}_{donor}_predicted_labels.pdf')
                 copyfile(f'{folder1}/{model_type}/{donor}/{donor}_majority_voting.pdf', f'{name_dir}/Cell-type assignment/celltypist/{model_type}_{donor}_majority_voting.pdf')
 
-    folder1 = f'{directory}/celltype/azimuth'
+    folder1 = f'{directory}/celltype_assignemt/azimuth'
 
 
     # folder1 = f'{directory}/plots'
@@ -297,7 +297,7 @@ def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res
                 print('picked up directory')
                 continue
             
-    folder1 = f'{directory}/celltype/scpred'        
+    folder1 = f'{directory}/celltype_assignemt/scpred'        
     if os.path.isdir(folder1):
         try:
             os.mkdir(f'{name_dir}/Cell-type assignment')
@@ -323,11 +323,11 @@ def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res
                 print('picked up directory')
                 continue
     try:
-        copy(f'{directory}/celltype/All_Celltype_Assignments.csv', f'{name_dir}/Cell-type assignment/All_Celltype_Assignments.csv')
+        copy(f'{directory}/celltype_assignemt/All_Celltype_Assignments.csv', f'{name_dir}/Cell-type assignment/All_Celltype_Assignments.csv')
     except:
         print('doesnt exist')       
     try:
-        copy(f'{directory}/celltype/All_Celltype_Assignments.tsv', f'{name_dir}/Cell-type assignment/All_Celltype_Assignments.tsv')
+        copy(f'{directory}/celltype_assignemt/All_Celltype_Assignments.tsv', f'{name_dir}/Cell-type assignment/All_Celltype_Assignments.tsv')
     except:
         print('doesnt exist')    
     
@@ -394,7 +394,7 @@ def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res
         copyfile(fil1, f'{name_dir}/QC metrics/plot_ecdf-x_log10.var=total_counts.color=experiment_id-adata.png')
 
 
-    folder1 = f'{directory}/clustering'
+    folder1 = f'{directory}/clustering_and_integration'
     if os.path.isdir(folder1):
         try:
             os.mkdir(f'{name_dir}/Clustering')
@@ -414,7 +414,7 @@ def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res
             copyfile(umap1, f'{name_dir}/Clustering/Harmony/{resolution}res_Harmony_{name}')
 
 
-    folder1 = f'{directory}/clustering'
+    folder1 = f'{directory}/clustering_and_integration'
     if os.path.isdir(folder1):
         try:
             os.mkdir(f'{name_dir}/Clustering')
@@ -457,7 +457,7 @@ def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res
             copytree(folder1, f'{name_dir}/Summary')
         except:
             print('dire exists')
-    folder1 = f'{directory}/celltype'
+    folder1 = f'{directory}/celltype_assignemt'
     if os.path.isdir(folder1):
         try:
             copyfile(f"{folder1}/donor_celltype_report.tsv", f'{name_dir}/Summary/donor_celltype_report.tsv')  

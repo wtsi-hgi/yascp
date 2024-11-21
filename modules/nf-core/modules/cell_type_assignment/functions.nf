@@ -1,7 +1,7 @@
 process CELLTYPE_FILE_MERGE{
     tag "${samplename}"    
     label 'process_high'
-    publishDir  path: "${params.outdir}/celltype/",
+    publishDir  path: "${params.outdir}/celltype_assignemt/",
             saveAs: {filename ->
                     if (filename.contains("adata.h5ad")) {
                         null
