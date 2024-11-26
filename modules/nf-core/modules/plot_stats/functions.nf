@@ -15,7 +15,7 @@ process plot_filtered_cells {
         container "wtsihgi/nf_scrna_qc:6bb6af5"
     }
 
-    publishDir  path: "${outdir}/plots",
+    publishDir  path: "${outdir}/clustering_and_integration/plots",
                 mode: "${params.copy_mode}",
                 overwrite: "true"
 
@@ -55,7 +55,7 @@ process plot_pcs {
         container "wtsihgi/nf_scrna_qc:6bb6af5"
     }
 
-    publishDir  path: "${outdir}/plots",
+    publishDir  path: "${outdir}/clustering_and_integration/plots",
                 mode: "${params.copy_mode}",
                 overwrite: "true"
 
@@ -107,7 +107,7 @@ process plot_predicted_sex {
         container "wtsihgi/nf_scrna_qc:6bb6af5"
     }
 
-    publishDir  path: "${outdir}/plots",
+    publishDir  path: "${outdir}/clustering_and_integration/plots",
                 mode: "${params.copy_mode}",
                 overwrite: "true"
 
@@ -152,7 +152,7 @@ process plot_qc {
 	
     }
 
-    publishDir  path: "${outdir}/plots",
+    publishDir  path: "${outdir}/clustering_and_integration/plots",
                 mode: "${params.copy_mode}",
                 overwrite: "true"
 
@@ -208,7 +208,7 @@ process plot_distributions {
         container "wtsihgi/nf_scrna_qc:6bb6af5"
     }
 
-    publishDir  path: "${outdir}/plots",
+    publishDir  path: "${outdir}/clustering_and_integration/plots",
                 mode: "${params.copy_mode}",
                 overwrite: "true"
 
