@@ -17,16 +17,40 @@ results         # Finished results (configurable, see below)
 
 Utilizing [Nextflow](https://www.nextflow.io/), our pipeline orchestrates a series of data processing steps. The structure of the overall results folder is outlined below, offering a snapshot of the diverse outputs from different stages of the pipeline:
 
-- **[Preprocessing](#preprocessing)**: ???
-- **[Doublet Detection](#doublet_detection)**: A folder with identified artificial doublet cells.
-- **[Deconvolution](#deconvolution)**: A folder with the results of disentangling mixtures of cells from different donors.
-- **[Celltype Assignemt](#celltype_assignemt)**: A folder with cells classified into types.
-- **[Clustering and Integration](#clustering_and_integration)**:  A folder with cells grouped based on similarities and integrating datasets.
-- **[CITE-seq](#citeseq)**: A folder with CITE-seq (Cellular Indexing of Transcriptomes and Epitopes by Sequencing) data.
-- **[Handover](#handover)**: ???
-- **[Pipeline Info](#pipeline_info)**: ???
-- **[YASCP Inputs](#yascp_inputs)**: ???
-  
+- **[preprocessing]**: ???
+- **[doublet_detection]**: A folder with identified artificial doublet cells.
+- **[deconvolution]**: A folder with the results of disentangling mixtures of cells from different donors.
+- **[celltype_assignemt]**: A folder with cells classified into types.
+- **[clustering_and_integration]**:  A folder with cells grouped based on similarities and integrating datasets.
+- **[citeseq]**: A folder with CITE-seq (Cellular Indexing of Transcriptomes and Epitopes by Sequencing) data.
+- **[handover]**: ???
+- **[pipeline_info]**: ???
+- **[yascp_inputs]**: ???
+
+Detailed explanations of each output folder and their corresponding steps are provided below:
+
+## Preprocessing
+The folder preprocessing contains the next folders
+- **[data_modalities_split]
+- **[recourses]
+- **[subset_genotypes]
+
+## Doublet Detection
+
+## Deconvolution
+
+## Celltype Assignemt
+
+## Clustering and Integration
+
+## CITE-seq
+
+## Handover
+
+## Pipeline Info
+
+## YASCP Inputs
+
 <!---
 - **[CellSNP](#cellsnp)**: Variant calling on single cells.
 - **[Cell Type Identification](#celltype-identification)**: Classification of cells into types.
@@ -43,8 +67,8 @@ Utilizing [Nextflow](https://www.nextflow.io/), our pipeline orchestrates a seri
 - **[Plots](#plots)**: A collection of quality control visualizations.
 - **Resources**: Reference genomes utilized in data processing.
 - **UMAPS**: Quick-reference UMAP plots for data visualization.
--->
-Detailed explanations of each output folder and their corresponding steps are provided below:
+
+
 
 
 ## Alignment step
@@ -404,3 +428,4 @@ Some summary plots for quick inspections
 ![Screenshot 2024-04-11 at 17 09 20](https://github.com/wtsi-hgi/yascp/assets/22347136/6ab4e164-e59f-4db8-a1a2-38454041843a)
 
 
+-->
