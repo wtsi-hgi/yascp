@@ -17,10 +17,17 @@ results         # Finished results (configurable, see below)
 
 Utilizing [Nextflow](https://www.nextflow.io/), our pipeline orchestrates a series of data processing steps. The structure of the overall results folder is outlined below, offering a snapshot of the diverse outputs from different stages of the pipeline:
 
-![Results Folder Structure](https://github.com/wtsi-hgi/yascp/assets/22347136/12cc3575-8772-43ee-b64d-bb396e10ba82)
-
-The pipeline delivers outputs across several key areas:
-
+- **[Preprocessing](#preprocessing)**: ???
+- **[Doublet Detection](#doublet_detection)**: A folder with identified artificial doublet cells.
+- **[Deconvolution](#deconvolution)**: A folder with the results of disentangling mixtures of cells from different donors.
+- **[Celltype Assignemt](#celltype_assignemt)**: A folder with cells classified into types.
+- **[Clustering and Integration](#clustering_and_integration)**:  A folder with cells grouped based on similarities and integrating datasets.
+- **[CITE-seq](#citeseq)**: A folder with CITE-seq (Cellular Indexing of Transcriptomes and Epitopes by Sequencing) data.
+- **[Handover](#handover)**: ???
+- **[Pipeline Info](#pipeline_info)**: ???
+- **[YASCP Inputs](#yascp_inputs)**: ???
+  
+<!---
 - **[CellSNP](#cellsnp)**: Variant calling on single cells.
 - **[Cell Type Identification](#celltype-identification)**: Classification of cells into types.
 - **[CITE-seq Data Processing](#citeseq)**: Handling of CITE-seq (Cellular Indexing of Transcriptomes and Epitopes by Sequencing) data.
@@ -36,8 +43,8 @@ The pipeline delivers outputs across several key areas:
 - **[Plots](#plots)**: A collection of quality control visualizations.
 - **Resources**: Reference genomes utilized in data processing.
 - **UMAPS**: Quick-reference UMAP plots for data visualization.
-
-Detailed explanations of each step and the corresponding outputs are provided below:
+-->
+Detailed explanations of each output folder and their corresponding steps are provided below:
 
 
 ## Alignment step
