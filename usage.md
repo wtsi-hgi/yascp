@@ -35,13 +35,23 @@ For your dataset run:
    nextflow run /path/to/cloned/yascp -profile <docker/singularity,institute> -c inputs.nf -resume
 ```
 
+To clean the working folder after the pipeline finishes use the next commands:
+
+For a test dataset run:
+``` console
+    nextflow run /path/to/cloned/yascp clean -profile test,<docker/singularity,institute>
+```
+For your dataset run:
+``` console
+    nextflow run /path/to/cloned/yascp clean -profile <docker/singularity,institute> -c inputs.nf
+```
 <details markdown="2">
 <summary><b>Sanger-Specific Execution:</b></summary>
 
 * If you work on Farm you can run YASCP using the next commands:
   
   Test dataset run:
-    ```
+  ```
       module load HGI/pipelines/yascp/1.6.1
       yascp test
   ```
@@ -49,6 +59,15 @@ For your dataset run:
   ```
       module load HGI/pipelines/yascp/1.6.1
       yascp -c input.nf
+  ```
+  To clean the working folder use the next commands:
+  For a test dataset run:
+  ```
+      yascp clean test
+  ```
+  For your dataset run:
+  ```
+      yascp clean -c inputs.nf
   ```
 
 </details>
