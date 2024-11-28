@@ -36,16 +36,51 @@ The folder preprocessing contains the next folders
 - **[subset_genotypes]
 
 ## Doublet Detection
+- **[doublet_results_combined]
+- **[droplet_type_distribution]
+- **[DoubletFinder]
+- **[DoubletDecon]
+- **[scDblFinder]
+- **[scrublet]
+- **[SCDS]
 
 ## Deconvolution
+- **[gtmatch]
+- assignments_all_pools.tsv
+- folder per pool with gtmatch results
+- **[infered_genotypes] contains folders for each pool with vcf files
+- **[deconvolution_results]
+- filepaths
+- vireo_gt_fix
+- vireo
+- split_donor_h5ad
+- **[concordances] contains a tsv file with results for ??? (Should the folder be removed and only files saved)
+- **[cellsnp] contains folders for each pool (should the folders inside be renamed)
+- **[existing_cellsnp] contains a file with info about existing_cellsnp (Should the folder be removed and only files saved)
 
 ## Celltype Assignemt
+- **[All_Celltype_Assignments.tsv]
+- **[donor_celltype_report.tsv]
+- **[tranche_celltype_report.tsv]
+- **[scored]
+- **[azimuth]
+- **[celltypist]
+- Immune_All_Low
+- COVID19_Immune_Landscape
+- Immune_All_High
 
 ## Clustering and Integration
+normalize=total_count.vars_to_regress=none (should it be renamed)
+plots
 
 ## CITE-seq
+- **[DSB] is there only one folder in citeseq? DSB has folders for each pool
 
 ## Handover
+- **[Summary_plots]
+- **[Donor_Quantification]
+- **[Donor_Quantification_summary]
+- **[merged_h5ad]
 
 ## Pipeline Info
 
