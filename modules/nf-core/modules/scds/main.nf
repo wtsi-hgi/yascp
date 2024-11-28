@@ -8,7 +8,7 @@ process SCDS {
         container "mercury/azimuth_dsb:6_03_2024"
     }
     
-    publishDir  path: "${params.outdir}/doublet_detection/multiplet.method=SCDS",
+    publishDir  path: "${params.outdir}/doublet_detection/SCDS",
                 mode: "${params.copy_mode}",
                 overwrite: "true"
 
@@ -27,8 +27,8 @@ process SCDS {
 
     script:
         
-        outdir = "${params.outdir}/multiplet"
-        outdir = "${outdir}.method=SCDS"
+        outdir = "${params.outdir}/"
+        outdir = "${outdir}SCDS"
         outfile = "${experiment_id}"
 
         """

@@ -248,8 +248,12 @@ def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res
             os.mkdir(f'{name_dir}/Doublets___301/tsv')
         except:
             print('dir exists')
-        files = glob.glob(f'{folder1}/*.tsv')
-        files2 = glob.glob(f'{folder1}/*.png')
+        if 'doublet_detection' in folder1:
+            files = glob.glob(f'{folder1}/doublet_results_combined/*.tsv')
+            files2 = glob.glob(f'{folder1}/droplet_type_distribution/*.png')
+        else:
+            files = glob.glob(f'{folder1}/*.tsv')
+            files2 = glob.glob(f'{folder1}/*.png')
         for file1 in files:
             print(file1)
             try:

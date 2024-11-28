@@ -26,7 +26,7 @@ process SCRUBLET {
         container "wtsihgi/nf_scrna_qc:6bb6af5"
     }
     
-    publishDir  path: "${params.outdir}/doublet_detection/multiplet.method=scrublet",
+    publishDir  path: "${params.outdir}/doublet_detection/scrublet",
                 saveAs: {filename ->
                     if (filename.endsWith("multiplet_calls_published.txt")) {
                         null
@@ -69,8 +69,8 @@ process SCRUBLET {
 
     script:
         
-        outdir = "${params.outdir}/doublet_detection/multiplet"
-        outdir = "${outdir}.method=scrublet"
+        outdir = "${params.outdir}/doublet_detection/"
+        outdir = "${outdir}scrublet"
         outfile = "${experiment_id}"
         // Check to see if we should use use log10 of the doublet simulations
         // to derive the threshold

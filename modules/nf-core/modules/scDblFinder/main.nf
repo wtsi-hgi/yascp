@@ -8,7 +8,7 @@ process SC_DBLFINDER {
         container "mercury/azimuth_dsb:6_03_2024"
     }
     
-    publishDir  path: "${params.outdir}/doublet_detection/multiplet.method=scDblFinder",
+    publishDir  path: "${params.outdir}/doublet_detection/scDblFinder",
                 mode: "${params.copy_mode}",
                 overwrite: "true"
 
@@ -27,8 +27,8 @@ process SC_DBLFINDER {
 
     script:
         
-        outdir = "${params.outdir}/multiplet"
-        outdir = "${outdir}.method=scDblFinder"
+        outdir = "${params.outdir}/"
+        outdir = "${outdir}scDblFinder"
         outfile = "${experiment_id}"
 
         """
