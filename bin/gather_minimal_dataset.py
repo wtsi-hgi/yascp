@@ -532,7 +532,7 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
     ##########################
     # Scrublet
     #########################
-    doublet_data = glob.glob(f'{args.results_dir}/doublet_detection/*.tsv')
+    doublet_data = glob.glob(f'{args.results_dir}/doublet_detection/doublet_results_combined/*.tsv')
     doublet_data_combined = pd.DataFrame()
     for f1 in doublet_data:
         print(f1)
