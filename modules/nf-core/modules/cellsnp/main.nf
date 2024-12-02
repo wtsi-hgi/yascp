@@ -2,9 +2,9 @@ process capture_cellsnp_files{
 
   publishDir  path: "${params.outdir}/deconvolution/",
         saveAs: {filename ->
-        if (filename == "output_cellsnp.csv") {
+        if (filename == "output_cellsnp.csv" || filename == "existing_cellsnp") {
           null
-        } else {
+        }else {
           filename
         } 
         }
