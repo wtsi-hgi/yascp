@@ -36,15 +36,68 @@ The folder preprocessing contains the next folders
 - **[subset_genotypes]
 
 ## Doublet Detection
-- **[doublet_results_combined]
-- **[droplet_type_distribution]
-- **[DoubletFinder]
-- **[DoubletDecon]
-- **[scDblFinder]
+doublet_detection
+├── DoubletDecon
+│   └── Pool1__DoubletDecon_doublets_singlets.tsv
+├── DoubletFinder
+│   └── Pool1__DoubletFinder_doublets_singlets.tsv
+├── doublet_results_combined
+│   └── Pool1__doublet_results_combined.tsv
+├── droplet_type_distribution
+│   └── Pool1__droplet_type_distribution.png
+├── scDblFinder
+│   └── Pool1__scDblFinder_doublets_singlets.tsv
+├── SCDS
+│   └── Pool1__scds_doublets_singlets.tsv
+└── scrublet
+    ├── plots
+    │   ├── Pool1boxplot_total_umi_counts.png
+    │   ├── Pool1histogram_multiplet_scores_log.png
+    │   ├── Pool1histogram_multiplet_scores.png
+    │   └── Pool1histogram_multiplet_zscores.png
+    └── Pool1scrublet.tsv
+
+
+
 - **[scrublet]
+    scrublet contains tsv file per pool with barcode and label of whether it's a multiplet or not and a folder with plots
+- **[DoubletFinder]
+  DoubletFinder contains tsv file per pool with barcode and label of whether it's a singlet or a doublet
+- **[DoubletDecon]
+    DoubletDecon contains tsv file per pool with barcode and label of whether it's a singlet or a doublet
+- **[scDblFinder]
+     scDblFinder contains tsv file per pool with barcode and label of whether it's a singlet or a doublet
 - **[SCDS]
+     SCDS  contains tsv file per pool with barcode and label of whether it's a singlet or a doublet
+- **[doublet_results_combined]
+     doublet_results_combined contains tsv file per pool with barcode and labels from scrublet	scds scDblFinder DoubletDecon DoubletFinder
+- **[droplet_type_distribution]
+     droplet_type_distribution contains png files with graphs showing ...
 
 ## Deconvolution
+deconvolution
+├── cellsnp
+├── existing_cellsnp (name can be different)
+├── concordances
+├── deconvolution_results
+├── gtmatch
+└── infered_genotypes
+
+gtmatch/
+├── assignments_all_pools.tsv
+└── Pool1
+    ├── Done.tmp
+    ├── Expected_Withing_expected_Pool1.genome
+    ├── GT_replace_PiHAT_Stats_File_Pool1.csv
+    ├── InferedExpected_Expected_Infered_Pool1.genome
+    ├── InferedGTMatched_Expected_Infered_Pool1.genome
+    ├── InferedOnly_Withing_pool_Pool1.genome
+    ├── PiHAT_Stats_File_Pool1.csv
+    ├── Pool1_gt_donor_assignments.csv
+    ├── pool_Pool1_panel_Pool1_Onek1K_gtcheck_donor_assignments.csv
+    ├── pool_Pool1_panel_Pool1_Onek1K_gtcheck_score_table.csv
+    └── stats_Pool1_gt_donor_assignments.csv
+
 - **[gtmatch]
 - assignments_all_pools.tsv
 - folder per pool with gtmatch results
@@ -57,6 +110,23 @@ The folder preprocessing contains the next folders
 - **[concordances] contains a tsv file with results for ??? (Should the folder be removed and only files saved)
 - **[cellsnp] contains folders for each pool (should the folders inside be renamed)
 - **[existing_cellsnp] contains a file with info about existing_cellsnp (Should the folder be removed and only files saved)
+
+cellsnp
+└── cellsnp_Pool1
+    ├── cellSNP.base.vcf.gz
+    ├── cellSNP.cells.vcf.gz
+    ├── cellSNP.samples.tsv
+    ├── cellSNP.tag.AD.mtx
+    ├── cellSNP.tag.DP.mtx
+    └── cellSNP.tag.OTH.mtx
+
+concordances
+└── all_variants_description.tsv
+
+infered_genotypes
+└── Pool1
+    ├── Pool1_headfix_vireo.vcf.gz
+    └── Pool1_headfix_vireo.vcf.gz.tbi
 
 ## Celltype Assignemt
 - **[All_Celltype_Assignments.tsv]
