@@ -17,8 +17,8 @@ results         # Finished results (configurable, see below)
 
 Utilizing [Nextflow](https://www.nextflow.io/), our pipeline orchestrates a series of data processing steps. The structure of the overall results folder is outlined below, offering a snapshot of the diverse outputs from different stages of the pipeline:
 
-- **[preprocessing]**: ???
-- **[doublet_detection]**: A folder with identified artificial doublet cells.
+- **[preprocessing](preprocessing)**: ???
+- **[doublet_detection](doublet_detection)**: A folder with identified artificial doublet cells.
 - **[deconvolution]**: A folder with the results of disentangling mixtures of cells from different donors.
 - **[celltype_assignemt]**: A folder with cells classified into types.
 - **[clustering_and_integration]**:  A folder with cells grouped based on similarities and integrating datasets.
@@ -29,13 +29,13 @@ Utilizing [Nextflow](https://www.nextflow.io/), our pipeline orchestrates a seri
 
 Detailed explanations of each output folder and their corresponding steps are provided below:
 
-## Preprocessing
+## preprocessing
 The folder preprocessing contains the next folders
 - **[data_modalities_split]
 - **[recourses]
 - **[subset_genotypes]
 
-## Doublet Detection
+## doublet_detection
 ```
 doublet_detection
 ├── DoubletDecon
@@ -58,26 +58,18 @@ doublet_detection
     │   └── Pool1histogram_multiplet_zscores.png
     └── Pool1scrublet.tsv
 ```
-
-
-- **[scrublet]
-    scrublet contains tsv file per pool with barcode and label of whether it's a multiplet or not and a folder with plots
-- **[DoubletFinder]
-  DoubletFinder contains tsv file per pool with barcode and label of whether it's a singlet or a doublet
-- **[DoubletDecon]
-    DoubletDecon contains tsv file per pool with barcode and label of whether it's a singlet or a doublet
-- **[scDblFinder]
-     scDblFinder contains tsv file per pool with barcode and label of whether it's a singlet or a doublet
-- **[SCDS]
-     SCDS  contains tsv file per pool with barcode and label of whether it's a singlet or a doublet
-- **[doublet_results_combined]
-     doublet_results_combined contains tsv file per pool with barcode and labels from scrublet	scds scDblFinder DoubletDecon DoubletFinder
-- **[droplet_type_distribution]
-     droplet_type_distribution contains png files with graphs showing ...
+DoubletFinder, DoubletDecon, scDblFinder, SCDS contain tsv files per pool with a barcode and label of whether it's a singlet or a doublet
+scrublet contains tsv files per pool with a barcode and label of whether it's a multiplet or not and a folder with plots
+doublet_results_combined contains tsv files per pool with barcode and labels from scrublet,	scds, scDblFinder, DoubletDecon, DoubletFinder
+droplet_type_distribution contains png files with graphs showing ...
 
 ## Deconvolution
 ```
 deconvolution
+├── vireo_processed
+├── vireo_raw
+├── split_donor_h5ad
+├── filepaths
 ├── cellsnp
 ├── existing_cellsnp (name can be different)
 ├── concordances
@@ -139,51 +131,59 @@ infered_genotypes
 ```
 
 ```
-deconvolution_results/
-├── filepaths
-│   ├── cellranger_as_h5ad.tsv
-│   ├── donors_h5ad_assigned.tsv
-│   ├── donors_h5ad.tsv
-│   ├── exp__donors_h5ad_assigned.tsv
-│   ├── exp__donors_h5ad.tsv
-│   ├── vireo_donor_n_cells.tsv
-│   └── vireo_exp__donor_n_cells.tsv
-├── split_donor_h5ad
-│   └── Pool1
-│       ├── cell_belongings.tsv
-│       ├── donor_level_anndata
-│       │   ├── donor0.Pool1.barcodes.tsv -> ../../../../../../work/47/37d02a9e9d79d706b3f61d0003c44f/outputs/donor_level_anndata/donor0.Pool1.barcodes.tsv
-│       │   ├── donor0.Pool1.h5ad -> ../../../../../../work/47/37d02a9e9d79d706b3f61d0003c44f/outputs/donor_level_anndata/donor0.Pool1.h5ad
-│       │   ├── donor1.Pool1.barcodes.tsv -> ../../../../../../work/47/37d02a9e9d79d706b3f61d0003c44f/outputs/donor_level_anndata/donor1.Pool1.barcodes.tsv
-│       │   ├── donor1.Pool1.h5ad -> ../../../../../../work/47/37d02a9e9d79d706b3f61d0003c44f/outputs/donor_level_anndata/donor1.Pool1.h5ad
-│       │   ├── donor2.Pool1.barcodes.tsv -> ../../../../../../work/47/37d02a9e9d79d706b3f61d0003c44f/outputs/donor_level_anndata/donor2.Pool1.barcodes.tsv
-│       │   ├── donor2.Pool1.h5ad -> ../../../../../../work/47/37d02a9e9d79d706b3f61d0003c44f/outputs/donor_level_anndata/donor2.Pool1.h5ad
-│       │   ├── doublet.Pool1.barcodes.tsv -> ../../../../../../work/47/37d02a9e9d79d706b3f61d0003c44f/outputs/donor_level_anndata/doublet.Pool1.barcodes.tsv
-│       │   ├── doublet.Pool1.h5ad -> ../../../../../../work/47/37d02a9e9d79d706b3f61d0003c44f/outputs/donor_level_anndata/doublet.Pool1.h5ad
-│       │   ├── unassigned.Pool1.barcodes.tsv -> ../../../../../../work/47/37d02a9e9d79d706b3f61d0003c44f/outputs/donor_level_anndata/unassigned.Pool1.barcodes.tsv
-│       │   └── unassigned.Pool1.h5ad -> ../../../../../../work/47/37d02a9e9d79d706b3f61d0003c44f/outputs/donor_level_anndata/unassigned.Pool1.h5ad
-│       ├── Pool1.donors.h5ad.assigned.tsv -> ../../../../../work/47/37d02a9e9d79d706b3f61d0003c44f/Pool1.donors.h5ad.assigned.tsv
-│       ├── Pool1__donors.h5ad.assigned.tsv -> ../../../../../work/47/37d02a9e9d79d706b3f61d0003c44f/Pool1__donors.h5ad.assigned.tsv
-│       ├── Pool1.donors.h5ad.tsv -> ../../../../../work/47/37d02a9e9d79d706b3f61d0003c44f/Pool1.donors.h5ad.tsv
-│       ├── Pool1__donors.h5ad.tsv -> ../../../../../work/47/37d02a9e9d79d706b3f61d0003c44f/Pool1__donors.h5ad.tsv
-│       ├── Pool1_exp__donor_n_cells.tsv -> ../../../../../work/47/37d02a9e9d79d706b3f61d0003c44f/Pool1_exp__donor_n_cells.tsv
-│       ├── Pool1.h5ad.tsv -> ../../../../../work/47/37d02a9e9d79d706b3f61d0003c44f/Pool1.h5ad.tsv
-│       ├── vireo_annot.Pool1.h5ad -> ../../../../../work/47/37d02a9e9d79d706b3f61d0003c44f/outputs/vireo_annot.Pool1.h5ad
-│       └── Vireo_plots.pdf -> ../../../../../work/47/37d02a9e9d79d706b3f61d0003c44f/outputs/Vireo_plots.pdf
-├── vireo
-│   ├── correlations.png -> ../../../../work/bb/3a745525c0393e6cf3300c54f3f21e/correlations.png
-│   ├── donor_corelations_matrix.tsv -> ../../../../work/bb/3a745525c0393e6cf3300c54f3f21e/donor_corelations_matrix.tsv
-│   ├── matched_donors.txt -> ../../../../work/bb/3a745525c0393e6cf3300c54f3f21e/matched_donors.txt
-│   └── Pool1
-│       └── vireo_Pool1 -> ../../../../../work/ba/0eab6c9ec1e5cde7b49b0d30cc2f96/vireo_Pool1
-└── vireo_gt_fix
-    ├── assignments_all_pools.tsv -> ../../../../work/11/2fda88ef40b876b68830c2dfd0a0fd/assignments_all_pools.tsv
-    └── Pool1
-        ├── GT_replace_donor_ids_false.tsv -> ../../../../../work/a8/b936731a445c7575888d1093b316ae/GT_replace_donor_ids_false.tsv
-        ├── GT_replace_GT_donors.vireo_false.vcf.gz -> ../../../../../work/a8/b936731a445c7575888d1093b316ae/GT_replace_GT_donors.vireo_false.vcf.gz
-        ├── GT_replace_Pool1_assignments_false.tsv -> ../../../../../work/a8/b936731a445c7575888d1093b316ae/GT_replace_Pool1_assignments_false.tsv
-        ├── GT_replace_Pool1__exp.sample_summary_false.txt -> ../../../../../work/a8/b936731a445c7575888d1093b316ae/GT_replace_Pool1__exp.sample_summary_false.txt
-        └── GT_replace_Pool1.sample_summary_false.txt -> ../../../../../work/a8/b936731a445c7575888d1093b316ae/GT_replace_Pool1.sample_summary_false.txt
+filepaths
+├── cellranger_as_h5ad.tsv
+├── donors_h5ad_assigned.tsv
+├── donors_h5ad.tsv
+├── exp__donors_h5ad_assigned.tsv
+├── exp__donors_h5ad.tsv
+├── vireo_donor_n_cells.tsv
+└── vireo_exp__donor_n_cells.tsv
+```
+
+```
+split_donor_h5ad
+└── Pool1
+    ├── cell_belongings.tsv
+    ├── donor_level_anndata
+    │   ├── donor0.Pool1.barcodes.tsv
+    │   ├── donor0.Pool1.h5ad
+    │   ├── donor1.Pool1.barcodes.tsv
+    │   ├── donor1.Pool1.h5ad
+    │   ├── donor2.Pool1.barcodes.tsv
+    │   ├── donor2.Pool1.h5ad
+    │   ├── doublet.Pool1.barcodes.tsv
+    │   ├── doublet.Pool1.h5ad
+    │   ├── unassigned.Pool1.barcodes.tsv
+    │   └── unassigned.Pool1.h5ad
+    ├── Pool1.donors.h5ad.assigned.tsv
+    ├── Pool1__donors.h5ad.assigned.tsv
+    ├── Pool1.donors.h5ad.tsv
+    ├── Pool1__donors.h5ad.tsv
+    ├── Pool1_exp__donor_n_cells.tsv
+    ├── Pool1.h5ad.tsv
+    ├── vireo_annot.Pool1.h5ad
+    └── Vireo_plots.pdf
+```
+
+```
+vireo_raw
+├── correlations.png
+├── donor_corelations_matrix.tsv
+├── matched_donors.txt
+└── Pool1
+    └── vireo_Pool1
+```
+
+```
+vireo_processed
+├── assignments_all_pools.tsv
+└── Pool1
+    ├── GT_replace_donor_ids_false.tsv
+    ├── GT_replace_GT_donors.vireo_false.vcf.gz
+    ├── GT_replace_Pool1_assignments_false.tsv
+    ├── GT_replace_Pool1__exp.sample_summary_false.txt
+    └── GT_replace_Pool1.sample_summary_false.txt
 ```
 
 ## Celltype Assignemt
