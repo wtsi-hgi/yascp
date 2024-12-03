@@ -54,6 +54,9 @@ workflow MAIN {
         RETRIEVE_RECOURSES_TEST_DATASET(out_ch)
         input_channel = RETRIEVE_RECOURSES_TEST_DATASET.out.input_channel
         vcf_inputs = RETRIEVE_RECOURSES_TEST_DATASET.out.vcf_inputs
+        vcf_inputs.splitCsv(header: true, sep: '\t')
+                    .map { row -> tuple(row.label, file(row.vcf_file_path), file("${row.vcf_file_path}.csi")) }
+                    .set { vcf_inputs }
     }else{
         input_channel = Channel.fromPath(params.input_data_table, followLinks: true, checkIfExists: true)
         if (params.genotype_input.run_with_genotype_input) {
