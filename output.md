@@ -17,8 +17,8 @@ results         # Finished results (configurable, see below)
 
 Utilizing [Nextflow](https://www.nextflow.io/), our pipeline orchestrates a series of data processing steps. The structure of the overall results folder is outlined below, offering a snapshot of the diverse outputs from different stages of the pipeline:
 
-- **[preprocessing](preprocessing)**: ???
-- **[doublet_detection](doublet_detection)**: A folder with identified artificial doublet cells.
+- **[preprocessing](#preprocessing)**: ???
+- **[doublet_detection](#doublet_detection)**: A folder with identified artificial doublet cells.
 - **[deconvolution]**: A folder with the results of disentangling mixtures of cells from different donors.
 - **[celltype_assignemt]**: A folder with cells classified into types.
 - **[clustering_and_integration]**:  A folder with cells grouped based on similarities and integrating datasets.
