@@ -19,11 +19,11 @@ Utilizing [Nextflow](https://www.nextflow.io/), our pipeline orchestrates a seri
 
 - **[preprocessing](#preprocessing)**: ???
 - **[doublet_detection](#doublet_detection)**: A folder with identified artificial doublet cells.
-- **[deconvolution]**: A folder with the results of disentangling mixtures of cells from different donors.
-- **[celltype_assignemt]**: A folder with cells classified into types.
-- **[clustering_and_integration]**:  A folder with cells grouped based on similarities and integrating datasets.
-- **[citeseq]**: A folder with CITE-seq (Cellular Indexing of Transcriptomes and Epitopes by Sequencing) data.
-- **[handover]**: ???
+- **[deconvolution](#deconvolution)**: A folder with the results of disentangling mixtures of cells from different donors.
+- **[celltype_assignemt](#celltype_assignemt)**: A folder with cells classified into types.
+- **[clustering_and_integration](#clustering_and_integration)**:  A folder with cells grouped based on similarities and integrating datasets.
+- **[citeseq](#citeseq)**: A folder with CITE-seq (Cellular Indexing of Transcriptomes and Epitopes by Sequencing) data.
+- **[handover](#handover)**: ???
 - **[pipeline_info]**: ???
 - **[yascp_inputs]**: ???
 
@@ -89,7 +89,7 @@ scrublet contains tsv files per pool with a barcode and label of whether it's a 
 doublet_results_combined contains tsv files per pool with barcode and labels from scrublet,	scds, scDblFinder, DoubletDecon, DoubletFinder
 droplet_type_distribution contains png files with graphs showing ...
 
-## Deconvolution
+## deconvolution
 ```
 deconvolution
 ├── vireo_processed
@@ -212,7 +212,7 @@ vireo_processed
     └── GT_replace_Pool1.sample_summary_false.txt
 ```
 
-## Celltype Assignemt
+## celltype_assignemt
 ```
 celltype_assignemt/
 ├── All_Celltype_Assignments.tsv
@@ -280,7 +280,7 @@ celltype_assignemt/
 - COVID19_Immune_Landscape
 - Immune_All_High
 
-## Clustering and Integration
+## clustering_and_integration
 ```
 clustering_and_integration/
 ├── normalize=total_count.vars_to_regress=none
@@ -348,7 +348,7 @@ clustering_and_integration/
 normalize=total_count.vars_to_regress=none (should it be renamed)
 plots
 
-## CITE-seq
+## citeseq
 ```
 citeseq/
 └── DSB
@@ -357,7 +357,7 @@ citeseq/
 ```
 - **[DSB] is there only one folder in citeseq? DSB has folders for each pool
 
-## Handover
+## handover
 - **[Summary_plots]
 - **[Donor_Quantification]
 - **[Donor_Quantification_summary]
