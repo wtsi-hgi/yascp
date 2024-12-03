@@ -36,6 +36,7 @@ The folder preprocessing contains the next folders
 - **[subset_genotypes]
 
 ## Doublet Detection
+```
 doublet_detection
 ├── DoubletDecon
 │   └── Pool1__DoubletDecon_doublets_singlets.tsv
@@ -56,7 +57,7 @@ doublet_detection
     │   ├── Pool1histogram_multiplet_scores.png
     │   └── Pool1histogram_multiplet_zscores.png
     └── Pool1scrublet.tsv
-
+```
 
 
 - **[scrublet]
@@ -75,6 +76,7 @@ doublet_detection
      droplet_type_distribution contains png files with graphs showing ...
 
 ## Deconvolution
+```
 deconvolution
 ├── cellsnp
 ├── existing_cellsnp (name can be different)
@@ -82,7 +84,9 @@ deconvolution
 ├── deconvolution_results
 ├── gtmatch
 └── infered_genotypes
+```
 
+```
 gtmatch/
 ├── assignments_all_pools.tsv
 └── Pool1
@@ -97,7 +101,7 @@ gtmatch/
     ├── pool_Pool1_panel_Pool1_Onek1K_gtcheck_donor_assignments.csv
     ├── pool_Pool1_panel_Pool1_Onek1K_gtcheck_score_table.csv
     └── stats_Pool1_gt_donor_assignments.csv
-
+```
 - **[gtmatch]
 - assignments_all_pools.tsv
 - folder per pool with gtmatch results
@@ -111,6 +115,7 @@ gtmatch/
 - **[cellsnp] contains folders for each pool (should the folders inside be renamed)
 - **[existing_cellsnp] contains a file with info about existing_cellsnp (Should the folder be removed and only files saved)
 
+```
 cellsnp
 └── cellsnp_Pool1
     ├── cellSNP.base.vcf.gz
@@ -119,16 +124,126 @@ cellsnp
     ├── cellSNP.tag.AD.mtx
     ├── cellSNP.tag.DP.mtx
     └── cellSNP.tag.OTH.mtx
+```
 
+```
 concordances
 └── all_variants_description.tsv
+```
 
+```
 infered_genotypes
 └── Pool1
     ├── Pool1_headfix_vireo.vcf.gz
     └── Pool1_headfix_vireo.vcf.gz.tbi
+```
+
+```
+deconvolution_results/
+├── filepaths
+│   ├── cellranger_as_h5ad.tsv
+│   ├── donors_h5ad_assigned.tsv
+│   ├── donors_h5ad.tsv
+│   ├── exp__donors_h5ad_assigned.tsv
+│   ├── exp__donors_h5ad.tsv
+│   ├── vireo_donor_n_cells.tsv
+│   └── vireo_exp__donor_n_cells.tsv
+├── split_donor_h5ad
+│   └── Pool1
+│       ├── cell_belongings.tsv
+│       ├── donor_level_anndata
+│       │   ├── donor0.Pool1.barcodes.tsv -> ../../../../../../work/47/37d02a9e9d79d706b3f61d0003c44f/outputs/donor_level_anndata/donor0.Pool1.barcodes.tsv
+│       │   ├── donor0.Pool1.h5ad -> ../../../../../../work/47/37d02a9e9d79d706b3f61d0003c44f/outputs/donor_level_anndata/donor0.Pool1.h5ad
+│       │   ├── donor1.Pool1.barcodes.tsv -> ../../../../../../work/47/37d02a9e9d79d706b3f61d0003c44f/outputs/donor_level_anndata/donor1.Pool1.barcodes.tsv
+│       │   ├── donor1.Pool1.h5ad -> ../../../../../../work/47/37d02a9e9d79d706b3f61d0003c44f/outputs/donor_level_anndata/donor1.Pool1.h5ad
+│       │   ├── donor2.Pool1.barcodes.tsv -> ../../../../../../work/47/37d02a9e9d79d706b3f61d0003c44f/outputs/donor_level_anndata/donor2.Pool1.barcodes.tsv
+│       │   ├── donor2.Pool1.h5ad -> ../../../../../../work/47/37d02a9e9d79d706b3f61d0003c44f/outputs/donor_level_anndata/donor2.Pool1.h5ad
+│       │   ├── doublet.Pool1.barcodes.tsv -> ../../../../../../work/47/37d02a9e9d79d706b3f61d0003c44f/outputs/donor_level_anndata/doublet.Pool1.barcodes.tsv
+│       │   ├── doublet.Pool1.h5ad -> ../../../../../../work/47/37d02a9e9d79d706b3f61d0003c44f/outputs/donor_level_anndata/doublet.Pool1.h5ad
+│       │   ├── unassigned.Pool1.barcodes.tsv -> ../../../../../../work/47/37d02a9e9d79d706b3f61d0003c44f/outputs/donor_level_anndata/unassigned.Pool1.barcodes.tsv
+│       │   └── unassigned.Pool1.h5ad -> ../../../../../../work/47/37d02a9e9d79d706b3f61d0003c44f/outputs/donor_level_anndata/unassigned.Pool1.h5ad
+│       ├── Pool1.donors.h5ad.assigned.tsv -> ../../../../../work/47/37d02a9e9d79d706b3f61d0003c44f/Pool1.donors.h5ad.assigned.tsv
+│       ├── Pool1__donors.h5ad.assigned.tsv -> ../../../../../work/47/37d02a9e9d79d706b3f61d0003c44f/Pool1__donors.h5ad.assigned.tsv
+│       ├── Pool1.donors.h5ad.tsv -> ../../../../../work/47/37d02a9e9d79d706b3f61d0003c44f/Pool1.donors.h5ad.tsv
+│       ├── Pool1__donors.h5ad.tsv -> ../../../../../work/47/37d02a9e9d79d706b3f61d0003c44f/Pool1__donors.h5ad.tsv
+│       ├── Pool1_exp__donor_n_cells.tsv -> ../../../../../work/47/37d02a9e9d79d706b3f61d0003c44f/Pool1_exp__donor_n_cells.tsv
+│       ├── Pool1.h5ad.tsv -> ../../../../../work/47/37d02a9e9d79d706b3f61d0003c44f/Pool1.h5ad.tsv
+│       ├── vireo_annot.Pool1.h5ad -> ../../../../../work/47/37d02a9e9d79d706b3f61d0003c44f/outputs/vireo_annot.Pool1.h5ad
+│       └── Vireo_plots.pdf -> ../../../../../work/47/37d02a9e9d79d706b3f61d0003c44f/outputs/Vireo_plots.pdf
+├── vireo
+│   ├── correlations.png -> ../../../../work/bb/3a745525c0393e6cf3300c54f3f21e/correlations.png
+│   ├── donor_corelations_matrix.tsv -> ../../../../work/bb/3a745525c0393e6cf3300c54f3f21e/donor_corelations_matrix.tsv
+│   ├── matched_donors.txt -> ../../../../work/bb/3a745525c0393e6cf3300c54f3f21e/matched_donors.txt
+│   └── Pool1
+│       └── vireo_Pool1 -> ../../../../../work/ba/0eab6c9ec1e5cde7b49b0d30cc2f96/vireo_Pool1
+└── vireo_gt_fix
+    ├── assignments_all_pools.tsv -> ../../../../work/11/2fda88ef40b876b68830c2dfd0a0fd/assignments_all_pools.tsv
+    └── Pool1
+        ├── GT_replace_donor_ids_false.tsv -> ../../../../../work/a8/b936731a445c7575888d1093b316ae/GT_replace_donor_ids_false.tsv
+        ├── GT_replace_GT_donors.vireo_false.vcf.gz -> ../../../../../work/a8/b936731a445c7575888d1093b316ae/GT_replace_GT_donors.vireo_false.vcf.gz
+        ├── GT_replace_Pool1_assignments_false.tsv -> ../../../../../work/a8/b936731a445c7575888d1093b316ae/GT_replace_Pool1_assignments_false.tsv
+        ├── GT_replace_Pool1__exp.sample_summary_false.txt -> ../../../../../work/a8/b936731a445c7575888d1093b316ae/GT_replace_Pool1__exp.sample_summary_false.txt
+        └── GT_replace_Pool1.sample_summary_false.txt -> ../../../../../work/a8/b936731a445c7575888d1093b316ae/GT_replace_Pool1.sample_summary_false.txt
+```
 
 ## Celltype Assignemt
+```
+celltype_assignemt/
+├── All_Celltype_Assignments.tsv
+├── azimuth
+│   └── PBMC
+│       ├── AZ_1.pre_QC_adata_Pool1_Pool1_celltype.l1.mapping_score_umap.pdf
+│       ├── AZ_1.pre_QC_adata_Pool1_Pool1_celltype.l1.mapping_score_vln.pdf
+│       ├── AZ_1.pre_QC_adata_Pool1_Pool1_celltype.l1.ncells_by_type_barplot.pdf
+│       ├── AZ_1.pre_QC_adata_Pool1_Pool1_celltype.l1.prediction_score_umap.pdf
+│       ├── AZ_1.pre_QC_adata_Pool1_Pool1_celltype.l1.prediction_score_vln.pdf
+│       ├── AZ_1.pre_QC_adata_Pool1_Pool1_celltype.l1.query_umap.pdf
+│       ├── AZ_1.pre_QC_adata_Pool1_Pool1_celltype.l2.mapping_score_umap.pdf
+│       ├── AZ_1.pre_QC_adata_Pool1_Pool1_celltype.l2.mapping_score_vln.pdf
+│       ├── AZ_1.pre_QC_adata_Pool1_Pool1_celltype.l2.ncells_by_type_barplot.pdf
+│       ├── AZ_1.pre_QC_adata_Pool1_Pool1_celltype.l2.prediction_score_umap.pdf
+│       ├── AZ_1.pre_QC_adata_Pool1_Pool1_celltype.l2.prediction_score_vln.pdf
+│       ├── AZ_1.pre_QC_adata_Pool1_Pool1_celltype.l2.query_umap.pdf
+│       ├── AZ_1.pre_QC_adata_Pool1_Pool1_celltype.l3.mapping_score_umap.pdf
+│       ├── AZ_1.pre_QC_adata_Pool1_Pool1_celltype.l3.mapping_score_vln.pdf
+│       ├── AZ_1.pre_QC_adata_Pool1_Pool1_celltype.l3.ncells_by_type_barplot.pdf
+│       ├── AZ_1.pre_QC_adata_Pool1_Pool1_celltype.l3.prediction_score_umap.pdf
+│       ├── AZ_1.pre_QC_adata_Pool1_Pool1_celltype.l3.prediction_score_vln.pdf
+│       ├── AZ_1.pre_QC_adata_Pool1_Pool1_celltype.l3.query_umap.pdf
+│       ├── AZ_1.pre_QC_adata_Pool1_Pool1_predicted_celltype_l1.tsv
+│       ├── AZ_1.pre_QC_adata_Pool1_Pool1_predicted_celltype_l2.tsv
+│       └── AZ_1.pre_QC_adata_Pool1_Pool1_predicted_celltype_l3.tsv
+├── celltypist
+│   ├── COVID19_Immune_Landscape
+│   │   └── Pool1
+│   │       ├── Pool1___COVID19_Immune_Landscape___decision_matrix.csv
+│   │       ├── Pool1___COVID19_Immune_Landscape___predicted_labels.csv
+│   │       ├── Pool1___COVID19_Immune_Landscape___probability_matrix.csv
+│   │       ├── Pool1_majority_voting.pdf
+│   │       ├── Pool1_over_clustering.pdf
+│   │       └── Pool1_predicted_labels.pdf
+│   ├── Immune_All_High
+│   │   └── Pool1
+│   │       ├── Pool1___Immune_All_High___decision_matrix.csv
+│   │       ├── Pool1___Immune_All_High___predicted_labels.csv
+│   │       ├── Pool1___Immune_All_High___probability_matrix.csv
+│   │       ├── Pool1_majority_voting.pdf
+│   │       ├── Pool1_over_clustering.pdf
+│   │       └── Pool1_predicted_labels.pdf
+│   └── Immune_All_Low
+│       └── Pool1
+│           ├── Pool1___Immune_All_Low___decision_matrix.csv
+│           ├── Pool1___Immune_All_Low___predicted_labels.csv
+│           ├── Pool1___Immune_All_Low___probability_matrix.csv
+│           ├── Pool1_majority_voting.pdf
+│           ├── Pool1_over_clustering.pdf
+│           └── Pool1_predicted_labels.pdf
+├── donor_celltype_report.tsv
+├── scpred
+│   ├── AZ_1.pre_QC_adata_Pool1_AZ_1.pre_QC_adata_Pool1__scpred_prediction.tsv
+│   └── AZ_1.pre_QC_adata_Pool1_hier_scpred.RDS
+└── tranche_celltype_report.tsv
+```
 - **[All_Celltype_Assignments.tsv]
 - **[donor_celltype_report.tsv]
 - **[tranche_celltype_report.tsv]
@@ -140,10 +255,80 @@ infered_genotypes
 - Immune_All_High
 
 ## Clustering and Integration
+```
+clustering_and_integration/
+├── normalize=total_count.vars_to_regress=none
+│   ├── adatametadata.tsv.gz
+│   ├── adatanormalized.h5ad
+│   ├── adatanormalized_pcacounts.h5ad
+│   ├── adatanormalized_pca.h5ad
+│   ├── adatanormalized_pcaknee.tsv
+│   ├── adatapcs.tsv.gz
+│   ├── donor_level_anndata_QCfiltered
+│   │   └── Pool1___sample_QCd_adata.h5ad
+│   ├── plots
+│   │   ├── adatanormalized_pcakneevariance_ratiospline=interp1dknee_normalized.png
+│   │   ├── adatanormalized_pcakneevariance_ratiospline=interp1dknee_raw.png
+│   │   ├── adatanormalized_pcakneevariance_ratiospline=Noneknee_normalized.png
+│   │   ├── adatanormalized_pcakneevariance_ratiospline=Noneknee_raw.png
+│   │   ├── adatanormalized_pcakneevariancespline=interp1dknee_normalized.png
+│   │   ├── adatanormalized_pcakneevariancespline=interp1dknee_raw.png
+│   │   ├── adatanormalized_pcakneevariancespline=Noneknee_normalized.png
+│   │   ├── adatanormalized_pcakneevariancespline=Noneknee_raw.png
+│   │   ├── filter_genes_dispersionadata.pdf
+│   │   ├── highest_expr_genesadata.pdf
+│   │   ├── pca_variance_ratioadatalog.pdf
+│   │   └── pca_variance_ratioadata.pdf
+│   └── reduced_dims-null-pca.n_pcs=20
+│       ├── clustering_and_integration
+│       │   └── plots
+│       │       ├── pca_loadings-pca-n_pcs=20.png
+│       │       ├── pca-pca-Azimuth:predicted.celltype.l2.score.png
+│       │       ├── pca-pca-experiment_id.png
+│       │       ├── pca-pca-log10_ngenes_by_count.png
+│       │       ├── pca-pca-n_cells.png
+│       │       ├── pca-pca-pct_counts_gene_group__mito_transcript.png
+│       │       ├── pca-pca-pct_counts_gene_group__ribo_rna.png
+│       │       ├── pca-pca-prob_doublet.png
+│       │       └── pca-pca-total_counts.png
+│       └── reduced_dims.tsv.gz
+└── plots
+    ├── mads-n_genes_by_counts.png
+    ├── mads-pct_counts_gene_group__mito_protein.png
+    ├── mads-pct_counts_gene_group__mito_transcript.png
+    ├── mads-pct_counts_gene_group__ribo_protein.png
+    ├── mads-pct_counts_gene_group__ribo_rna.png
+    ├── mads-total_counts.png
+    ├── mads.tsv
+    ├── plot_ecdf.var=pct_counts_gene_group__mito_transcript.color=experiment_id-outfile.png
+    ├── plot_ecdf.var=total_counts.color=experiment_id-outfile.png
+    ├── plot_ecdf-x_log10.var=pct_counts_gene_group__mito_transcript.color=experiment_id-outfile.png
+    ├── plot_ecdf-x_log10.var=total_counts.color=experiment_id-outfile.png
+    ├── plot_histogram.var=pct_counts_gene_group__mito_transcript.facet=experiment_id-outfile.png
+    ├── plot_histogram.var=total_counts.facet=experiment_id-outfile.png
+    ├── plot_histogram-x_log10.var=pct_counts_gene_group__mito_transcript.facet=experiment_id-outfile.png
+    ├── plot_histogram-x_log10.var=total_counts.facet=experiment_id-outfile.png
+    ├── plot_nfeature_mt_cellpassqc.facet=experiment_id-outfile.png
+    ├── plot_nfeature_mt_density.facet=experiment_id-outfile.png
+    ├── plot_umi_mt_cellpassqc.facet=experiment_id-outfile.png
+    ├── plot_umi_mt_density.facet=experiment_id-outfile.png
+    ├── plot_umi_ngene_cellpassqc.facet=experiment_id-outfile.png
+    ├── plot_umi_ngene_mt_density.facet=experiment_id-outfile.png
+    ├── plot_umi_ngene_mt.facet=experiment_id-outfile.png
+    └── scatterplot-sex_sample_swap_check.png
+```
+
+
 normalize=total_count.vars_to_regress=none (should it be renamed)
 plots
 
 ## CITE-seq
+```
+citeseq/
+└── DSB
+    └── Pool1
+        └── CITE__Pool1
+```
 - **[DSB] is there only one folder in citeseq? DSB has folders for each pool
 
 ## Handover
@@ -151,6 +336,14 @@ plots
 - **[Donor_Quantification]
 - **[Donor_Quantification_summary]
 - **[merged_h5ad]
+
+```
+handover/
+├── Donor_Quantification
+├── Donor_Quantification_summary
+├── merged_h5ad
+└── Summary_plots
+```
 
 ## Pipeline Info
 
