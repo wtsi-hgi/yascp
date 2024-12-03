@@ -90,7 +90,7 @@ doublet_results_combined contains tsv files per pool with barcode and labels fro
 droplet_type_distribution contains png files with graphs showing ...
 
 ## deconvolution
-```
+
 vireo_processed
 vireo_raw
 split_donor_h5ad
@@ -101,7 +101,7 @@ concordances
 deconvolution_results
 - **[gtmatch](#gtmatch)**:
 infered_genotypes
-```
+
 ## gtmatch
 ```
 gtmatch/
