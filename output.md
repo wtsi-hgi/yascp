@@ -30,6 +30,32 @@ Utilizing [Nextflow](https://www.nextflow.io/), our pipeline orchestrates a seri
 Detailed explanations of each output folder and their corresponding steps are provided below:
 
 ## preprocessing
+```
+preprocessing/
+├── data_modalities_split
+│   ├── filterd
+│   │   └── Pool1
+│   │       ├── Gene_Expression-Pool1.h5ad
+│   │       └── Pool1__Gene_Expression
+│   ├── preprocess
+│   │   └── Pool1
+│   │       ├── Gene_Expression-Pool1.h5ad
+│   │       └── Pool1__Gene_Expression
+│   └── raw
+│       └── Pool1
+│           ├── Gene_Expression-Pool1.h5ad
+│           └── Pool1__Gene_Expression
+├── recourses
+│   ├── Done.tmp
+│   ├── full_test_dataset
+│   ├── input_test_data_file.tsv
+│   └── input_test_vcf_file.tsv
+└── subset_genotypes
+    ├── Genotype___AllExpectedGT_Pool1
+    └── Genotypes_all_pools.tsv
+
+```
+
 The folder preprocessing contains the next folders
 - **[data_modalities_split]
 - **[recourses]
