@@ -91,19 +91,18 @@ droplet_type_distribution contains png files with graphs showing ...
 
 ## deconvolution
 ```
-deconvolution
-├── vireo_processed
-├── vireo_raw
-├── split_donor_h5ad
-├── filepaths
-├── cellsnp
-├── existing_cellsnp (name can be different)
-├── concordances
-├── deconvolution_results
-├── gtmatch
-└── infered_genotypes
+vireo_processed
+vireo_raw
+split_donor_h5ad
+filepaths
+cellsnp
+existing_cellsnp (name can be different)
+concordances
+deconvolution_results
+- **[gtmatch](#gtmatch)**:
+infered_genotypes
 ```
-
+## gtmatch
 ```
 gtmatch/
 ├── assignments_all_pools.tsv
