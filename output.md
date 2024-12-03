@@ -91,81 +91,42 @@ droplet_type_distribution contains png files with graphs showing ...
 
 ## deconvolution
 
-vireo_processed
-vireo_raw
-split_donor_h5ad
-filepaths
-cellsnp
-existing_cellsnp (name can be different)
-concordances
-deconvolution_results
+- **[vireo_raw](#vireo_raw)**:
+- **[vireo_processed](#vireo_processed)**:
+- **[split_donor_h5ad](#split_donor_h5ad)**:
+- **[filepaths](#filepaths)**:
+- **[cellsnp](#cellsnp)**:
+- **[existing_cellsnp](#existing_cellsnp)**: (name can be different)
+- **[concordances](#concordances)**:
+- **[deconvolution_results](#deconvolution_results)**:
 - **[gtmatch](#gtmatch)**:
 infered_genotypes
 
-## gtmatch
+
+
+## vireo_raw
 ```
-gtmatch/
+vireo_raw
+├── correlations.png
+├── donor_corelations_matrix.tsv
+├── matched_donors.txt
+└── Pool1
+    └── vireo_Pool1
+```
+
+## vireo_processed
+```
+vireo_processed
 ├── assignments_all_pools.tsv
 └── Pool1
-    ├── Done.tmp
-    ├── Expected_Withing_expected_Pool1.genome
-    ├── GT_replace_PiHAT_Stats_File_Pool1.csv
-    ├── InferedExpected_Expected_Infered_Pool1.genome
-    ├── InferedGTMatched_Expected_Infered_Pool1.genome
-    ├── InferedOnly_Withing_pool_Pool1.genome
-    ├── PiHAT_Stats_File_Pool1.csv
-    ├── Pool1_gt_donor_assignments.csv
-    ├── pool_Pool1_panel_Pool1_Onek1K_gtcheck_donor_assignments.csv
-    ├── pool_Pool1_panel_Pool1_Onek1K_gtcheck_score_table.csv
-    └── stats_Pool1_gt_donor_assignments.csv
-```
-- **[gtmatch]
-- assignments_all_pools.tsv
-- folder per pool with gtmatch results
-- **[infered_genotypes] contains folders for each pool with vcf files
-- **[deconvolution_results]
-- filepaths
-- vireo_gt_fix
-- vireo
-- split_donor_h5ad
-- **[concordances] contains a tsv file with results for ??? (Should the folder be removed and only files saved)
-- **[cellsnp] contains folders for each pool (should the folders inside be renamed)
-- **[existing_cellsnp] contains a file with info about existing_cellsnp (Should the folder be removed and only files saved)
-
-```
-cellsnp
-└── cellsnp_Pool1
-    ├── cellSNP.base.vcf.gz
-    ├── cellSNP.cells.vcf.gz
-    ├── cellSNP.samples.tsv
-    ├── cellSNP.tag.AD.mtx
-    ├── cellSNP.tag.DP.mtx
-    └── cellSNP.tag.OTH.mtx
+    ├── GT_replace_donor_ids_false.tsv
+    ├── GT_replace_GT_donors.vireo_false.vcf.gz
+    ├── GT_replace_Pool1_assignments_false.tsv
+    ├── GT_replace_Pool1__exp.sample_summary_false.txt
+    └── GT_replace_Pool1.sample_summary_false.txt
 ```
 
-```
-concordances
-└── all_variants_description.tsv
-```
-
-```
-infered_genotypes
-└── Pool1
-    ├── Pool1_headfix_vireo.vcf.gz
-    └── Pool1_headfix_vireo.vcf.gz.tbi
-```
-
-```
-filepaths
-├── cellranger_as_h5ad.tsv
-├── donors_h5ad_assigned.tsv
-├── donors_h5ad.tsv
-├── exp__donors_h5ad_assigned.tsv
-├── exp__donors_h5ad.tsv
-├── vireo_donor_n_cells.tsv
-└── vireo_exp__donor_n_cells.tsv
-```
-
+## split_donor_h5ad
 ```
 split_donor_h5ad
 └── Pool1
@@ -191,25 +152,65 @@ split_donor_h5ad
     └── Vireo_plots.pdf
 ```
 
+##filepaths
 ```
-vireo_raw
-├── correlations.png
-├── donor_corelations_matrix.tsv
-├── matched_donors.txt
-└── Pool1
-    └── vireo_Pool1
+filepaths
+├── cellranger_as_h5ad.tsv
+├── donors_h5ad_assigned.tsv
+├── donors_h5ad.tsv
+├── exp__donors_h5ad_assigned.tsv
+├── exp__donors_h5ad.tsv
+├── vireo_donor_n_cells.tsv
+└── vireo_exp__donor_n_cells.tsv
 ```
 
+## cellsnp
 ```
-vireo_processed
+cellsnp
+└── cellsnp_Pool1
+    ├── cellSNP.base.vcf.gz
+    ├── cellSNP.cells.vcf.gz
+    ├── cellSNP.samples.tsv
+    ├── cellSNP.tag.AD.mtx
+    ├── cellSNP.tag.DP.mtx
+    └── cellSNP.tag.OTH.mtx
+```
+
+## existing_cellsnp
+
+## concordances
+```
+concordances
+└── all_variants_description.tsv
+```
+
+## infered_genotypes
+
+```
+infered_genotypes
+└── Pool1
+    ├── Pool1_headfix_vireo.vcf.gz
+    └── Pool1_headfix_vireo.vcf.gz.tbi
+```
+
+## gtmatch
+```
+gtmatch/
 ├── assignments_all_pools.tsv
 └── Pool1
-    ├── GT_replace_donor_ids_false.tsv
-    ├── GT_replace_GT_donors.vireo_false.vcf.gz
-    ├── GT_replace_Pool1_assignments_false.tsv
-    ├── GT_replace_Pool1__exp.sample_summary_false.txt
-    └── GT_replace_Pool1.sample_summary_false.txt
+    ├── Done.tmp
+    ├── Expected_Withing_expected_Pool1.genome
+    ├── GT_replace_PiHAT_Stats_File_Pool1.csv
+    ├── InferedExpected_Expected_Infered_Pool1.genome
+    ├── InferedGTMatched_Expected_Infered_Pool1.genome
+    ├── InferedOnly_Withing_pool_Pool1.genome
+    ├── PiHAT_Stats_File_Pool1.csv
+    ├── Pool1_gt_donor_assignments.csv
+    ├── pool_Pool1_panel_Pool1_Onek1K_gtcheck_donor_assignments.csv
+    ├── pool_Pool1_panel_Pool1_Onek1K_gtcheck_score_table.csv
+    └── stats_Pool1_gt_donor_assignments.csv
 ```
+
 
 ## celltype_assignemt
 ```
