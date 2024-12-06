@@ -93,6 +93,8 @@ droplet_type_distribution contains png files with graphs showing ...
 
 - **[vireo_raw](#vireo_raw)**:
 - **[vireo_processed](#vireo_processed)**:
+- **[vireo_sub](#vireo_sub)**:
+- **[infered_genotypes](#infered_genotypes)**:
 - **[split_donor_h5ad](#split_donor_h5ad)**:
 - **[filepaths](#filepaths)**:
 - **[cellsnp](#cellsnp)**:
@@ -124,6 +126,74 @@ vireo_processed
     ├── GT_replace_Pool1_assignments_false.tsv
     ├── GT_replace_Pool1__exp.sample_summary_false.txt
     └── GT_replace_Pool1.sample_summary_false.txt
+```
+## vireo_sub
+```
+vireo_sub
+├── CRD_CMB13450877
+│   ├── vireo_____1
+│   │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz
+│   │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz.csi
+│   │   ├── sub_CRD_CMB13450877_Expected.vcf.gz
+│   │   └── vireo_CRD_CMB13450877___1
+│   ├── vireo_____10
+│   │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz
+│   │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz.csi
+│   │   ├── sub_CRD_CMB13450877_Expected.vcf.gz
+│   │   └── vireo_CRD_CMB13450877___10
+│   ├── vireo_____2
+│   │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz
+│   │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz.csi
+│   │   ├── sub_CRD_CMB13450877_Expected.vcf.gz
+│   │   └── vireo_CRD_CMB13450877___2
+│   ├── vireo_____3
+│   │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz
+│   │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz.csi
+│   │   ├── sub_CRD_CMB13450877_Expected.vcf.gz
+│   │   └── vireo_CRD_CMB13450877___3
+│   ├── vireo_____4
+│   │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz
+│   │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz.csi
+│   │   ├── sub_CRD_CMB13450877_Expected.vcf.gz
+│   │   └── vireo_CRD_CMB13450877___4
+│   ├── vireo_____5
+│   │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz
+│   │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz.csi
+│   │   ├── sub_CRD_CMB13450877_Expected.vcf.gz
+│   │   └── vireo_CRD_CMB13450877___5
+│   ├── vireo_____6
+│   │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz
+│   │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz.csi
+│   │   ├── sub_CRD_CMB13450877_Expected.vcf.gz
+│   │   └── vireo_CRD_CMB13450877___6
+│   ├── vireo_____7
+│   │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz
+│   │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz.csi
+│   │   ├── sub_CRD_CMB13450877_Expected.vcf.gz
+│   │   └── vireo_CRD_CMB13450877___7
+│   ├── vireo_____8
+│   │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz
+│   │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz.csi
+│   │   ├── sub_CRD_CMB13450877_Expected.vcf.gz
+│   │   └── vireo_CRD_CMB13450877___8
+│   └── vireo_____9
+│       ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz
+│       ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz.csi
+│       ├── sub_CRD_CMB13450877_Expected.vcf.gz
+│       └── vireo_CRD_CMB13450877___9
+└── CRD_CMB13450878
+    ├── vireo_____1
+    │   ├── dubs_removed__Study_Merge_AllExpectedGT_F24ROJ53N_out.vcf.gz
+```
+## infered_genotypes
+```
+infered_genotypes
+├── CRD_CMB13450877
+│   ├── CRD_CMB13450877_headfix_vireo.vcf.gz
+│   └── CRD_CMB13450877_headfix_vireo.vcf.gz.tbi
+└── CRD_CMB13450878
+    ├── CRD_CMB13450878_headfix_vireo.vcf.gz
+    └── CRD_CMB13450878_headfix_vireo.vcf.gz.tbi
 ```
 
 ## split_donor_h5ad
