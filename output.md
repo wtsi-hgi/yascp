@@ -142,6 +142,22 @@ vireo_processed
     ├── GT_replace_Pool1_assignments_false.tsv
     ├── GT_replace_Pool1__exp.sample_summary_false.txt
     └── GT_replace_Pool1.sample_summary_false.txt
+
+vireo_processed/
+├── assignments_all_pools.tsv
+├── CRD_CMB13450877
+│   ├── GT_replace_CRD_CMB13450877_assignments_true.tsv
+│   ├── GT_replace_CRD_CMB13450877__exp.sample_summary_true.txt
+│   ├── GT_replace_CRD_CMB13450877.sample_summary_true.txt
+│   ├── GT_replace_donor_ids_true.tsv
+│   └── GT_replace_GT_donors.vireo_true.vcf.gz
+└── CRD_CMB13450878
+    ├── GT_replace_CRD_CMB13450878_assignments_true.tsv
+    ├── GT_replace_CRD_CMB13450878__exp.sample_summary_true.txt
+    ├── GT_replace_CRD_CMB13450878.sample_summary_true.txt
+    ├── GT_replace_donor_ids_true.tsv
+    └── GT_replace_GT_donors.vireo_true.vcf.gz
+
 ```
 ## vireo_sub
 ```
