@@ -196,7 +196,7 @@ def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res
     try:
     #NOW COPY THE GT OUTPUTS 
         folder1 = f'{directory}/deconvolution/vireo_gt_fix'
-        folder2 = f'{directory}/deconvolution/deconvolution_results/vireo_gt_fix'
+        folder2 = f'{directory}/deconvolution/vireo_processed'
         folder1=choose_folder (folder1, folder2)
         if os.path.isdir(folder1):
             copyfile(f'{folder1}/assignments_all_pools.tsv', f'{name_dir}/GT Match___1000/assignments_all_pools.tsv')
@@ -205,7 +205,7 @@ def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res
 
     #if (pipeline=='Deconvolution'):
     folder1 = f'{directory}/deconvolution/split_donor_h5ad'
-    folder2 = f'{directory}/deconvolution/deconvolution_results/split_donor_h5ad'
+    folder2 = f'{directory}/deconvolution/split_donor_h5ad'
     folder1=choose_folder (folder1, folder2)
     if os.path.isdir(folder1):
         print('prepearing Deconvolution folder')
@@ -223,11 +223,11 @@ def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res
             os.mkdir(f'{name_dir}/Deconvolution/csv')
         except:
             print('dir exists')    
-        if 'deconvolution_results' in folder1:
+        if os.path.exists(f'{directory}/deconvolution/vireo_raw'):
             try:
-                copyfile(f'{directory}/deconvolution/deconvolution_results/vireo/correlations.png', f'{name_dir}/Deconvolution/correlations.png')
-                copyfile(f'{directory}/deconvolution/deconvolution_results/vireo/matched_donors.txt', f'{name_dir}/Deconvolution/csv/matched_donors.tsv')
-                copyfile(f'{directory}/deconvolution/deconvolution_results/vireo/donor_corelations_matrix.tsv', f'{name_dir}/Deconvolution/csv/donor_corelations_matrix.tsv')
+                copyfile(f'{directory}/deconvolution/vireo_raw/correlations.png', f'{name_dir}/Deconvolution/correlations.png')
+                copyfile(f'{directory}/deconvolution/vireo_raw/matched_donors.txt', f'{name_dir}/Deconvolution/csv/matched_donors.tsv')
+                copyfile(f'{directory}/deconvolution/vireo_raw/donor_corelations_matrix.tsv', f'{name_dir}/Deconvolution/csv/donor_corelations_matrix.tsv')
             except:
                 _='corelations not performed'
         else:
@@ -476,7 +476,7 @@ def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res
             copyfile(umap1, f'{name_dir}/Clustering/BBKNN/{resolution}res_BBKNN_{name}')
 
 
-    folder1 = f'{directory}/UMAPs'
+    folder1 = f'{directory}/handover/UMAPs'
     if os.path.isdir(folder1):
         try:
             os.mkdir(f'{name_dir}/Clustering')

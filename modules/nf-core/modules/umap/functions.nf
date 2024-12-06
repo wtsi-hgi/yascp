@@ -99,7 +99,7 @@ process generate_final_UMAPS{
     path("umap-*")
   
   script:
-    outdir = "${outdir_prev}/UMAPs"
+    outdir = "${outdir_prev}/handover/UMAPs"
     """
         umap_plot_final.py \
             --h5_anndata ${file__anndata} \

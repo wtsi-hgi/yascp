@@ -2,7 +2,7 @@ process PREP_ASSIGNMENTS_FILE{
     tag "${sample}"
     
     label 'process_low'
-    publishDir "${params.outdir}/deconvolution/deconvolution_results/split_donor_h5ad/${sample}/", mode: "${params.copy_mode}", overwrite: true,
+    publishDir "${params.outdir}/deconvolution/split_donor_h5ad/${sample}/", mode: "${params.copy_mode}", overwrite: true,
 	  saveAs: {filename -> filename.replaceFirst("outputs/","") }
     
 
@@ -45,7 +45,7 @@ process SPLIT_DONOR_H5AD {
     tag "${sample}"
     
     label 'process_low'
-    publishDir "${params.outdir}/deconvolution/deconvolution_results/split_donor_h5ad/${sample}/", mode: "${params.copy_mode}", overwrite: true,
+    publishDir "${params.outdir}/deconvolution/split_donor_h5ad/${sample}/", mode: "${params.copy_mode}", overwrite: true,
 	  saveAs: {filename -> filename.replaceFirst("outputs/","") }
     
 
@@ -98,7 +98,7 @@ process SPLIT_DONOR_H5AD {
     # sample h5ad filepath to tsv:
     printf \"$sample\\t\$(find outputs -maxdepth 1 -name '*.h5ad')\" > ${sample}.h5ad.tsv
   
-    sed -i 's|outputs/|${outdir}/deconvolution/deconvolution_results/split_donor_h5ad/${sample}/|g' ${sample}.h5ad.tsv 
+    sed -i 's|outputs/|${outdir}/deconvolution/split_donor_h5ad/${sample}/|g' ${sample}.h5ad.tsv 
 
     # deconvoluted donors h5ad file paths to tsv:
     find outputs/donor_level_anndata -maxdepth 1 -name '*.h5ad' -type f -printf \"%f\\n\" | sort | cut -f1 -d'.' > donors.list
@@ -106,9 +106,9 @@ process SPLIT_DONOR_H5AD {
     paste donors.list donors.h5ad.list > ${sample}.donors.h5ad.tsv
     # paste sample and donor columns 1 and 2 with __
     sed s\"/^/${sample}__/\"g ${sample}.donors.h5ad.tsv > ${sample}__donors.h5ad.tsv
-    sed -i 's|outputs/|${outdir}/deconvolution/deconvolution_results/split_donor_h5ad/${sample}/|g' ${sample}__donors.h5ad.tsv
+    sed -i 's|outputs/|${outdir}/deconvolution/split_donor_h5ad/${sample}/|g' ${sample}__donors.h5ad.tsv
     sed -i s\"/^/$sample\\t/\"g ${sample}.donors.h5ad.tsv 
-    sed -i 's|outputs/|${outdir}/deconvolution/deconvolution_results/split_donor_h5ad/${sample}/|g' ${sample}.donors.h5ad.tsv
+    sed -i 's|outputs/|${outdir}/deconvolution/split_donor_h5ad/${sample}/|g' ${sample}.donors.h5ad.tsv
     #rm donors.list
     #rm donors.h5ad.list
 

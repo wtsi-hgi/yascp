@@ -215,7 +215,7 @@ workflow GENOTYPE_UPDATE{
 
     // For Freeze1 we take the existing datasets and cp -as results folder so we can start from a breakpoint in pipeline
     // We rerun the GT match for all tranches as this has changed significantly since the beggining.
-    myFileChannel = Channel.fromPath( "${params.outdir}/deconvolution/deconvolution_results/vireo/*/GT_donors.vireo.vcf.gz" )
+    myFileChannel = Channel.fromPath( "${params.outdir}/deconvolution/vireo_raw/*/GT_donors.vireo.vcf.gz" )
     myFileChannel.map{row -> tuple(row[-2], row)}.set{vireo_out_sample_donor_vcf}
 
     if (params.genotype_input.run_with_genotype_input) {
@@ -293,7 +293,7 @@ workflow GENOTYPE_UPDATE{
             .set { ch_ref_vcf }
     match_genotypes(vireo_out_sample_donor_vcf,merged_expected_genotypes,gt_pool,gt_math_pool_against_panel_input,genome,ch_ref_vcf)
     ENHANCE_STATS_GT_MATCH(match_genotypes.out.donor_match_table_enhanced)
-    collect_file(ENHANCE_STATS_GT_MATCH.out.assignments.collect(),"assignments_all_pools.tsv",params.outdir+'/deconvolution/deconvolution_results/vireo_gt_fix',1,'')
+    collect_file(ENHANCE_STATS_GT_MATCH.out.assignments.collect(),"assignments_all_pools.tsv",params.outdir+'/deconvolution/vireo_processed',1,'')
     assignments_all_pools = collect_file.out.output_collection
     // We start the pipeline from the pre_qc breakpoint.
     emit:

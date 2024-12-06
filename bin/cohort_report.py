@@ -22,12 +22,12 @@ options = parser.parse_args()
 path = options.path
 
 # If we run this code with pipeline that hasnt used genotypes we can not produce a cohort specific reports. therefore
-if (os.path.exists(f"{path}/deconvolution/deconvolution_results/vireo_gt_fix")):
+if (os.path.exists(f"{path}/deconvolution/vireo_processed")):
     try:
         try:
             prefix=f'{path}' #this is used for the updating reports posthoc, -> for this disable the next line
             project_name = os.listdir(f"{prefix}/handover/Summary_plots")[0]
-            GT_MATCH = pd.read_csv(f"{path}/deconvolution/deconvolution_results/vireo_gt_fix/assignments_all_pools.tsv",sep='\t')
+            GT_MATCH = pd.read_csv(f"{path}/deconvolution/vireo_processed/assignments_all_pools.tsv",sep='\t')
             Donor_Report = pd.read_csv(f"{path}/handover/Donor_Quantification_summary/{project_name}_Donor_Report.tsv",sep='\t')
             Tranch_Report = pd.read_csv(f"{path}/handover/Donor_Quantification_summary/{project_name}_Tranche_Report.tsv",sep='\t')
             try:
@@ -41,7 +41,7 @@ if (os.path.exists(f"{path}/deconvolution/deconvolution_results/vireo_gt_fix")):
             project_name = os.listdir(f"{prefix}/Summary_plots")[0]
             don_file = glob.glob(f"{path}/handover/Donor_Quantification_summary/*_Donor_Report.tsv")[0]
             tranch_file = glob.glob(f"{path}/handover/Donor_Quantification_summary/*_Tranche_Report.tsv")[0]
-            GT_MATCH = pd.read_csv(f"{path}/deconvolution/deconvolution_results/vireo_gt_fix/assignments_all_pools.tsv",sep='\t')
+            GT_MATCH = pd.read_csv(f"{path}/deconvolution/vireo_processed/assignments_all_pools.tsv",sep='\t')
             Donor_Report = pd.read_csv(f"{don_file}",sep='\t')
             Tranch_Report = pd.read_csv(f"{tranch_file}",sep='\t')
             try:
