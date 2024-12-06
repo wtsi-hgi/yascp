@@ -505,6 +505,54 @@ clustering_and_integration/
     ├── plot_umi_ngene_mt_density.facet=experiment_id-outfile.png
     ├── plot_umi_ngene_mt.facet=experiment_id-outfile.png
     └── scatterplot-sex_sample_swap_check.png
+
+
+clustering_and_integration/
+├── normalize=total_count.vars_to_regress=none
+│   ├── adatametadata.tsv.gz
+│   ├── adatanormalized.h5ad
+│   ├── adatanormalized_pcacounts.h5ad
+│   ├── adatanormalized_pca.h5ad
+│   ├── adatanormalized_pcaknee.tsv
+│   ├── adatapcs.tsv.gz
+│   ├── donor_level_anndata_QCfiltered
+│   │   └── Pool1___sample_QCd_adata.h5ad
+│   ├── plots
+│   ├── reduced_dims-null-bbknn.batch=experiment_id.n_pcs=20
+│   │   ├── cluster.number_neighbors=-1.method=leiden.resolution=0.1
+│   │   │   ├── clustering_0.1clustered.h5ad
+│   │   │   ├── clustering_0.1clustered.tsv.gz
+│   │   │   ├── dotplot_sampleclustering_0.1clustered_ncells0.pdf
+│   │   │   ├── dotplot_sampleclustering_0.1clustered_ncellsless5.pdf
+│   │   │   ├── dotplot_sampleclustering_0.1clustered.pdf
+│   │   │   ├── plots
+│   │   │   ├── sccaf
+│   │   │   └── validate_resolution
+│   │   ├── cluster.number_neighbors=-1.method=leiden.resolution=0.5
+│   │   ├── cluster.number_neighbors=-1.method=leiden.resolution=1.0
+│   │   ├── cluster.number_neighbors=-1.method=leiden.resolution=5.0
+│   │   ├── outfile_adatabbknn.h5ad
+│   │   ├── plots
+│   │   ├── reduced_dims.tsv.gz
+│   │   ├── resolution_tuningmerged_model_report.tsv.gz
+│   │   ├── resolution_tuningmerged_test_result.tsv.gz
+│   │   └── umap_gather_out.h5ad
+│   ├── reduced_dims-null-harmony.n_pcs=20.variables=experiment_id.thetas=1.0
+│   │   ├── cluster.number_neighbors=15.method=leiden.resolution=0.1
+│   │   ├── cluster.number_neighbors=15.method=leiden.resolution=0.5
+│   │   ├── cluster.number_neighbors=15.method=leiden.resolution=1.0
+│   │   ├── cluster.number_neighbors=15.method=leiden.resolution=5.0
+│   │   ├── plots
+│   │   ├── reduced_dims.tsv.gz
+│   │   ├── resolution_tuningmerged_model_report.tsv.gz
+│   │   ├── resolution_tuningmerged_test_result.tsv.gz
+│   │   └── umap_gather_out.h5ad
+│   └── reduced_dims-null-pca.n_pcs=20
+│       ├── clustering_and_integration
+│       │   └── plots
+│       └── reduced_dims.tsv.gz
+└── plots
+
 ```
 
 
