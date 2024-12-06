@@ -532,6 +532,7 @@ handover/
 ├── Donor_Quantification_summary
 ├── merged_h5ad
 └── Summary_plots
+└── UMAPs
 ```
 
 ## Pipeline Info
