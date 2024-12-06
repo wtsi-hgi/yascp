@@ -254,7 +254,7 @@ split_donor_h5ad
     └── Vireo_plots.pdf
 ```
 
-##filepaths
+## filepaths
 ```
 filepaths
 ├── cellranger_as_h5ad.tsv
@@ -284,6 +284,67 @@ cellsnp
 ```
 concordances
 └── all_variants_description.tsv
+
+concordances/
+├── all_variants_description.tsv
+├── becoming_different_donor.png
+├── becoming_doublet_donor.png
+├── becoming_unassigned_donor.png
+├── CRD_CMB13450877
+│   ├── 1090095_1090095-donor3--each_cells_comparison_with_other_donor.tsv
+│   ├── 1709635_1709635-donor5--each_cells_comparison_with_other_donor.tsv
+│   ├── 2288590_2288590-donor6--each_cells_comparison_with_other_donor.tsv
+│   ├── 2743244_2743244-donor7--each_cells_comparison_with_other_donor.tsv
+│   ├── 2768849_2768849-donor4--each_cells_comparison_with_other_donor.tsv
+│   ├── 2998395_2998395-donor2--each_cells_comparison_with_other_donor.tsv
+│   ├── 3183427_3183427-donor0--each_cells_comparison_with_other_donor.tsv
+│   ├── 3699286_3699286-donor1--each_cells_comparison_with_other_donor.tsv
+│   ├── 4853673_4853673-donor9--each_cells_comparison_with_other_donor.tsv
+│   ├── 5154993_5154993-donor8--each_cells_comparison_with_other_donor.tsv
+│   ├── becoming_different_donor.png
+│   ├── becoming_doublet_donor.png
+│   ├── becoming_unassigned_donor.png
+│   ├── cell_belongings.tsv
+│   ├── cellSNP.cells.vcf.gz
+│   ├── CRD_CMB13450877__joined_df_for_plots.tsv
+│   ├── CRD_CMB13450877_subsampling_donor_swap_quantification.tsv
+│   ├── Discordant_reads_becoming_different_donor_no0.png
+│   ├── Discordant_reads_becoming_different_donor.png
+│   ├── Discordant_reads_by_n_sites_becoming_different_donor_no0.png
+│   ├── Discordant_reads_by_n_sites_becoming_different_donor.png
+│   ├── discordant_sites_in_other_donors_noA2G.tsv
+│   ├── Nr_discordant_uninformative_becoming_different_donor.png
+│   ├── sites_becoming_different_donor_no0.png
+│   ├── sites_becoming_different_donor.png
+│   ├── sites_becoming_different_donor_probs.png
+│   ├── sites_becoming_doublet_donor.png
+│   ├── sites_becoming_unassigned_donor.png
+│   ├── sites_vs_concordance.png
+│   ├── stats_CRD_CMB13450877_gt_donor_assignments.csv
+│   ├── sub_CRD_CMB13450877_Expected.vcf.gz
+│   ├── sub_CRD_CMB13450877_GT_Matched.vcf.gz
+│   ├── subplot_sites_vs_concordance.png
+│   ├── tmp_donor_distinct_sites.pkl
+│   ├── tmp_exclusive_cell_variants.pkl
+│   ├── tmp_exclusive_don_variants.pkl
+│   ├── tmp_GT_Expected_variants.pkl
+│   ├── tmp_GT_Matched_variants.pkl
+│   └── Total_reads_becoming_different_donor.png -> ../../../../work/bb/e8336817b1df57e119d24a67aa5dcb/Total_reads_becoming_different_donor.png
+├── Discordant_reads_becoming_different_donor_no0.png
+├── Discordant_reads_becoming_different_donor.png
+├── Discordant_reads_by_n_sites_becoming_different_donor_no0.png
+├── Discordant_reads_by_n_sites_becoming_different_donor.png
+├── joined_df_for_plots.tsv
+├── Nr_discordant_uninformative_becoming_different_donor.png
+├── sites_becoming_different_donor_no0.png
+├── sites_becoming_different_donor.png
+├── sites_becoming_different_donor_probs.png
+├── sites_becoming_doublet_donor.png
+├── sites_becoming_unassigned_donor.png
+├── sites_vs_concordance.png
+├── subplot_sites_vs_concordance.png
+└── Total_reads_becoming_different_donor.png
+
 ```
 
 ## infered_genotypes
