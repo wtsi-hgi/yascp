@@ -539,6 +539,130 @@ handover/
 
 ## YASCP Inputs
 
+
+
+```
+nf-preprocessing/
+└── cellbender
+    ├── CRD_CMB13450877
+    │   ├── cellbender-epochs_250__learnrt_0pt000005__zdim_100__zlayer_500__lowcount_10
+    │   │   ├── cellbender_cell_barcodes.csv
+    │   │   ├── cellbenderfiltered_10x_mtxfile_list.tsv
+    │   │   ├── cellbender_FPR_0.01_filtered.h5
+    │   │   ├── cellbender_FPR_0.01.h5
+    │   │   ├── cellbender_FPR_0.05_filtered.h5
+    │   │   ├── cellbender_FPR_0.05.h5
+    │   │   ├── cellbender_FPR_0.1_filtered.h5
+    │   │   ├── cellbender_FPR_0.1.h5
+    │   │   ├── cellbenderFPR_0pt01filtered_10x_mtx
+    │   │   │   ├── barcodes.tsv.gz
+    │   │   │   ├── features.tsv.gz
+    │   │   │   └── matrix.mtx.gz
+    │   │   ├── cellbender_FPR_0pt01_filtered.h5
+    │   │   ├── cellbender_FPR_0pt01_unfiltered.h5
+    │   │   ├── cellbenderFPR_0pt05filtered_10x_mtx
+    │   │   │   ├── barcodes.tsv.gz
+    │   │   │   ├── features.tsv.gz
+    │   │   │   └── matrix.mtx.gz
+    │   │   ├── cellbender_FPR_0pt05_filtered.h5
+    │   │   ├── cellbender_FPR_0pt05_unfiltered.h5
+    │   │   ├── cellbenderFPR_0pt1filtered_10x_mtx
+    │   │   ├── cellbender_FPR_0pt1_filtered.h5
+    │   │   ├── cellbender_FPR_0pt1_unfiltered.h5
+    │   │   ├── plots
+    │   │   │   └── cellbender.pdf
+    │   │   ├── umi_count_estimatesexpected_cells.txt
+    │   │   └── umi_count_estimatestotal_droplets_included.txt
+    │   ├── cellbender-estimate_ncells_nemptydroplets
+    │   │   ├── barcodes.tsv.gz
+    │   │   ├── features.tsv.gz
+    │   │   ├── matrix.mtx.gz
+    │   │   ├── plots
+    │   │   │   ├── umi_count_estimates-cell_estimate_cutoffs.png
+    │   │   │   ├── umi_count_estimates-cell_estimate_cutoffs-zoomed.png
+    │   │   │   ├── umi_count_estimates-final_estimates.png
+    │   │   │   ├── umi_count_estimates-final_estimates-scale_x_log10.png
+    │   │   │   ├── umi_count_estimates-total_drops_estimate_cutoffs.png
+    │   │   │   └── umi_count_estimates-total_drops_estimate_cutoffs-zoomed.png
+    │   │   ├── umi_count_estimates-cell_estimate_cutoff.tsv.gz
+    │   │   ├── umi_count_estimates-expected_cells.txt
+    │   │   ├── umi_count_estimates-total_droplets_cutoff.tsv.gz
+    │   │   └── umi_count_estimates-total_droplets_included.txt
+    │   └── compare_cellranger
+    │       ├── fpr_0.01
+    │       │   ├── barcode_vs_total_counts.png
+    │       │   ├── boxplots_cellranger_vs_cellbender.png
+    │       │   └── boxplot_topgenes_cellranger_vs_cellbender.png
+    │       ├── fpr_0.05
+    │       │   ├── barcode_vs_total_counts.png
+    │       │   ├── boxplots_cellranger_vs_cellbender.png
+    │       │   └── boxplot_topgenes_cellranger_vs_cellbender.png
+    │       └── fpr_0.1
+    │           ├── barcode_vs_total_counts.png
+    │           ├── boxplots_cellranger_vs_cellbender.png
+     -> ../../../../../../work/67/13bc897ecb82f7e7d140327650a327/fpr_0.1/CRD_CMB13450877/boxplots_cellranger_vs_cellbender.png
+    │           └── boxplot_topgenes_cellranger_vs_cellbender.png
+    └── CRD_CMB13450878
+        ├── cellbender-epochs_250__learnrt_0pt000005__zdim_100__zlayer_500__lowcount_10
+        │   ├── cellbender_cell_barcodes.csv
+        │   ├── cellbenderfiltered_10x_mtxfile_list.tsv
+        │   ├── cellbender_FPR_0.01_filtered.h5
+        │   ├── cellbender_FPR_0.01.h5
+        │   ├── cellbender_FPR_0.05_filtered.h5
+        │   ├── cellbender_FPR_0.05.h5
+        │   ├── cellbender_FPR_0.1_filtered.h5
+        │   ├── cellbender_FPR_0.1.h5
+        │   ├── cellbenderFPR_0pt01filtered_10x_mtx
+        │   │   ├── barcodes.tsv.gz
+        │   │   ├── features.tsv.gz
+        │   │   └── matrix.mtx.gz
+        │   ├── cellbender_FPR_0pt01_filtered.h5
+        │   ├── cellbender_FPR_0pt01_unfiltered.h5
+        │   ├── cellbenderFPR_0pt05filtered_10x_mtx
+        │   │   ├── barcodes.tsv.gz
+        │   │   ├── features.tsv.gz
+        │   │   └── matrix.mtx.gz
+        │   ├── cellbender_FPR_0pt05_filtered.h5
+        │   ├── cellbender_FPR_0pt05_unfiltered.h5
+        │   ├── cellbenderFPR_0pt1filtered_10x_mtx
+        │   ├── cellbender_FPR_0pt1_filtered.h5
+        │   ├── cellbender_FPR_0pt1_unfiltered.h5
+        │   ├── plots
+        │   │   └── cellbender.pdf
+        │   ├── umi_count_estimatesexpected_cells.txt
+        │   └── umi_count_estimatestotal_droplets_included.txt
+        ├── cellbender-estimate_ncells_nemptydroplets
+        │   ├── barcodes.tsv.gz
+        │   ├── features.tsv.gz
+        │   ├── matrix.mtx.gz
+        │   ├── plots
+        │   │   ├── umi_count_estimates-cell_estimate_cutoffs.png
+        │   │   ├── umi_count_estimates-cell_estimate_cutoffs-zoomed.png
+        │   │   ├── umi_count_estimates-final_estimates.png
+        │   │   ├── umi_count_estimates-final_estimates-scale_x_log10.png
+        │   │   ├── umi_count_estimates-total_drops_estimate_cutoffs.png
+        │   │   └── umi_count_estimates-total_drops_estimate_cutoffs-zoomed.png
+        │   ├── umi_count_estimates-cell_estimate_cutoff.tsv.gz
+        │   ├── umi_count_estimates-expected_cells.txt
+        │   ├── umi_count_estimates-total_droplets_cutoff.tsv.gz
+        │   └── umi_count_estimates-total_droplets_included.txt
+         -> ../../../../../work/69/fcb58f0e01f0f408399164fb0844ca/umi_count_estimates-total_droplets_included.txt
+        └── compare_cellranger
+            ├── fpr_0.01
+            │   ├── barcode_vs_total_counts.png
+            │   ├── boxplots_cellranger_vs_cellbender.png
+            │   └── boxplot_topgenes_cellranger_vs_cellbender.png
+            ├── fpr_0.05
+            │   ├── barcode_vs_total_counts.png
+            │   ├── boxplots_cellranger_vs_cellbender.png
+            │   └── boxplot_topgenes_cellranger_vs_cellbender.png
+            └── fpr_0.1
+                ├── barcode_vs_total_counts.png
+                ├── boxplots_cellranger_vs_cellbender.png
+                └── boxplot_topgenes_cellranger_vs_cellbender.png
+
+```
+
 <!---
 - **[CellSNP](#cellsnp)**: Variant calling on single cells.
 - **[Cell Type Identification](#celltype-identification)**: Classification of cells into types.
