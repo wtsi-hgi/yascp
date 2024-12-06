@@ -114,6 +114,22 @@ vireo_raw
 ├── matched_donors.txt
 └── Pool1
     └── vireo_Pool1
+
+vireo_raw/
+├── correlations.png
+├── CRD_CMB13450877
+│   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz
+│   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz.csi
+│   ├── sub_CRD_CMB13450877_Expected.vcf.gz
+│   └── vireo_CRD_CMB13450877
+├── CRD_CMB13450878
+│   ├── dubs_removed__Study_Merge_AllExpectedGT_F24ROJ53N_out.vcf.gz
+│   ├── dubs_removed__Study_Merge_AllExpectedGT_F24ROJ53N_out.vcf.gz.csi
+│   ├── sub_CRD_CMB13450878_Expected.vcf.gz
+│   └── vireo_CRD_CMB13450878
+├── donor_corelations_matrix.tsv
+└── matched_donors.txt
+
 ```
 
 ## vireo_processed
