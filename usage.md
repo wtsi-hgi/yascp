@@ -116,7 +116,7 @@ Specify the path to a config file (including the input declaration config file).
 
 ## Input declaration config file
 
-This file specifies all inputs to the pipeline and general pipeline parameters. You can find an example input declaration [here](../sample_input/inputs.nf).
+This file specifies all inputs to the pipeline and general pipeline parameters.
 
 Core required/optional inputs are described below. 
 
@@ -159,7 +159,6 @@ params {
 ## Samplesheet input
 This file specifies sample IDs, the number of pooled donors, IDs of individuals with priori known genotypes, and paths to 10x files.
 It has to be a tab-separated file with 4 columns and a header as shown in the example below.
-You can find an example samplesheet [here](../sample_input/input_table.tsv).
 
 
 | experiment_id   | n_pooled | donor_vcf_ids    |  data_path_10x_format   |
@@ -203,8 +202,6 @@ A genotypesheet can be provided to the pipeline to improve sample deconvolution 
 The pipeline will determine which cohort the deconvoluted sample comes from (if any).
 
 In the following example, we have 3 cohorts: Cohort1 has genotypes for each of the chromosomes - this is acceptable, as the pipeline will use all chromosome files to identify whether the sample is part of this cohort. The other 2 cohorts have a merged VCF file for all the chromosomes. This is also acceptable, as it will determine whether the sample belongs to this cohort in one step. After evaluating all cohorts the pipeline will assign the sample to the single donor that is the most likely real match.
-
-You can find an example genotypesheet [here](../sample_input/vcf_inputs.tsv).
 
 | label   | vcf_file_path    |
 |-----------------|----------|
