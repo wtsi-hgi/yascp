@@ -217,7 +217,7 @@ To avoid rerunning time-consuming steps of the pipeline you can specify the next
 
 ### 1. input
 You can skip the cellbender step by adding `input = 'cellranger'` to the input declaration config file. You might consider this option because the cellbender step is time-consuming and requires GPUs.
-The pipeline will skip ambient RNA removal and proceed with deconvolution based on cellranger. For more details see [optional parameters](Optional_parameters.md)
+The pipeline will skip ambient RNA removal and proceed with deconvolution based on cellranger.
 
 ``` console
 params{
