@@ -52,12 +52,12 @@ For your dataset run:
   
   Test dataset run:
   ```
-      module load HGI/pipelines/yascp/1.6.1
+      module load HGI/pipelines/yascp/1.7
       yascp test
   ```
   Your own dataset run:
   ```
-      module load HGI/pipelines/yascp/1.6.1
+      module load HGI/pipelines/yascp/1.7
       yascp -c input.nf
   ```
   To clean the working folder use the next commands:
