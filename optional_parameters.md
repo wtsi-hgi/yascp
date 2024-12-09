@@ -1,4 +1,4 @@
-# Optional Parameters
+# Input Declaration Config File With Optional Parameters
 Multiple required/optional inputs are described below. 
 
 ```console
