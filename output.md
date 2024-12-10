@@ -17,382 +17,573 @@ results         # Finished results (configurable, see below)
 
 Utilizing [Nextflow](https://www.nextflow.io/), our pipeline orchestrates a series of data processing steps. The structure of the overall results folder is outlined below, offering a snapshot of the diverse outputs from different stages of the pipeline:
 
-![Results Folder Structure](https://github.com/wtsi-hgi/yascp/assets/22347136/12cc3575-8772-43ee-b64d-bb396e10ba82)
-
-The pipeline delivers outputs across several key areas:
-
-- **[CellSNP](#cellsnp)**: Variant calling on single cells.
-- **[Cell Type Identification](#celltype-identification)**: Classification of cells into types.
-- **[CITE-seq Data Processing](#citeseq)**: Handling of CITE-seq (Cellular Indexing of Transcriptomes and Epitopes by Sequencing) data.
-- **[Clustering and Integration](#integration-and-clustering)**: Grouping cells based on similarities and integrating datasets.
-- **[Sample Deconvolution](#vireo)**: Disentangling mixtures of cells from different donors.
-- **[Doublet Detection](#doublet-detection)**: Identifying artificial doublet cells.
-- **[Genotype Matching](#vireo)**: Determining sample matches through genotype comparison.
-- **[Inferred Genotypes](#infered_gt)**: Vireo and Freebayes generated VCF files for each deconvoluted donor in the pool.
-- **[Handover](#handover)**: Storage of summary statistics, plots, and final QC'd and annotated H5AD files per donor.
-- **[Merged H5AD Files](#merged-h5ad-files)**: Consolidated H5AD files from various preprocessing steps, enabling restarts from the clustering phase.
-- **[NF-Preprocessing](#ambient-rna-removal)**: Includes CellBender results for ambient RNA removal.
-- **[Pipeline Info](#pipeline_info)**: Statistics and logs from the pipeline execution.
-- **[Plots](#plots)**: A collection of quality control visualizations.
-- **Resources**: Reference genomes utilized in data processing.
-- **UMAPS**: Quick-reference UMAP plots for data visualization.
-
-Detailed explanations of each step and the corresponding outputs are provided below:
-
-
-## Alignment step
-#### [Cellranger](#Cellranger) - Curently users have to run Cellranger upstream of pipeline - we suggest to use the [no-cores pipeline](https://nf-co.re/scrnaseq/2.5.1) - https://nf-co.re/scrnaseq/2.5.1
-## Ambient RNA removal
-### [Ambient RNA Removal using Cellbender](#Cellbender) 
-Reads the Cellranger outputs and removes the ambient RNA using [Cellbender](https://github.com/broadinstitute/CellBender)
-
-<details markdown="1">
-<summary>Output file structure ( nf-preprocessing/cellbender ):</summary>
-
-*   Here we have multiple different plots and output files, however the most important ones are the matrix and h5ad files after the ambient rna removal: such as cellbenderFPR_0pt1filtered_10x_mtx/ cellbender_FPR_0.1_filtered.h5
-    * ![Screenshot 2024-04-10 at 16 51 25](https://github.com/wtsi-hgi/yascp/assets/22347136/b08f7704-66a8-4288-a899-538c9b9ef30f)
-
-</details>
-
-<details markdown="1">
-<summary>Cellbender output plots:</summary>
-
-*   Cellbender output plots:
-    * ![Screenshot 2024-04-10 at 16 52 02](https://github.com/wtsi-hgi/yascp/assets/22347136/63bc0ef3-8ee9-45ef-8170-82afcb7eb508)
-
-</details>
-
-## Genotype processing and Donor deconvolutions 
-If more than 1 donor is in the pool and Multiplet/Unassigned cell removal
-###  [Genotype processing](#Genotype_processing) 
-If users provide the genotypes this step slices and dices the genotypes to prepeare these for the CellSNP/Vireo deconvolutions and GT matches
-### [Donor Deconvolution using CellSnp/Vireo](#CellSnp/Vireo) 
-We run cellsnp and vireo to deconvolute donors if the input file has indicated that there are more than 1 donors in the pool.
-
-### Cellsnp
-Cellsnp profiles each of the droplets for the variants in them, which is later utilised by vireo to assign the particular cell to the donor cluster:
-<details markdown="1">
-<summary>Cellsnp Output files:</summary>
-
-* Output:
-    * ![Screenshot 2024-04-10 at 16 52 31](https://github.com/wtsi-hgi/yascp/assets/22347136/63c5c540-2082-4e1e-ad9e-c931c92ce300)
-
-</details>
-
-### Vireo
-Vireo takes the cellsnp variant pileups and assigns donors the particular cell to the donor cluster:
-<details markdown="1">
-<summary>Vireo Output files:</summary>
-
-* Output:
-    * ![Screenshot 2024-04-10 at 16 52 58](https://github.com/wtsi-hgi/yascp/assets/22347136/c58cdc11-f674-494e-870e-81576fe7765e)
-
-</details>
-
-## [Genotype matching](#infered_gt)
-The infered genotypes (both from Freebayes and From Vireo) will be used to double check the identities of the donors in the pool. Vireo and Freebayes are used to produce infered genotypes from scRNA data for each of the deconvoluted donors. These are then used in the bcftools gtcheck to match each of the infered genotypes against the provided genotype cohorts. This will produce statistics and info of the gt matching against the provided genotype cohorts, in particular distributions are calculated and z0 (best donor match statistic) and z1 (second best donor statistic) is calculated per cohort and then these scores are compared in between cohorts to determine best match out of all cohorts. This allows Yascp to determine which donor is the best and how well it matches the donor within each of the cohorts.
-
-* z0 is a best gt match score as per bcftools gtcheck / SD of all scores
-* z1 is the second best match as per bcftools gtcheck / SD of all scores
-
-![Screenshot 2024-04-11 at 17 15 19](https://github.com/wtsi-hgi/yascp/assets/22347136/af682060-6a08-4290-9d13-c58fec0457d1)
-
-
-## Doublet Detection
-![Screenshot 2024-04-02 at 15 43 16](https://github.com/wtsi-hgi/yascp/assets/22347136/781ce3b7-ea5e-4fe4-9ca3-d16e8b47123e)
-### Scrublet
-<details markdown="1">
-<summary>Scrublet Output files:</summary>
-
-* By default we always run Scrublet - if we have no donors pooled in the run (i.e if we have only 1 donor), then the doublets will be removed by scrublet instead of vireo:
-    * ![Screenshot 2024-04-10 at 16 53 26](https://github.com/wtsi-hgi/yascp/assets/22347136/53e7f5da-0202-48bd-ad07-4470c14836ed)
-
-</details>
-
-### DoubletDecon
-<details markdown="1">
-<summary>DoubletDecon Output files:</summary>
-    
-* DoubletDecon output files contain barcode and label of whether its a singlet or a doublet:
-    * ![Screenshot 2024-04-02 at 15 51 26](https://github.com/wtsi-hgi/yascp/assets/22347136/603d27e1-42e3-4be7-bbfd-ebb3412b3ec4)
-
-</details>
-
-### doubletDetection
-<details markdown="1">
-<summary>doubletdetection Output files:</summary>
-    
-* doubletDetection output files contain barcode and label of whether its a singlet or a doublet:
-    * ![Screenshot 2024-04-02 at 15 59 15](https://github.com/wtsi-hgi/yascp/assets/22347136/c798d675-c96d-4137-92c2-6fa9340437c5)
-
-</details>
-
-### DoubletFinder
-<details markdown="1">
-<summary>DoubletFinder Output files:</summary>
-    
-* DoubletFinder output files contain barcode and label of whether its a singlet or a doublet:
-    * ![Screenshot 2024-04-02 at 16 00 47](https://github.com/wtsi-hgi/yascp/assets/22347136/4cdd8ba2-5d16-4c9b-a64e-aa9423514208)
-</details>
-
-### scDblFinder
-<details markdown="1">
-<summary>scDblFinder Output files:</summary>
-    
-* scDblFinder output files contain barcode and label of whether its a singlet or a doublet:
-    * ![Screenshot 2024-04-02 at 16 01 49](https://github.com/wtsi-hgi/yascp/assets/22347136/69f7b19f-3b22-46bb-aafe-403ca3c399ae)
-
-</details>
-
-### SCDS
-<details markdown="1">
-<summary>SCDS Output files:</summary>
-    
-* SCDS output files contain barcode and label of whether its a singlet or a doublet:
-    * ![Screenshot 2024-04-02 at 16 02 23](https://github.com/wtsi-hgi/yascp/assets/22347136/b2b8ca81-449b-4a94-a1a9-2bec592e74f4)
-
-</details>
-
-#### [Donor Deconvolution using Souporcell](#Souporcell) - Souporcell option both removes the ambioent RNA and deconvolutes the donors [currently however this option is broken and will be fixed soon]
-
-#### [GT match](#GT_match) - This step utilises the prepeared genotypes and the infered genotypes by Vireo and picks out the donor that corresponds to the right reads. 
-
-<details markdown="1">
-<summary>GT input files:</summary>
-
-* Users can provide multipple different cohort VCFs and that are split per chromosomes or one big vcf/bcf file.:
-    * ![Screenshot 2024-04-10 at 16 54 16](https://github.com/wtsi-hgi/yascp/assets/22347136/07ace2ae-2966-4c23-892d-d56c70721331)
-</details>
-
-<details markdown="1">
-<summary>GT match results structure:</summary>
-
-* GT match produces multiple metrics that assesses whether donor is the one we expect and what is the relatedness within pool.
-    * ![Screenshot 2024-04-10 at 16 54 43](https://github.com/wtsi-hgi/yascp/assets/22347136/54f8b486-0b75-4052-b421-447d5f0c6b92)
-
-* Results indicate which donor from Vireo deconvolutions is which:
-    * ![Screenshot 2024-04-10 at 16 55 14](https://github.com/wtsi-hgi/yascp/assets/22347136/0efb0fc4-2ed5-44a0-8c31-547b1c0f00ff)
-</details>
-
-
-## Celltype identification
-### [Azimuth](#Azimuth) 
-Uses Azimuth PBMC l2 reference (pipeline will be adjusted later to be more general for other tissue types) to assign the celltypes. Downstream it maps the l2 to l1 and l3 as per https://github.com/wtsi-hgi/yascp/blob/main/assets/azimuth/Azimuth_Mappings.txt 
-
-<details markdown="1">
-<summary>Azimuth Output files:</summary>
-
-* By default we run azimuth l2 celltype assignment:
-
-    * ![Screenshot 2024-04-10 at 16 55 43](https://github.com/wtsi-hgi/yascp/assets/22347136/12f74c66-d55e-4e12-9c34-8fd3feba9432)
-</details>
-
-### [Celltypist](#Celltypist) 
-Performs cellype assignment using celltypist Imule Low and Imune High profiles (this will be adjusted to use more references)
-
-<details markdown="1">
-<summary>Celltypist Output files:</summary>
-
-* By default we run Imune High, Imune Low and Imune PBMC reference celltype assignment:
-
-    * ![Screenshot 2024-04-10 at 16 56 27](https://github.com/wtsi-hgi/yascp/assets/22347136/f7c5f10f-cd97-46eb-91bb-21931780ae83)
-
-</details>
-
-<details markdown="1">
-<summary>Combined celltypes file:</summary>
-
-
-#### [Keras celltype transfer](#Keras) - This is utilising pretrained reference panels for celltype assignment - curently only works in Sanger.
-
-#### Combined File - A combined Celltypes file is produced by pipeline where all different references are combined in one spreadsheet.:
-* Output:
-
-    * ![Screenshot 2024-04-10 at 16 57 28](https://github.com/wtsi-hgi/yascp/assets/22347136/56436a16-fca4-4c4c-a95a-ec399825ccdb)
-
-</details>
-
-## Donor and Cell QC
-We perform different types of QC, Adaptive Isolation Forests, Adaptive Isolation Forests per celltype, Hard Filters tresholds.
-<details markdown="1">
-<summary>Data QC output folder structure:</summary>
-
-*   QC output Folder structure:
-    * ![Screenshot 2024-04-10 at 16 58 33](https://github.com/wtsi-hgi/yascp/assets/22347136/ed70e28a-1cae-4f97-93a5-843fdadcb9d5)
-
-</details>
-
-###  [Isolation Forest](#Isolation_Forest)
-<details markdown="1">
-<summary>We parfor Isolation forests in different resolutions - All data together, Per Celltype adaptive qc:</summary>
-
-*   All together Isolation Forests:
-    * ![Screenshot 2024-04-10 at 16 59 09](https://github.com/wtsi-hgi/yascp/assets/22347136/1362557b-3bc7-4c29-8aef-d9efd816e001)
-*   Per Celltype Isolation Forests:
-    * ![Screenshot 2024-04-10 at 16 59 32](https://github.com/wtsi-hgi/yascp/assets/22347136/c47b8ac3-57f8-432d-8184-388b5c31dc01)
-</details>
-
-###  [Hard filters](#Hard_filters)
-We also perform hard filters if user has specified that this is something thats required.
-
-## Integration and clustering
-By default multiple different clustering resolutions will be run for both BBKNN and Harmony resulting in a subfolder structure. Pipeline automatically estimates the best number of PCs to use for clustering using knee and elbow plots that can be found in plots section.
-<details markdown="1">
-<summary>Output file structure ( clustering ):</summary>
-
-*   Clustering combines all different integration methodologies utilised and in addition different plots in a structure represented in this layout:
-    * ![Screenshot 2024-04-10 at 17 01 30](https://github.com/wtsi-hgi/yascp/assets/22347136/cde18790-9f4e-4c51-8fdc-9b46389220cf)
-
-</details>
-
-
-### [BBKNN](#BBKNN)
-
-<details markdown="1">
-<summary>BBKNN file structure ( clustering ):</summary>
-
-*   BBKNN is performed with different clustering resolutions and each of the clusters assesed ussing sccaf:
-    *![Screenshot 2024-04-10 at 17 02 10](https://github.com/wtsi-hgi/yascp/assets/22347136/78714632-a3d1-4106-a677-4d8505d682ea)
-</details>
-
-<details markdown="1">
-<summary>BBKNN sample UMAPS Coloured:</summary>
-
-*   Resolution 0.1: BBKNN is performed with different clustering resolutions and each of the clusters assesed ussing sccaf:
-    * ![Screenshot 2024-04-10 at 17 02 52](https://github.com/wtsi-hgi/yascp/assets/22347136/3b780adf-d9d3-4532-bcea-36e1e473fc26)
-*   Resolution 5: BBKNN is performed with different clustering resolutions and each of the clusters assesed ussing sccaf:
-    * ![Screenshot 2024-04-10 at 17 03 09](https://github.com/wtsi-hgi/yascp/assets/22347136/85a8d797-f3f2-43b2-ae9d-a463578fac4c)
-
-*   Mitochondial transcripts: Coloured UMAP: We also color each of the bespoke clusters with different metrics:
-    * ![Screenshot 2024-04-10 at 17 03 24](https://github.com/wtsi-hgi/yascp/assets/22347136/83880a18-0352-4592-b548-793a82efd0c3)
-
-</details>
-
-### [Harmony](#Harmony)
-
-<details markdown="1">
-<summary>Harmony file structure ( clustering ):</summary>
-
-*   Harmony is performed with different clustering resolutions and each of the clusters assesed ussing sccaf:
-    * ![Screenshot 2024-04-10 at 17 03 53](https://github.com/wtsi-hgi/yascp/assets/22347136/973ad289-1fe1-427d-a213-a7e21c30487e)
-</details>
-<details markdown="1">
-<summary>Harmony sample UMAPS Coloured:</summary>
-
-*   Resolution 0.1: Harmony is performed with different clustering resolutions and each of the clusters assesed ussing sccaf:
-    * ![Screenshot 2024-04-10 at 17 04 16](https://github.com/wtsi-hgi/yascp/assets/22347136/7671e06e-bd51-46df-aa03-370d999a36de)
-*   Resolution 5: Harmony is performed with different clustering resolutions and each of the clusters assesed ussing sccaf:
-    *![Screenshot 2024-04-10 at 17 04 40](https://github.com/wtsi-hgi/yascp/assets/22347136/64c011cc-bfab-4481-b673-27c5293a4fea)
-*   Mitochondial transcripts: Coloured UMAP: We also color each of the bespoke clusters with different metrics:
-    * ![Screenshot 2024-04-10 at 17 05 03](https://github.com/wtsi-hgi/yascp/assets/22347136/fb705adb-fbb5-44c2-a703-fc8d9d2e87fd)
-</details>
-
-<details markdown="1">
-<summary>Harmony cluster evaluations and cluster markers:</summary>
-
-*   Histograms: Multiple useful prolts are produced to look at the clusterings:
-    * ![Screenshot 2024-04-10 at 17 05 23](https://github.com/wtsi-hgi/yascp/assets/22347136/8a2a5445-2bc8-443e-adbd-a5c1575ef663)
-*   Dotplots: Multiple useful prolts are produced to look at the clusterings:
-    * ![Screenshot 2024-04-10 at 17 06 06](https://github.com/wtsi-hgi/yascp/assets/22347136/77b0f5f6-9201-45aa-bf32-b2a9ce34898c)
-</details>
-
-### [PCA](#BBKNN) 
-
-<details markdown="1">
-<summary>PCA file structure ( clustering ):</summary>
-
-*   PCA is performed on the integrated data:
-    * ![Screenshot 2024-04-10 at 17 06 45](https://github.com/wtsi-hgi/yascp/assets/22347136/28b3f2a2-7869-4505-be30-000dfff881fa)
-</details>
-<details markdown="1">
-<summary>PCA file structure ( clustering ):</summary>
-
-*   Gene Loadings for each of the PCA is evaluated:
-    * ![Screenshot 2024-04-10 at 17 07 03](https://github.com/wtsi-hgi/yascp/assets/22347136/47f52af4-fbfa-4e84-ab04-a5cbe086fcc7)
-</details>
-
-
-
-## Cluster assesments
-#### [Sccaf](#Sccaf) We perform Sccaf to asses the clustering accuracies, these are useful metrics in picking the best resolution for clustrering.
-<details markdown="1">
-<summary>Sccaf file structure ( clustering ):</summary>
-
-*   As described above clustering is assesed using scaff: directory structure:
-    * ![Screenshot 2024-04-10 at 17 07 36](https://github.com/wtsi-hgi/yascp/assets/22347136/2c29c98e-e593-41c2-ae45-b9590743dd9b)
-
-*   Precission recall curves:
-    * ![Screenshot 2024-04-10 at 17 07 53](https://github.com/wtsi-hgi/yascp/assets/22347136/dac8a22f-d93c-4cd2-90eb-e766df6d61a5)
-
-
-*   ROC:
-    * ![Screenshot 2024-04-10 at 17 08 15](https://github.com/wtsi-hgi/yascp/assets/22347136/3587bf4f-6e26-46f0-9e6d-b4247f03bea8)
-
-*   Accuracy:
-    * ![Screenshot 2024-04-10 at 17 08 36](https://github.com/wtsi-hgi/yascp/assets/22347136/efd65f7a-ea29-4dfa-b592-3c92c632cda5)
-
-</details>
-
-#### [Lisi](#Lisi) We also have a capability in running LISI cluster assesments, however curently this option does not run by default as it is memory demanding and requires some further optimisations
-
-## [Citeseq](#citeseq)
-Citeseq folder will be present if your data contains citeseq
-
-![Screenshot 2024-04-03 at 17 02 05](https://github.com/wtsi-hgi/yascp/assets/22347136/5a6dc2df-85ad-4be9-9338-12880bdb8b5c)
-
-In this folder we have a couple of subfolders:
-
-* DSB - folder contains DSB citeseq normalisation statistics and RDS files
-  
-    ![Screenshot 2024-04-03 at 17 04 38](https://github.com/wtsi-hgi/yascp/assets/22347136/4529980d-6afb-41dc-bf92-89e8d081299a)
-  
-* all_data_integrated - contains Seurats integration of Citeseq and if available VDJ data as well as some UMAPs produced by these processes
-  
-    ![Screenshot 2024-04-03 at 17 05 28](https://github.com/wtsi-hgi/yascp/assets/22347136/ad6c8f3b-82ca-415f-a9b0-a1242f7e90f7)
-  
-* filtered - folder contains data modalities split appart - i.e if the data is hastaged this layer is stored speratelly to the antibody data and also seperatelly to GEX data
-  
-    ![Screenshot 2024-04-03 at 17 06 32](https://github.com/wtsi-hgi/yascp/assets/22347136/b4f900f7-2c7b-4423-9a1c-5f7d166ec664)
-* raw - similarly to the above, but the difference is that these are the raw cellranger files split according to the modality.
-  
-    ![Screenshot 2024-04-03 at 17 07 01](https://github.com/wtsi-hgi/yascp/assets/22347136/8882eba1-4dcb-4870-915e-4025f085bd17)
-
-## [Merged h5ad files](#merged-h5ad-files)
-![Screenshot 2024-04-11 at 17 04 10](https://github.com/wtsi-hgi/yascp/assets/22347136/6594193c-405b-49b8-9d7b-2c72cf63c3d8)
-
-Pipeline will create merged h5ad files for the most important preprocessing steps - 
-* Post deconvolution and celltype assignemt merged files that contain any extra metadata provded.
-* Post hard filters merged h5ad file, where cells that are not passing ceitrain thresholds are dropped (or flagged, depends on settings used)
-* Post adaptive filters h5ad file where cells that dont pass these filters are dropped (or flagged depending on settings used)
-Note that the Handover folder discussed next contains per donor final h5ad files that include all the information from the above mentioned files.
-
-## [Handover](#handover)
-Summary Statistics, Per Donor h5ad files, Summary Plots
-
-![Screenshot 2024-04-03 at 16 44 35](https://github.com/wtsi-hgi/yascp/assets/22347136/64bd3ca8-cb10-48bb-8334-f12482e4ebfd)
-    
-In this folder we can see 3 different folders:
-
-* Donor_Quantification - where we can see the Cellranger filtered, Cellranger raw, Cellbender filtered files that are used to produce the filal per donor h5ad files and the metadata features in the per donor tsv files
-  
-    ![Screenshot 2024-04-03 at 16 47 28](https://github.com/wtsi-hgi/yascp/assets/22347136/8524243f-4bf1-4713-9076-0e1d3fcb99e1)
-
-* Donor_Quantification_summary folder where we have summary statistics per donor and summary statistics per tranche (collection of all pools that were run in this run).
-  
-    ![Screenshot 2024-04-03 at 16 49 59](https://github.com/wtsi-hgi/yascp/assets/22347136/a6107709-f83e-45e1-9008-1cdde1510c67)
-
-* Summary _plots contains the most important plots per each of the steps for a quick inversigations of the performance of the scRNA runs and the performance of the analysis.
-  
-    ![Screenshot 2024-04-03 at 16 51 35](https://github.com/wtsi-hgi/yascp/assets/22347136/7c63e2c0-6251-4a7d-8e14-be434c0e017b)
-
-## [Plots](#plots)
-Some summary plots for quick inspections
-
-![Screenshot 2024-04-11 at 17 11 42](https://github.com/wtsi-hgi/yascp/assets/22347136/4b5107d1-f01d-44d0-a5ba-bfc7daa49a5d)
-
-
-## [Exactution reports](#pipeline_info)
-[Nextflow](https://www.nextflow.io/docs/latest/tracing.html) provides excellent functionality for generating various reports relevant to the running and execution of the pipeline. This will allow you to troubleshoot errors with the running of the pipeline, and also provide you with other information such as launch commands, run times and resource usage.
-
-![Screenshot 2024-04-11 at 17 09 20](https://github.com/wtsi-hgi/yascp/assets/22347136/6ab4e164-e59f-4db8-a1a2-38454041843a)
+- **[preprocessing](#preprocessing)**: ???
+- **[doublet_detection](#doublet_detection)**: A folder with identified artificial doublet cells.
+- **[deconvolution](#deconvolution)**: A folder with the results of disentangling mixtures of cells from different donors.
+- **[celltype_assignemt](#celltype_assignemt)**: A folder with cells classified into types.
+- **[clustering_and_integration](#clustering_and_integration)**:  A folder with cells grouped based on similarities and integrating datasets.
+- **[citeseq](#citeseq)**: A folder with CITE-seq (Cellular Indexing of Transcriptomes and Epitopes by Sequencing) data.
+- **[handover](#handover)**: ???
+- **[pipeline_info]**: ???
+- **[yascp_inputs]**: ???
+
+Detailed explanations of each output folder and their corresponding steps are provided below:
+
+## preprocessing
+```
+preprocessing/
+├── data_modalities_split
+│   ├── filterd
+│   │   └── Pool1
+│   │       ├── Gene_Expression-Pool1.h5ad
+│   │       └── Pool1__Gene_Expression
+│   ├── preprocess
+│   │   └── Pool1
+│   │       ├── Gene_Expression-Pool1.h5ad
+│   │       └── Pool1__Gene_Expression
+│   └── raw
+│       └── Pool1
+│           ├── Gene_Expression-Pool1.h5ad
+│           └── Pool1__Gene_Expression
+├── recourses
+│   ├── Done.tmp
+│   ├── full_test_dataset
+│   ├── input_test_data_file.tsv
+│   └── input_test_vcf_file.tsv
+└── subset_genotypes
+    ├── Genotype___AllExpectedGT_Pool1
+    └── Genotypes_all_pools.tsv
+
+```
+
+The folder preprocessing contains the next folders
+- **[data_modalities_split]
+- **[recourses]
+- **[subset_genotypes]
+
+## doublet_detection
+```
+doublet_detection
+├── DoubletDecon
+│   └── Pool1__DoubletDecon_doublets_singlets.tsv
+├── DoubletFinder
+│   └── Pool1__DoubletFinder_doublets_singlets.tsv
+├── doublet_results_combined
+│   └── Pool1__doublet_results_combined.tsv
+├── droplet_type_distribution
+│   └── Pool1__droplet_type_distribution.png
+├── scDblFinder
+│   └── Pool1__scDblFinder_doublets_singlets.tsv
+├── SCDS
+│   └── Pool1__scds_doublets_singlets.tsv
+└── scrublet
+    ├── plots
+    │   ├── Pool1boxplot_total_umi_counts.png
+    │   ├── Pool1histogram_multiplet_scores_log.png
+    │   ├── Pool1histogram_multiplet_scores.png
+    │   └── Pool1histogram_multiplet_zscores.png
+    └── Pool1scrublet.tsv
+```
+DoubletFinder, DoubletDecon, scDblFinder, SCDS contain tsv files per pool with a barcode and label of whether it's a singlet or a doublet
+scrublet contains tsv files per pool with a barcode and label of whether it's a multiplet or not and a folder with plots
+doublet_results_combined contains tsv files per pool with barcode and labels from scrublet,	scds, scDblFinder, DoubletDecon, DoubletFinder
+droplet_type_distribution contains png files with graphs showing ...
+
+## deconvolution
+
+- **[vireo_raw](#vireo_raw)**:
+- **[vireo_processed](#vireo_processed)**:
+- **[vireo_sub](#vireo_sub)**:
+- **[infered_genotypes](#infered_genotypes)**:
+- **[split_donor_h5ad](#split_donor_h5ad)**:
+- **[filepaths](#filepaths)**:
+- **[cellsnp](#cellsnp)**:
+- **[existing_cellsnp](#existing_cellsnp)**: (name can be different)
+- **[concordances](#concordances)**:
+- **[deconvolution_results](#deconvolution_results)**:
+- **[gtmatch](#gtmatch)**:
+infered_genotypes
+
+
+
+## vireo_raw
+```
+vireo_raw
+├── correlations.png
+├── donor_corelations_matrix.tsv
+├── matched_donors.txt
+└── Pool1
+    └── vireo_Pool1
+
+vireo_raw/
+├── correlations.png
+├── CRD_CMB13450877
+│   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz
+│   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz.csi
+│   ├── sub_CRD_CMB13450877_Expected.vcf.gz
+│   └── vireo_CRD_CMB13450877
+├── CRD_CMB13450878
+│   ├── dubs_removed__Study_Merge_AllExpectedGT_F24ROJ53N_out.vcf.gz
+│   ├── dubs_removed__Study_Merge_AllExpectedGT_F24ROJ53N_out.vcf.gz.csi
+│   ├── sub_CRD_CMB13450878_Expected.vcf.gz
+│   └── vireo_CRD_CMB13450878
+├── donor_corelations_matrix.tsv
+└── matched_donors.txt
+
+```
+
+## vireo_processed
+```
+vireo_processed
+├── assignments_all_pools.tsv
+└── Pool1
+    ├── GT_replace_donor_ids_false.tsv
+    ├── GT_replace_GT_donors.vireo_false.vcf.gz
+    ├── GT_replace_Pool1_assignments_false.tsv
+    ├── GT_replace_Pool1__exp.sample_summary_false.txt
+    └── GT_replace_Pool1.sample_summary_false.txt
+
+vireo_processed/
+├── assignments_all_pools.tsv
+├── CRD_CMB13450877
+│   ├── GT_replace_CRD_CMB13450877_assignments_true.tsv
+│   ├── GT_replace_CRD_CMB13450877__exp.sample_summary_true.txt
+│   ├── GT_replace_CRD_CMB13450877.sample_summary_true.txt
+│   ├── GT_replace_donor_ids_true.tsv
+│   └── GT_replace_GT_donors.vireo_true.vcf.gz
+└── CRD_CMB13450878
+    ├── GT_replace_CRD_CMB13450878_assignments_true.tsv
+    ├── GT_replace_CRD_CMB13450878__exp.sample_summary_true.txt
+    ├── GT_replace_CRD_CMB13450878.sample_summary_true.txt
+    ├── GT_replace_donor_ids_true.tsv
+    └── GT_replace_GT_donors.vireo_true.vcf.gz
+
+```
+## vireo_sub
+```
+vireo_sub
+├── CRD_CMB13450877
+│   ├── vireo_____1
+│   │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz
+│   │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz.csi
+│   │   ├── sub_CRD_CMB13450877_Expected.vcf.gz
+│   │   └── vireo_CRD_CMB13450877___1
+│   ├── vireo_____10
+│   │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz
+│   │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz.csi
+│   │   ├── sub_CRD_CMB13450877_Expected.vcf.gz
+│   │   └── vireo_CRD_CMB13450877___10
+│   ├── vireo_____2
+│   │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz
+│   │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz.csi
+│   │   ├── sub_CRD_CMB13450877_Expected.vcf.gz
+│   │   └── vireo_CRD_CMB13450877___2
+│   ├── vireo_____3
+│   │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz
+│   │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz.csi
+│   │   ├── sub_CRD_CMB13450877_Expected.vcf.gz
+│   │   └── vireo_CRD_CMB13450877___3
+│   ├── vireo_____4
+│   │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz
+│   │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz.csi
+│   │   ├── sub_CRD_CMB13450877_Expected.vcf.gz
+│   │   └── vireo_CRD_CMB13450877___4
+│   ├── vireo_____5
+│   │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz
+│   │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz.csi
+│   │   ├── sub_CRD_CMB13450877_Expected.vcf.gz
+│   │   └── vireo_CRD_CMB13450877___5
+│   ├── vireo_____6
+│   │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz
+│   │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz.csi
+│   │   ├── sub_CRD_CMB13450877_Expected.vcf.gz
+│   │   └── vireo_CRD_CMB13450877___6
+│   ├── vireo_____7
+│   │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz
+│   │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz.csi
+│   │   ├── sub_CRD_CMB13450877_Expected.vcf.gz
+│   │   └── vireo_CRD_CMB13450877___7
+│   ├── vireo_____8
+│   │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz
+│   │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz.csi
+│   │   ├── sub_CRD_CMB13450877_Expected.vcf.gz
+│   │   └── vireo_CRD_CMB13450877___8
+│   └── vireo_____9
+│       ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz
+│       ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz.csi
+│       ├── sub_CRD_CMB13450877_Expected.vcf.gz
+│       └── vireo_CRD_CMB13450877___9
+└── CRD_CMB13450878
+    ├── vireo_____1
+    │   ├── dubs_removed__Study_Merge_AllExpectedGT_F24ROJ53N_out.vcf.gz
+```
+## infered_genotypes
+```
+infered_genotypes
+├── CRD_CMB13450877
+│   ├── CRD_CMB13450877_headfix_vireo.vcf.gz
+│   └── CRD_CMB13450877_headfix_vireo.vcf.gz.tbi
+└── CRD_CMB13450878
+    ├── CRD_CMB13450878_headfix_vireo.vcf.gz
+    └── CRD_CMB13450878_headfix_vireo.vcf.gz.tbi
+```
+
+## split_donor_h5ad
+```
+split_donor_h5ad
+└── Pool1
+    ├── cell_belongings.tsv
+    ├── donor_level_anndata
+    │   ├── donor0.Pool1.barcodes.tsv
+    │   ├── donor0.Pool1.h5ad
+    │   ├── donor1.Pool1.barcodes.tsv
+    │   ├── donor1.Pool1.h5ad
+    │   ├── donor2.Pool1.barcodes.tsv
+    │   ├── donor2.Pool1.h5ad
+    │   ├── doublet.Pool1.barcodes.tsv
+    │   ├── doublet.Pool1.h5ad
+    │   ├── unassigned.Pool1.barcodes.tsv
+    │   └── unassigned.Pool1.h5ad
+    ├── Pool1.donors.h5ad.assigned.tsv
+    ├── Pool1__donors.h5ad.assigned.tsv
+    ├── Pool1.donors.h5ad.tsv
+    ├── Pool1__donors.h5ad.tsv
+    ├── Pool1_exp__donor_n_cells.tsv
+    ├── Pool1.h5ad.tsv
+    ├── vireo_annot.Pool1.h5ad
+    └── Vireo_plots.pdf
+```
+
+## filepaths
+```
+filepaths
+├── cellranger_as_h5ad.tsv
+├── donors_h5ad_assigned.tsv
+├── donors_h5ad.tsv
+├── exp__donors_h5ad_assigned.tsv
+├── exp__donors_h5ad.tsv
+├── vireo_donor_n_cells.tsv
+└── vireo_exp__donor_n_cells.tsv
+```
+
+## cellsnp
+```
+cellsnp
+└── cellsnp_Pool1
+    ├── cellSNP.base.vcf.gz
+    ├── cellSNP.cells.vcf.gz
+    ├── cellSNP.samples.tsv
+    ├── cellSNP.tag.AD.mtx
+    ├── cellSNP.tag.DP.mtx
+    └── cellSNP.tag.OTH.mtx
+```
+
+## existing_cellsnp
+
+## concordances
+```
+concordances
+└── all_variants_description.tsv
+
+concordances/
+├── all_variants_description.tsv
+├── becoming_different_donor.png
+├── becoming_doublet_donor.png
+├── becoming_unassigned_donor.png
+├── CRD_CMB13450877
+│   ├── 1090095_1090095-donor3--each_cells_comparison_with_other_donor.tsv
+│   ├── 1709635_1709635-donor5--each_cells_comparison_with_other_donor.tsv
+│   ├── 2288590_2288590-donor6--each_cells_comparison_with_other_donor.tsv
+│   ├── 2743244_2743244-donor7--each_cells_comparison_with_other_donor.tsv
+│   ├── 2768849_2768849-donor4--each_cells_comparison_with_other_donor.tsv
+│   ├── 2998395_2998395-donor2--each_cells_comparison_with_other_donor.tsv
+│   ├── 3183427_3183427-donor0--each_cells_comparison_with_other_donor.tsv
+│   ├── 3699286_3699286-donor1--each_cells_comparison_with_other_donor.tsv
+│   ├── 4853673_4853673-donor9--each_cells_comparison_with_other_donor.tsv
+│   ├── 5154993_5154993-donor8--each_cells_comparison_with_other_donor.tsv
+│   ├── becoming_different_donor.png
+│   ├── becoming_doublet_donor.png
+│   ├── becoming_unassigned_donor.png
+│   ├── cell_belongings.tsv
+│   ├── cellSNP.cells.vcf.gz
+│   ├── CRD_CMB13450877__joined_df_for_plots.tsv
+│   ├── CRD_CMB13450877_subsampling_donor_swap_quantification.tsv
+│   ├── Discordant_reads_becoming_different_donor_no0.png
+│   ├── Discordant_reads_becoming_different_donor.png
+│   ├── Discordant_reads_by_n_sites_becoming_different_donor_no0.png
+│   ├── Discordant_reads_by_n_sites_becoming_different_donor.png
+│   ├── discordant_sites_in_other_donors_noA2G.tsv
+│   ├── Nr_discordant_uninformative_becoming_different_donor.png
+│   ├── sites_becoming_different_donor_no0.png
+│   ├── sites_becoming_different_donor.png
+│   ├── sites_becoming_different_donor_probs.png
+│   ├── sites_becoming_doublet_donor.png
+│   ├── sites_becoming_unassigned_donor.png
+│   ├── sites_vs_concordance.png
+│   ├── stats_CRD_CMB13450877_gt_donor_assignments.csv
+│   ├── sub_CRD_CMB13450877_Expected.vcf.gz
+│   ├── sub_CRD_CMB13450877_GT_Matched.vcf.gz
+│   ├── subplot_sites_vs_concordance.png
+│   ├── tmp_donor_distinct_sites.pkl
+│   ├── tmp_exclusive_cell_variants.pkl
+│   ├── tmp_exclusive_don_variants.pkl
+│   ├── tmp_GT_Expected_variants.pkl
+│   ├── tmp_GT_Matched_variants.pkl
+│   └── Total_reads_becoming_different_donor.png -> ../../../../work/bb/e8336817b1df57e119d24a67aa5dcb/Total_reads_becoming_different_donor.png
+├── Discordant_reads_becoming_different_donor_no0.png
+├── Discordant_reads_becoming_different_donor.png
+├── Discordant_reads_by_n_sites_becoming_different_donor_no0.png
+├── Discordant_reads_by_n_sites_becoming_different_donor.png
+├── joined_df_for_plots.tsv
+├── Nr_discordant_uninformative_becoming_different_donor.png
+├── sites_becoming_different_donor_no0.png
+├── sites_becoming_different_donor.png
+├── sites_becoming_different_donor_probs.png
+├── sites_becoming_doublet_donor.png
+├── sites_becoming_unassigned_donor.png
+├── sites_vs_concordance.png
+├── subplot_sites_vs_concordance.png
+└── Total_reads_becoming_different_donor.png
+
+```
+
+## infered_genotypes
+
+```
+infered_genotypes
+└── Pool1
+    ├── Pool1_headfix_vireo.vcf.gz
+    └── Pool1_headfix_vireo.vcf.gz.tbi
+```
+
+## gtmatch
+```
+gtmatch/
+├── assignments_all_pools.tsv
+└── Pool1
+    ├── Done.tmp
+    ├── Expected_Withing_expected_Pool1.genome
+    ├── GT_replace_PiHAT_Stats_File_Pool1.csv
+    ├── InferedExpected_Expected_Infered_Pool1.genome
+    ├── InferedGTMatched_Expected_Infered_Pool1.genome
+    ├── InferedOnly_Withing_pool_Pool1.genome
+    ├── PiHAT_Stats_File_Pool1.csv
+    ├── Pool1_gt_donor_assignments.csv
+    ├── pool_Pool1_panel_Pool1_Onek1K_gtcheck_donor_assignments.csv
+    ├── pool_Pool1_panel_Pool1_Onek1K_gtcheck_score_table.csv
+    └── stats_Pool1_gt_donor_assignments.csv
+```
+
+
+## celltype_assignemt
+```
+celltype_assignemt/
+├── All_Celltype_Assignments.tsv
+├── azimuth
+│   └── PBMC
+│       ├── AZ_1.pre_QC_adata_Pool1_Pool1_celltype.l1.mapping_score_umap.pdf
+│       ├── AZ_1.pre_QC_adata_Pool1_Pool1_celltype.l1.mapping_score_vln.pdf
+│       ├── AZ_1.pre_QC_adata_Pool1_Pool1_celltype.l1.ncells_by_type_barplot.pdf
+│       ├── AZ_1.pre_QC_adata_Pool1_Pool1_celltype.l1.prediction_score_umap.pdf
+│       ├── AZ_1.pre_QC_adata_Pool1_Pool1_celltype.l1.prediction_score_vln.pdf
+│       ├── AZ_1.pre_QC_adata_Pool1_Pool1_celltype.l1.query_umap.pdf
+│       ├── AZ_1.pre_QC_adata_Pool1_Pool1_celltype.l2.mapping_score_umap.pdf
+│       ├── AZ_1.pre_QC_adata_Pool1_Pool1_celltype.l2.mapping_score_vln.pdf
+│       ├── AZ_1.pre_QC_adata_Pool1_Pool1_celltype.l2.ncells_by_type_barplot.pdf
+│       ├── AZ_1.pre_QC_adata_Pool1_Pool1_celltype.l2.prediction_score_umap.pdf
+│       ├── AZ_1.pre_QC_adata_Pool1_Pool1_celltype.l2.prediction_score_vln.pdf
+│       ├── AZ_1.pre_QC_adata_Pool1_Pool1_celltype.l2.query_umap.pdf
+│       ├── AZ_1.pre_QC_adata_Pool1_Pool1_celltype.l3.mapping_score_umap.pdf
+│       ├── AZ_1.pre_QC_adata_Pool1_Pool1_celltype.l3.mapping_score_vln.pdf
+│       ├── AZ_1.pre_QC_adata_Pool1_Pool1_celltype.l3.ncells_by_type_barplot.pdf
+│       ├── AZ_1.pre_QC_adata_Pool1_Pool1_celltype.l3.prediction_score_umap.pdf
+│       ├── AZ_1.pre_QC_adata_Pool1_Pool1_celltype.l3.prediction_score_vln.pdf
+│       ├── AZ_1.pre_QC_adata_Pool1_Pool1_celltype.l3.query_umap.pdf
+│       ├── AZ_1.pre_QC_adata_Pool1_Pool1_predicted_celltype_l1.tsv
+│       ├── AZ_1.pre_QC_adata_Pool1_Pool1_predicted_celltype_l2.tsv
+│       └── AZ_1.pre_QC_adata_Pool1_Pool1_predicted_celltype_l3.tsv
+├── celltypist
+│   ├── COVID19_Immune_Landscape
+│   │   └── Pool1
+│   │       ├── Pool1___COVID19_Immune_Landscape___decision_matrix.csv
+│   │       ├── Pool1___COVID19_Immune_Landscape___predicted_labels.csv
+│   │       ├── Pool1___COVID19_Immune_Landscape___probability_matrix.csv
+│   │       ├── Pool1_majority_voting.pdf
+│   │       ├── Pool1_over_clustering.pdf
+│   │       └── Pool1_predicted_labels.pdf
+│   ├── Immune_All_High
+│   │   └── Pool1
+│   │       ├── Pool1___Immune_All_High___decision_matrix.csv
+│   │       ├── Pool1___Immune_All_High___predicted_labels.csv
+│   │       ├── Pool1___Immune_All_High___probability_matrix.csv
+│   │       ├── Pool1_majority_voting.pdf
+│   │       ├── Pool1_over_clustering.pdf
+│   │       └── Pool1_predicted_labels.pdf
+│   └── Immune_All_Low
+│       └── Pool1
+│           ├── Pool1___Immune_All_Low___decision_matrix.csv
+│           ├── Pool1___Immune_All_Low___predicted_labels.csv
+│           ├── Pool1___Immune_All_Low___probability_matrix.csv
+│           ├── Pool1_majority_voting.pdf
+│           ├── Pool1_over_clustering.pdf
+│           └── Pool1_predicted_labels.pdf
+├── donor_celltype_report.tsv
+├── scpred
+│   ├── AZ_1.pre_QC_adata_Pool1_AZ_1.pre_QC_adata_Pool1__scpred_prediction.tsv
+│   └── AZ_1.pre_QC_adata_Pool1_hier_scpred.RDS
+└── tranche_celltype_report.tsv
+```
+- **[All_Celltype_Assignments.tsv]
+- **[donor_celltype_report.tsv]
+- **[tranche_celltype_report.tsv]
+- **[scored]
+- **[azimuth]
+- **[celltypist]
+- Immune_All_Low
+- COVID19_Immune_Landscape
+- Immune_All_High
+
+## clustering_and_integration
+```
+clustering_and_integration/
+├── normalize=total_count.vars_to_regress=none
+│   ├── adatametadata.tsv.gz
+│   ├── adatanormalized.h5ad
+│   ├── adatanormalized_pcacounts.h5ad
+│   ├── adatanormalized_pca.h5ad
+│   ├── adatanormalized_pcaknee.tsv
+│   ├── adatapcs.tsv.gz
+│   ├── donor_level_anndata_QCfiltered
+│   │   └── Pool1___sample_QCd_adata.h5ad
+│   ├── plots
+│   │   ├── adatanormalized_pcakneevariance_ratiospline=interp1dknee_normalized.png
+│   │   ├── adatanormalized_pcakneevariance_ratiospline=interp1dknee_raw.png
+│   │   ├── adatanormalized_pcakneevariance_ratiospline=Noneknee_normalized.png
+│   │   ├── adatanormalized_pcakneevariance_ratiospline=Noneknee_raw.png
+│   │   ├── adatanormalized_pcakneevariancespline=interp1dknee_normalized.png
+│   │   ├── adatanormalized_pcakneevariancespline=interp1dknee_raw.png
+│   │   ├── adatanormalized_pcakneevariancespline=Noneknee_normalized.png
+│   │   ├── adatanormalized_pcakneevariancespline=Noneknee_raw.png
+│   │   ├── filter_genes_dispersionadata.pdf
+│   │   ├── highest_expr_genesadata.pdf
+│   │   ├── pca_variance_ratioadatalog.pdf
+│   │   └── pca_variance_ratioadata.pdf
+│   └── reduced_dims-null-pca.n_pcs=20
+│       ├── clustering_and_integration
+│       │   └── plots
+│       │       ├── pca_loadings-pca-n_pcs=20.png
+│       │       ├── pca-pca-Azimuth:predicted.celltype.l2.score.png
+│       │       ├── pca-pca-experiment_id.png
+│       │       ├── pca-pca-log10_ngenes_by_count.png
+│       │       ├── pca-pca-n_cells.png
+│       │       ├── pca-pca-pct_counts_gene_group__mito_transcript.png
+│       │       ├── pca-pca-pct_counts_gene_group__ribo_rna.png
+│       │       ├── pca-pca-prob_doublet.png
+│       │       └── pca-pca-total_counts.png
+│       └── reduced_dims.tsv.gz
+└── plots
+    ├── mads-n_genes_by_counts.png
+    ├── mads-pct_counts_gene_group__mito_protein.png
+    ├── mads-pct_counts_gene_group__mito_transcript.png
+    ├── mads-pct_counts_gene_group__ribo_protein.png
+    ├── mads-pct_counts_gene_group__ribo_rna.png
+    ├── mads-total_counts.png
+    ├── mads.tsv
+    ├── plot_ecdf.var=pct_counts_gene_group__mito_transcript.color=experiment_id-outfile.png
+    ├── plot_ecdf.var=total_counts.color=experiment_id-outfile.png
+    ├── plot_ecdf-x_log10.var=pct_counts_gene_group__mito_transcript.color=experiment_id-outfile.png
+    ├── plot_ecdf-x_log10.var=total_counts.color=experiment_id-outfile.png
+    ├── plot_histogram.var=pct_counts_gene_group__mito_transcript.facet=experiment_id-outfile.png
+    ├── plot_histogram.var=total_counts.facet=experiment_id-outfile.png
+    ├── plot_histogram-x_log10.var=pct_counts_gene_group__mito_transcript.facet=experiment_id-outfile.png
+    ├── plot_histogram-x_log10.var=total_counts.facet=experiment_id-outfile.png
+    ├── plot_nfeature_mt_cellpassqc.facet=experiment_id-outfile.png
+    ├── plot_nfeature_mt_density.facet=experiment_id-outfile.png
+    ├── plot_umi_mt_cellpassqc.facet=experiment_id-outfile.png
+    ├── plot_umi_mt_density.facet=experiment_id-outfile.png
+    ├── plot_umi_ngene_cellpassqc.facet=experiment_id-outfile.png
+    ├── plot_umi_ngene_mt_density.facet=experiment_id-outfile.png
+    ├── plot_umi_ngene_mt.facet=experiment_id-outfile.png
+    └── scatterplot-sex_sample_swap_check.png
+
+
+clustering_and_integration/
+├── normalize=total_count.vars_to_regress=none
+│   ├── adatametadata.tsv.gz
+│   ├── adatanormalized.h5ad
+│   ├── adatanormalized_pcacounts.h5ad
+│   ├── adatanormalized_pca.h5ad
+│   ├── adatanormalized_pcaknee.tsv
+│   ├── adatapcs.tsv.gz
+│   ├── donor_level_anndata_QCfiltered
+│   │   └── Pool1___sample_QCd_adata.h5ad
+│   ├── plots
+│   ├── reduced_dims-null-bbknn.batch=experiment_id.n_pcs=20
+│   │   ├── cluster.number_neighbors=-1.method=leiden.resolution=0.1
+│   │   │   ├── clustering_0.1clustered.h5ad
+│   │   │   ├── clustering_0.1clustered.tsv.gz
+│   │   │   ├── dotplot_sampleclustering_0.1clustered_ncells0.pdf
+│   │   │   ├── dotplot_sampleclustering_0.1clustered_ncellsless5.pdf
+│   │   │   ├── dotplot_sampleclustering_0.1clustered.pdf
+│   │   │   ├── plots
+│   │   │   ├── sccaf
+│   │   │   └── validate_resolution
+│   │   ├── cluster.number_neighbors=-1.method=leiden.resolution=0.5
+│   │   ├── cluster.number_neighbors=-1.method=leiden.resolution=1.0
+│   │   ├── cluster.number_neighbors=-1.method=leiden.resolution=5.0
+│   │   ├── outfile_adatabbknn.h5ad
+│   │   ├── plots
+│   │   ├── reduced_dims.tsv.gz
+│   │   ├── resolution_tuningmerged_model_report.tsv.gz
+│   │   ├── resolution_tuningmerged_test_result.tsv.gz
+│   │   └── umap_gather_out.h5ad
+│   ├── reduced_dims-null-harmony.n_pcs=20.variables=experiment_id.thetas=1.0
+│   │   ├── cluster.number_neighbors=15.method=leiden.resolution=0.1
+│   │   ├── cluster.number_neighbors=15.method=leiden.resolution=0.5
+│   │   ├── cluster.number_neighbors=15.method=leiden.resolution=1.0
+│   │   ├── cluster.number_neighbors=15.method=leiden.resolution=5.0
+│   │   ├── plots
+│   │   ├── reduced_dims.tsv.gz
+│   │   ├── resolution_tuningmerged_model_report.tsv.gz
+│   │   ├── resolution_tuningmerged_test_result.tsv.gz
+│   │   └── umap_gather_out.h5ad
+│   └── reduced_dims-null-pca.n_pcs=20
+│       ├── clustering_and_integration
+│       │   └── plots
+│       └── reduced_dims.tsv.gz
+└── plots
+
+```
+
+
+normalize=total_count.vars_to_regress=none (should it be renamed)
+plots
+
+## citeseq
+```
+citeseq/
+└── DSB
+    └── Pool1
+        └── CITE__Pool1
+```
+- **[DSB] is there only one folder in citeseq? DSB has folders for each pool
+
+## handover
+- **[Summary_plots]
+- **[Donor_Quantification]
+- **[Donor_Quantification_summary]
+- **[merged_h5ad]
+
+```
+handover/
+├── Donor_Quantification
+├── Donor_Quantification_summary
+├── merged_h5ad
+└── Summary_plots
+└── UMAPs
+```
+
+## Pipeline Info
+
+## YASCP Inputs
 
