@@ -57,9 +57,9 @@ preprocessing/
 ```
 
 The folder preprocessing contains the next folders
-- **[data_modalities_split]
-- **[recourses]
-- **[subset_genotypes]
+- **[data_modalities_split]  raw and filtered quantification data devided by the modality (citeseq or hashtag)
+- **[recourses] genotype assembly and and input files for test dataset
+- **[subset_genotypes] contains divided genotipes from pools. Apears only if you specify vcf ids in the input tsv file (improve writing) 
 
 ## doublet_detection
 ```
@@ -87,7 +87,7 @@ doublet_detection
 DoubletFinder, DoubletDecon, scDblFinder, SCDS contain tsv files per pool with a barcode and label of whether it's a singlet or a doublet
 scrublet contains tsv files per pool with a barcode and label of whether it's a multiplet or not and a folder with plots
 doublet_results_combined contains tsv files per pool with barcode and labels from scrublet,	scds, scDblFinder, DoubletDecon, DoubletFinder
-droplet_type_distribution contains png files with graphs showing ...
+droplet_type_distribution contains png files with graphs showing droplet-type distribution
 
 ## deconvolution
 
@@ -100,7 +100,6 @@ droplet_type_distribution contains png files with graphs showing ...
 - **[cellsnp](#cellsnp)**:
 - **[existing_cellsnp](#existing_cellsnp)**: (name can be different)
 - **[concordances](#concordances)**:
-- **[deconvolution_results](#deconvolution_results)**:
 - **[gtmatch](#gtmatch)**:
 infered_genotypes
 
@@ -110,27 +109,16 @@ infered_genotypes
 ```
 vireo_raw
 ├── correlations.png
-├── donor_corelations_matrix.tsv
-├── matched_donors.txt
-└── Pool1
-    └── vireo_Pool1
-
-vireo_raw/
-├── correlations.png
-├── CRD_CMB13450877
+├── Pool1
 │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz
 │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz.csi
-│   ├── sub_CRD_CMB13450877_Expected.vcf.gz
-│   └── vireo_CRD_CMB13450877
-├── CRD_CMB13450878
-│   ├── dubs_removed__Study_Merge_AllExpectedGT_F24ROJ53N_out.vcf.gz
-│   ├── dubs_removed__Study_Merge_AllExpectedGT_F24ROJ53N_out.vcf.gz.csi
-│   ├── sub_CRD_CMB13450878_Expected.vcf.gz
-│   └── vireo_CRD_CMB13450878
+│   ├── sub_Pool1_Expected.vcf.gz
+│   └── vireo_Pool1
 ├── donor_corelations_matrix.tsv
 └── matched_donors.txt
 
 ```
+contains genotypes if run in genotype-aware mode
 
 ## vireo_processed
 ```
@@ -142,91 +130,75 @@ vireo_processed
     ├── GT_replace_Pool1_assignments_false.tsv
     ├── GT_replace_Pool1__exp.sample_summary_false.txt
     └── GT_replace_Pool1.sample_summary_false.txt
-
-vireo_processed/
-├── assignments_all_pools.tsv
-├── CRD_CMB13450877
-│   ├── GT_replace_CRD_CMB13450877_assignments_true.tsv
-│   ├── GT_replace_CRD_CMB13450877__exp.sample_summary_true.txt
-│   ├── GT_replace_CRD_CMB13450877.sample_summary_true.txt
-│   ├── GT_replace_donor_ids_true.tsv
-│   └── GT_replace_GT_donors.vireo_true.vcf.gz
-└── CRD_CMB13450878
-    ├── GT_replace_CRD_CMB13450878_assignments_true.tsv
-    ├── GT_replace_CRD_CMB13450878__exp.sample_summary_true.txt
-    ├── GT_replace_CRD_CMB13450878.sample_summary_true.txt
-    ├── GT_replace_donor_ids_true.tsv
-    └── GT_replace_GT_donors.vireo_true.vcf.gz
-
 ```
+genotypes renamed to imitate genotype absent mode to ensure the consistency in the downstream pipeline tasks
+
 ## vireo_sub
 ```
 vireo_sub
-├── CRD_CMB13450877
+├── Pool1
 │   ├── vireo_____1
 │   │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz
 │   │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz.csi
-│   │   ├── sub_CRD_CMB13450877_Expected.vcf.gz
-│   │   └── vireo_CRD_CMB13450877___1
+│   │   ├── sub_Pool1_Expected.vcf.gz
+│   │   └── vireo_Pool1___1
 │   ├── vireo_____10
 │   │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz
 │   │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz.csi
-│   │   ├── sub_CRD_CMB13450877_Expected.vcf.gz
-│   │   └── vireo_CRD_CMB13450877___10
+│   │   ├── sub_Pool1_Expected.vcf.gz
+│   │   └── vireo_Pool1___10
 │   ├── vireo_____2
 │   │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz
 │   │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz.csi
-│   │   ├── sub_CRD_CMB13450877_Expected.vcf.gz
-│   │   └── vireo_CRD_CMB13450877___2
+│   │   ├── sub_Pool1_Expected.vcf.gz
+│   │   └── vireo_Pool1___2
 │   ├── vireo_____3
 │   │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz
 │   │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz.csi
-│   │   ├── sub_CRD_CMB13450877_Expected.vcf.gz
-│   │   └── vireo_CRD_CMB13450877___3
+│   │   ├── sub_Pool1_Expected.vcf.gz
+│   │   └── vireo_Pool1___3
 │   ├── vireo_____4
 │   │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz
 │   │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz.csi
-│   │   ├── sub_CRD_CMB13450877_Expected.vcf.gz
-│   │   └── vireo_CRD_CMB13450877___4
+│   │   ├── sub_Pool1_Expected.vcf.gz
+│   │   └── vireo_Pool1___4
 │   ├── vireo_____5
 │   │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz
 │   │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz.csi
-│   │   ├── sub_CRD_CMB13450877_Expected.vcf.gz
-│   │   └── vireo_CRD_CMB13450877___5
+│   │   ├── sub_Pool1_Expected.vcf.gz
+│   │   └── vireo_Pool1___5
 │   ├── vireo_____6
 │   │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz
 │   │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz.csi
-│   │   ├── sub_CRD_CMB13450877_Expected.vcf.gz
-│   │   └── vireo_CRD_CMB13450877___6
+│   │   ├── sub_Pool1_Expected.vcf.gz
+│   │   └── vireo_Pool1___6
 │   ├── vireo_____7
 │   │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz
 │   │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz.csi
-│   │   ├── sub_CRD_CMB13450877_Expected.vcf.gz
-│   │   └── vireo_CRD_CMB13450877___7
+│   │   ├── sub_Pool1_Expected.vcf.gz
+│   │   └── vireo_Pool1___7
 │   ├── vireo_____8
 │   │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz
 │   │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz.csi
-│   │   ├── sub_CRD_CMB13450877_Expected.vcf.gz
-│   │   └── vireo_CRD_CMB13450877___8
+│   │   ├── sub_Pool1_Expected.vcf.gz
+│   │   └── vireo_Pool1___8
 │   └── vireo_____9
 │       ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz
 │       ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz.csi
-│       ├── sub_CRD_CMB13450877_Expected.vcf.gz
-│       └── vireo_CRD_CMB13450877___9
-└── CRD_CMB13450878
-    ├── vireo_____1
-    │   ├── dubs_removed__Study_Merge_AllExpectedGT_F24ROJ53N_out.vcf.gz
+│       ├── sub_Pool1_Expected.vcf.gz
+│       └── vireo_Pool1___9
 ```
+vireo permutation to ensure stability in cell assignment
+
+
 ## infered_genotypes
 ```
 infered_genotypes
-├── CRD_CMB13450877
-│   ├── CRD_CMB13450877_headfix_vireo.vcf.gz
-│   └── CRD_CMB13450877_headfix_vireo.vcf.gz.tbi
-└── CRD_CMB13450878
-    ├── CRD_CMB13450878_headfix_vireo.vcf.gz
-    └── CRD_CMB13450878_headfix_vireo.vcf.gz.tbi
+├── Pool1
+│   ├── Pool1_headfix_vireo.vcf.gz
+│   └── Pool1_headfix_vireo.vcf.gz.tbi
 ```
+genotypes called from single-cell data per (per donor in a pool)
 
 ## split_donor_h5ad
 ```
@@ -253,6 +225,7 @@ split_donor_h5ad
     ├── vireo_annot.Pool1.h5ad
     └── Vireo_plots.pdf
 ```
+per donor quantification matrix and additional metadata
 
 ## filepaths
 ```
@@ -265,7 +238,7 @@ filepaths
 ├── vireo_donor_n_cells.tsv
 └── vireo_exp__donor_n_cells.tsv
 ```
-
+# remove this folder NB!
 ## cellsnp
 ```
 cellsnp
@@ -277,7 +250,7 @@ cellsnp
     ├── cellSNP.tag.DP.mtx
     └── cellSNP.tag.OTH.mtx
 ```
-
+genotypes called from single-cell data per (per droplet/cell)
 ## existing_cellsnp
 
 ## concordances
@@ -285,12 +258,12 @@ cellsnp
 concordances
 └── all_variants_description.tsv
 
-concordances/
+concordances
 ├── all_variants_description.tsv
 ├── becoming_different_donor.png
 ├── becoming_doublet_donor.png
 ├── becoming_unassigned_donor.png
-├── CRD_CMB13450877
+├── Pool1
 │   ├── 1090095_1090095-donor3--each_cells_comparison_with_other_donor.tsv
 │   ├── 1709635_1709635-donor5--each_cells_comparison_with_other_donor.tsv
 │   ├── 2288590_2288590-donor6--each_cells_comparison_with_other_donor.tsv
@@ -306,8 +279,8 @@ concordances/
 │   ├── becoming_unassigned_donor.png
 │   ├── cell_belongings.tsv
 │   ├── cellSNP.cells.vcf.gz
-│   ├── CRD_CMB13450877__joined_df_for_plots.tsv
-│   ├── CRD_CMB13450877_subsampling_donor_swap_quantification.tsv
+│   ├── Pool1__joined_df_for_plots.tsv
+│   ├── Pool1_subsampling_donor_swap_quantification.tsv
 │   ├── Discordant_reads_becoming_different_donor_no0.png
 │   ├── Discordant_reads_becoming_different_donor.png
 │   ├── Discordant_reads_by_n_sites_becoming_different_donor_no0.png
@@ -320,16 +293,11 @@ concordances/
 │   ├── sites_becoming_doublet_donor.png
 │   ├── sites_becoming_unassigned_donor.png
 │   ├── sites_vs_concordance.png
-│   ├── stats_CRD_CMB13450877_gt_donor_assignments.csv
-│   ├── sub_CRD_CMB13450877_Expected.vcf.gz
-│   ├── sub_CRD_CMB13450877_GT_Matched.vcf.gz
+│   ├── stats_Pool1_gt_donor_assignments.csv
+│   ├── sub_Pool1_Expected.vcf.gz
+│   ├── sub_Pool1_GT_Matched.vcf.gz
 │   ├── subplot_sites_vs_concordance.png
-│   ├── tmp_donor_distinct_sites.pkl
-│   ├── tmp_exclusive_cell_variants.pkl
-│   ├── tmp_exclusive_don_variants.pkl
-│   ├── tmp_GT_Expected_variants.pkl
-│   ├── tmp_GT_Matched_variants.pkl
-│   └── Total_reads_becoming_different_donor.png -> ../../../../work/bb/e8336817b1df57e119d24a67aa5dcb/Total_reads_becoming_different_donor.png
+│   └── Total_reads_becoming_different_donor.png
 ├── Discordant_reads_becoming_different_donor_no0.png
 ├── Discordant_reads_becoming_different_donor.png
 ├── Discordant_reads_by_n_sites_becoming_different_donor_no0.png
@@ -346,15 +314,7 @@ concordances/
 └── Total_reads_becoming_different_donor.png
 
 ```
-
-## infered_genotypes
-
-```
-infered_genotypes
-└── Pool1
-    ├── Pool1_headfix_vireo.vcf.gz
-    └── Pool1_headfix_vireo.vcf.gz.tbi
-```
+statistics to describe how confident is the cell inferred genotype alignment with the reference genotypes.
 
 ## gtmatch
 ```
@@ -373,7 +333,7 @@ gtmatch/
     ├── pool_Pool1_panel_Pool1_Onek1K_gtcheck_score_table.csv
     └── stats_Pool1_gt_donor_assignments.csv
 ```
-
+if genotypes are provided it contains the results of donors assigned by gtcheck.
 
 ## celltype_assignemt
 ```
@@ -387,21 +347,7 @@ celltype_assignemt/
 │       ├── AZ_1.pre_QC_adata_Pool1_Pool1_celltype.l1.prediction_score_umap.pdf
 │       ├── AZ_1.pre_QC_adata_Pool1_Pool1_celltype.l1.prediction_score_vln.pdf
 │       ├── AZ_1.pre_QC_adata_Pool1_Pool1_celltype.l1.query_umap.pdf
-│       ├── AZ_1.pre_QC_adata_Pool1_Pool1_celltype.l2.mapping_score_umap.pdf
-│       ├── AZ_1.pre_QC_adata_Pool1_Pool1_celltype.l2.mapping_score_vln.pdf
-│       ├── AZ_1.pre_QC_adata_Pool1_Pool1_celltype.l2.ncells_by_type_barplot.pdf
-│       ├── AZ_1.pre_QC_adata_Pool1_Pool1_celltype.l2.prediction_score_umap.pdf
-│       ├── AZ_1.pre_QC_adata_Pool1_Pool1_celltype.l2.prediction_score_vln.pdf
-│       ├── AZ_1.pre_QC_adata_Pool1_Pool1_celltype.l2.query_umap.pdf
-│       ├── AZ_1.pre_QC_adata_Pool1_Pool1_celltype.l3.mapping_score_umap.pdf
-│       ├── AZ_1.pre_QC_adata_Pool1_Pool1_celltype.l3.mapping_score_vln.pdf
-│       ├── AZ_1.pre_QC_adata_Pool1_Pool1_celltype.l3.ncells_by_type_barplot.pdf
-│       ├── AZ_1.pre_QC_adata_Pool1_Pool1_celltype.l3.prediction_score_umap.pdf
-│       ├── AZ_1.pre_QC_adata_Pool1_Pool1_celltype.l3.prediction_score_vln.pdf
-│       ├── AZ_1.pre_QC_adata_Pool1_Pool1_celltype.l3.query_umap.pdf
-│       ├── AZ_1.pre_QC_adata_Pool1_Pool1_predicted_celltype_l1.tsv
-│       ├── AZ_1.pre_QC_adata_Pool1_Pool1_predicted_celltype_l2.tsv
-│       └── AZ_1.pre_QC_adata_Pool1_Pool1_predicted_celltype_l3.tsv
+│       └── AZ_1.pre_QC_adata_Pool1_Pool1_predicted_celltype_l1.tsv
 ├── celltypist
 │   ├── COVID19_Immune_Landscape
 │   │   └── Pool1
@@ -433,9 +379,10 @@ celltype_assignemt/
 │   └── AZ_1.pre_QC_adata_Pool1_hier_scpred.RDS
 └── tranche_celltype_report.tsv
 ```
-- **[All_Celltype_Assignments.tsv]
-- **[donor_celltype_report.tsv]
-- **[tranche_celltype_report.tsv]
+- **[All_Celltype_Assignments.tsv] combination of results per barcode/droplet/cell
+- **[donor_celltype_report.tsv] per donor summarised cell numbers
+- **[tranche_celltype_report.tsv] per tranch summarised cell numbers
+cell type assignments by different methods and models:
 - **[scored]
 - **[azimuth]
 - **[celltypist]
@@ -445,68 +392,6 @@ celltype_assignemt/
 
 ## clustering_and_integration
 ```
-clustering_and_integration/
-├── normalize=total_count.vars_to_regress=none
-│   ├── adatametadata.tsv.gz
-│   ├── adatanormalized.h5ad
-│   ├── adatanormalized_pcacounts.h5ad
-│   ├── adatanormalized_pca.h5ad
-│   ├── adatanormalized_pcaknee.tsv
-│   ├── adatapcs.tsv.gz
-│   ├── donor_level_anndata_QCfiltered
-│   │   └── Pool1___sample_QCd_adata.h5ad
-│   ├── plots
-│   │   ├── adatanormalized_pcakneevariance_ratiospline=interp1dknee_normalized.png
-│   │   ├── adatanormalized_pcakneevariance_ratiospline=interp1dknee_raw.png
-│   │   ├── adatanormalized_pcakneevariance_ratiospline=Noneknee_normalized.png
-│   │   ├── adatanormalized_pcakneevariance_ratiospline=Noneknee_raw.png
-│   │   ├── adatanormalized_pcakneevariancespline=interp1dknee_normalized.png
-│   │   ├── adatanormalized_pcakneevariancespline=interp1dknee_raw.png
-│   │   ├── adatanormalized_pcakneevariancespline=Noneknee_normalized.png
-│   │   ├── adatanormalized_pcakneevariancespline=Noneknee_raw.png
-│   │   ├── filter_genes_dispersionadata.pdf
-│   │   ├── highest_expr_genesadata.pdf
-│   │   ├── pca_variance_ratioadatalog.pdf
-│   │   └── pca_variance_ratioadata.pdf
-│   └── reduced_dims-null-pca.n_pcs=20
-│       ├── clustering_and_integration
-│       │   └── plots
-│       │       ├── pca_loadings-pca-n_pcs=20.png
-│       │       ├── pca-pca-Azimuth:predicted.celltype.l2.score.png
-│       │       ├── pca-pca-experiment_id.png
-│       │       ├── pca-pca-log10_ngenes_by_count.png
-│       │       ├── pca-pca-n_cells.png
-│       │       ├── pca-pca-pct_counts_gene_group__mito_transcript.png
-│       │       ├── pca-pca-pct_counts_gene_group__ribo_rna.png
-│       │       ├── pca-pca-prob_doublet.png
-│       │       └── pca-pca-total_counts.png
-│       └── reduced_dims.tsv.gz
-└── plots
-    ├── mads-n_genes_by_counts.png
-    ├── mads-pct_counts_gene_group__mito_protein.png
-    ├── mads-pct_counts_gene_group__mito_transcript.png
-    ├── mads-pct_counts_gene_group__ribo_protein.png
-    ├── mads-pct_counts_gene_group__ribo_rna.png
-    ├── mads-total_counts.png
-    ├── mads.tsv
-    ├── plot_ecdf.var=pct_counts_gene_group__mito_transcript.color=experiment_id-outfile.png
-    ├── plot_ecdf.var=total_counts.color=experiment_id-outfile.png
-    ├── plot_ecdf-x_log10.var=pct_counts_gene_group__mito_transcript.color=experiment_id-outfile.png
-    ├── plot_ecdf-x_log10.var=total_counts.color=experiment_id-outfile.png
-    ├── plot_histogram.var=pct_counts_gene_group__mito_transcript.facet=experiment_id-outfile.png
-    ├── plot_histogram.var=total_counts.facet=experiment_id-outfile.png
-    ├── plot_histogram-x_log10.var=pct_counts_gene_group__mito_transcript.facet=experiment_id-outfile.png
-    ├── plot_histogram-x_log10.var=total_counts.facet=experiment_id-outfile.png
-    ├── plot_nfeature_mt_cellpassqc.facet=experiment_id-outfile.png
-    ├── plot_nfeature_mt_density.facet=experiment_id-outfile.png
-    ├── plot_umi_mt_cellpassqc.facet=experiment_id-outfile.png
-    ├── plot_umi_mt_density.facet=experiment_id-outfile.png
-    ├── plot_umi_ngene_cellpassqc.facet=experiment_id-outfile.png
-    ├── plot_umi_ngene_mt_density.facet=experiment_id-outfile.png
-    ├── plot_umi_ngene_mt.facet=experiment_id-outfile.png
-    └── scatterplot-sex_sample_swap_check.png
-
-
 clustering_and_integration/
 ├── normalize=total_count.vars_to_regress=none
 │   ├── adatametadata.tsv.gz
@@ -554,7 +439,7 @@ clustering_and_integration/
 └── plots
 
 ```
-
+integrated and clustered data with statistics and plots describing integration and clustering performance
 
 normalize=total_count.vars_to_regress=none (should it be renamed)
 plots
@@ -567,7 +452,7 @@ citeseq/
         └── CITE__Pool1
 ```
 - **[DSB] is there only one folder in citeseq? DSB has folders for each pool
-
+contains DSB background removed protein counts if citeseq is in quantification matrix
 ## handover
 - **[Summary_plots]
 - **[Donor_Quantification]
