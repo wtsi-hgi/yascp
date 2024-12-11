@@ -35,20 +35,39 @@ For your dataset run:
    nextflow run /path/to/cloned/yascp -profile <docker/singularity,institute> -c inputs.nf -resume
 ```
 
+To clean the working folder after the pipeline finishes use the next commands:
+
+For a test dataset run:
+``` console
+    nextflow run /path/to/cloned/yascp clean -profile test,<docker/singularity,institute>
+```
+For your dataset run:
+``` console
+    nextflow run /path/to/cloned/yascp clean -profile <docker/singularity,institute> -c inputs.nf
+```
 <details markdown="2">
 <summary><b>Sanger-Specific Execution:</b></summary>
 
 * If you work on Farm you can run YASCP using the next commands:
   
   Test dataset run:
-    ```
-      module load HGI/pipelines/yascp/1.6.1
+  ```
+      module load HGI/pipelines/yascp/1.7
       yascp test
   ```
   Your own dataset run:
   ```
-      module load HGI/pipelines/yascp/1.6.1
+      module load HGI/pipelines/yascp/1.7
       yascp -c input.nf
+  ```
+  To clean the working folder use the next commands:
+  For a test dataset run:
+  ```
+      yascp clean test
+  ```
+  For your dataset run:
+  ```
+      yascp clean -c inputs.nf
   ```
 
 </details>
@@ -97,7 +116,7 @@ Specify the path to a config file (including the input declaration config file).
 
 ## Input declaration config file
 
-This file specifies all inputs to the pipeline and general pipeline parameters. You can find an example input declaration [here](../sample_input/inputs.nf).
+This file specifies all inputs to the pipeline and general pipeline parameters.
 
 Core required/optional inputs are described below. 
 
@@ -140,7 +159,6 @@ params {
 ## Samplesheet input
 This file specifies sample IDs, the number of pooled donors, IDs of individuals with priori known genotypes, and paths to 10x files.
 It has to be a tab-separated file with 4 columns and a header as shown in the example below.
-You can find an example samplesheet [here](../sample_input/input_table.tsv).
 
 
 | experiment_id   | n_pooled | donor_vcf_ids    |  data_path_10x_format   |
@@ -185,8 +203,6 @@ The pipeline will determine which cohort the deconvoluted sample comes from (if 
 
 In the following example, we have 3 cohorts: Cohort1 has genotypes for each of the chromosomes - this is acceptable, as the pipeline will use all chromosome files to identify whether the sample is part of this cohort. The other 2 cohorts have a merged VCF file for all the chromosomes. This is also acceptable, as it will determine whether the sample belongs to this cohort in one step. After evaluating all cohorts the pipeline will assign the sample to the single donor that is the most likely real match.
 
-You can find an example genotypesheet [here](../sample_input/vcf_inputs.tsv).
-
 | label   | vcf_file_path    |
 |-----------------|----------|
 | Cohort1 |   /ful/path/to/vcf_bcf/file/in/hg38/format/without/chr/prefix/chr1.vcf.gz      |
@@ -201,7 +217,7 @@ To avoid rerunning time-consuming steps of the pipeline you can specify the next
 
 ### 1. input
 You can skip the cellbender step by adding `input = 'cellranger'` to the input declaration config file. You might consider this option because the cellbender step is time-consuming and requires GPUs.
-The pipeline will skip ambient RNA removal and proceed with deconvolution based on cellranger. For more details see [optional parameters](Optional_parameters.md)
+The pipeline will skip ambient RNA removal and proceed with deconvolution based on cellranger.
 
 ``` console
 params{
