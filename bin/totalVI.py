@@ -41,7 +41,7 @@ sc.set_figure_params(figsize=(5,5), dpi=150)
 
 #import single cell data and CITE-seq data
 # SLEmap = sc.read('adata-normalized.h5ad')
-SLEmap = sc.read(options.h5ad_file)
+SLEmap = sc.read(options.h5ad_file, backed ='r')
 
 all_cite_files = glob.glob("./*/*.matrix.csv")
 CITE = pd.DataFrame()
@@ -59,12 +59,13 @@ CITE_2 = SLEmap.obs[CITE.columns].copy()
 SLEmap.obsm['protein_expression'] = CITE_2
 
 # keep only cells passing QC and highly variable genes
-SLEmap = SLEmap[SLEmap.obs["cell_passes_qc"],:]
-SLEmap = SLEmap[SLEmap.obs["cell_passes_hard_filters"],:]
-SLEmap = SLEmap[:,SLEmap.var["highly_variable"]]
+SLEmap = SLEmap[
+    (SLEmap.obs["cell_passes_qc"] & SLEmap.obs["cell_passes_hard_filters"]),
+    SLEmap.var["highly_variable"]
+]
 
 #run totalVI
-SLEmap = SLEmap.copy()
+SLEmap = SLEmap.to_memory().copy()
 scvi.model.TOTALVI.setup_anndata(SLEmap, protein_expression_obsm_key="protein_expression",batch_key="experiment_id")
 model = scvi.model.TOTALVI(SLEmap,latent_distribution="normal",n_layers_decoder=2)
 
