@@ -2,7 +2,7 @@
 process CELLTYPIST {
     tag "${model}_${sample}"
     label 'process_medium_memory'
-    publishDir "${params.outdir}/celltype/celltypist/${model}/${sample}/", mode: "${params.celltypist.copy_mode}", overwrite: true,
+    publishDir "${params.outdir}/celltype_assignemt/celltypist/${model}/${sample}/", mode: "${params.celltypist.copy_mode}", overwrite: true,
 	  saveAs: {filename -> filename.replaceFirst("outputs/","").replaceFirst("figures/","") }
     
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {        

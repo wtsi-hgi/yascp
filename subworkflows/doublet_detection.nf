@@ -16,7 +16,7 @@ process make_cellmetadata_pipeline_input {
     // ------------------------------------------------------------------------
     //cache false        // cache results from run
 
-    publishDir  path: "${params.outdir}/multiplet.method=scrublet",
+    publishDir  path: "${params.outdir}/scrublet",
                 saveAs: {filename -> filename.replaceAll("-", "")},
                 mode: "${params.copy_mode}",
                 overwrite: "true"
@@ -46,9 +46,17 @@ process MERGE_DOUBLET_RESULTS{
     } else {
         container "mercury/nf_scrna_qc:v3"
     }
-    publishDir  path: "${params.outdir}/doublets",
-                mode: "${params.copy_mode}",
-                overwrite: "true"
+    //publishDir  path: "${params.outdir}/doublet_detection/",
+    //            mode: "${params.copy_mode}",
+    //            overwrite: "true"
+    publishDir path: "${params.outdir}/doublet_detection/droplet_type_distribution", 
+               mode: "${params.copy_mode}", 
+               pattern: "*.png",
+               overwrite: "true"
+    publishDir path: "${params.outdir}/doublet_detection/doublet_results_combined", 
+               mode: "${params.copy_mode}", 
+               pattern: "*.tsv",
+               overwrite: "true"
 
     input:
         tuple(

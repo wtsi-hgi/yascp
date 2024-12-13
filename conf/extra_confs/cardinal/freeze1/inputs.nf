@@ -44,10 +44,10 @@ params {
     }
     skip_preprocessing{
         value=true
-        gt_match_file="$output_dir/deconvolution/deconvolution_results/vireo_gt_fix/assignments_all_pools.tsv" //We prvide this if we want to exclude a particular samples matched to a ceirtain GT cohortc from the adaptive qc
+        gt_match_file="$output_dir/deconvolution/vireo_processed/assignments_all_pools.tsv" //We prvide this if we want to exclude a particular samples matched to a ceirtain GT cohortc from the adaptive qc
         gt_match_based_adaptive_qc_exclusion_pattern = 'U937;THP1' //We run the adaptive QC on these patterns independently regardless on assigned celltype.
-        file__anndata_merged = "$output_dir/merged_h5ad/1.pre_QC_adata.h5ad"
-        file__cells_filtered = "$output_dir/merged_h5ad/pre_QC_adata-cell_filtered_per_experiment.tsv.gz"
+        file__anndata_merged = "$output_dir/handover/merged_h5ad/1.pre_QC_adata.h5ad"
+        file__cells_filtered = "$output_dir/handover/merged_h5ad/pre_QC_adata-cell_filtered_per_experiment.tsv.gz"
 
     }
     harmony{

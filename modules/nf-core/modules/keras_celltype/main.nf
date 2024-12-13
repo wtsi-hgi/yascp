@@ -1,7 +1,7 @@
 process KERAS_CELLTYPE {
 
     tag { "${experiment_id}" }
-    publishDir  path: "${params.outdir}/celltype/keras_celltype/${experiment_id}/",
+    publishDir  path: "${params.outdir}/celltype_assignemt/keras_celltype/${experiment_id}/",
         mode: "${params.copy_mode}",
         overwrite: "true"
 

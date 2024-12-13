@@ -52,7 +52,7 @@ def main():
     adata.obs = pd.concat([adata.obs,combo_files],axis=1)
 
     adata.write(
-        'outlier_filtered_adata.h5ad',
+        '4.outlier_filtered_adata.h5ad',
         compression='gzip',
         compression_opts=options.anndata_compression_opts
     )

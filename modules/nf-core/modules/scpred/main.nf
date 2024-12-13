@@ -8,7 +8,7 @@ process SCPRED{
         container "wtsihgi/nf_scrna_qc_azimuth:d54db9b"
     }
 
-    publishDir  path: "${params.outdir}/celltype/scpred/",
+    publishDir  path: "${params.outdir}/celltype_assignemt/scpred/",
             saveAs: {filename -> "${outfil_prfx}_" + filename},
             mode: "${params.copy_mode}",
             overwrite: "true"
