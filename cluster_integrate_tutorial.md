@@ -78,7 +78,7 @@ params{
 
 * In Sanger you do not need to set up anything. All you need is an input file:
   ```
-      module load HGI/pipelines/yascp/1.5
+      module load HGI/pipelines/yascp/1.7
       yascp clustering -c input.nf
   ```
 
