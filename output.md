@@ -227,18 +227,6 @@ split_donor_h5ad
 ```
 per donor quantification matrix and additional metadata
 
-## filepaths
-```
-filepaths
-├── cellranger_as_h5ad.tsv
-├── donors_h5ad_assigned.tsv
-├── donors_h5ad.tsv
-├── exp__donors_h5ad_assigned.tsv
-├── exp__donors_h5ad.tsv
-├── vireo_donor_n_cells.tsv
-└── vireo_exp__donor_n_cells.tsv
-```
-# remove this folder NB!
 ## cellsnp
 ```
 cellsnp
