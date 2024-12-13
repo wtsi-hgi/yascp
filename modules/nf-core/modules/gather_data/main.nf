@@ -32,6 +32,12 @@ process GATHER_DATA{
         cellbender_input='cellbender'
       }
 
+      if ("${params.extra_sample_metadata}" != ''){
+        extra_meta = "--extra_meta=${params.extra_sample_metadata}"
+      }else{
+        extra_meta = ""
+      }
+
       """
         echo ${dummy_val}
         gather_minimal_dataset.py \
@@ -41,7 +47,7 @@ process GATHER_DATA{
           --cellbender=${cellbender_input} \
           --resolution=${params.cellbender_resolution_to_use} \
           --write_h5=${params.write_h5} \
-          --experiment_name=${params.RUN}
+          --experiment_name=${params.RUN} ${extra_meta}
       """
 }
 

@@ -58,7 +58,7 @@ if (os.path.exists(f"{path}/deconvolution/deconvolution_results/vireo_gt_fix")):
         # Split Donor Report by cohort
 
 
-        Donor_Report2 = Donor_Report.set_index('Pool_ID.Donor_Id')
+        Donor_Report2 = Donor_Report.set_index(Donor_Report['Pool_ID.Donor_Id'])
         
         try:
             Donor_Report2.insert(0,'Vacutainer ID','NONE')
@@ -176,7 +176,10 @@ if (os.path.exists(f"{path}/deconvolution/deconvolution_results/vireo_gt_fix")):
             return Total_Report
 
         GT_MATCH['final_panel']=GT_MATCH['final_panel'].str.replace("_[1-9][0-9]*$","", regex=True)
+        GT_MATCH['donor_gt'] = GT_MATCH['donor_gt'].astype(str)
+        GT_MATCH['donor_gt original'] = GT_MATCH['donor_gt'].astype(str)
         for confident_panel in set(GT_MATCH['final_panel']):
+            print(confident_panel)
             if (confident_panel!='NONE' and confident_panel!='GT_cell_lines'):
                 print(confident_panel)
                 pan=confident_panel.replace('GT_','')
@@ -214,7 +217,10 @@ if (os.path.exists(f"{path}/deconvolution/deconvolution_results/vireo_gt_fix")):
                 Donor_Report2.loc[Total_Report2.index,'viability']=Total_Report2.loc[Total_Report2.index,'viability']
                 Donor_Report2.loc[Total_Report2.index,'Match Expected']=Total_Report2.loc[Total_Report2.index,'Match Expected']
                 Donor_Report2.loc[Total_Report2.index,'Sequencing time']=Total_Report2.loc[Total_Report2.index,'Sequencing time']
-                Donor_Report2 = Donor_Report2.reset_index().set_index('Pool ID')
+                try:
+                    Donor_Report2 = Donor_Report2.reset_index().set_index('Pool ID')
+                except:
+                    Donor_Report2 = Donor_Report2.set_index('Pool ID')
 
                 GT_MATCH2 = GT_MATCH.set_index('pool')
                 GT_MATCH2=GT_MATCH2[['Emergency_ids expected','Good_ids expected']]
