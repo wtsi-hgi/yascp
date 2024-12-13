@@ -54,7 +54,7 @@ process MERGE_GENOTYPES_IN_ONE_VCF_FREEBAYES{
           mode: "${params.copy_mode}",
           overwrite: "true"
 
-    publishDir  path: "${params.outdir}/deconvolution/deconvolution_results/vireo",
+    publishDir  path: "${params.outdir}/deconvolution/vireo_raw",
           saveAs: {filename ->
                     if (filename.endsWith("vireo_${panel}")) {
                         filename
@@ -234,7 +234,7 @@ process VIREO_GT_FIX_HEADER
 }
 process REPLACE_GT_DONOR_ID2{
     tag "${samplename}"
-    publishDir  path: "${params.outdir}/deconvolution/deconvolution_results/vireo_gt_fix/${samplename}/",
+    publishDir  path: "${params.outdir}/deconvolution/vireo_processed/${samplename}/",
           pattern: "GT_replace_*",
           mode: "${params.copy_mode}",
           overwrite: "true"

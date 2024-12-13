@@ -446,7 +446,7 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
         df_cellbender = df_cellbender.reset_index()
         df_cellbender = df_cellbender.drop_duplicates(subset=['experiment_id'])
         df_cellbender = df_cellbender.set_index('experiment_id')
-        df2 = glob.glob(f'{args.results_dir}/data_modalities_split/preprocess/{expid}/Gene_Expression-{expid}.h5ad')[0]
+        df2 = glob.glob(f'{args.results_dir}/preprocessing/data_modalities_split/preprocess/{expid}/Gene_Expression-{expid}.h5ad')[0]
 
         f=df_cellbender.loc[expid, 'data_path_10x_format']
         if (type(f) == str):
@@ -528,7 +528,7 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
     #Cell-type assignments
     #############
 
-    azt = pd.read_csv(f'{args.results_dir}/celltype/All_Celltype_Assignments.tsv',sep='\t',index_col=0)
+    azt = pd.read_csv(f'{args.results_dir}/celltype_assignemt/All_Celltype_Assignments.tsv',sep='\t',index_col=0)
     azt_cols_to_add = azt.columns[azt.columns.str.contains('Azimuth')]
     ct_cols_to_add = azt.columns[azt.columns.str.contains('Celltypist')]
     sc_cols_to_add = azt.columns[azt.columns.str.contains('scpred_prediction')]
@@ -548,7 +548,7 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
     ##########################
     # Scrublet
     #########################
-    doublet_data = glob.glob(f'{args.results_dir}/doublets/*.tsv')
+    doublet_data = glob.glob(f'{args.results_dir}/doublet_detection/doublet_results_combined/*.tsv')
     doublet_data_combined = pd.DataFrame()
     for f1 in doublet_data:
         print(f1)
@@ -758,7 +758,7 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
     except:
         _='cant validate reasoning'        
     
-    Summary_check = pd.read_csv(f'{args.results_dir}/deconvolution/vireo/{expid}/vireo_{expid}/summary.tsv',sep='\t')
+    Summary_check = pd.read_csv(f'{args.results_dir}/deconvolution/vireo_raw/{expid}/vireo_{expid}/summary.tsv',sep='\t')
     try:
         Doublets_donor = int(Summary_check[Summary_check['Var1']=='doublet']['Freq'].values[0])
     except:

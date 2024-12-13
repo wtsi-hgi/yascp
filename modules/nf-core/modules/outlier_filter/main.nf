@@ -17,7 +17,7 @@ process MERGE_OUTLIER_FILES{
         container "wtsihgi/nf_scrna_qc:6bb6af5"
     }
 
-    publishDir  path: "${params.outdir}/merged_h5ad/",
+    publishDir  path: "${params.outdir}/handover/merged_h5ad/",
                 saveAs: {filename ->
                     if (filename.contains("___sample_QCd_adata.h5ad")) {
                         null
@@ -28,7 +28,7 @@ process MERGE_OUTLIER_FILES{
                 mode: "${params.copy_mode}",
                 overwrite: "true"
 
-    publishDir  path: "${outdir}/merged_h5ad",
+    publishDir  path: "${outdir}/handover/merged_h5ad",
                 saveAs: {filename ->
                     if(filename.contains("outlier_filtered_adata.h5ad"))  {
                         filename = "4.outlier_filtered_adata.h5ad"
@@ -43,7 +43,7 @@ process MERGE_OUTLIER_FILES{
         path(file__anndata_files_filtered)
         
     output:
-        path('outlier_filtered_adata.h5ad', emit: anndata)
+        path('4.outlier_filtered_adata.h5ad', emit: anndata)
     script:
         """
             merge_outliers.py -h5 ${file__anndata}
@@ -67,7 +67,7 @@ process OUTLIER_FILTER {
     }
 
 
-    publishDir  path: "${outdir}/merged_h5ad/",
+    publishDir  path: "${outdir}/handover/merged_h5ad/",
 
                 saveAs: {filename ->
                     if(filename.contains("outlier_filtered_adata.h5ad"))  {

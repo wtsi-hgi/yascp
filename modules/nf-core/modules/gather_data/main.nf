@@ -76,7 +76,7 @@ process SPLIT_DATA_BY_STUDY
     path("${outdir_ukbb}", emit: outdir_ukbb)
 
   script:
-    donor_assignments_tsv = "${outdir_prev}/deconvolution/deconvolution_results/vireo_gt_fix/assignments_all_pools.tsv"
+    donor_assignments_tsv = "${outdir_prev}/deconvolution/vireo_processed/assignments_all_pools.tsv"
     outdir = "${outdir_prev}"
     outdir_ukbb = "handover_study/GT_UKBB"
     """

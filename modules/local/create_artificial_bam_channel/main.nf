@@ -28,7 +28,7 @@ workflow CREATE_ARTIFICIAL_BAM_CHANNEL{
 
         input_channel
             .splitCsv(header: true, sep: params.input_tables_column_delimiter)
-            .map{row->tuple(row.experiment_id, "${row.data_path_10x_format}/possorted_genome_bam.bam","${params.outdir}/deconvolution/deconvolution_results/vireo/${row.experiment_id}/donor_ids.tsv")}
+            .map{row->tuple(row.experiment_id, "${row.data_path_10x_format}/possorted_genome_bam.bam","${params.outdir}/deconvolution/vireo_raw/${row.experiment_id}/donor_ids.tsv")}
             .set{bam_split_channel}
 
         input_channel

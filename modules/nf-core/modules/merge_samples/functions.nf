@@ -37,7 +37,7 @@ process merge_samples_from_h5ad {
     label 'process_medium_single_CPU' 
     label 'process_medium_memory'
 
-    publishDir  path: "${outdir}/merged_h5ad",
+    publishDir  path: "${outdir}/handover/merged_h5ad",
                 saveAs: {filename -> filename.replaceAll("-", "pre_QC_")},
                 mode: "${params.copy_mode}",
                 overwrite: "true"
@@ -126,7 +126,7 @@ process merge_samples {
     tag "${samplename}"
     
     label 'process_high'
-    publishDir  path: "${outdir}/merged_h5ad",
+    publishDir  path: "${outdir}/handover/merged_h5ad",
                 saveAs: {filename -> filename.replaceAll("-", "pre_QC_")},
                 mode: "${params.copy_mode}",
                 overwrite: "true"

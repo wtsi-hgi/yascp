@@ -2,9 +2,10 @@ process capture_cellsnp_files{
 
   publishDir  path: "${params.outdir}/deconvolution/",
         saveAs: {filename ->
-        if (filename == "output_cellsnp.csv") {
+        File file = new File(filename)
+        if (filename == "output_cellsnp.csv" || filename == "existing_cellsnp_do_not_save") {
           null
-        } else {
+        }else {
           filename
         } 
         }
@@ -18,12 +19,23 @@ process capture_cellsnp_files{
   script:
   """
     echo '${params.cellsnp_recapture}'
-    for OUTPUT in \$(ls ${cellsnp_location})
-    do
-    samplename1=\$(echo \$OUTPUT | sed 's/cellsnp_//g') 
-    echo "\$samplename1 \$PWD/${cellsnp_location}/\$OUTPUT" >> output_cellsnp.csv
+    echo "deconvolution_test"
+    for OUTPUT in \$(ls ${cellsnp_location}); do
+        if [ ${cellsnp_location} == "existing_cellsnp" ] && [ -d ${cellsnp_location} ]; then
+            file_count=\$(ls -1 ${cellsnp_location} | wc -l)
+            if [ "\$file_count" -eq 1 ] && [ "\$OUTPUT" == "readme.md" ]; then
+                echo "Skipping folder ${cellsnp_location}"
+                mv ${cellsnp_location} existing_cellsnp_do_not_save
+            else
+              samplename1=\$(echo \$OUTPUT | sed 's/cellsnp_//g') 
+              echo "\$samplename1 \$PWD/${cellsnp_location}/\$OUTPUT" >> output_cellsnp.csv
+            fi
+        else
+          samplename1=\$(echo \$OUTPUT | sed 's/cellsnp_//g') 
+          echo "\$samplename1 \$PWD/${cellsnp_location}/\$OUTPUT" >> output_cellsnp.csv
+        fi
     done
-  """    
+  """
 }
 
 

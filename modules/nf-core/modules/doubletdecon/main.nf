@@ -8,7 +8,7 @@ process DOUBLET_DECON{
         container "mercury/azimuth_dsb:6_03_2024"
     }
     
-    publishDir  path: "${params.outdir}/doublets/multiplet.method=DoubletDecon",
+    publishDir  path: "${params.outdir}/doublet_detection/DoubletDecon",
                 mode: "${params.copy_mode}",
                 overwrite: "true"
     memory { 
@@ -32,8 +32,8 @@ process DOUBLET_DECON{
 
     script:
         
-        outdir = "${params.outdir}/doublets/multiplet"
-        outdir = "${outdir}.method=DoubletDecon"
+        outdir = "${params.outdir}/doublet_detection/"
+        outdir = "${outdir}DoubletDecon"
         outfile = "${experiment_id}"
 
         """

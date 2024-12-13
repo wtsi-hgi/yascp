@@ -8,7 +8,7 @@ process AZIMUTH{
         container "wtsihgi/nf_scrna_qc_azimuth:d54db9b"
     }
 
-    publishDir  path: "${params.outdir}/celltype/azimuth/${refset.name}",
+    publishDir  path: "${params.outdir}/celltype_assignemt/azimuth/${refset.name}",
             saveAs: {filename -> "${outfil_prfx}_" + filename},
             mode: "${params.copy_mode}",
             overwrite: "true"
@@ -68,7 +68,7 @@ process REMAP_AZIMUTH{
         container "wtsihgi/nf_scrna_qc_azimuth:d54db9b"
     }
 
-    publishDir  path: "${params.outdir}/celltype/",
+    publishDir  path: "${params.outdir}/celltype_assignemt/",
             mode: "${params.copy_mode}",
             overwrite: "true"
     stageInMode 'copy'  
