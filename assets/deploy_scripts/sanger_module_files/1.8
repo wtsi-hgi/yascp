@@ -6,7 +6,7 @@ set version [file tail [module-info version [module-info name]]]
  
 proc ModulesHelp { } {
     global version
-    puts stderr "YASCP (Yet Another Single Cell (scRNA) Pieline: https://github.com/wtsi-hgi/yascp) is a nextflow pipeline that QCs the scRNA Cellranger data by removing ambient RNA, deconvoluting donors, assigning celltypes, analysing concordances vs expected genotypes. IMPROVEMENTS: 1) Doublet detection of any andata object."
+    puts stderr "YASCP (Yet Another Single Cell (scRNA) Pieline: https://github.com/wtsi-hgi/yascp) is a nextflow pipeline that QCs the scRNA Cellranger data by removing ambient RNA, deconvoluting donors, assigning celltypes, analysing concordances vs expected genotypes. IMPROVEMENTS: 1) Hastag deconvolution, 2) Improved results folder structure, 3) Seurat final file production."
     puts stderr ""
     puts stderr "Yascp module has been set to run in multiple modes:"
     puts stderr "	*yascp -v or yascp -h :will describe the checkout tag used."
