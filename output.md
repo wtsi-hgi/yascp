@@ -17,19 +17,34 @@ results         # Finished results (configurable, see below)
 
 Utilizing [Nextflow](https://www.nextflow.io/), our pipeline orchestrates a series of data processing steps. The structure of the overall results folder is outlined below, offering a snapshot of the diverse outputs from different stages of the pipeline:
 
-- **[preprocessing](#preprocessing)**: ???
+- **[preprocessing](#preprocessing)**: ???? A folder with data modality split
 - **[doublet_detection](#doublet_detection)**: A folder with identified artificial doublet cells.
 - **[deconvolution](#deconvolution)**: A folder with the results of disentangling mixtures of cells from different donors.
 - **[celltype_assignemt](#celltype_assignemt)**: A folder with cells classified into types.
 - **[clustering_and_integration](#clustering_and_integration)**:  A folder with cells grouped based on similarities and integrating datasets.
 - **[citeseq](#citeseq)**: A folder with CITE-seq (Cellular Indexing of Transcriptomes and Epitopes by Sequencing) data.
-- **[handover](#handover)**: ???
+- **[handover](#handover)**: A folder with final results
 - **[pipeline_info]**: ???
 - **[yascp_inputs]**: ???
 
 Detailed explanations of each output folder and their corresponding steps are provided below:
 
 ## preprocessing
+
+The `preprocessing` folder contains the following subdirectories:
+
+- **data_modalities_split**  
+   This folder contains raw and filtered quantification data separated by modality (CITE-seq or hashtag).
+
+- **resources**  
+   This folder contains genotype assembly and input files for the test dataset.
+
+- **subset_genotypes**  
+   This folder is created only if VCF IDs are specified in the input TSV file. It contains genotypes divided from the pools.
+
+<details>
+<summary>Click to expand</summary>
+
 ```
 preprocessing/
 ├── data_modalities_split
@@ -55,13 +70,27 @@ preprocessing/
     └── Genotypes_all_pools.tsv
 
 ```
-
-The folder preprocessing contains the next folders
-- **[data_modalities_split]  raw and filtered quantification data devided by the modality (citeseq or hashtag)
-- **[recourses] genotype assembly and and input files for test dataset
-- **[subset_genotypes] contains divided genotipes from pools. Apears only if you specify vcf ids in the input tsv file (improve writing) 
+</details>
 
 ## doublet_detection
+
+The `doublet_detection` folder contains the following subdirectories:
+
+- **DoubletFinder, DoubletDecon, scDblFinder, SCDS**  
+   Each folder contains TSV files for each pool. These files include barcodes and labels indicating whether each cell is a singlet or a doublet.
+
+- **scrublet**  
+   This folder contains TSV files for each pool with barcodes and labels indicating whether each cell is a multiplet or not. Additionally, this folder includes a subdirectory with plots.
+
+- **doublet_results_combined**  
+   This folder contains TSV files for each pool with barcodes and combined labels from multiple tools: Scrublet, SCDS, scDblFinder, DoubletDecon, and DoubletFinder.
+
+- **droplet_type_distribution**  
+   This folder contains PNG files with graphs visualizing the distribution of droplet types.
+
+<details>
+<summary>Click to expand</summary>
+
 ```
 doublet_detection
 ├── DoubletDecon
@@ -84,10 +113,7 @@ doublet_detection
     │   └── Pool1histogram_multiplet_zscores.png
     └── Pool1scrublet.tsv
 ```
-DoubletFinder, DoubletDecon, scDblFinder, SCDS contain tsv files per pool with a barcode and label of whether it's a singlet or a doublet
-scrublet contains tsv files per pool with a barcode and label of whether it's a multiplet or not and a folder with plots
-doublet_results_combined contains tsv files per pool with barcode and labels from scrublet,	scds, scDblFinder, DoubletDecon, DoubletFinder
-droplet_type_distribution contains png files with graphs showing droplet-type distribution
+</details>
 
 ## deconvolution
 
@@ -101,11 +127,12 @@ droplet_type_distribution contains png files with graphs showing droplet-type di
 - **[existing_cellsnp](#existing_cellsnp)**: (name can be different)
 - **[concordances](#concordances)**:
 - **[gtmatch](#gtmatch)**:
-infered_genotypes
 
+- **vireo_raw**  
+   This folder contains genotypes if run in genotype-aware mode
+<details>
+<summary>Click to expand</summary>
 
-
-## vireo_raw
 ```
 vireo_raw
 ├── correlations.png
@@ -118,9 +145,13 @@ vireo_raw
 └── matched_donors.txt
 
 ```
-contains genotypes if run in genotype-aware mode
+</details>
 
-## vireo_processed
+- **vireo_processed**  
+   This folder contains genotypes renamed to imitate genotype absent mode to ensure consistency in the downstream pipeline tasks
+<details>
+<summary>Click to expand</summary>
+
 ```
 vireo_processed
 ├── assignments_all_pools.tsv
@@ -131,7 +162,6 @@ vireo_processed
     ├── GT_replace_Pool1__exp.sample_summary_false.txt
     └── GT_replace_Pool1.sample_summary_false.txt
 ```
-genotypes renamed to imitate genotype absent mode to ensure the consistency in the downstream pipeline tasks
 
 ## vireo_sub
 ```
