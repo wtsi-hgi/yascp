@@ -379,10 +379,31 @@ gtmatch/
 </details>
 
 ## celltype_assignemt
+This folder contains Cell type assignments by different methods and models
+The `celltype_assignemt` folder contains the following subdirectories and files:
+
+- **All_Celltype_Assignments.tsv**  
+   A combined file with results per barcode/droplet/cell.
+
+- **donor_celltype_report.tsv**  
+   Summarized cell counts per donor.
+
+- **tranche_celltype_report.tsv**  
+   Summarized cell counts per tranche.
+
+- **scored**  
+   This folder contains results of scored
+  
+- **azimuth**  
+   This folder contains results of azimuth
+  
+- **celltypist**  
+   This folder contains results of celltypist
+
 <details>
 <summary>Click to expand</summary>
 
-   ```
+```
 celltype_assignemt/
 ├── All_Celltype_Assignments.tsv
 ├── azimuth
@@ -427,18 +448,13 @@ celltype_assignemt/
 ```
 </details>
 
-- **[All_Celltype_Assignments.tsv] combination of results per barcode/droplet/cell
-- **[donor_celltype_report.tsv] per donor summarised cell numbers
-- **[tranche_celltype_report.tsv] per tranch summarised cell numbers
-cell type assignments by different methods and models:
-- **[scored]
-- **[azimuth]
-- **[celltypist]
-- Immune_All_Low
-- COVID19_Immune_Landscape
-- Immune_All_High
-
 ## clustering_and_integration
+
+This folder contains integrated and clustered data, along with statistics and plots that describe the performance of the integration and clustering processes.
+
+<details>
+<summary>Click to expand</summary>
+
 ```
 clustering_and_integration/
 ├── normalize=total_count.vars_to_regress=none
@@ -487,25 +503,32 @@ clustering_and_integration/
 └── plots
 
 ```
-integrated and clustered data with statistics and plots describing integration and clustering performance
-
-normalize=total_count.vars_to_regress=none (should it be renamed)
-plots
+</details>
 
 ## citeseq
+
+- **[DSB] is there only one folder in citeseq? DSB has folders for each pool
+contains DSB background removed protein counts if citeseq is in quantification matrix
+
+<details>
+<summary>Click to expand</summary>
+
 ```
 citeseq/
 └── DSB
     └── Pool1
         └── CITE__Pool1
 ```
-- **[DSB] is there only one folder in citeseq? DSB has folders for each pool
-contains DSB background removed protein counts if citeseq is in quantification matrix
+</details>
+
 ## handover
 - **[Summary_plots]
 - **[Donor_Quantification]
 - **[Donor_Quantification_summary]
 - **[merged_h5ad]
+
+<details>
+<summary>Click to expand</summary>
 
 ```
 handover/
@@ -515,6 +538,7 @@ handover/
 └── Summary_plots
 └── UMAPs
 ```
+</details>
 
 ## Pipeline Info
 
