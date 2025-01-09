@@ -120,8 +120,8 @@ The `deconvolution` folder contains the following subdirectories:
 
 - **vireo_raw**  
    This folder contains genotypes if run in genotype-aware mode
-<details>
-<summary>Click to view detailed folder structure</summary>
+   <details>
+   <summary>Click to view detailed folder structure</summary>
 
 ```
 vireo_raw
@@ -139,8 +139,8 @@ vireo_raw
 
 - **vireo_processed**  
    This folder contains genotypes renamed to imitate genotype absent mode to ensure consistency in the downstream pipeline tasks
-<details>
-<summary>Click to view detailed folder structure</summary>
+   <details>
+   <summary>Click to view detailed folder structure</summary>
 
 ```
 vireo_processed
@@ -156,8 +156,8 @@ vireo_processed
 
 - **vireo_sub**  
    This folder contains vireo permutations to ensure stability in cell assignment
-<details>
-<summary>Click to view detailed folder structure</summary>
+   <details>
+   <summary>Click to view detailed folder structure</summary>
 
 ```
 vireo_sub
@@ -219,8 +219,8 @@ vireo_sub
 
 - **infered_genotypes**  
    This folder contains genotypes called from single-cell data (per donor in a pool)
-<details>
-<summary>Click to view detailed folder structure</summary>
+   <details>
+   <summary>Click to view detailed folder structure</summary>
 
 ```
 infered_genotypes
@@ -233,8 +233,8 @@ infered_genotypes
 
 - **split_donor_h5ad**  
    This folder contains per donor quantification matrix and additional metadata
-<details>
-<summary>Click to view detailed folder structure</summary>
+   <details>
+   <summary>Click to view detailed folder structure</summary>
 
 ```
 split_donor_h5ad
@@ -264,8 +264,8 @@ split_donor_h5ad
 
 - **cellsnp**  
    This folder contains genotypes called from single-cell data per (per droplet/cell)
-<details>
-<summary>Click to view detailed folder structure</summary>
+   <details>
+   <summary>Click to view detailed folder structure</summary>
 
 ```
 cellsnp
@@ -281,8 +281,8 @@ cellsnp
 
 - **concordances**  
    This folder contains statistics describing how confident the cell-inferred genotype aligns with the reference genotypes.
-<details>
-<summary>Click to view detailed folder structure</summary>
+   <details>
+   <summary>Click to view detailed folder structure</summary>
 
 ```
 concordances
@@ -345,8 +345,8 @@ concordances
 
 - **gtmatch**  
    if genotypes are provided it contains the results of donors assigned by gtcheck.
-<details>
-<summary>Click to view detailed folder structure</summary>
+   <details>
+   <summary>Click to view detailed folder structure</summary>
 
 ```
 gtmatch/
