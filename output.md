@@ -161,72 +161,72 @@ vireo_processed
 
 ```
 vireo_sub
-├── Pool1
-│   ├── vireo_____1
-│   │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz
-│   │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz.csi
-│   │   ├── sub_Pool1_Expected.vcf.gz
-│   │   └── vireo_Pool1___1
-│   ├── vireo_____10
-│   │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz
-│   │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz.csi
-│   │   ├── sub_Pool1_Expected.vcf.gz
-│   │   └── vireo_Pool1___10
-│   ├── vireo_____2
-│   │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz
-│   │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz.csi
-│   │   ├── sub_Pool1_Expected.vcf.gz
-│   │   └── vireo_Pool1___2
-│   ├── vireo_____3
-│   │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz
-│   │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz.csi
-│   │   ├── sub_Pool1_Expected.vcf.gz
-│   │   └── vireo_Pool1___3
-│   ├── vireo_____4
-│   │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz
-│   │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz.csi
-│   │   ├── sub_Pool1_Expected.vcf.gz
-│   │   └── vireo_Pool1___4
-│   ├── vireo_____5
-│   │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz
-│   │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz.csi
-│   │   ├── sub_Pool1_Expected.vcf.gz
-│   │   └── vireo_Pool1___5
-│   ├── vireo_____6
-│   │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz
-│   │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz.csi
-│   │   ├── sub_Pool1_Expected.vcf.gz
-│   │   └── vireo_Pool1___6
-│   ├── vireo_____7
-│   │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz
-│   │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz.csi
-│   │   ├── sub_Pool1_Expected.vcf.gz
-│   │   └── vireo_Pool1___7
-│   ├── vireo_____8
-│   │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz
-│   │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz.csi
-│   │   ├── sub_Pool1_Expected.vcf.gz
-│   │   └── vireo_Pool1___8
-│   └── vireo_____9
-│       ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz
-│       ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz.csi
-│       ├── sub_Pool1_Expected.vcf.gz
-│       └── vireo_Pool1___9
+└── Pool1
+    ├── vireo_____1
+    │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz
+    │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz.csi
+    │   ├── sub_Pool1_Expected.vcf.gz
+    │   └── vireo_Pool1___1
+    ├── vireo_____10
+    │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz
+    │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz.csi
+    │   ├── sub_Pool1_Expected.vcf.gz
+    │   └── vireo_Pool1___10
+    ├── vireo_____2
+    │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz
+    │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz.csi
+    │   ├── sub_Pool1_Expected.vcf.gz
+    │   └── vireo_Pool1___2
+    ├── vireo_____3
+    │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz
+    │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz.csi
+    │   ├── sub_Pool1_Expected.vcf.gz
+    │   └── vireo_Pool1___3
+    ├── vireo_____4
+    │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz
+    │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz.csi
+    │   ├── sub_Pool1_Expected.vcf.gz
+    │   └── vireo_Pool1___4
+    ├── vireo_____5
+    │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz
+    │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz.csi
+    │   ├── sub_Pool1_Expected.vcf.gz
+    │   └── vireo_Pool1___5
+    ├── vireo_____6
+    │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz
+    │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz.csi
+    │   ├── sub_Pool1_Expected.vcf.gz
+    │   └── vireo_Pool1___6
+    ├── vireo_____7
+    │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz
+    │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz.csi
+    │   ├── sub_Pool1_Expected.vcf.gz
+    │   └── vireo_Pool1___7
+    ├── vireo_____8
+    │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz
+    │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz.csi
+    │   ├── sub_Pool1_Expected.vcf.gz
+    │   └── vireo_Pool1___8
+    └── vireo_____9
+        ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz
+        ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz.csi
+        ├── sub_Pool1_Expected.vcf.gz
+        └── vireo_Pool1___9
 ```
 </details>
 
 
 
 - **infered_genotypes**  
-   This folder contains genotypes called from single-cell data per (per donor in a pool)
+   This folder contains genotypes called from single-cell data (per donor in a pool)
 <details>
 <summary>Click to view detailed folder structure</summary>
 
 ```
 infered_genotypes
-├── Pool1
-│   ├── Pool1_headfix_vireo.vcf.gz
-│   └── Pool1_headfix_vireo.vcf.gz.tbi
+└── Pool1
+    ├── Pool1_headfix_vireo.vcf.gz
+    └── Pool1_headfix_vireo.vcf.gz.tbi
 ```
 </details>
 
