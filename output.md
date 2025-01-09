@@ -162,8 +162,13 @@ vireo_processed
     ├── GT_replace_Pool1__exp.sample_summary_false.txt
     └── GT_replace_Pool1.sample_summary_false.txt
 ```
+</details>
 
-## vireo_sub
+- **vireo_sub**  
+   This folder contains vireo permutations to ensure stability in cell assignment
+<details>
+<summary>Click to expand</summary>
+
 ```
 vireo_sub
 ├── Pool1
@@ -218,19 +223,29 @@ vireo_sub
 │       ├── sub_Pool1_Expected.vcf.gz
 │       └── vireo_Pool1___9
 ```
-vireo permutation to ensure stability in cell assignment
+</details>
 
 
-## infered_genotypes
+
+- **infered_genotypes**  
+   This folder contains genotypes called from single-cell data per (per donor in a pool)
+<details>
+<summary>Click to expand</summary>
+
 ```
 infered_genotypes
 ├── Pool1
 │   ├── Pool1_headfix_vireo.vcf.gz
 │   └── Pool1_headfix_vireo.vcf.gz.tbi
 ```
-genotypes called from single-cell data per (per donor in a pool)
+</details>
 
-## split_donor_h5ad
+
+- **split_donor_h5ad**  
+   This folder contains per donor quantification matrix and additional metadata
+<details>
+<summary>Click to expand</summary>
+
 ```
 split_donor_h5ad
 └── Pool1
@@ -255,9 +270,13 @@ split_donor_h5ad
     ├── vireo_annot.Pool1.h5ad
     └── Vireo_plots.pdf
 ```
-per donor quantification matrix and additional metadata
+</details>
 
-## cellsnp
+- **cellsnp**  
+   This folder contains genotypes called from single-cell data per (per droplet/cell)
+<details>
+<summary>Click to expand</summary>
+
 ```
 cellsnp
 └── cellsnp_Pool1
@@ -268,14 +287,16 @@ cellsnp
     ├── cellSNP.tag.DP.mtx
     └── cellSNP.tag.OTH.mtx
 ```
-genotypes called from single-cell data per (per droplet/cell)
+</details>
+
 ## existing_cellsnp
 
-## concordances
-```
-concordances
-└── all_variants_description.tsv
+- **concordances**  
+   This folder contains statistics describing how confident the cell-inferred genotype aligns with the reference genotypes.
+<details>
+<summary>Click to expand</summary>
 
+```
 concordances
 ├── all_variants_description.tsv
 ├── becoming_different_donor.png
@@ -332,9 +353,13 @@ concordances
 └── Total_reads_becoming_different_donor.png
 
 ```
-statistics to describe how confident is the cell inferred genotype alignment with the reference genotypes.
+</details>
 
-## gtmatch
+- **gtmatch**  
+   if genotypes are provided it contains the results of donors assigned by gtcheck.
+<details>
+<summary>Click to expand</summary>
+
 ```
 gtmatch/
 ├── assignments_all_pools.tsv
@@ -351,10 +376,13 @@ gtmatch/
     ├── pool_Pool1_panel_Pool1_Onek1K_gtcheck_score_table.csv
     └── stats_Pool1_gt_donor_assignments.csv
 ```
-if genotypes are provided it contains the results of donors assigned by gtcheck.
+</details>
 
 ## celltype_assignemt
-```
+<details>
+<summary>Click to expand</summary>
+
+   ```
 celltype_assignemt/
 ├── All_Celltype_Assignments.tsv
 ├── azimuth
@@ -397,6 +425,8 @@ celltype_assignemt/
 │   └── AZ_1.pre_QC_adata_Pool1_hier_scpred.RDS
 └── tranche_celltype_report.tsv
 ```
+</details>
+
 - **[All_Celltype_Assignments.tsv] combination of results per barcode/droplet/cell
 - **[donor_celltype_report.tsv] per donor summarised cell numbers
 - **[tranche_celltype_report.tsv] per tranch summarised cell numbers
