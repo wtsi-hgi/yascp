@@ -43,7 +43,7 @@ The `preprocessing` folder contains the following subdirectories:
    This folder is created only if VCF IDs are specified in the input TSV file. It contains genotypes divided from the pools.
 
 <details>
-<summary>Click to expand</summary>
+<summary>Click to view detailed folder structure</summary>
 
 ```
 preprocessing/
@@ -89,7 +89,7 @@ The `doublet_detection` folder contains the following subdirectories:
    This folder contains PNG files with graphs visualizing the distribution of droplet types.
 
 <details>
-<summary>Click to expand</summary>
+<summary>Click to view detailed folder structure</summary>
 
 ```
 doublet_detection
@@ -131,7 +131,7 @@ doublet_detection
 - **vireo_raw**  
    This folder contains genotypes if run in genotype-aware mode
 <details>
-<summary>Click to expand</summary>
+<summary>Click to view detailed folder structure</summary>
 
 ```
 vireo_raw
@@ -150,7 +150,7 @@ vireo_raw
 - **vireo_processed**  
    This folder contains genotypes renamed to imitate genotype absent mode to ensure consistency in the downstream pipeline tasks
 <details>
-<summary>Click to expand</summary>
+<summary>Click to view detailed folder structure</summary>
 
 ```
 vireo_processed
@@ -167,7 +167,7 @@ vireo_processed
 - **vireo_sub**  
    This folder contains vireo permutations to ensure stability in cell assignment
 <details>
-<summary>Click to expand</summary>
+<summary>Click to view detailed folder structure</summary>
 
 ```
 vireo_sub
@@ -230,7 +230,7 @@ vireo_sub
 - **infered_genotypes**  
    This folder contains genotypes called from single-cell data per (per donor in a pool)
 <details>
-<summary>Click to expand</summary>
+<summary>Click to view detailed folder structure</summary>
 
 ```
 infered_genotypes
@@ -244,7 +244,7 @@ infered_genotypes
 - **split_donor_h5ad**  
    This folder contains per donor quantification matrix and additional metadata
 <details>
-<summary>Click to expand</summary>
+<summary>Click to view detailed folder structure</summary>
 
 ```
 split_donor_h5ad
@@ -275,7 +275,7 @@ split_donor_h5ad
 - **cellsnp**  
    This folder contains genotypes called from single-cell data per (per droplet/cell)
 <details>
-<summary>Click to expand</summary>
+<summary>Click to view detailed folder structure</summary>
 
 ```
 cellsnp
@@ -294,7 +294,7 @@ cellsnp
 - **concordances**  
    This folder contains statistics describing how confident the cell-inferred genotype aligns with the reference genotypes.
 <details>
-<summary>Click to expand</summary>
+<summary>Click to view detailed folder structure</summary>
 
 ```
 concordances
@@ -358,7 +358,7 @@ concordances
 - **gtmatch**  
    if genotypes are provided it contains the results of donors assigned by gtcheck.
 <details>
-<summary>Click to expand</summary>
+<summary>Click to view detailed folder structure</summary>
 
 ```
 gtmatch/
@@ -401,7 +401,7 @@ The `celltype_assignemt` folder contains the following subdirectories and files:
    This folder contains results of celltypist
 
 <details>
-<summary>Click to expand</summary>
+<summary>Click to view detailed folder structure</summary>
 
 ```
 celltype_assignemt/
@@ -453,7 +453,7 @@ celltype_assignemt/
 This folder contains integrated and clustered data, along with statistics and plots that describe the performance of the integration and clustering processes.
 
 <details>
-<summary>Click to expand</summary>
+<summary>Click to view detailed folder structure</summary>
 
 ```
 clustering_and_integration/
@@ -511,7 +511,7 @@ clustering_and_integration/
 contains DSB background removed protein counts if citeseq is in quantification matrix
 
 <details>
-<summary>Click to expand</summary>
+<summary>Click to view detailed folder structure</summary>
 
 ```
 citeseq/
@@ -528,7 +528,7 @@ citeseq/
 - **[merged_h5ad]
 
 <details>
-<summary>Click to expand</summary>
+<summary>Click to view detailed folder structure</summary>
 
 ```
 handover/
