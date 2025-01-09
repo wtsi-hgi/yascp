@@ -279,8 +279,6 @@ cellsnp
 ```
 </details>
 
-## existing_cellsnp
-
 - **concordances**  
    This folder contains statistics describing how confident the cell-inferred genotype aligns with the reference genotypes.
 <details>
