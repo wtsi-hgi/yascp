@@ -116,17 +116,7 @@ doublet_detection
 </details>
 
 ## deconvolution
-
-- **[vireo_raw](#vireo_raw)**:
-- **[vireo_processed](#vireo_processed)**:
-- **[vireo_sub](#vireo_sub)**:
-- **[infered_genotypes](#infered_genotypes)**:
-- **[split_donor_h5ad](#split_donor_h5ad)**:
-- **[filepaths](#filepaths)**:
-- **[cellsnp](#cellsnp)**:
-- **[existing_cellsnp](#existing_cellsnp)**: (name can be different)
-- **[concordances](#concordances)**:
-- **[gtmatch](#gtmatch)**:
+The `deconvolution` folder contains the following subdirectories:
 
 - **vireo_raw**  
    This folder contains genotypes if run in genotype-aware mode
