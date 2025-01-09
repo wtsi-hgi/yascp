@@ -123,97 +123,97 @@ The `deconvolution` folder contains the following subdirectories:
    <details>
    <summary>Click to view detailed folder structure</summary>
 
-```
-vireo_raw
-├── correlations.png
-├── Pool1
-│   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz
-│   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz.csi
-│   ├── sub_Pool1_Expected.vcf.gz
-│   └── vireo_Pool1
-├── donor_corelations_matrix.tsv
-└── matched_donors.txt
+   ```
+   vireo_raw
+   ├── correlations.png
+   ├── Pool1
+   │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz
+   │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz.csi
+   │   ├── sub_Pool1_Expected.vcf.gz
+   │   └── vireo_Pool1
+   ├── donor_corelations_matrix.tsv
+   └── matched_donors.txt
 
-```
-</details>
+   ```
+   </details>
 
 - **vireo_processed**  
    This folder contains genotypes renamed to imitate genotype absent mode to ensure consistency in the downstream pipeline tasks
    <details>
    <summary>Click to view detailed folder structure</summary>
 
-```
-vireo_processed
-├── assignments_all_pools.tsv
-└── Pool1
-    ├── GT_replace_donor_ids_false.tsv
-    ├── GT_replace_GT_donors.vireo_false.vcf.gz
-    ├── GT_replace_Pool1_assignments_false.tsv
-    ├── GT_replace_Pool1__exp.sample_summary_false.txt
-    └── GT_replace_Pool1.sample_summary_false.txt
-```
-</details>
+   ```
+   vireo_processed
+   ├── assignments_all_pools.tsv
+   └── Pool1
+       ├── GT_replace_donor_ids_false.tsv
+       ├── GT_replace_GT_donors.vireo_false.vcf.gz
+       ├── GT_replace_Pool1_assignments_false.tsv
+       ├── GT_replace_Pool1__exp.sample_summary_false.txt
+       └── GT_replace_Pool1.sample_summary_false.txt
+   ```
+   </details>
 
 - **vireo_sub**  
    This folder contains vireo permutations to ensure stability in cell assignment
    <details>
    <summary>Click to view detailed folder structure</summary>
 
-```
-vireo_sub
-└── Pool1
-    ├── vireo_____1
-    │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz
-    │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz.csi
-    │   ├── sub_Pool1_Expected.vcf.gz
-    │   └── vireo_Pool1___1
-    ├── vireo_____10
-    │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz
-    │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz.csi
-    │   ├── sub_Pool1_Expected.vcf.gz
-    │   └── vireo_Pool1___10
-    ├── vireo_____2
-    │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz
-    │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz.csi
-    │   ├── sub_Pool1_Expected.vcf.gz
-    │   └── vireo_Pool1___2
-    ├── vireo_____3
-    │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz
-    │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz.csi
-    │   ├── sub_Pool1_Expected.vcf.gz
-    │   └── vireo_Pool1___3
-    ├── vireo_____4
-    │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz
-    │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz.csi
-    │   ├── sub_Pool1_Expected.vcf.gz
-    │   └── vireo_Pool1___4
-    ├── vireo_____5
-    │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz
-    │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz.csi
-    │   ├── sub_Pool1_Expected.vcf.gz
-    │   └── vireo_Pool1___5
-    ├── vireo_____6
-    │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz
-    │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz.csi
-    │   ├── sub_Pool1_Expected.vcf.gz
-    │   └── vireo_Pool1___6
-    ├── vireo_____7
-    │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz
-    │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz.csi
-    │   ├── sub_Pool1_Expected.vcf.gz
-    │   └── vireo_Pool1___7
-    ├── vireo_____8
-    │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz
-    │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz.csi
-    │   ├── sub_Pool1_Expected.vcf.gz
-    │   └── vireo_Pool1___8
-    └── vireo_____9
-        ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz
-        ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz.csi
-        ├── sub_Pool1_Expected.vcf.gz
-        └── vireo_Pool1___9
-```
-</details>
+   ```
+   vireo_sub
+   └── Pool1
+       ├── vireo_____1
+       │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz
+       │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz.csi
+       │   ├── sub_Pool1_Expected.vcf.gz
+       │   └── vireo_Pool1___1
+       ├── vireo_____10
+       │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz
+       │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz.csi
+       │   ├── sub_Pool1_Expected.vcf.gz
+       │   └── vireo_Pool1___10
+       ├── vireo_____2
+       │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz
+       │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz.csi
+       │   ├── sub_Pool1_Expected.vcf.gz
+       │   └── vireo_Pool1___2
+       ├── vireo_____3
+       │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz
+       │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz.csi
+       │   ├── sub_Pool1_Expected.vcf.gz
+       │   └── vireo_Pool1___3
+       ├── vireo_____4
+       │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz
+       │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz.csi
+       │   ├── sub_Pool1_Expected.vcf.gz
+       │   └── vireo_Pool1___4
+       ├── vireo_____5
+       │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz
+       │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz.csi
+       │   ├── sub_Pool1_Expected.vcf.gz
+       │   └── vireo_Pool1___5
+       ├── vireo_____6
+       │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz
+       │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz.csi
+       │   ├── sub_Pool1_Expected.vcf.gz
+       │   └── vireo_Pool1___6
+       ├── vireo_____7
+       │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz
+       │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz.csi
+       │   ├── sub_Pool1_Expected.vcf.gz
+       │   └── vireo_Pool1___7
+       ├── vireo_____8
+       │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz
+       │   ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz.csi
+       │   ├── sub_Pool1_Expected.vcf.gz
+       │   └── vireo_Pool1___8
+       └── vireo_____9
+           ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz
+           ├── dubs_removed__Study_Merge_AllExpectedGT_QW4IKXM1N_out.vcf.gz.csi
+           ├── sub_Pool1_Expected.vcf.gz
+           └── vireo_Pool1___9
+   ```
+   </details>
 
 
 
@@ -222,13 +222,13 @@ vireo_sub
    <details>
    <summary>Click to view detailed folder structure</summary>
 
-```
-infered_genotypes
-└── Pool1
-    ├── Pool1_headfix_vireo.vcf.gz
-    └── Pool1_headfix_vireo.vcf.gz.tbi
-```
-</details>
+   ```
+   infered_genotypes
+   └── Pool1
+       ├── Pool1_headfix_vireo.vcf.gz
+       └── Pool1_headfix_vireo.vcf.gz.tbi
+   ```
+   </details>
 
 
 - **split_donor_h5ad**  
@@ -236,135 +236,135 @@ infered_genotypes
    <details>
    <summary>Click to view detailed folder structure</summary>
 
-```
-split_donor_h5ad
-└── Pool1
-    ├── cell_belongings.tsv
-    ├── donor_level_anndata
-    │   ├── donor0.Pool1.barcodes.tsv
-    │   ├── donor0.Pool1.h5ad
-    │   ├── donor1.Pool1.barcodes.tsv
-    │   ├── donor1.Pool1.h5ad
-    │   ├── donor2.Pool1.barcodes.tsv
-    │   ├── donor2.Pool1.h5ad
-    │   ├── doublet.Pool1.barcodes.tsv
-    │   ├── doublet.Pool1.h5ad
-    │   ├── unassigned.Pool1.barcodes.tsv
-    │   └── unassigned.Pool1.h5ad
-    ├── Pool1.donors.h5ad.assigned.tsv
-    ├── Pool1__donors.h5ad.assigned.tsv
-    ├── Pool1.donors.h5ad.tsv
-    ├── Pool1__donors.h5ad.tsv
-    ├── Pool1_exp__donor_n_cells.tsv
-    ├── Pool1.h5ad.tsv
-    ├── vireo_annot.Pool1.h5ad
-    └── Vireo_plots.pdf
-```
-</details>
+   ```
+   split_donor_h5ad
+   └── Pool1
+       ├── cell_belongings.tsv
+       ├── donor_level_anndata
+       │   ├── donor0.Pool1.barcodes.tsv
+       │   ├── donor0.Pool1.h5ad
+       │   ├── donor1.Pool1.barcodes.tsv
+       │   ├── donor1.Pool1.h5ad
+       │   ├── donor2.Pool1.barcodes.tsv
+       │   ├── donor2.Pool1.h5ad
+       │   ├── doublet.Pool1.barcodes.tsv
+       │   ├── doublet.Pool1.h5ad
+       │   ├── unassigned.Pool1.barcodes.tsv
+       │   └── unassigned.Pool1.h5ad
+       ├── Pool1.donors.h5ad.assigned.tsv
+       ├── Pool1__donors.h5ad.assigned.tsv
+       ├── Pool1.donors.h5ad.tsv
+       ├── Pool1__donors.h5ad.tsv
+       ├── Pool1_exp__donor_n_cells.tsv
+       ├── Pool1.h5ad.tsv
+       ├── vireo_annot.Pool1.h5ad
+       └── Vireo_plots.pdf
+   ```
+   </details>
 
 - **cellsnp**  
    This folder contains genotypes called from single-cell data per (per droplet/cell)
    <details>
    <summary>Click to view detailed folder structure</summary>
 
-```
-cellsnp
-└── cellsnp_Pool1
-    ├── cellSNP.base.vcf.gz
-    ├── cellSNP.cells.vcf.gz
-    ├── cellSNP.samples.tsv
-    ├── cellSNP.tag.AD.mtx
-    ├── cellSNP.tag.DP.mtx
-    └── cellSNP.tag.OTH.mtx
-```
-</details>
+   ```
+   cellsnp
+   └── cellsnp_Pool1
+       ├── cellSNP.base.vcf.gz
+       ├── cellSNP.cells.vcf.gz
+       ├── cellSNP.samples.tsv
+       ├── cellSNP.tag.AD.mtx
+       ├── cellSNP.tag.DP.mtx
+       └── cellSNP.tag.OTH.mtx
+   ```
+   </details>
 
 - **concordances**  
    This folder contains statistics describing how confident the cell-inferred genotype aligns with the reference genotypes.
    <details>
    <summary>Click to view detailed folder structure</summary>
 
-```
-concordances
-├── all_variants_description.tsv
-├── becoming_different_donor.png
-├── becoming_doublet_donor.png
-├── becoming_unassigned_donor.png
-├── Pool1
-│   ├── 1090095_1090095-donor3--each_cells_comparison_with_other_donor.tsv
-│   ├── 1709635_1709635-donor5--each_cells_comparison_with_other_donor.tsv
-│   ├── 2288590_2288590-donor6--each_cells_comparison_with_other_donor.tsv
-│   ├── 2743244_2743244-donor7--each_cells_comparison_with_other_donor.tsv
-│   ├── 2768849_2768849-donor4--each_cells_comparison_with_other_donor.tsv
-│   ├── 2998395_2998395-donor2--each_cells_comparison_with_other_donor.tsv
-│   ├── 3183427_3183427-donor0--each_cells_comparison_with_other_donor.tsv
-│   ├── 3699286_3699286-donor1--each_cells_comparison_with_other_donor.tsv
-│   ├── 4853673_4853673-donor9--each_cells_comparison_with_other_donor.tsv
-│   ├── 5154993_5154993-donor8--each_cells_comparison_with_other_donor.tsv
-│   ├── becoming_different_donor.png
-│   ├── becoming_doublet_donor.png
-│   ├── becoming_unassigned_donor.png
-│   ├── cell_belongings.tsv
-│   ├── cellSNP.cells.vcf.gz
-│   ├── Pool1__joined_df_for_plots.tsv
-│   ├── Pool1_subsampling_donor_swap_quantification.tsv
-│   ├── Discordant_reads_becoming_different_donor_no0.png
-│   ├── Discordant_reads_becoming_different_donor.png
-│   ├── Discordant_reads_by_n_sites_becoming_different_donor_no0.png
-│   ├── Discordant_reads_by_n_sites_becoming_different_donor.png
-│   ├── discordant_sites_in_other_donors_noA2G.tsv
-│   ├── Nr_discordant_uninformative_becoming_different_donor.png
-│   ├── sites_becoming_different_donor_no0.png
-│   ├── sites_becoming_different_donor.png
-│   ├── sites_becoming_different_donor_probs.png
-│   ├── sites_becoming_doublet_donor.png
-│   ├── sites_becoming_unassigned_donor.png
-│   ├── sites_vs_concordance.png
-│   ├── stats_Pool1_gt_donor_assignments.csv
-│   ├── sub_Pool1_Expected.vcf.gz
-│   ├── sub_Pool1_GT_Matched.vcf.gz
-│   ├── subplot_sites_vs_concordance.png
-│   └── Total_reads_becoming_different_donor.png
-├── Discordant_reads_becoming_different_donor_no0.png
-├── Discordant_reads_becoming_different_donor.png
-├── Discordant_reads_by_n_sites_becoming_different_donor_no0.png
-├── Discordant_reads_by_n_sites_becoming_different_donor.png
-├── joined_df_for_plots.tsv
-├── Nr_discordant_uninformative_becoming_different_donor.png
-├── sites_becoming_different_donor_no0.png
-├── sites_becoming_different_donor.png
-├── sites_becoming_different_donor_probs.png
-├── sites_becoming_doublet_donor.png
-├── sites_becoming_unassigned_donor.png
-├── sites_vs_concordance.png
-├── subplot_sites_vs_concordance.png
-└── Total_reads_becoming_different_donor.png
+   ```
+   concordances
+   ├── all_variants_description.tsv
+   ├── becoming_different_donor.png
+   ├── becoming_doublet_donor.png
+   ├── becoming_unassigned_donor.png
+   ├── Pool1
+   │   ├── 1090095_1090095-donor3--each_cells_comparison_with_other_donor.tsv
+   │   ├── 1709635_1709635-donor5--each_cells_comparison_with_other_donor.tsv
+   │   ├── 2288590_2288590-donor6--each_cells_comparison_with_other_donor.tsv
+   │   ├── 2743244_2743244-donor7--each_cells_comparison_with_other_donor.tsv
+   │   ├── 2768849_2768849-donor4--each_cells_comparison_with_other_donor.tsv
+   │   ├── 2998395_2998395-donor2--each_cells_comparison_with_other_donor.tsv
+   │   ├── 3183427_3183427-donor0--each_cells_comparison_with_other_donor.tsv
+   │   ├── 3699286_3699286-donor1--each_cells_comparison_with_other_donor.tsv
+   │   ├── 4853673_4853673-donor9--each_cells_comparison_with_other_donor.tsv
+   │   ├── 5154993_5154993-donor8--each_cells_comparison_with_other_donor.tsv
+   │   ├── becoming_different_donor.png
+   │   ├── becoming_doublet_donor.png
+   │   ├── becoming_unassigned_donor.png
+   │   ├── cell_belongings.tsv
+   │   ├── cellSNP.cells.vcf.gz
+   │   ├── Pool1__joined_df_for_plots.tsv
+   │   ├── Pool1_subsampling_donor_swap_quantification.tsv
+   │   ├── Discordant_reads_becoming_different_donor_no0.png
+   │   ├── Discordant_reads_becoming_different_donor.png
+   │   ├── Discordant_reads_by_n_sites_becoming_different_donor_no0.png
+   │   ├── Discordant_reads_by_n_sites_becoming_different_donor.png
+   │   ├── discordant_sites_in_other_donors_noA2G.tsv
+   │   ├── Nr_discordant_uninformative_becoming_different_donor.png
+   │   ├── sites_becoming_different_donor_no0.png
+   │   ├── sites_becoming_different_donor.png
+   │   ├── sites_becoming_different_donor_probs.png
+   │   ├── sites_becoming_doublet_donor.png
+   │   ├── sites_becoming_unassigned_donor.png
+   │   ├── sites_vs_concordance.png
+   │   ├── stats_Pool1_gt_donor_assignments.csv
+   │   ├── sub_Pool1_Expected.vcf.gz
+   │   ├── sub_Pool1_GT_Matched.vcf.gz
+   │   ├── subplot_sites_vs_concordance.png
+   │   └── Total_reads_becoming_different_donor.png
+   ├── Discordant_reads_becoming_different_donor_no0.png
+   ├── Discordant_reads_becoming_different_donor.png
+   ├── Discordant_reads_by_n_sites_becoming_different_donor_no0.png
+   ├── Discordant_reads_by_n_sites_becoming_different_donor.png
+   ├── joined_df_for_plots.tsv
+   ├── Nr_discordant_uninformative_becoming_different_donor.png
+   ├── sites_becoming_different_donor_no0.png
+   ├── sites_becoming_different_donor.png
+   ├── sites_becoming_different_donor_probs.png
+   ├── sites_becoming_doublet_donor.png
+   ├── sites_becoming_unassigned_donor.png
+   ├── sites_vs_concordance.png
+   ├── subplot_sites_vs_concordance.png
+   └── Total_reads_becoming_different_donor.png
 
-```
-</details>
+   ```
+   </details>
 
 - **gtmatch**  
    if genotypes are provided it contains the results of donors assigned by gtcheck.
    <details>
    <summary>Click to view detailed folder structure</summary>
 
-```
-gtmatch/
-├── assignments_all_pools.tsv
-└── Pool1
-    ├── Done.tmp
-    ├── Expected_Withing_expected_Pool1.genome
-    ├── GT_replace_PiHAT_Stats_File_Pool1.csv
-    ├── InferedExpected_Expected_Infered_Pool1.genome
-    ├── InferedGTMatched_Expected_Infered_Pool1.genome
-    ├── InferedOnly_Withing_pool_Pool1.genome
-    ├── PiHAT_Stats_File_Pool1.csv
-    ├── Pool1_gt_donor_assignments.csv
-    ├── pool_Pool1_panel_Pool1_Onek1K_gtcheck_donor_assignments.csv
-    ├── pool_Pool1_panel_Pool1_Onek1K_gtcheck_score_table.csv
-    └── stats_Pool1_gt_donor_assignments.csv
-```
-</details>
+   ```
+   gtmatch/
+   ├── assignments_all_pools.tsv
+   └── Pool1
+       ├── Done.tmp
+       ├── Expected_Withing_expected_Pool1.genome
+       ├── GT_replace_PiHAT_Stats_File_Pool1.csv
+       ├── InferedExpected_Expected_Infered_Pool1.genome
+       ├── InferedGTMatched_Expected_Infered_Pool1.genome
+       ├── InferedOnly_Withing_pool_Pool1.genome
+       ├── PiHAT_Stats_File_Pool1.csv
+       ├── Pool1_gt_donor_assignments.csv
+       ├── pool_Pool1_panel_Pool1_Onek1K_gtcheck_donor_assignments.csv
+       ├── pool_Pool1_panel_Pool1_Onek1K_gtcheck_score_table.csv
+       └── stats_Pool1_gt_donor_assignments.csv
+   ```
+   </details>
 
 ## celltype_assignemt
 This folder contains Cell type assignments by different methods and models
