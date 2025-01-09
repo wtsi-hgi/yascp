@@ -495,8 +495,8 @@ clustering_and_integration/
 
 ## citeseq
 
-- **[DSB] is there only one folder in citeseq? DSB has folders for each pool
-contains DSB background removed protein counts if citeseq is in quantification matrix
+- **[DSB]**  
+  DSB has folders for each pool which contain DSB background and removed protein counts if citeseq is in the quantification matrix
 
 <details>
 <summary>Click to view detailed folder structure</summary>
