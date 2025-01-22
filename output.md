@@ -148,6 +148,7 @@ The `deconvolution` folder contains the following subdirectories:
        └── GT_replace_Pool1.sample_summary_false.txt
    ```
    </details>
+
 🔴**I can't find vireo_sub produced by v1.9. Should I delete this folder from the documentation?**
 - **vireo_sub**  
    The `vireo_sub` folder contains vireo permutations to ensure stability in cell assignment
@@ -273,6 +274,7 @@ The `deconvolution` folder contains the following subdirectories:
        └── cellSNP.tag.OTH.mtx
    ```
    </details>
+
 🔴**Please, check the structure of concordances folder. Test dataset makes only all_variants_description.tsv file**
 - **concordances**  
    The `concordances` contains statistics describing how confident the cell-inferred genotype aligns with the reference genotypes.
@@ -433,6 +435,7 @@ celltype_assignemt/
 ## clustering_and_integration
 
 The `clustering_and_integration` folder contains integrated and clustered data, along with statistics and plots that describe the performance of the integration and clustering processes.
+
 🔴**Please, check the structure of clustering_and_integration. Folders reduced_dims-null-bbknn.batch=experiment_id.n_pcs=20 and reduced_dims-null-harmony.n_pcs=20.variables=experiment_id.thetas=1.0 are not present in the output of v1.9. Should I remove them from the documentation?**
 <details>
 <summary>Click to view detailed folder structure</summary>
