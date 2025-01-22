@@ -50,10 +50,6 @@ preprocessing/
 │   │   └── Pool1
 │   │       ├── Gene_Expression-Pool1.h5ad
 │   │       └── Pool1__Gene_Expression
-│   ├── preprocess
-│   │   └── Pool1
-│   │       ├── Gene_Expression-Pool1.h5ad
-│   │       └── Pool1__Gene_Expression
 │   └── raw
 │       └── Pool1
 │           ├── Gene_Expression-Pool1.h5ad
@@ -118,6 +114,7 @@ The `deconvolution` folder contains the following subdirectories:
 
 - **vireo_raw**  
    This folder contains genotypes if run in genotype-aware mode
+🔴**I can't find VCFs in the Pool1 folder produced by v1.9. Should I delete them from the documentation?**
    <details>
    <summary>Click to view detailed folder structure</summary>
 
@@ -151,7 +148,7 @@ The `deconvolution` folder contains the following subdirectories:
        └── GT_replace_Pool1.sample_summary_false.txt
    ```
    </details>
-
+🔴**I can't find vireo_sub produced by v1.9. Should I delete this folder from the documentation?**
 - **vireo_sub**  
    The `vireo_sub` folder contains vireo permutations to ensure stability in cell assignment
    <details>
@@ -261,7 +258,7 @@ The `deconvolution` folder contains the following subdirectories:
    </details>
 
 - **cellsnp**  
-   The `cellsnp` folder contains genotypes called from single-cell data per (per droplet/cell)
+   The `cellsnp` folder contains genotypes called from single-cell data per droplet/cell
    <details>
    <summary>Click to view detailed folder structure</summary>
 
@@ -276,7 +273,7 @@ The `deconvolution` folder contains the following subdirectories:
        └── cellSNP.tag.OTH.mtx
    ```
    </details>
-
+🔴**Please, check the structure of concordances folder. Test dataset makes only all_variants_description.tsv file**
 - **concordances**  
    The `concordances` contains statistics describing how confident the cell-inferred genotype aligns with the reference genotypes.
    <details>
@@ -376,8 +373,8 @@ The `celltype_assignemt` folder contains the following subdirectories and files:
 - **tranche_celltype_report.tsv**  
    Summarized cell counts per tranche.
 
-- **scored**  
-   This folder contains the results of scored
+- **scpred** 🔴**The name of the tool is scPred, not scored, correct?**  
+   This folder contains the results of scPred
   
 - **azimuth**  
    This folder contains the results of azimuth
@@ -436,7 +433,7 @@ celltype_assignemt/
 ## clustering_and_integration
 
 The `clustering_and_integration` folder contains integrated and clustered data, along with statistics and plots that describe the performance of the integration and clustering processes.
-
+🔴**Please, check the structure of clustering_and_integration. Folders reduced_dims-null-bbknn.batch=experiment_id.n_pcs=20 and reduced_dims-null-harmony.n_pcs=20.variables=experiment_id.thetas=1.0 are not present in the output of v1.9. Should I remove them from the documentation?**
 <details>
 <summary>Click to view detailed folder structure</summary>
 
@@ -508,13 +505,21 @@ citeseq/
 ```
 </details>
 
+🔴**Please, check the descriptions of folders specifically here**
 ## handover
 The `handover` folder contains the following subdirectories:
 - **Summary_plots**
+   This folder contains various plots
+  
 - **Donor_Quantification**
+   This folder contains h5ad and TSV files for each donor 
+
 - **Donor_Quantification_summary**
+   This folder contains TSV files summarising information about donors and tranches
+
 - **merged_h5ad**
-- **UMAPs**
+   This folder contains merged h5ad files from various stages of the pipeline
+
 
 <details>
 <summary>Click to view detailed folder structure</summary>
@@ -525,7 +530,6 @@ handover/
 ├── Donor_Quantification_summary
 ├── merged_h5ad
 └── Summary_plots
-└── UMAPs
 ```
 </details>
 
