@@ -16,7 +16,7 @@ import scanpy as sc
 import csv
 from distutils.version import LooseVersion
 
-from tensorflow.keras.wrappers.scikit_learn import KerasClassifier
+from scikeras.wrappers import KerasClassifier
 # import joblib  # for numpy matrix, joblib faster than pickle
 import matplotlib.pyplot as plt
 from matplotlib import colors
