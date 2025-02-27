@@ -104,7 +104,7 @@ def class_report(y_true, y_pred, classes, y_pred_proba=None):
     model_report = pd.DataFrame(classification_report(
         y_true,
         y_pred,
-        classes,
+        
         output_dict=True
     )).transpose()
 
@@ -330,7 +330,7 @@ def fit_model_keras(
     # Make a classifier report
     classes = np.argmax(model.predict(X_test), axis=1)
     y_test_pred = encoder.inverse_transform(classes)
-    y_test_proba = model.predict_proba(X_test)
+    y_test_proba = model.predict(X_test)
     model_report = class_report(
         y_test,
         y_test_pred,
@@ -589,6 +589,7 @@ def main():
         with_mean=True,
         with_std=True
     )
+    X = np.asarray(X)
     X_std = scaler.fit_transform(X)
     if verbose:
         print('center={} scale={}'.format(
@@ -851,8 +852,13 @@ def main():
 
         # Save the model and weights (coefficients) seperately
         # open('{}.json'.format(out_file_base), 'w').write(model.to_json())
-        open('{}.yml'.format(out_file_base), 'w').write(model.to_yaml())
-        model.save_weights('{}-weights.h5'.format(out_file_base))
+        # Save the model architecture in JSON format
+        with open('{}.json'.format(out_file_base), 'w') as json_file:
+            json_file.write(model.to_json())
+
+        # Save the model weights
+        weights_filename = '{}.weights.h5'.format(out_file_base)
+        model.save_weights(weights_filename)
         # Example read functions
         # model = model_from_yaml(open('my_model_architecture.yaml').read())
         # model.load_weights('my_model_weights.h5')
@@ -1016,7 +1022,7 @@ def main():
                 #dpi=300,
                 bbox_inches='tight'
             )
-            plt.xscale('log', basex=10)
+            plt.xscale('log', base=10)
             fig.savefig(
                 '{}-cluster_size_{}_log10.png'.format(out_file_base, i),
                 #dpi=300,
