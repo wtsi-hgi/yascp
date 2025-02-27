@@ -81,7 +81,7 @@ def run_celltypist(samplename, filtered_matrix_h5, celltypist_model,
     fixed_h5 = 'fixed_genome.h5'
     try:
         adata = sc.read_10x_h5(filtered_matrix_h5)
-        
+        # adata2 = sc.read_h5ad("/lustre/scratch127/humgen/teams/hgi/mo11/tmp_projects127/yascp_tests/v1/work/b6/fe8b781bba642b8973e43d513eb8b3/AZ_Pool1_Pool1.h5ad")
         
     except:
         try:
@@ -156,7 +156,12 @@ def run_celltypist(samplename, filtered_matrix_h5, celltypist_model,
     # predictions = celltypist.annotate(adata_2000, model = model, majority_voting = True)   
     # Alternatively, just specify the model name (recommended as this ensures the model is intact every time it is loaded).
     logging.info("... running celltypist.annotate(adata, model = model, majority_voting = True)")
-    predictions = celltypist.annotate(adata, model = model, majority_voting = True, transpose_input = True)
+    try:
+        predictions = celltypist.annotate(adata, model = model, majority_voting = True, transpose_input = True)
+    except:
+        adata.var['gene_ids'] = adata.var.index
+        adata.var_names =  pd.Index(adata.var.gene_symbols.astype(str))
+        predictions = celltypist.annotate(adata, model = model, majority_voting = True, transpose_input = True)
     
     # By default (majority_voting = False), CellTypist will infer the identity of
     # each query cell independently. This leads to raw predicted cell type labels,

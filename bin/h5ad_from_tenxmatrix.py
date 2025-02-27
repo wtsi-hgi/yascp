@@ -13,6 +13,22 @@ def mtx_to_h5ad(mtx_dir, output_file):
         make_unique=False
     )
     
+    # Ensure feature metadata is Seurat-compatible
+    if 'gene_symbols' not in adata.var.columns:
+        adata.var['gene_symbols'] = adata.var.index.astype(str)
+
+    if 'feature_types' not in adata.var.columns:
+        adata.var['feature_types'] = 'Gene'
+
+    if 'genome' not in adata.var.columns:
+        adata.var['genome'] = 'GRCh38'  # Adjust if using different genome version
+
+    # Ensure cell barcode metadata is explicitly stored
+    if 'cell_barcode' not in adata.obs.columns:
+        adata.obs['cell_barcode'] = adata.obs.index.astype(str)
+    adata.var['gene_ids'] = adata.var.index
+    adata.var_names =  pd.Index(adata.var.gene_symbols.astype(str))  
+    del adata.var['gene_symbols']
     # Save to .h5ad file
     adata.write(output_file)
     print(f"Data saved to {output_file}")

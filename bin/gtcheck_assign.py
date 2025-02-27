@@ -19,11 +19,11 @@ class ScoreMatrix:
     def parse_gtcheck_scores(self, infh):
         ctr = 0
         for lin in infh:
-            if lin[:2] == 'DC':
+            if lin[:2] == 'DC' or lin[:2] == 'DCv2':
                 fld = lin.strip().split('\t')
                 if DEBUG:
                     print(fld)
-                if len(fld) > 3 and 'DC' == fld[0].strip():
+                if len(fld) > 3 and 'DC' in fld[0].strip():
                     ctr += 1
                     donor_query = fld[1].strip()
                     donor_ref = fld[2].strip()

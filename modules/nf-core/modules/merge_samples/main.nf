@@ -10,6 +10,7 @@ workflow MERGE_SAMPLES{
     take:
         channel__file_paths_10x
         file_metadata
+        celltype_file
         mode
     main:
         log.info """---Merging samples in a single h5ad file---"""
@@ -31,7 +32,8 @@ workflow MERGE_SAMPLES{
                     params.file_cellmetadata,
                     params.metadata_key_column.value,
                     prep_merge_samples_from_h5ad.out.h5ad.collect(),
-                    params.anndata_compression_opts
+                    params.anndata_compression_opts,
+                    celltype_file
             )
             file__anndata_merged = merge_samples_from_h5ad.out.anndata
             // file__cells_filtered = merge_samples_from_h5ad.out.cells_filtered

@@ -31,7 +31,7 @@ process CELLTYPE_FILE_MERGE{
         container "wtsihgi/nf_scrna_qc:6bb6af5"
     }
     output:
-        path('adata.h5ad', emit:file__anndata_merged2)
+        // path('adata.h5ad', emit:file__anndata_merged2)
         path("All_Celltype_Assignments.tsv",emit:celltype_assignments)
         path "tranche_celltype_report.tsv"
         path "donor_celltype_report.tsv"
@@ -40,7 +40,7 @@ process CELLTYPE_FILE_MERGE{
         path(azimuth_files)
         path(celltypist_paths)
         path(all_other_paths)
-        path(file__anndata_input)
+        tuple val(expid), path(file__anndata_input)
     script:
         def merged_files_outpath = workflow.workDir.toString()
         file(merged_files_outpath).mkdirs()

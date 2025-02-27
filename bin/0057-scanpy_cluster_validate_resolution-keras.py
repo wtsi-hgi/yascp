@@ -16,6 +16,7 @@ import scanpy as sc
 import csv
 from distutils.version import LooseVersion
 
+from tensorflow.keras.wrappers.scikit_learn import KerasClassifier
 # import joblib  # for numpy matrix, joblib faster than pickle
 import matplotlib.pyplot as plt
 from matplotlib import colors
@@ -29,11 +30,12 @@ from sklearn.metrics import classification_report
 from sklearn.model_selection import GridSearchCV
 
 import keras
-from keras.utils import np_utils
+from tensorflow.keras.utils import to_categorical
+
 from keras.models import Sequential
 from keras.layers import Dense
 from keras.regularizers import L1L2
-from keras.wrappers.scikit_learn import KerasClassifier
+# from keras.wrappers.scikit_learn import KerasClassifier
 
 from tensorflow.python.client import device_lib
 import tensorflow as tf
@@ -169,7 +171,7 @@ def keras_grid(
 ):
     # Run same proceedure on the test data
     y_encoded = encoder.transform(y)
-    Y_onehot = np_utils.to_categorical(y_encoded)
+    Y_onehot = to_categorical(y_encoded)
 
     # Initial parameter sweep for different activation, optimizer, and loss.
     # NOTE: From 100k TI single cells, best settings were:
@@ -284,10 +286,10 @@ def fit_model_keras(
     # encoder.fit(y_train)
     y_train_encoded = encoder.transform(y_train)
     # convert integers to dummy variables (i.e. one hot encoded)
-    Y_train_onehot = np_utils.to_categorical(y_train_encoded)
+    Y_train_onehot = to_categorical(y_train_encoded)
     # Run same proceedure on the test data
     y_test_encoded = encoder.transform(y_test)
-    Y_test_onehot = np_utils.to_categorical(y_test_encoded)
+    Y_test_onehot = to_categorical(y_test_encoded)
 
     # Training
     model = model_function(

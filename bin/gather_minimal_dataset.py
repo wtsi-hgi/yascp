@@ -372,7 +372,7 @@ def gather_donor(donor_id, ad, ad_lane_raw, qc_obs, columns_output = COLUMNS_OUT
     ad.obs.index.name = 'barcode'
     ad.obs = ad.obs.loc[:,~ad.obs.columns.duplicated()]
     dt = dt.loc[:,~dt.columns.duplicated()].copy()
-    dt[set(dt.columns)].to_csv(os.path.join(outdir, oufnam + '.tsv'), sep = "\t", na_rep = "N/A")
+    dt[list(set(dt.columns))].to_csv(os.path.join(outdir, oufnam + '.tsv'), sep = "\t", na_rep = "N/A")
     sys.stderr.write("writing file {} ...\n".format(oufnam))
     
     if write_h5:
@@ -757,8 +757,11 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
             Tranche_Failure_Reason +='Mean reads per cell for all cells in pool <=25000; '
     except:
         _='cant validate reasoning'        
-    
-    Summary_check = pd.read_csv(f'{args.results_dir}/deconvolution/vireo_raw/{expid}/vireo_{expid}/summary.tsv',sep='\t')
+    try:
+        Summary_check = pd.read_csv(f'{args.results_dir}/deconvolution/vireo_raw/{expid}/vireo_{expid}/summary.tsv',sep='\t')
+    except:
+        Summary_check =pd.DataFrame()
+        
     try:
         Doublets_donor = int(Summary_check[Summary_check['Var1']=='doublet']['Freq'].values[0])
     except:
@@ -805,14 +808,16 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
             s = s.set_index('donor_id')
             s.columns=['index']
             try:
-                Mengled_barcodes_donor = list(s.loc[row["donor_id"]]['index'])
+                Mengled_barcodes_donor = list(s.loc[row["donor_id"]]['index'].str.split('__').str[0])
             except:
                 continue
             donor_number =row["donor_id"].replace('donor','') #Todo - will need to change upon Vireo runs with genotype, can just pick it as an fctr
             donor_id = row["donor_id"]
             intersect_set = set(Donor_barcodes).intersection(set(ad_lane_filtered.obs.index))
-
-            all_probs = pd.concat([all_probs,pd.DataFrame(Deconvoluted_Donor_Data.obs['prob_doublet'])])
+            try:
+                all_probs = pd.concat([all_probs,pd.DataFrame(Deconvoluted_Donor_Data.obs['prob_doublet'])])
+            except:
+                _='doesnt exist'
             Donor_qc_files = Deconvoluted_Donor_Data
             UMIs = np.sum(Donor_qc_files.X)
             Donor_cells_for_donor=len(Deconvoluted_Donor_Data.obs)
@@ -913,7 +918,10 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
 
         fctr += 1
     all_probs = all_probs[~all_probs.index.duplicated(keep='first')]
-    azt['prob_doublet']=all_probs['prob_doublet']
+    try:
+        azt['prob_doublet']=all_probs['prob_doublet']
+    except:
+        _='Doesnt exist'
     Donor_df = pd.DataFrame(data_donor)
 
     try:

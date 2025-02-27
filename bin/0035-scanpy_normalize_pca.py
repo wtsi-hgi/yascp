@@ -19,6 +19,14 @@ import scanpy as sc
 import csv
 import time
 from datetime import timedelta
+import anndata as ad
+
+# Define a no-op function (does nothing)
+def no_op(*args, **kwargs):
+    pass  # Do nothing
+
+# Properly override AnnData class method
+ad.AnnData.strings_to_categoricals = no_op  # This works for new instances
 
 # Set seed for reproducibility
 seed_value = 0
@@ -547,6 +555,12 @@ def scanpy_normalize_and_pca(
     # Keep a record of the different gene scores
     if score_genes_df is not None:
         adata.uns['df_score_genes'] = score_genes_df_updated
+    
+    for col in adata.var.select_dtypes(include=['category']).columns:
+        adata.var[col] = np.array(adata.var[col].astype(str), dtype=str)
+
+    for col in adata.obs.select_dtypes(include=['category']).columns:
+        adata.obs[col] = np.array(adata.obs[col].astype(str), dtype=str)
 
     # Save the data.
     adata.write(
@@ -586,6 +600,11 @@ def scanpy_normalize_and_pca(
             adata_donors.append((donor_id, adata_donor))
             output_file = './donor_level_anndata_QCfiltered/'+donor_id + '___' +"sample_QCd_adata"
             print('Write h5ad donor AnnData to ' + output_file)
+            for col in adata_donor.var.select_dtypes(include=['category']).columns:
+                adata_donor.var[col] = np.array(adata_donor.var[col].astype(str), dtype=str)
+
+            for col in adata_donor.obs.select_dtypes(include=['category']).columns:
+                adata_donor.obs[col] = np.array(adata_donor.obs[col].astype(str), dtype=str)    
             
             adata_donor.write('{}.h5ad'.format(output_file), compression='gzip', compression_opts= 6)
         else:

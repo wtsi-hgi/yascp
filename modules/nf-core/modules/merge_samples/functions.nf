@@ -57,6 +57,7 @@ process merge_samples_from_h5ad {
         val(metadata_key)
         file(file_h5ad)
         val(anndata_compression_opts)
+        path(celltype)
 
     // NOTE: use path here and not file see:
     //       https://github.com/nextflow-io/nextflow/issues/1414
@@ -96,7 +97,7 @@ process merge_samples_from_h5ad {
         }
         files__h5ad = file_h5ad.join(',')
         """
-        echo "publish_directory: ${outdir}"
+        echo "publish_directory: ${celltype}"
         rm -fr plots
         nf_helper__prep_h5addata_file.py \
             --h5ad_list ${files__h5ad} \
@@ -109,7 +110,7 @@ process merge_samples_from_h5ad {
             --metadata_key ${metadata_key} \
             --number_cpu ${task.cpus} \
             --output_file 1.pre_QC_adata \
-            --anndata_compression_opts ${anndata_compression_opts} \
+            --anndata_compression_opts ${anndata_compression_opts} --celltype ${celltype} \
             ${cmd__params} \
             ${cmd__cellmetadata} ${extra_metadata}
         mkdir plots

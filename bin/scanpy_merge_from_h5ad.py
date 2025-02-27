@@ -484,7 +484,8 @@ def scanpy_merge(
     output_file,
     cellmetadata_filepaths=None,
     anndata_compression_opts=4,
-    extra_metadata=None
+    extra_metadata=None,
+    celltype=None
 ):
     """Merge h5ad data.
 
@@ -605,6 +606,24 @@ def scanpy_merge(
             extra_sample_metadata= extra_sample_metadata.drop_duplicates(subset=['experiment_id'], keep='last')
         except:
             extra_sample_metadata = pd.DataFrame()
+        
+        # Add celltypes. 
+        obs_df = adata.obs.copy()
+        obs_df['merge_key'] = obs_df.index + '-' + obs_df['convoluted_samplename'].astype(str)
+        celltype['merge_key'] = celltype.index
+        try:
+            del celltype['Donor']
+        except:
+            _=''
+        try:
+            del celltype['Exp']
+        except:
+            _=''
+            
+        merged_df = obs_df.merge(celltype, on='merge_key', how='left')
+        merged_df = merged_df.set_index(obs_df.index)
+        adata.obs = merged_df
+        
         if (len(extra_sample_metadata)>0):
             for col in extra_sample_metadata.columns:
                 # print(col)
@@ -777,6 +796,14 @@ def main():
     )
 
     parser.add_argument(
+        '-ct', '--celltype',
+        action='store',
+        dest='celltype',
+        default='',
+        help='Provide celltype file to be merged with the input'
+    )
+
+    parser.add_argument(
         '-pyml', '--params_yaml',
         action='store',
         dest='pyml',
@@ -841,6 +868,11 @@ def main():
         extra_metadata = pd.read_csv(options.extra_metadata, sep='\t')
     except:
         extra_metadata = pd.DataFrame()
+    # 
+    try:
+        celltype = pd.read_csv(options.celltype, sep='\t',index_col=0)
+    except:
+        celltype = pd.DataFrame()
 
     # Delete the metadata columns that we do not want.
     if options.mcd != '':
@@ -871,7 +903,8 @@ def main():
         output_file=options.of,
         cellmetadata_filepaths=cellmetadata_filepaths,
         anndata_compression_opts=options.anndata_compression_opts,
-        extra_metadata= extra_metadata
+        extra_metadata= extra_metadata,
+        celltype = celltype
     )
 
 

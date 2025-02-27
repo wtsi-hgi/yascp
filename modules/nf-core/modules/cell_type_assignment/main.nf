@@ -39,7 +39,7 @@ workflow CELL_TYPE_ASSIGNEMT{
             AZIMUTH(params.outdir,ch_batch_files)
             az_out = AZIMUTH.out.predicted_celltype_labels.collect()
         }else{
-            az_out = Channel.of()
+            az_out = Channel.of("$projectDir/assets/fake_file2.fq")
         }
 
         if (params.celltype_assignment.run_celltypist){
@@ -52,9 +52,6 @@ workflow CELL_TYPE_ASSIGNEMT{
         }
         
         CELLTYPE_FILE_MERGE(az_out,ct_out,all_extra_fields,file__anndata_merged)
-        
-        file__anndata_merged2=CELLTYPE_FILE_MERGE.out.file__anndata_merged2
-        PSEUDOBULK_AGREGATION_PER_CELLTYPE(file__anndata_merged2,CELLTYPE_FILE_MERGE.out.celltype_assignments)
 
     emit:
         file__anndata_merged2

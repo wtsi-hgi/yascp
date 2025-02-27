@@ -198,6 +198,7 @@ def run_scrublet(
     # From Chromium Single Cell 3' Reagent Kits User Guide (v3.1 Chemistry):
     #   https://support.10xgenomics.com/single-cell-gene-expression/library-prep/doc/user-guide-chromium-single-cell-3-reagent-kits-user-guide-v31-chemistry
     #   the expected multiplet rate is ~3.9% for ~8000 input cells.
+    adata.X.data[adata.X.data < 0] = 0
     scrub = scr.Scrublet(
         counts_matrix=adata.X,
         sim_doublet_ratio=n_simulated_multiplet/len(adata),  # Default is 2.0
@@ -364,7 +365,7 @@ def run_scrublet(
         y='total_counts'
         # hue='scrublet__predicted_multiplet'
     )
-    ax.set_yscale('log', basey=10)
+    ax.set_yscale('log', base=10)
     ax.set(xlabel='Predicted multiplet', ylabel='Number of molecules')
     # NOTE: I could not get p-value annotation to work.
     # ax, test_results = add_stat_annotation(

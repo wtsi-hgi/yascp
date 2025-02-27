@@ -19,12 +19,9 @@ process AZIMUTH{
     // where it cannot be found by the azimuth.R script.
 
     input:
-        val outdir_prev
         tuple val(samplename),path(file_h5ad_batch)
         each refset
-        // path(mapping_file)
     output:
-        // path(celltype_table, emit:predicted_celltypes)
         tuple(val(outfil_prfx), val(refset.refset), path("*predicted_*.tsv"),emit:celltype_tables_all) 
         path("*predicted_*.tsv"), emit:predicted_celltype_labels
         path "*ncells_by_type_barplot.pdf"
@@ -33,18 +30,14 @@ process AZIMUTH{
         path "*prediction_score_vln.pdf"
         path "*mapping_score_umap.pdf"
         path "*mapping_score_vln.pdf"
-        // path("${outfil_prfx}_query.rds"), emit: query_rds
 
-        
     script:
-    
-    
+
         // output file prefix: strip random hex number form beginning of file name
         outfil_prfx = "${file_h5ad_batch}".minus(".h5ad")
         //outfil_prfx = "${file_h5ad_batch}".minus(".h5ad")
         if (refset.refset =='PBMC' && params.mapping_file!='' && params.remap_celltypes){
-
-            com="remap_azimuth_l2.R --out_file ${samplename}_predicted_celltype_l2.tsv --mapping ${params.mapping_file} --az_file ${samplename}_predicted_celltype_l2.tsv"
+            com="remap_azimuth_l2.R --out_file ${samplename}___predicted_celltype_l2.tsv --mapping ${params.mapping_file} --az_file ${samplename}___predicted_celltype_l2.tsv"
         }else{
             com=""
         }

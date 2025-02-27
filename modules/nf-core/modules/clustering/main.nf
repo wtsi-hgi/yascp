@@ -5,7 +5,7 @@ include {
 
 include {umap_calculate_and_plot} from "../umap/functions.nf"
 
-include {SCCAF} from '../sccaf/main'
+// include {SCCAF} from '../sccaf/main'
 
 workflow CLUSTERING {
     take:
@@ -90,10 +90,10 @@ workflow CLUSTERING {
             )
         }
             
-        SCCAF(cluster.out.outdir,
-          cluster.out.anndata,
-          cluster.out.clusters,
-          sccaf_minacc)
+        // SCCAF(cluster.out.outdir,
+        //   cluster.out.anndata,
+        //   cluster.out.clusters,
+        //   sccaf_minacc)
 
         // // Generate UMAPs of the results.
         umap_calculate_and_plot(
