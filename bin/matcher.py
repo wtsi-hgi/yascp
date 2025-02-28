@@ -193,6 +193,10 @@ correlation_dataframe.columns = [x.replace('<SPLIT>',' - ') for x in donors]
 correlation_dataframe.index = [x.replace('<SPLIT>',' - ') for x in donors]
 
 # plotting correlation heatmap
+import numpy as np
+correlation_dataframe = correlation_dataframe.fillna(0)  # Replace NaN with 0
+correlation_dataframe = correlation_dataframe.replace([np.inf, -np.inf], 0)  # Replace inf/-inf with 0
+
 dataplot = seaborn.clustermap(correlation_dataframe, cmap="YlGnBu", yticklabels=1, xticklabels=1)
 dataplot.ax_heatmap.set_xticklabels(dataplot.ax_heatmap.get_xmajorticklabels(), fontsize = 6)
 dataplot.ax_heatmap.set_yticklabels(dataplot.ax_heatmap.get_ymajorticklabels(), fontsize = 6)
