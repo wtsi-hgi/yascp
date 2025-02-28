@@ -3,7 +3,7 @@ process DOUBLET_FINDER {
     tag "${experiment_id}"
     label 'process_medium'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "${params.azimuth_dsb_container}"
+        container "${params.yascp_container}"
     } else {
         container "mercury/azimuth_dsb:6_03_2024"
     }

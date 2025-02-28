@@ -2,7 +2,7 @@ process prep_collectmetadata{
     label 'process_tiny'
 
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "${params.nf_scrna_qc_v3_container}"
+        container "${params.yascp_container}"
     } else {
         container "mercury/scrna_deconvolution:v2"
     }
@@ -20,7 +20,7 @@ process prep_collectmetadata{
 process merge_metadata{
     label 'process_tiny'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "${params.nf_scrna_qc_v3_container}"
+        container "${params.yascp_container}"
     } else {
         container "mercury/scrna_deconvolution:v2"
     }

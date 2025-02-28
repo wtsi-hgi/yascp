@@ -42,7 +42,7 @@ process capture_cellsnp_files{
 process DYNAMIC_DONOR_EXCLUSIVE_SNP_SELECTION{
     label 'process_medium'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "${params.scrna_deconvolution}"
+        container "${params.yascp_container}"
 
     } else {
         container "mercury/scrna_deconvolution:62bd56a"
@@ -89,7 +89,7 @@ process ASSESS_CALL_RATE{
     label 'process_tiny'
 
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "${params.scrna_deconvolution}"
+        container "${params.yascp_container}"
     } else {
         container "mercury/scrna_deconvolution:62bd56a"
     }
@@ -123,7 +123,7 @@ process CELLSNP {
 
     
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "${params.scrna_deconvolution}"
+        container "${params.yascp_container}"
     } else {
         container "mercury/scrna_deconvolution:62bd56a"
     }

@@ -7,8 +7,7 @@ process KERAS_CELLTYPE {
 
     label 'process_high_memory'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "${params.nf_scrna_qc_sif_container}"
-        //// container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/nf_qc_cluster_2.4.img"
+        container "${params.yascp_container}"
 
     } else {
         container "wtsihgi/nf_scrna_qc:6bb6af5"

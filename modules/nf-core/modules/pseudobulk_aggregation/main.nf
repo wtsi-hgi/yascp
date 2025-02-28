@@ -3,7 +3,7 @@ process PSEUDOBULK_AGREGATION {
               overwrite: "true"
     label 'process_low'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "${params.eQTL.eqtl_container}"
+        container "${params.yascp_container}"
         
     } else {
         container "quay.io/biocontainers/multiqc:1.10.1--py_0"

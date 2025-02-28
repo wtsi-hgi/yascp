@@ -3,7 +3,7 @@ process SCPRED{
     label 'process_medium'
    
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "${params.cell_classification_container}"
+        container "${params.yascp_container}"
     } else {
         container "wtsihgi/nf_scrna_qc_azimuth:d54db9b"
     }

@@ -1,7 +1,7 @@
 process collect_file{
   label 'process_tiny'
   if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-    container "${params.nf_scrna_qc_sif_container}"
+    container "${params.yascp_container}"
   } else {
     container "wtsihgi/nf_scrna_qc:6bb6af5"
   }

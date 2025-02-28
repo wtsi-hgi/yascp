@@ -7,7 +7,7 @@ process PREP_ASSIGNMENTS_FILE{
     
 
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "${params.scrna_deconvolution}"
+        container "${params.yascp_container}"
     } else {
         container "mercury/scrna_deconvolution:62bd56a"
     }
@@ -50,7 +50,7 @@ process SPLIT_DONOR_H5AD {
     
 
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "${params.scrna_deconvolution}"
+        container "${params.yascp_container}"
     } else {
         container "mercury/scrna_deconvolution:62bd56a"
     }

@@ -3,7 +3,7 @@ process FREEBAYES {
     label 'process_low'
    
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/carls_data/analysis/bam_tool_processing_05_04_2024.sif"
+        container "${params.yascp_container}"
     } else {
         container " mercury/bam_tool_processing:05_04_2024"
     }

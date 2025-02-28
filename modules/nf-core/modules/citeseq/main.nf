@@ -2,7 +2,7 @@
 process SPLIT_CITESEQ_GEX {
     label 'process_medium'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "${params.nf_scrna_qc_sif_container}"
+        container "${params.yascp_container}"
     } else {
         container "wtsihgi/nf_scrna_qc:6bb6af5"
     }
@@ -80,7 +80,7 @@ process SPLIT_CITESEQ_GEX {
 process DSB {
     label 'process_medium'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "${params.azimuth_dsb_container}"
+        container "${params.yascp_container}"
     } else {
         container "mercury/azimuth_dsb:latest"
     }
@@ -123,7 +123,7 @@ process DSB {
 process HASTAG_DEMULTIPLEX {
     label 'process_medium'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "${params.azimuth_dsb_container}"
+        container "${params.yascp_container}"
     } else {
         container "mercury/azimuth_dsb:latest"
     }
@@ -147,7 +147,7 @@ process DSB_INTEGRATE{
     label 'process_medium'
     tag "${sample_name}"
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "${params.azimuth_dsb_container}"
+        container "${params.yascp_container}"
     } else {
         container "mercury/azimuth_dsb:6_03_2024"
     }
@@ -188,7 +188,7 @@ process MULTIMODAL_INTEGRATION{
     label 'process_medium'
     tag "${sample_name}"
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "${params.azimuth_dsb_container}"
+        container "${params.yascp_container}"
     } else {
         container "mercury/azimuth_dsb:6_03_2024"
     }
@@ -215,7 +215,7 @@ process VDJ_INTEGRATION{
     label 'process_medium'
     tag "${sample_name}"
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "${params.azimuth_dsb_container}"
+        container "${params.yascp_container}"
     } else {
         container "mercury/azimuth_dsb:6_03_2024"
     }
@@ -246,7 +246,7 @@ process PREPROCESS_PROCESS {
     label 'process_medium'
     tag "${sample_name}"
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "${params.azimuth_dsb_container}"
+        container "${params.yascp_container}"
     } else {
         container "mercury/azimuth_dsb:6_03_2024"
     }
@@ -284,7 +284,7 @@ process DSB_PROCESS {
     label 'process_medium'
     tag "${sample_name}"
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "${params.azimuth_dsb_container}"
+        container "${params.yascp_container}"
     } else {
         container "mercury/azimuth_dsb:6_03_2024"
     }

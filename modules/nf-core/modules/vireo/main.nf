@@ -1,7 +1,7 @@
 process REMOVE_DUPLICATED_DONORS_FROM_GT{
     label 'process_tiny'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "${params.scrna_deconvolution}"
+        container "${params.yascp_container}"
     } else {
         container "mercury/scrna_deconvolution:62bd56a"
     }
@@ -42,7 +42,7 @@ process VIREO_SUBSAMPLING {
     label 'medium_cpus'
 
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "${params.scrna_deconvolution}"
+        container "${params.yascp_container}"
     } else {
         container "mercury/scrna_deconvolution:62bd56a"
     }
@@ -140,7 +140,7 @@ process GENOTYPE_MATCHER{
 	  // saveAs: {filename -> filename.replaceFirst("vireo_${samplename}/","") }
     
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "${params.scrna_deconvolution}"
+        container "${params.yascp_container}"
     } else {
         container "mercury/scrna_deconvolution:62bd56a"
     } 
@@ -152,12 +152,6 @@ process GENOTYPE_MATCHER{
       path("correlations.png"), emit: correlations
       path("matched_donors.txt"), emit: matched_donors
       path("donor_corelations_matrix.tsv"), emit: donor_corelations_matrix
-
-    if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "${params.scrna_deconvolution}"
-    } else {
-        container "mercury/scrna_deconvolution:62bd56a"
-    }
 
     script:
       """
@@ -178,7 +172,7 @@ process VIREO {
 
 
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "${params.scrna_deconvolution}"
+        container "${params.yascp_container}"
     } else {
         container "mercury/scrna_deconvolution:62bd56a"
     }
@@ -286,7 +280,7 @@ process VIREO_SUBSAMPLING_PROCESSING{
 
 
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "${params.scrna_deconvolution}"
+        container "${params.yascp_container}"
     } else {
         container "mercury/scrna_deconvolution:62bd56a"
     }

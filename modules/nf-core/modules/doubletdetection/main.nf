@@ -3,7 +3,7 @@ process DOUBLET_DETECTION {
     tag "${experiment_id}"
     label 'process_low'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "${params.nf_scrna_qc_v3_container}"
+        container "${params.yascp_container}"
     } else {
         container "mercury/nf_scrna_qc:v3"
     }

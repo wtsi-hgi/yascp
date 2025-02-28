@@ -12,7 +12,7 @@ parser <- ArgumentParser()
 # parser$add_argument("-o", "--out", required = TRUE, help="The output directory where results will be saved")
 # parser$add_argument("-s", "--seurat_object", required = TRUE, type = "character", help = "A QC, normalized seurat object with classifications/clusters as Idents() saved as an rds object.")
 parser$add_argument("-o", "--out", required = FALSE, default = "DoubletDecon_CRD_CMB13631913", help = "The output directory where results will be saved")
-parser$add_argument("-s", "--seurat_object", required = FALSE, type = "character", default = "CRD_CMB13631913.h5ad", help = "A QC, normalized seurat object with classifications/clusters as Idents() saved as an rds object.")
+parser$add_argument("-s", "--seurat_object", required = FALSE, type = "character", default = "Pool1__1.h5ad", help = "A QC, normalized seurat object with classifications/clusters as Idents() saved as an rds object.")
 
 parser$add_argument("-g", "--num_genes", required = FALSE, type = "integer", default=50, help = "Number  of genes to use in \'Improved_Seurat_Pre_Process\' function.")
 parser$add_argument("-r", "--rhop", required = FALSE, type="double", default=0.9, help="rhop to use in DoubletDecon - the number of SD from the mean to identify upper limit to blacklist")
@@ -60,7 +60,7 @@ Convert(
   overwrite = TRUE,
   verbose = TRUE,
 )
-seurat <- LoadH5Seurat(paste('tmp',"h5seurat",sep='.'),assays = "RNA")
+seurat <- LoadH5Seurat(paste('tmp',"h5seurat",sep='.'))
 seurat <- NormalizeData(seurat)
 print('Normalised')
 all.genes <- rownames(seurat)

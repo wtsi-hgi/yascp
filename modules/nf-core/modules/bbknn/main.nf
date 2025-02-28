@@ -23,7 +23,7 @@ process BBKNN{
         }
 
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "${params.nf_scrna_qc_sif_container}"
+        container "${params.yascp_container}"
         //// container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/nf_qc_cluster_2.4.img"
         
     } else {

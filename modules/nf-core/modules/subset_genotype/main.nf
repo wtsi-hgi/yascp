@@ -91,7 +91,7 @@ process CHECK_DONORS_IN_VCF_HEADER {
 process SELECT_DONOR_GENOTYPES_FROM_VCF {
   label 'process_tiny'
   if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-      container "${params.nf_yascp_htstools_container}"
+      container "${params.yascp_container}"
   } else {
       container "mercury/wtsihgi-nf_yascp_htstools-1.1"
   }
@@ -114,7 +114,7 @@ process CONCAT_STUDY_VCFS {
   label 'process_small'
 
   if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-      container "${params.nf_yascp_htstools_container}"
+      container "${params.yascp_container}"
   } else {
       container "mercury/wtsihgi-nf_yascp_htstools-1.1"
   }
@@ -140,7 +140,7 @@ process SUBSET_GENOTYPE {
 
 
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "${params.nf_yascp_htstools_container}"
+        container "${params.yascp_container}"
     } else {
         container "mercury/wtsihgi-nf_yascp_htstools-1.1"
     }
@@ -171,7 +171,7 @@ process SUBSET_GENOTYPE2 {
 
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         // println "container: /software/hgi/containers/wtsihgi-nf_genotype_match-1.0.sif\n"
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/nf_scrna_qc_v3.img"
+        container "${params.yascp_container}"
     } else {
         container "mercury/wtsihgi-nf_yascp_htstools-1.1"
     }
@@ -215,7 +215,7 @@ process JOIN_CHROMOSOMES{
     publishDir "${params.outdir}/preprocessing/subset_genotypes/", mode: "${params.copy_mode}", pattern: "${samplename}.${sample_subset_file}.subset.vcf.gz"
 
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "${params.nf_yascp_celltypist}"
+        container "${params.yascp_container}"
     } else {
         container "mercury/wtsihgi-nf_yascp_htstools-1.1"
     }
@@ -275,7 +275,7 @@ process RESOLVE_POOL_VCFS{
     
     // publishDir "${params.outdir}/subset_genotypes/Genotype_${samplename}", mode: "${params.copy_mode}"
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "${params.scrna_deconvolution}"
+        container "${params.yascp_container}"
     } else {
         container "mercury/wtsihgi-nf_yascp_htstools-1.1"
     }
@@ -305,7 +305,7 @@ process JOIN_STUDIES_MERGE{
 
 
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "${params.scrna_deconvolution}"
+        container "${params.yascp_container}"
     } else {
         container "mercury/wtsihgi-nf_yascp_htstools-1.1"
     }

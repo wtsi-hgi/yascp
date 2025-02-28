@@ -4,7 +4,7 @@ process sccaf_assess_clustering {
   
     label 'process_medium'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "${params.nf_qc_cluster_sccaf_container}"
+        container "${params.yascp_container}"
         
     } else {
         container "wtsihgi/nf_scrna_qc_scaaf:1c77f49"
@@ -50,8 +50,7 @@ process sccaf_optimize_clustering {
 
     label 'process_medium'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/nf_qc_cluster_sccaf_1.5.img"
-        
+        container "${params.yascp_container}"
     } else {
         container "wtsihgi/nf_scrna_qc_scaaf:1c77f49"
     }

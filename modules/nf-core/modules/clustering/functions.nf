@@ -15,9 +15,8 @@ process cluster {
     scratch false      // use tmp directory
     label 'process_medium'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "${params.nf_scrna_qc_sif_container}"
-        //// container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/nf_qc_cluster_2.4.img"
-        
+        container "${params.yascp_container}"
+
     } else {
         container "wtsihgi/nf_scrna_qc:6bb6af5"
     }
@@ -91,9 +90,8 @@ process plot_phenotype_across_clusters {
     scratch false      // use tmp directory
     label 'process_medium'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "${params.nf_scrna_qc_sif_container}"
-        //// container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/nf_qc_cluster_2.4.img"
-        
+        container "${params.yascp_container}"
+
     } else {
         container "wtsihgi/nf_scrna_qc:6bb6af5"
     }
@@ -140,9 +138,8 @@ process serialize_known_markers {
     scratch false      // use tmp directory
     label 'process_low'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "${params.nf_scrna_qc_sif_container}"
-        //// container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/nf_qc_cluster_2.4.img"
-        
+        container "${params.yascp_container}"
+
     } else {
         container "wtsihgi/nf_scrna_qc:6bb6af5"
     }
@@ -179,9 +176,8 @@ process plot_known_markers {
     scratch false        // use tmp directory
     label 'process_medium'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "${params.nf_scrna_qc_sif_container}"
-        //// container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/nf_qc_cluster_2.4.img"
-        
+        container "${params.yascp_container}"
+
     } else {
         container "wtsihgi/nf_scrna_qc:6bb6af5"
     }
@@ -232,12 +228,10 @@ process cluster_validate_resolution_sklearn {
     scratch false      // use tmp directory
     label 'process_medium'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "${params.nf_scrna_qc_sif_container}"
-        //// container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/nf_qc_cluster_2.4.img"
-        
+        container "${params.yascp_container}"
+
     } else {
         container "wtsihgi/nf_scrna_qc:6bb6af5"
-        //// container "wtsihgi/nf_scrna_qc:6bb6af5"
     }
 
     publishDir  path: "${outdir}",
@@ -344,7 +338,7 @@ process cluster_validate_resolution_keras {
     label 'process_low'        // use GPU
     scratch false      // use tmp directory
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "${params.nf_scrna_qc_sif_container}"
+        container "${params.yascp_container}"
         
     } else {
         container "wtsihgi/nf_scrna_qc:6bb6af5"
@@ -388,8 +382,8 @@ process cluster_validate_resolution_keras {
         path(file__reduced_dims, emit: reduced_dims)
         path(file__clusters, emit: clusters)
         path("*${outfile}.h5", emit: model)
-        path("*${outfile}.yml", emit: model_yaml)
-        path("*${outfile}-weights.h5", emit: model_weights)
+        path("*${outfile}.json", emit: model_yaml)
+        path("*weights.h5", emit: model_weights)
         path("*${outfile}-model_report.tsv.gz", emit: model_report)
         path(
             "*${outfile}-test_result.tsv.gz",
@@ -451,7 +445,7 @@ process plot_resolution_validate {
     scratch false      // use tmp directory
     label 'process_medium'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "${params.nf_scrna_qc_sif_container}"
+        container "${params.yascp_container}"
 
     } else {
         container "wtsihgi/nf_scrna_qc:6bb6af5"
@@ -527,9 +521,8 @@ process cluster_markers {
     scratch false      // use tmp directory
     label 'process_medium'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "${params.nf_scrna_qc_sif_container}"
-        //// container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/nf_qc_cluster_2.4.img"
-        
+        container "${params.yascp_container}"
+
     } else {
         container "wtsihgi/nf_scrna_qc:6bb6af5"
     }
@@ -619,9 +612,8 @@ process cellex_cluster_markers {
     scratch false      // use tmp directory
     label 'process_medium'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "${params.nf_scrna_qc_sif_container}"
-        //// container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/nf_qc_cluster_2.4.img"
-        
+        container "${params.yascp_container}"
+
     } else {
         container "wtsihgi/nf_scrna_qc:6bb6af5"
     }
@@ -674,9 +666,8 @@ process merge_clusters {
     scratch false      // use tmp directory
     label 'process_medium'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "${params.nf_scrna_qc_sif_container}"
-        //// container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/nf_qc_cluster_2.4.img"
-        
+        container "${params.yascp_container}"
+
     } else {
         container "wtsihgi/nf_scrna_qc:6bb6af5"
     }
@@ -732,9 +723,8 @@ process prep_cellxgene {
     scratch false           // use tmp directory
     label 'process_medium'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "${params.nf_scrna_qc_sif_container}"
-        //// container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/nf_qc_cluster_2.4.img"
-        
+        container "${params.yascp_container}"
+
     } else {
         container "wtsihgi/nf_scrna_qc:6bb6af5"
     }
@@ -783,9 +773,8 @@ process convert_seurat {
     scratch false      // use tmp directory
     label 'process_medium'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "${params.nf_scrna_qc_sif_container}"
-        //// container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/nf_qc_cluster_2.4.img"
-        
+        container "${params.yascp_container}"
+
     } else {
         container "wtsihgi/nf_scrna_qc:6bb6af5"
     }

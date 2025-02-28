@@ -3,7 +3,7 @@ process AZIMUTH{
     label 'process_medium'
    
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "${params.nf_scrna_qc_azimuth_container}"        
+        container "${params.yascp_container}"        
     } else {
         container "wtsihgi/nf_scrna_qc_azimuth:d54db9b"
     }
@@ -56,7 +56,7 @@ process REMAP_AZIMUTH{
     label 'process_low'
    
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "${params.nf_scrna_qc_sif_container}"
+        container "${params.yascp_container}"
     } else {
         container "wtsihgi/nf_scrna_qc_azimuth:d54db9b"
     }

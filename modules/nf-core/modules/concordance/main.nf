@@ -3,7 +3,7 @@ process CONCORDANCE_CALCLULATIONS {
     tag "${pool_id}"
     label 'process_medium'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "${params.scrna_deconvolution}"
+        container "${params.yascp_container}"
     } else {
         container "mercury/scrna_deconvolution:62bd56a"
     }
@@ -45,7 +45,7 @@ process OTHER_DONOR_CONCORDANCE_CALCLULATIONS {
     tag "${pool_id}"
     label 'process_medium'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "${params.scrna_deconvolution}"
+        container "${params.yascp_container}"
     } else {
         container "mercury/scrna_deconvolution:62bd56a"
     }
@@ -72,7 +72,7 @@ process COMBINE_FILES{
     tag "${pool_id}"
     label 'process_low'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "${params.scrna_deconvolution}"
+        container "${params.yascp_container}"
     } else {
         container "mercury/scrna_deconvolution:62bd56a"
     }

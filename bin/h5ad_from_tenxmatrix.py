@@ -5,6 +5,16 @@ import scanpy as sc
 import anndata as ad
 import pandas as pd
 from scipy import io
+import anndata as ad
+import scipy.sparse as sp
+    
+# Define a no-op function (does nothing)
+def no_op(*args, **kwargs):
+    pass  # Do nothing
+
+# Properly override AnnData class method
+ad.AnnData.strings_to_categoricals = no_op  # This works for new instances
+
 
 def mtx_to_h5ad(mtx_dir, output_file):
     # Paths to the input files
@@ -30,6 +40,17 @@ def mtx_to_h5ad(mtx_dir, output_file):
     adata.var_names =  pd.Index(adata.var.gene_symbols.astype(str))  
     del adata.var['gene_symbols']
     # Save to .h5ad file
+    for col in adata.var.select_dtypes(include=['category']).columns:
+        adata.var[col] = np.array(adata.var[col].astype(str), dtype=str)
+
+    for col in adata.obs.select_dtypes(include=['category']).columns:
+        adata.obs[col] = np.array(adata.obs[col].astype(str), dtype=str)
+        
+
+
+    if not sp.isspmatrix_csr(adata.X):
+        adata.X = sp.csr_matrix(adata.X)
+    
     adata.write(output_file)
     print(f"Data saved to {output_file}")
 
