@@ -42,13 +42,12 @@ process MERGE_DOUBLET_RESULTS{
     tag "${experiment_id}"
     label 'process_medium'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/nf_scrna_qc_v3.img"
+        container "${params.yascp_container}"
+
     } else {
-        container "mercury/nf_scrna_qc:v3"
+        container "wtsihgi/nf_scrna_qc:6bb6af5"
     }
-    //publishDir  path: "${params.outdir}/doublet_detection/",
-    //            mode: "${params.copy_mode}",
-    //            overwrite: "true"
+
     publishDir path: "${params.outdir}/doublet_detection/droplet_type_distribution", 
                mode: "${params.copy_mode}", 
                pattern: "*.png",
