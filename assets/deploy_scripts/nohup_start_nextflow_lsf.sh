@@ -16,6 +16,7 @@ CWD1="$PWD"
 parentdir="$(dirname "$CWD1")"
 # export RUN_ID="${parentdir##*/}"
 export RUN_ID="${PWD##*/}"
+export NXF_MONITOR_DUMP_INTERVAL=60s  # Default is 5 seconds
 
 mkdir $PWD/work || echo 'exists'
 mkdir $PWD/work/tmp || echo 'exists'
