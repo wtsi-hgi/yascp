@@ -45,7 +45,7 @@ process DYNAMIC_DONOR_EXCLUSIVE_SNP_SELECTION{
         container "${params.yascp_container}"
 
     } else {
-        container "mercury/scrna_deconvolution:62bd56a"
+        container "${params.yascp_container_docker}"
     }
     publishDir "${params.outdir}/deconvolution/cellsnp/cellsnp_${samplename}", mode: "${params.copy_mode}", pattern: "cellsnp_${samplename}", overwrite: true
     
@@ -91,7 +91,7 @@ process ASSESS_CALL_RATE{
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "${params.yascp_container}"
     } else {
-        container "mercury/scrna_deconvolution:62bd56a"
+        container "${params.yascp_container_docker}"
     }
 
     input: 
@@ -125,7 +125,7 @@ process CELLSNP {
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "${params.yascp_container}"
     } else {
-        container "mercury/scrna_deconvolution:62bd56a"
+        container "${params.yascp_container_docker}"
     }
 
     input: 

@@ -5,7 +5,7 @@ process CONCORDANCE_CALCLULATIONS {
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "${params.yascp_container}"
     } else {
-        container "mercury/scrna_deconvolution:62bd56a"
+        container "${params.yascp_container_docker}"
     }
 
     publishDir  path: "${params.outdir}/deconvolution/concordances/${pool_id}",
@@ -47,7 +47,7 @@ process OTHER_DONOR_CONCORDANCE_CALCLULATIONS {
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "${params.yascp_container}"
     } else {
-        container "mercury/scrna_deconvolution:62bd56a"
+       container "${params.yascp_container_docker}"
     }
 
     publishDir  path: "${params.outdir}/deconvolution/concordances/${pool_id}",
@@ -74,7 +74,7 @@ process COMBINE_FILES{
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "${params.yascp_container}"
     } else {
-        container "mercury/scrna_deconvolution:62bd56a"
+        container "${params.yascp_container_docker}"
     }
 
     publishDir  path: "${params.outdir}/deconvolution/concordances/${pool_id}",
@@ -108,7 +108,7 @@ process PLOT_CONCORDANCES_ALL{
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "${params.scrna_deconvolution}"
     } else {
-        container "mercury/scrna_deconvolution:62bd56a"
+        container "${params.yascp_container_docker}"
     }
 
     publishDir  path: "${params.outdir}/deconvolution/concordances",

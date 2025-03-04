@@ -8,7 +8,7 @@ process PLOT_DONOR_CELLS {
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "${params.yascp_container}"
     } else {
-        container "mercury/scrna_deconvolution:62bd56a"
+        container "${params.yascp_container_docker}"
     }
 
     publishDir "${params.outdir}/plots/", mode: "${params.plot_donor_ncells.copy_mode}", overwrite: true,

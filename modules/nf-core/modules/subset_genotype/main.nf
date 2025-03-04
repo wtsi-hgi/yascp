@@ -93,7 +93,7 @@ process SELECT_DONOR_GENOTYPES_FROM_VCF {
   if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
       container "${params.yascp_container}"
   } else {
-      container "mercury/wtsihgi-nf_yascp_htstools-1.1"
+      container "${params.yascp_container_docker}"
   }
 
   input:
@@ -116,7 +116,7 @@ process CONCAT_STUDY_VCFS {
   if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
       container "${params.yascp_container}"
   } else {
-      container "mercury/wtsihgi-nf_yascp_htstools-1.1"
+      container "${params.yascp_container_docker}"
   }
 
   input:
@@ -142,7 +142,7 @@ process SUBSET_GENOTYPE {
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "${params.yascp_container}"
     } else {
-        container "mercury/wtsihgi-nf_yascp_htstools-1.1"
+        container "${params.yascp_container_docker}"
     }
 
     input:
@@ -173,7 +173,7 @@ process SUBSET_GENOTYPE2 {
         // println "container: /software/hgi/containers/wtsihgi-nf_genotype_match-1.0.sif\n"
         container "${params.yascp_container}"
     } else {
-        container "mercury/wtsihgi-nf_yascp_htstools-1.1"
+        container "${params.yascp_container_docker}"
     }
 
     // [CRD_CMB13101669, 'S2-998-90008,0030007538435,S2-998-90009', GT_UKBB, /lustre/scratch123/hgi/projects/ukbiobank_genotypes/FullRelease/Imputed/VCFs/hg38_1kg_AF05_exons/sorted_hg38_ukb_imp_chr8_v3_1kgAF05coding.bcf.gz, /lustre/scratch123/hgi/projects/ukbiobank_genotypes/FullRelease/Imputed/VCFs/hg38_1kg_AF05_exons/sorted_hg38_ukb_imp_chr8_v3_1kgAF05coding.bcf.gz.csi]
@@ -217,7 +217,7 @@ process JOIN_CHROMOSOMES{
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "${params.yascp_container}"
     } else {
-        container "mercury/wtsihgi-nf_yascp_htstools-1.1"
+        container "${params.yascp_container_docker}"
     }
     // [CRD_CMB13101669, 'S2-998-90008,0030007538435,S2-998-90009', GT_UKBB, /lustre/scratch123/hgi/projects/ukbiobank_genotypes/FullRelease/Imputed/VCFs/hg38_1kg_AF05_exons/sorted_hg38_ukb_imp_chr8_v3_1kgAF05coding.bcf.gz, /lustre/scratch123/hgi/projects/ukbiobank_genotypes/FullRelease/Imputed/VCFs/hg38_1kg_AF05_exons/sorted_hg38_ukb_imp_chr8_v3_1kgAF05coding.bcf.gz.csi]
 
@@ -277,7 +277,7 @@ process RESOLVE_POOL_VCFS{
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "${params.yascp_container}"
     } else {
-        container "mercury/wtsihgi-nf_yascp_htstools-1.1"
+        container "${params.yascp_container_docker}"
     }
     input:
       tuple val(samplename), path(vcf),path(vcf_csi)
@@ -307,7 +307,7 @@ process JOIN_STUDIES_MERGE{
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "${params.yascp_container}"
     } else {
-        container "mercury/wtsihgi-nf_yascp_htstools-1.1"
+        container "${params.yascp_container_docker}"
     }
     // [CRD_CMB13101669, 'S2-998-90008,0030007538435,S2-998-90009', GT_UKBB, /lustre/scratch123/hgi/projects/ukbiobank_genotypes/FullRelease/Imputed/VCFs/hg38_1kg_AF05_exons/sorted_hg38_ukb_imp_chr8_v3_1kgAF05coding.bcf.gz, /lustre/scratch123/hgi/projects/ukbiobank_genotypes/FullRelease/Imputed/VCFs/hg38_1kg_AF05_exons/sorted_hg38_ukb_imp_chr8_v3_1kgAF05coding.bcf.gz.csi]
 

@@ -5,7 +5,7 @@ process DOUBLET_DETECTION {
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "${params.yascp_container}"
     } else {
-        container "mercury/nf_scrna_qc:v3"
+        container "${params.yascp_container_docker}"
     }
     
     publishDir  path: "${params.outdir}/doublet_detection/multiplet.method=doubletdetection",

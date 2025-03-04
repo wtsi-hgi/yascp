@@ -10,7 +10,7 @@ process PCA {
         container "${params.yascp_container}"
         // /software/hgi/containers/nf_qc_scrna_v1.img
     } else {
-        container "mercury/nf_qc_scrna:v3"
+        container "${params.yascp_container_docker}"
     }
 
     publishDir  path: "${outdir}",
@@ -86,7 +86,7 @@ process NORMALISE_AND_PCA {
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "${params.yascp_container}"
     } else {
-        container "mercury/nf_qc_scrna:v3"
+        container "${params.yascp_container_docker}"
     }
 
 

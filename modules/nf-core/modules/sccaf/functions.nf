@@ -7,7 +7,7 @@ process sccaf_assess_clustering {
         container "${params.yascp_container}"
         
     } else {
-        container "wtsihgi/nf_scrna_qc_scaaf:1c77f49"
+        container "${params.yascp_container_docker}"
     }
 
 

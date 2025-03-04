@@ -6,7 +6,7 @@ process PSEUDOBULK_AGREGATION {
         container "${params.yascp_container}"
         
     } else {
-        container "quay.io/biocontainers/multiqc:1.10.1--py_0"
+        container "${params.yascp_container_docker}"
     }
 
   input:

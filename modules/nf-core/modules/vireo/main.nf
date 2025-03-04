@@ -3,7 +3,7 @@ process REMOVE_DUPLICATED_DONORS_FROM_GT{
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "${params.yascp_container}"
     } else {
-        container "mercury/scrna_deconvolution:62bd56a"
+        container "${params.yascp_container_docker}"
     }
 
   input:
@@ -44,7 +44,7 @@ process VIREO_SUBSAMPLING {
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "${params.yascp_container}"
     } else {
-        container "mercury/scrna_deconvolution:62bd56a"
+        container "${params.yascp_container_docker}"
     }
 
     input:
@@ -142,7 +142,7 @@ process GENOTYPE_MATCHER{
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "${params.yascp_container}"
     } else {
-        container "mercury/scrna_deconvolution:62bd56a"
+        container "${params.yascp_container_docker}"
     } 
 
     input:
@@ -174,7 +174,7 @@ process VIREO {
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "${params.yascp_container}"
     } else {
-        container "mercury/scrna_deconvolution:62bd56a"
+       container "${params.yascp_container_docker}"
     }
 
      when:
@@ -282,7 +282,7 @@ process VIREO_SUBSAMPLING_PROCESSING{
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "${params.yascp_container}"
     } else {
-        container "mercury/scrna_deconvolution:62bd56a"
+        container "${params.yascp_container_docker}"
     }
     input:
       tuple val(samplename), path(vireo_subsampling_folders)

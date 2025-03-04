@@ -5,7 +5,7 @@ process FREEBAYES {
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "${params.yascp_container}"
     } else {
-        container " mercury/bam_tool_processing:05_04_2024"
+        container "${params.yascp_container_docker}"
     }
     
     input:
