@@ -49,12 +49,17 @@ workflow prepare_inputs {
             file("${row.data_path_10x_format}/filtered_feature_bc_matrix/matrix.mtx.gz")
         )}
 
-        channel__metadata =  channel_input_data_table
+        channel__metadata = channel_input_data_table
             .splitCsv(header: true, sep: params.input_tables_column_delimiter)
-            .map{row -> tuple(
-            row.experiment_id,
-            file("${row.data_path_10x_format}/metrics_summary.csv")
-        )}
+            .map { row -> 
+                def metrics_csv = file("${row.data_path_10x_format}/metrics_summary.csv")
+                def fallback_tsv = file("${row.data_path_10x_format}/summary.csv")
+                
+                tuple(
+                    row.experiment_id,
+                    metrics_csv.exists() ? metrics_csv : fallback_tsv
+                )
+            }
 
         channel_dsb = channel_input_data_table
             .splitCsv(header: true, sep: params.input_tables_column_delimiter)

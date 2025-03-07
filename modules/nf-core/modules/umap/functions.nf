@@ -17,7 +17,7 @@ process umap_calculate {
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "${params.yascp_container}"
     } else {
-        container "wtsihgi/nf_scrna_qc:6bb6af5"
+        container "${params.yascp_container_docker}"
     }
 
     input:
@@ -82,7 +82,7 @@ process generate_final_UMAPS{
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "${params.yascp_container}"
     } else {
-        container "wtsihgi/nf_scrna_qc:6bb6af5"
+        container "${params.yascp_container_docker}"
     }
 
   publishDir  path: "${outdir}",
@@ -118,7 +118,7 @@ process umap_gather {
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "${params.yascp_container}"
     } else {
-        container "wtsihgi/nf_scrna_qc:6bb6af5"
+        container "${params.yascp_container_docker}"
     }
     publishDir  path: "${outdir}",
                 saveAs: {filename ->
@@ -176,7 +176,7 @@ process umap_plot_swarm {
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "${params.yascp_container}"
     } else {
-        container "wtsihgi/nf_scrna_qc:6bb6af5"
+        container "${params.yascp_container_docker}"
     }
     publishDir  path: "${outdir}/plots",
                 mode: "${params.copy_mode}",
@@ -227,7 +227,7 @@ process umap_calculate_and_plot {
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "${params.yascp_container}"
     } else {
-        container "wtsihgi/nf_scrna_qc:6bb6af5"
+        container "${params.yascp_container_docker}"
     }
     publishDir  path: "${outdir}/plots",
                 mode: "${params.copy_mode}",

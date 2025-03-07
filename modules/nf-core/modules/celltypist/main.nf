@@ -8,7 +8,7 @@ process CELLTYPIST {
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {        
       container "${params.yascp_container}"
     } else {
-        container "mercury/nf_scrna_deconv:v3"
+        container "${params.yascp_container_docker}"
     }
 
     when: 

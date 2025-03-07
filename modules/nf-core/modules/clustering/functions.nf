@@ -18,7 +18,7 @@ process cluster {
         container "${params.yascp_container}"
 
     } else {
-        container "wtsihgi/nf_scrna_qc:6bb6af5"
+        container "${params.yascp_container_docker}"
     }
 
     publishDir  path: "${outdir}",
@@ -93,7 +93,7 @@ process plot_phenotype_across_clusters {
         container "${params.yascp_container}"
 
     } else {
-        container "wtsihgi/nf_scrna_qc:6bb6af5"
+        container "${params.yascp_container_docker}"
     }
 
     publishDir  path: "${outdir}",
@@ -141,7 +141,7 @@ process serialize_known_markers {
         container "${params.yascp_container}"
 
     } else {
-        container "wtsihgi/nf_scrna_qc:6bb6af5"
+        container "${params.yascp_container_docker}"
     }
 
     input:
@@ -179,7 +179,7 @@ process plot_known_markers {
         container "${params.yascp_container}"
 
     } else {
-        container "wtsihgi/nf_scrna_qc:6bb6af5"
+        container "${params.yascp_container_docker}"
     }
 
     publishDir  path: "${outdir}",
@@ -231,7 +231,7 @@ process cluster_validate_resolution_sklearn {
         container "${params.yascp_container}"
 
     } else {
-        container "wtsihgi/nf_scrna_qc:6bb6af5"
+        container "${params.yascp_container_docker}"
     }
 
     publishDir  path: "${outdir}",
@@ -341,7 +341,7 @@ process cluster_validate_resolution_keras {
         container "${params.yascp_container}"
         
     } else {
-        container "wtsihgi/nf_scrna_qc:6bb6af5"
+        container "${params.yascp_container_docker}"
     }
 
     publishDir  path: "${outdir}",
@@ -448,7 +448,7 @@ process plot_resolution_validate {
         container "${params.yascp_container}"
 
     } else {
-        container "wtsihgi/nf_scrna_qc:6bb6af5"
+        container "${params.yascp_container_docker}"
     }
 
     publishDir  path: "${outdir}",
@@ -524,7 +524,7 @@ process cluster_markers {
         container "${params.yascp_container}"
 
     } else {
-        container "wtsihgi/nf_scrna_qc:6bb6af5"
+        container "${params.yascp_container_docker}"
     }
 
     publishDir  path: "${outdir}",
@@ -615,7 +615,7 @@ process cellex_cluster_markers {
         container "${params.yascp_container}"
 
     } else {
-        container "wtsihgi/nf_scrna_qc:6bb6af5"
+        container "${params.yascp_container_docker}"
     }
 
     publishDir  path: "${outdir}",
@@ -669,7 +669,7 @@ process merge_clusters {
         container "${params.yascp_container}"
 
     } else {
-        container "wtsihgi/nf_scrna_qc:6bb6af5"
+        container "${params.yascp_container_docker}"
     }
 
     publishDir  path: "${outdir}",
@@ -726,7 +726,7 @@ process prep_cellxgene {
         container "${params.yascp_container}"
 
     } else {
-        container "wtsihgi/nf_scrna_qc:6bb6af5"
+        container "${params.yascp_container_docker}"
     }
 
     publishDir  path: "${outdir}",
@@ -776,7 +776,7 @@ process convert_seurat {
         container "${params.yascp_container}"
 
     } else {
-        container "wtsihgi/nf_scrna_qc:6bb6af5"
+        container "${params.yascp_container_docker}"
     }
 
     publishDir  path: "${outdir}",

@@ -5,7 +5,7 @@ process SUBSET_BAM_PER_BARCODES_AND_VARIANTS {
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "${params.yascp_container}"
     } else {
-        container " mercury/bam_tool_processing:05_04_2024"
+        container "${params.yascp_container_docker}"
     }
     
     input:
@@ -53,7 +53,7 @@ process PREPROCESS_GENOME{
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "${params.yascp_container}"
     } else {
-        container " mercury/bam_tool_processing:05_04_2024"
+        container "${params.yascp_container_docker}"
     }
 
     input:
@@ -80,7 +80,7 @@ process SUBSET_BAM_PER_BARCODES{
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "${params.yascp_container}"
     } else {
-        container "mercury/bam_tool_processing:05_04_2024"
+        container "${params.yascp_container_docker}"
     }
 
     publishDir  path: "${params.outdir}/handover/Donor_Quantification/${sample}",

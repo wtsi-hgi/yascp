@@ -11,10 +11,8 @@ rm -f nextflow.nohup.PID.txt
 
 # start Nextflow in background:
 export NXF_OPTS="-Xms5G -Xmx5G"
-export NXF_ANSI_LOG=false
-export NXF_EXECUTOR_LOG=true
-export NXF_LOG_LEVEL=DEBUG
-export NXF_CLI_LOG=false
+export NXF_MONITOR_DUMP_INTERVAL=60s  # Default is 5 seconds
+
 CWD1="$PWD"
 parentdir="$(dirname "$CWD1")"
 # export RUN_ID="${parentdir##*/}"

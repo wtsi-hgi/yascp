@@ -7,7 +7,7 @@ process dummy_filtered_channel{
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "${params.yascp_container}"
     } else {
-        container "wtsihgi/nf_scrna_qc:6bb6af5"
+        container "${params.yascp_container_docker}"
     }
 
     input:
@@ -43,7 +43,7 @@ process merge_samples_from_h5ad {
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "${params.yascp_container}"
     } else {
-        container "wtsihgi/nf_scrna_qc:6bb6af5"
+       container "${params.yascp_container_docker}"
     }
 
     input:
@@ -131,7 +131,7 @@ process merge_samples {
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "${params.yascp_container}"
     } else {
-        container "wtsihgi/nf_scrna_qc:6bb6af5"
+        container "${params.yascp_container_docker}"
     }
 
     input:

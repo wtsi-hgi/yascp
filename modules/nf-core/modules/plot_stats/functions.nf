@@ -11,7 +11,7 @@ process plot_filtered_cells {
         container "${params.yascp_container}"
  
     } else {
-        container "wtsihgi/nf_scrna_qc:6bb6af5"
+        container "${params.yascp_container_docker}"
     }
 
     publishDir  path: "${outdir}/clustering_and_integration/plots",
@@ -49,7 +49,7 @@ process plot_pcs {
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "${params.yascp_container}"
     } else {
-        container "wtsihgi/nf_scrna_qc:6bb6af5"
+       container "${params.yascp_container_docker}"
     }
 
     publishDir  path: "${outdir}/clustering_and_integration/plots",
@@ -99,7 +99,7 @@ process plot_predicted_sex {
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "${params.yascp_container}"
     } else {
-        container "wtsihgi/nf_scrna_qc:6bb6af5"
+        container "${params.yascp_container_docker}"
     }
 
     publishDir  path: "${outdir}/clustering_and_integration/plots",
@@ -133,7 +133,7 @@ process plot_qc {
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "${params.yascp_container}"
     } else {
-        container "wtsihgi/nf_scrna_qc:6bb6af5"
+        container "${params.yascp_container_docker}"
 
     }
 
@@ -190,7 +190,7 @@ process plot_distributions {
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "${params.yascp_container}"
     } else {
-        container "wtsihgi/nf_scrna_qc:6bb6af5"
+        container "${params.yascp_container_docker}"
     }
 
     publishDir  path: "${outdir}/clustering_and_integration/plots",

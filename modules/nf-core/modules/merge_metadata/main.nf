@@ -4,7 +4,7 @@ process prep_collectmetadata{
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "${params.yascp_container}"
     } else {
-        container "mercury/scrna_deconvolution:v2"
+        container "${params.yascp_container_docker}"
     }
     
     input:
@@ -22,7 +22,7 @@ process merge_metadata{
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "${params.yascp_container}"
     } else {
-        container "mercury/scrna_deconvolution:v2"
+       container "${params.yascp_container_docker}"
     }
 
     input:

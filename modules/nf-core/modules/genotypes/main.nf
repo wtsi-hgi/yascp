@@ -7,7 +7,7 @@ process MERGE_GENOTYPES_IN_ONE_VCF_IDX_PAN{
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "${params.yascp_container}"
     } else {
-        container "mercury/wtsihgi-nf_yascp_htstools-1.1"
+        container "${params.yascp_container_docker}"
     }
 
     input:
@@ -68,7 +68,7 @@ process MERGE_GENOTYPES_IN_ONE_VCF_FREEBAYES{
         // println "container: /software/hgi/containers/wtsihgi-nf_genotype_match-1.0.sif\n"
         container "${params.yascp_container}"
     } else {
-        container "mercury/wtsihgi-nf_yascp_htstools-1.1"
+        container "${params.yascp_container_docker}"
     }
 
     input:
@@ -112,7 +112,7 @@ process MERGE_GENOTYPES_IN_ONE_VCF{
         // println "container: /software/hgi/containers/wtsihgi-nf_genotype_match-1.0.sif\n"
         container "${params.yascp_container}"
     } else {
-        container "mercury/wtsihgi-nf_yascp_htstools-1.1"
+        container "${params.yascp_container_docker}"
     }
 
     input:
@@ -157,7 +157,7 @@ process VIREO_ADD_SAMPLE_PREFIX{
         // println "container: /software/hgi/containers/wtsihgi-nf_genotype_match-1.0.sif\n"
         container "${params.yascp_container}"
     } else {
-        container "mercury/wtsihgi-nf_yascp_htstools-1.1"
+        container "${params.yascp_container_docker}"
     }
 
     input:
@@ -185,7 +185,7 @@ process VIREO_GT_FIX_HEADER
       // println "container: /software/hgi/containers/wtsihgi-nf_genotype_match-1.0.sif\n"
       container "${params.yascp_container}"
   } else {
-      container "mercury/wtsihgi-nf_yascp_htstools-1.1"
+      container "${params.yascp_container_docker}"
   }
 
   label 'process_low'
@@ -240,7 +240,7 @@ process REPLACE_GT_DONOR_ID2{
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "${params.yascp_container}"
     } else {
-        container "mercury/scrna_deconvolution:62bd56a"
+        container "${params.yascp_container_docker}"
     }
 
   label 'process_low'
@@ -276,7 +276,7 @@ process ENHANCE_STATS_GT_MATCH{
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "${params.yascp_container}"
     } else {
-        container "mercury/scrna_deconvolution:62bd56a"
+        container "${params.yascp_container_docker}"
     }
   tag "${samplename}"
   publishDir  path: "${params.outdir}/deconvolution/gtmatch/${samplename}",
@@ -324,7 +324,7 @@ process GT_MATCH_POOL_IBD
   if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
       container "${params.yascp_container}"
   } else {
-      container "mercury/nf_qc_scrna:v2"
+      container "${params.yascp_container_docker}"
   }
 
   
@@ -355,7 +355,7 @@ process GT_MATCH_POOL_AGAINST_PANEL
       // println "container: /software/hgi/containers/wtsihgi-nf_genotype_match-1.0.sif\n"
       container "${params.yascp_container}"
   } else {
-      container "mercury/wtsihgi-nf_yascp_htstools-1.1"
+      container "${params.yascp_container_docker}"
   }
 
   label 'process_tiny'
@@ -385,7 +385,7 @@ process PREPROCESS_GENOTYPES
       // println "container: /software/hgi/containers/wtsihgi-nf_genotype_match-1.0.sif\n"
        container "${params.yascp_container}"
   } else {
-      container "mercury/wtsihgi-nf_yascp_htstools-1.1"
+      container "${params.yascp_container_docker}"
   }
 
   label 'process_tiny'
@@ -430,7 +430,7 @@ process ASSIGN_DONOR_FROM_PANEL
       // println "container: /software/hgi/containers/wtsihgi-nf_genotype_match-1.0.sif\n"
       container "${params.yascp_container}"
   } else {
-      container "mercury/wtsihgi-nf_genotype_match-1.0"
+      container "${params.yascp_container_docker}"
   }
 
   input:
@@ -466,7 +466,7 @@ process ASSIGN_DONOR_OVERALL
       // println "container: /software/hgi/containers/wtsihgi-nf_genotype_match-1.0.sif\n"
       container "${params.yascp_container}"
   } else {
-      container "mercury/wtsihgi-nf_genotype_match-1.0"
+      container "${params.yascp_container_docker}"
   }
 
   input:
@@ -501,7 +501,7 @@ process REPLACE_GT_ASSIGNMENTS_WITH_PHENOTYPE{
   if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
       container "${params.yascp_container}"
   } else {
-      container "mercury/scrna_deconvolution:62bd56a"
+      container "${params.yascp_container_docker}"
   }
 
   input:
@@ -529,7 +529,7 @@ process ENHANCE_STATS_FILE{
   if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
       container "${params.yascp_container}"
   } else {
-      container "mercury/scrna_deconvolution:62bd56a"
+      container "${params.yascp_container_docker}"
   }
 
   label 'process_small'
@@ -569,7 +569,7 @@ process ENHANCE_VIREO_METADATA_WITH_DONOR{
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "${params.yascp_container}"
     } else {
-        container "mercury/scrna_deconvolution:62bd56a"
+        container "${params.yascp_container_docker}"
     }
   label 'process_small'
 
@@ -594,7 +594,7 @@ process COMBINE_MATCHES_IN_EXPECTED_FORMAT{
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "${params.yascp_container}"
     } else {
-        container "mercury/scrna_deconvolution:62bd56a"
+        container "${params.yascp_container_docker}"
     }
   label 'process_small'
 

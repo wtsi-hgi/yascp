@@ -3,7 +3,7 @@ process collect_file{
   if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
     container "${params.yascp_container}"
   } else {
-    container "wtsihgi/nf_scrna_qc:6bb6af5"
+    container "${params.yascp_container_docker}"
   }
     // In nf there is a function collectFile - however if you provide a symlinked file directory tusing nf function will overwrite the source instead of replacing the file
     // This snipped is a replication of the function but as a nf module and hence the problem is avoided.

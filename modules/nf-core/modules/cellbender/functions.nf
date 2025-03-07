@@ -32,13 +32,11 @@ process cellbender__rb__get_input_cells {
   
   if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
     container "${params.yascp_container}"
-    //// container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/wtsihgi_nf_cellbender_v1.2.img"
     maxRetries = 1
-    // workdir /tmp
 
     
   } else {
-    container "wtsihgi/nf_cellbender_container:3cc9983"
+    container "${params.yascp_container_docker}"
   }
 
   // Calculates thresholds for input cells of cellbender__remove_background
@@ -130,7 +128,7 @@ process cellbender__preprocess_output{
       // memory = 250.GB
       cpus = 1
     } else {
-      container "wtsihgi/nf_cellbender_container:3cc9983"
+      container "${params.yascp_container_docker}"
     }
     publishDir  path: "${outdir}",
         saveAs: {filename ->
@@ -425,7 +423,7 @@ process cellbender__remove_background__qc_plots {
   if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
     container "${params.yascp_container}"
   } else {
-    container "wtsihgi/nf_scrna_qc:6bb6af5"
+    container "${params.yascp_container_docker}"
   }
   
 
@@ -511,7 +509,7 @@ process capture_cellbender_files{
   if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
     container "${params.yascp_container}"
   } else {
-    container "wtsihgi/nf_scrna_qc:6bb6af5"
+    container "${params.yascp_container_docker}"
   }
 
   // cache false
@@ -557,7 +555,7 @@ process cellbender__remove_background__qc_plots_2 {
         container "${params.yascp_container}"
 
     } else {
-        container "wtsihgi/nf_scrna_qc:6bb6af5"
+        container "${params.yascp_container_docker}"
   }
 
   // Second set of QC plots from cellbdender.
@@ -610,7 +608,7 @@ process cellbender__gather_qc_input {
   if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
     container "${params.nf_scrna_qc_sif_container}"
   } else {
-    container "wtsihgi/nf_cellbender_container:3cc9983"
+    container "${params.yascp_container_docker}"
   }
 
   // Prepare cell bender output for qc_cluster pipeline. For each epoch and

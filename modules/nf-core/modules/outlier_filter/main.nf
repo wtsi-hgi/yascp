@@ -12,7 +12,7 @@ process MERGE_OUTLIER_FILES{
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "${params.yascp_container}"
     } else {
-        container "wtsihgi/nf_scrna_qc:6bb6af5"
+        container "${params.yascp_container_docker}"
     }
 
     publishDir  path: "${params.outdir}/handover/merged_h5ad/",
@@ -59,7 +59,7 @@ process OUTLIER_FILTER {
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "${params.yascp_container}"
     } else {
-        container "wtsihgi/nf_scrna_qc:6bb6af5"
+        container "${params.yascp_container_docker}"
     }
 
 

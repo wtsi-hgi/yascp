@@ -4,7 +4,7 @@ process SPLIT_CITESEQ_GEX {
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "${params.yascp_container}"
     } else {
-        container "wtsihgi/nf_scrna_qc:6bb6af5"
+        container "${params.yascp_container_docker}"
     }
 
     publishDir  path: "${params.outdir}/preprocessing/data_modalities_split/${mode}/${sample_name}",
@@ -82,7 +82,7 @@ process DSB {
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "${params.yascp_container}"
     } else {
-        container "mercury/azimuth_dsb:latest"
+        container "${params.yascp_container_docker}"
     }
 
     publishDir  path: "${params.outdir}/citeseq/DSB/${sample_name}", mode: "${params.copy_mode}",
@@ -125,7 +125,7 @@ process HASTAG_DEMULTIPLEX {
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "${params.yascp_container}"
     } else {
-        container "mercury/azimuth_dsb:latest"
+        container "${params.yascp_container_docker}"
     }
 
     publishDir  path: "${params.outdir}/deconvolution/hastag_demultiplex/${sample_name}", mode: "${params.copy_mode}",
@@ -149,7 +149,7 @@ process DSB_INTEGRATE{
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "${params.yascp_container}"
     } else {
-        container "mercury/azimuth_dsb:6_03_2024"
+        container "${params.yascp_container_docker}"
     }
 
     publishDir  path: "${params.outdir}/citeseq/all_data_integrated", mode: "${params.copy_mode}",
@@ -190,7 +190,7 @@ process MULTIMODAL_INTEGRATION{
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "${params.yascp_container}"
     } else {
-        container "mercury/azimuth_dsb:6_03_2024"
+        container "${params.yascp_container_docker}"
     }
 
     publishDir  path: "${params.outdir}/citeseq/all_data_integrated", mode: "${params.copy_mode}",
@@ -217,7 +217,7 @@ process VDJ_INTEGRATION{
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "${params.yascp_container}"
     } else {
-        container "mercury/azimuth_dsb:6_03_2024"
+        container "${params.yascp_container_docker}"
     }
 
     publishDir  path: "${params.outdir}/citeseq/all_data_integrated", mode: "${params.copy_mode}",
@@ -248,7 +248,7 @@ process PREPROCESS_PROCESS {
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "${params.yascp_container}"
     } else {
-        container "mercury/azimuth_dsb:6_03_2024"
+        container "${params.yascp_container_docker}"
     }
 
     publishDir  path: "${params.outdir}/citeseq/DSB/${sample_name}",      
@@ -286,7 +286,7 @@ process DSB_PROCESS {
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "${params.yascp_container}"
     } else {
-        container "mercury/azimuth_dsb:6_03_2024"
+        container "${params.yascp_container_docker}"
     }
 
     publishDir  path: "${params.outdir}/citeseq/DSB/${sample_name}",      

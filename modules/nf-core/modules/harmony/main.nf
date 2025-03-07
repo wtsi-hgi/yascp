@@ -29,7 +29,7 @@ process HARMONY{
         container "${params.yascp_container}"
 
     } else {
-        container "wtsihgi/nf_scrna_qc:6bb6af5"
+        container "${params.yascp_container_docker}"
     }
 
     publishDir  path: "${outdir}",
