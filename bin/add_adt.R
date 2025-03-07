@@ -82,7 +82,7 @@ myPalette <- colorRampPalette(rev(brewer.pal(11, "Spectral")))
 
 
 Convert(
-  '/lustre/scratch127/humgen/teams/hgi/mo11/tmp_projects127/yascp_tests/v1/work/97/65a14eb68c3699ceddee3ccaad5682/Pool1___sample_QCd_adata__8.h5ad',
+  file_with_qc_applied,
   dest = paste('tmp',"h5seurat",sep='.'),
   assay = "RNA",
   overwrite = TRUE,
