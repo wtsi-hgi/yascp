@@ -36,8 +36,14 @@ def mtx_to_h5ad(mtx_dir, output_file):
     # Ensure cell barcode metadata is explicitly stored
     if 'cell_barcode' not in adata.obs.columns:
         adata.obs['cell_barcode'] = adata.obs.index.astype(str)
-    adata.var['gene_ids'] = adata.var.index
-    adata.var_names =  pd.Index(adata.var.gene_symbols.astype(str))  
+    
+    
+    if any(adata.var.gene_symbols.str.contains('ENSG')):
+        adata.var['gene_ids'] = adata.var.index
+    else:
+        adata.var_names =  pd.Index(adata.var.gene_symbols.astype(str))
+        adata.var['gene_ids'] = adata.var['gene_symbols'] 
+    
     del adata.var['gene_symbols']
     # Save to .h5ad file
     for col in adata.var.select_dtypes(include=['category']).columns:

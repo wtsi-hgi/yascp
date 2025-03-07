@@ -3,6 +3,38 @@ nextflow.enable.dsl=2
 include {prep_collectmetadata; merge_metadata} from "$projectDir/modules/nf-core/modules/merge_metadata/main"
 include { YASCP_INPUTS } from "$projectDir/modules/nf-core/modules/prepere_yascp_inputs/main"
 
+workflow DECONV_INPUTS{
+    // This is a function that prpeares the inputs for deconvolution that is utilised twice.
+    take:
+        cellbender_path
+        prepare_inputs
+    main:
+        cellbender_path
+            .map{row->tuple(row[0], file("${row[1]}".replaceFirst(/.*results/,"${params.outdir}")))}
+            .set{ch_experiment_filth5} // this channel is used for task 'split_donor_h5ad'
+            
+        prepare_inputs.out.ch_experiment_bam_bai_barcodes.map { experiment, bam, bai, barcodes -> tuple(experiment,
+                            bam,
+                            bai)}.set{pre_ch_experiment_bam_bai_barcodes}
+
+        cellbender_path.map{row->tuple(row[0], file("${row[1]}".replaceFirst(/.*results/,"${params.outdir}")+'/barcodes.tsv.gz'))}.set{barcodes}
+
+        channel__file_paths_10x= cellbender_path.map{row->tuple(row[0],
+                                                    file("${row[1]}".replaceFirst(/.*results/,"${params.outdir}")+'/barcodes.tsv.gz'),
+                                                    file("${row[1]}".replaceFirst(/.*results/,"${params.outdir}")+'/features.tsv.gz'),
+                                                    file("${row[1]}".replaceFirst(/.*results/,"${params.outdir}")+'/matrix.mtx.gz'))}
+
+        channel__file_paths_10x_single = cellbender_path.map{row->tuple(row[0],
+                                                    file("${row[1]}".replaceFirst(/.*results/,"${params.outdir}"))
+                                                    )}
+        pre_ch_experiment_bam_bai_barcodes.combine(barcodes, by: 0).set{ch_experiment_bam_bai_barcodes}
+    emit:
+        channel__file_paths_10x
+        ch_experiment_bam_bai_barcodes
+        ch_experiment_filth5
+        channel__file_paths_10x_single
+}
+
 workflow prepare_inputs {
 	// this workflow processes the outputs from cellbender to perform the data preparation
 	// TODO: Curently it has been left as close as possible to the original imput of the celbender pipeline, however the sub workflow in  the prepeare_inputs folder is redundant and needs to be cleaned up. 
@@ -29,14 +61,16 @@ workflow prepare_inputs {
         channel_input_data_table
             .splitCsv(header: true, sep: params.input_tables_column_delimiter)
             .map{ row ->
-                def bam_file = "${row.data_path_10x_format}/possorted_genome_bam.bam"
+                def bam_file = file("${row.data_path_10x_format}/possorted_genome_bam.bam")
+                def bam_file_atac = file("${row.data_path_10x_format}/gex_possorted_bam.bam")
                 def barcodes_file_gz = file("${row.data_path_10x_format}/filtered_feature_bc_matrix/barcodes.tsv.gz")
                 def barcodes_file = file("${row.data_path_10x_format}/filtered_feature_bc_matrix/barcodes.tsv")
+                def selected_bam = bam_file.exists() ? bam_file : bam_file_atac
                 
                 // Check if barcodes.tsv.gz exists, if not, fall back to barcodes.tsv
                 def selected_barcodes_file = barcodes_file_gz.exists() ? barcodes_file_gz : barcodes_file
-                
-                return tuple(row.experiment_id, bam_file, selected_barcodes_file.toString())
+
+                return tuple(row.experiment_id, selected_bam, selected_barcodes_file.toString())
             }
             .set{pre_ch_experiment_bam_barcodes}
 
