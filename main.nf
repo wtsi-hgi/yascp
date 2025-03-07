@@ -27,7 +27,7 @@ include { TRANSFER;SUMMARY_STATISTICS_PLOTS } from "$projectDir/modules/nf-core/
 include {SUBSET_WORKF; JOIN_STUDIES_MERGE} from "$projectDir/modules/nf-core/modules/subset_genotype/main"
 include {VIREO} from "$projectDir/modules/nf-core/modules/vireo/main"
 include {capture_cellbender_files} from "$projectDir/modules/nf-core/modules/cellbender/functions"
-include { DECONV_INPUTS } from "$projectDir/subworkflows/prepare_inputs/deconvolution_inputs"
+include { DECONV_INPUTS } from "$projectDir/subworkflows/prepare_inputs"
 include { prepare_inputs } from "$projectDir/subworkflows/prepare_inputs"
 include { SPLIT_DONOR_H5AD } from "$projectDir/modules/nf-core/modules/split_donor_h5ad/main"
 include {REPLACE_GT_DONOR_ID2 } from "$projectDir/modules/nf-core/modules/genotypes/main"

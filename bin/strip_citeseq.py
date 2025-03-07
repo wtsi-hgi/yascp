@@ -98,23 +98,28 @@ def cellbender_to_tenxmatrix(adata,out_file='',out_dir='tenx_from_adata',verbose
 
     if 'gene_symbols' in adata.var.columns:
         gene_var = 'gene_symbols'
+        df_features = pd.DataFrame(
+            data=[
+                adata.var.index.values,
+                adata.var.loc[:, gene_var].values,
+                adata.var.feature_types.values
+            ]
+        )
     elif 'gene_ids' in adata.var.columns:
         gene_var = 'gene_ids'
-    # elif 'id' in adata.var.columns:
-    #     gene_var = 'id'
-    # elif 'name' in adata.var.columns:
-    #     gene_var = 'name'
+        df_features = pd.DataFrame(
+            data=[
+                adata.var.loc[:, gene_var].values,
+                adata.var.index.values,
+                adata.var.feature_types.values
+            ]
+        )
     else:
+        df_features = pd.DataFrame()
         raise Exception(
             'Could not find "gene_symbols" or "gene_ids" in adata.var'
         )
-    df_features = pd.DataFrame(
-        data=[
-            adata.var.index.values,
-            adata.var.loc[:, gene_var].values,
-            adata.var.feature_types.values
-        ]
-    )
+
     if df_features.shape[0]<df_features.shape[1]:
         df_features=df_features.T
     
@@ -320,7 +325,7 @@ def main():
         # if(adata2.shape[0]>0):
         #     # Here we have actually captured some of the reads in the antibody dataset.
 
-        if (modality=='Gene_Expression'):
+        if (modality=='Gene_Expression' or modality=='Peaks'):
             adata_antibody.write(
                 f'{modality}-{options.outname}.h5ad',
                 compression='gzip'
@@ -336,14 +341,15 @@ def main():
             df.to_csv(f'{options.outname}__{modality}.tsv',sep='\t')
             adata_antibody.var.index
 
-        if len(all_feature_types)>1:
-            _ = cellbender_to_tenxmatrix(
-                adata_antibody,
-                out_file='',
-                out_dir=f'{options.outname}__{modality}'
-            )
-        else:
-            os.system(f"ln -s {options.raw_data} {options.outname}__{modality}")
+        if (modality!='Peaks'):
+            if len(all_feature_types)>1:
+                _ = cellbender_to_tenxmatrix(
+                    adata_antibody,
+                    out_file='',
+                    out_dir=f'{options.outname}__{modality}'
+                )
+            else:
+                os.system(f"ln -s {options.raw_data} {options.outname}__{modality}")
     
     # adata_gex = adata_cellranger_filtered[:,adata_cellranger_filtered.var.query('feature_types=="Gene Expression"').index]
     # adata_cellbender = anndata_from_h5('/lustre/scratch123/hgi/teams/hgi/mo11/tmp_projects/ania/analysis_trego/work/5d/6a30871e864ed7bc03e949ef846a1d/cellbender_FPR_0.1_filtered.h5',

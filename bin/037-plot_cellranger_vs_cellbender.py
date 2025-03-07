@@ -73,6 +73,8 @@ def plot_cellranger_vs_cellbender(samplename, raw_cellranger_mtx, filtered_cellr
     adata_cellranger_raw = sc.read_10x_mtx(
         raw_cellranger_mtx, var_names='gene_symbols', make_unique=True,
         cache=False, cache_compression=compression_opts)
+    
+    
 
     # First filter out any cells that have 0 total counts
     zero_count_cells_cellranger_raw = adata_cellranger_raw.obs_names[np.where(adata_cellranger_raw.X.sum(axis=1) == 0)[0]]
