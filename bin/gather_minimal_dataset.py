@@ -383,6 +383,11 @@ def gather_donor(donor_id, ad, ad_lane_raw, qc_obs, columns_output = COLUMNS_OUT
             pass
         ad.obs['cell_passes_hard_filters'] = ad.obs['cell_passes_hard_filters'].astype('bool')
         ad.obs['qc.filter.pass'] = ad.obs['qc.filter.pass'].astype('bool')
+        # Convert boolean columns in adata.obs to integers
+        for col in ad.obs.columns:
+            if ad.obs[col].dtype == object:
+                ad.obs[col] = ad.obs[col].astype(str)
+
         ad.write(path1,compression='gzip')
 
     return {
@@ -486,8 +491,11 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
     #Cellranger Metrics Datasheet
     #############
 
-    metrics = pd.read_csv(df_raw.loc[expid, 'data_path_10x_format']+'/metrics_summary.csv')
-
+    try:
+        metrics = pd.read_csv(df_raw.loc[expid, 'data_path_10x_format']+'/metrics_summary.csv')
+    except:
+        metrics = pd.read_csv(df_raw.loc[expid, 'data_path_10x_format']+'/summary.csv')
+        
     
     try:
         Donor_Cohort_Assignments = pd.read_csv(f'{args.results_dir}/gtmatch/{expid}/{expid}_gt_donor_assignments.csv')
@@ -827,8 +835,8 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
             data_donor_for_stats['cells before QC filters'].append(Donor_cells_for_donor)
             data_donor_for_stats['cells failing QC'].append(Donor_cells_fails_qc)
             data_donor_for_stats['cells passing QC'].append(Donor_cells_passes_qc)
-
-            Donor_cell_assignments = azt.loc[Mengled_barcodes_donor] #for this have to figure out when the cell type is unasigned.
+            
+            Donor_cell_assignments = azt.loc[list(set(azt.index).intersection(set(Mengled_barcodes_donor)))] #for this have to figure out when the cell type is unasigned.
             Cell_types_detected = len(set(Donor_cell_assignments['Azimuth:predicted.celltype.l2']))
             Donor_UMIS_mapped_to_mitochondrial_genes = sum(Donor_qc_files.obs['total_counts_gene_group__mito_transcript'])
             Donor_UMIS_mapped_to_ribo_genes = sum(Donor_qc_files.obs['total_counts_gene_group__ribo_protein'])
@@ -846,7 +854,7 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
                 nr_cells_of_this_type = len(Donor_cell_assignments[Donor_cell_assignments['Azimuth:predicted.celltype.l2']==type1])
                 Cell_numbers+=f"{type1}:{nr_cells_of_this_type} ; "
 
-
+            
             Donor_Stats = gather_donor(
                 donor_id=row["donor_id"],
                 ad= Donor_qc_files,
