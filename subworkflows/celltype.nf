@@ -3,10 +3,77 @@ include {AZIMUTH;REMAP_AZIMUTH} from "$projectDir/modules/nf-core/modules/azimut
 include {CELLTYPIST} from "$projectDir/modules/nf-core/modules/celltypist/main"
 include {SPLIT_BATCH_H5AD} from "$projectDir/modules/nf-core/modules/split_batch_h5ad/main"
 include {KERAS_CELLTYPE} from "$projectDir/modules/nf-core/modules/keras_celltype/main"
-include {CELLTYPE_FILE_MERGE} from "$projectDir/modules/nf-core/modules/cell_type_assignment/functions"
+// include {CELLTYPE_FILE_MERGE} from "$projectDir/modules/nf-core/modules/cell_type_assignment/functions"
 include {SCPRED} from "$projectDir/modules/nf-core/modules/scpred/main"
 include {  DSB } from '../modules/nf-core/modules/citeseq/main'
 include { CONVERT_MTX_TO_H5AD } from "$projectDir/modules/local/convert_h5ad_to_mtx/main"
+
+process CELLTYPE_FILE_MERGE{
+    tag "${samplename}"    
+    label 'process_high'
+    publishDir  path: "${params.outdir}/celltype_assignemt/",
+            saveAs: {filename ->
+                    if (filename.contains("adata.h5ad")) {
+                        null
+                    } else {
+                        filename
+                    }
+                },
+            mode: "${params.copy_mode}",
+            overwrite: "true"  
+
+    publishDir  path: "${params.outdir}/handover/merged_h5ad/",
+            saveAs: {filename ->
+                    if (filename.contains("adata.h5ad")) {
+                        filename = "2.celltype_anotated_merged.h5ad"
+                    } else {
+                        null
+                    }
+                },
+            mode: "${params.copy_mode}",
+            overwrite: "true"  
+
+
+    if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
+        container "${params.yascp_container}"
+    } else {
+       container "${params.yascp_container_docker}"
+    }
+    output:
+        // path('adata.h5ad', emit:file__anndata_merged2)
+        path("All_Celltype_Assignments.tsv",emit:celltype_assignments)
+        path "tranche_celltype_report.tsv"
+        path "donor_celltype_report.tsv"
+
+    input:
+        tuple path(azimuth_files), path(celltypist_paths), path(all_other_paths)
+        tuple val(expid), path(file__anndata_input)
+    script:
+        def merged_files_outpath = workflow.workDir.toString()
+        file(merged_files_outpath).mkdirs()
+        def azimuth_files_path = "${merged_files_outpath}/azimuth_files.tsv"
+        def celltypist_files_path = "${merged_files_outpath}/celltypist_files.tsv"
+        def all_other_files_path = "${merged_files_outpath}/other_files.tsv"
+        def adatas_path = "${merged_files_outpath}/adatas.tsv"
+
+        new File(azimuth_files_path).text = azimuth_files.join("\n")
+        new File(celltypist_files_path).text = celltypist_paths.join("\n")
+
+        if ("${all_other_paths}" != 'fake_file.fq') {
+            new File(all_other_files_path).text = all_other_paths.join("\n")
+            other_paths = "--all_other_paths ${all_other_files_path}"
+        } else {
+            other_paths = ""
+        }
+
+        new File(adatas_path).text = file__anndata_input.join("\n")
+
+        """
+        generate_combined_celltype_anotation_file.py --all_azimuth_files ${azimuth_files_path} --all_celltypist_files ${celltypist_files_path} ${other_paths} --adata '${adatas_path}'
+        """
+
+}
+
 
 workflow celltype{
     
@@ -76,12 +143,23 @@ workflow celltype{
             sc_out = Channel.of()
         }        
         all_extra_fields2 = all_extra_fields.mix(sc_out).mix(hastag_labels)
-        
-        CELLTYPE_FILE_MERGE(az_out.collect().unique(),
-                            ct_out.collect().unique(),
-                            all_extra_fields2.collect().unique(),
-                            az_ch_experiment_filth5) 
 
+        az_out.subscribe { println "az_out: $it" }
+        ct_out.subscribe { println "ct_out: $it" }
+        all_extra_fields2.subscribe { println "all_extra_fields2: $it" }
+        
+
+        collected_inputs = tuple(
+            az_out.collect(),
+            ct_out.collect(),
+            all_extra_fields2.collect()
+        )
+
+        CELLTYPE_FILE_MERGE(        
+            collected_inputs,
+            az_ch_experiment_filth5
+        ) 
+        
         celltype_assignments=CELLTYPE_FILE_MERGE.out.celltype_assignments
 
     emit:

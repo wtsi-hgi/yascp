@@ -36,9 +36,7 @@ process CELLTYPE_FILE_MERGE{
         path "donor_celltype_report.tsv"
 
     input:
-        path(azimuth_files)
-        path(celltypist_paths)
-        path(all_other_paths)
+        tuple path(azimuth_files), path(celltypist_paths), path(all_other_paths)
         tuple val(expid), path(file__anndata_input)
     script:
         def merged_files_outpath = workflow.workDir.toString()

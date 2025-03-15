@@ -36,7 +36,7 @@ process merge_samples_from_h5ad {
     label 'process_medium_single_CPU' 
     label 'process_medium_memory'
 
-    publishDir  path: "${outdir}/handover/merged_h5ad",
+    publishDir  path: "${params.outdir}/handover/merged_h5ad",
                 saveAs: {filename -> filename.replaceAll("-", "pre_QC_")},
                 mode: "${params.copy_mode}",
                 overwrite: "true"
@@ -47,13 +47,11 @@ process merge_samples_from_h5ad {
     }
 
     input:
-        val(outdir_prev)
         path(file_paths_h5ad)
         path(file_metadata)
         val(file_cellmetadata)
         val(metadata_key)
         file(file_h5ad)
-        val(anndata_compression_opts)
         path(celltype)
 
     // NOTE: use path here and not file see:
@@ -68,10 +66,7 @@ process merge_samples_from_h5ad {
         path("plots/*.pdf") optional true
 
     script:
-        outdir = "${outdir_prev}"
-        // String filename = './parameters.yml'
-        // yaml.dump(file_params , new FileWriter(filename))
-        // Customize command for optional files.
+
         if (params.extra_metadata!=''){
             extra_metadata = "--extra_metadata ${params.extra_metadata}"
         }else{
@@ -107,7 +102,7 @@ process merge_samples_from_h5ad {
             --metadata_key ${metadata_key} \
             --number_cpu ${task.cpus} \
             --output_file 1.pre_QC_adata \
-            --anndata_compression_opts ${anndata_compression_opts} --celltype ${celltype} \
+            --anndata_compression_opts ${params.anndata_compression_opts} --celltype ${celltype} \
             ${cmd__params} \
             ${cmd__cellmetadata} ${extra_metadata}
         mkdir plots

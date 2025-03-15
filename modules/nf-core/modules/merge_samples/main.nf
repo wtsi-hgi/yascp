@@ -25,16 +25,19 @@ workflow MERGE_SAMPLES{
             
             // This is currently not finished -- currently hard filters happen in the merging part next. We may want to keep this seperate so we can filter the stuff out after celltype assignments.
             // CELL_HARD_FILTERS(prep_merge_samples_from_h5ad.out.h5ad,params.hard_filters_file) //ad with all cells goes in and adata with removed cells comes out.
+            prep_merge_samples_from_h5ad.out.h5ad.collect().subscribe { println "prep_merge_samples_from_h5ad.out.h5ad.collect(): $it" }
+            file_metadata.subscribe { println "file_metadata: $it" }
+            celltype_file.subscribe { println "celltype_file: $it" }
+
             merge_samples_from_h5ad(
-                    params.outdir,
                     channel__file_paths_10x,
                     file_metadata,
                     params.file_cellmetadata,
                     params.metadata_key_column.value,
                     prep_merge_samples_from_h5ad.out.h5ad.collect(),
-                    params.anndata_compression_opts,
                     celltype_file
             )
+            
             file__anndata_merged = merge_samples_from_h5ad.out.anndata
             // file__cells_filtered = merge_samples_from_h5ad.out.cells_filtered
 
