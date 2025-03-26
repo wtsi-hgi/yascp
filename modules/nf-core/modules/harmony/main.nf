@@ -20,8 +20,9 @@ process HARMONY{
     // storeDir '/tmp'
 
     memory { 
-            sizeInGB = file__anndata.size() / 1e9 * 1.2 * task.attempt
-            return (sizeInGB ).toString() + 'GB' 
+            def sizeInGB = file__anndata.size() / 1e9 * 3 * task.attempt
+            def minimumGB = 5
+            return ((sizeInGB < minimumGB ? minimumGB : sizeInGB).toString() + 'GB')
         }
 
     // label 'process_medium'
