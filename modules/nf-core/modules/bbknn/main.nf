@@ -18,8 +18,9 @@ process BBKNN{
 
     // label 'process_medium'
     memory { 
-            sizeInGB = file__anndata.size() / 1e9 * 3 * task.attempt
-            return (sizeInGB ).toString() + 'GB' 
+            def sizeInGB = file__anndata.size() / 1e9 * 3 * task.attempt
+            def minimumGB = 5
+            return ((sizeInGB < minimumGB ? minimumGB : sizeInGB).toString() + 'GB')
         }
 
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
