@@ -100,9 +100,16 @@ workflow CELLBENDER {
         cellbender__rb__get_input_cells.out.cb_input.join(channel__combo, by: [0], remainder: false).set{cellbender_ambient_rna_input}
 
         cellbender_ambient_rna_input.subscribe { println "cellbender_ambient_rna_input: $it" }
+        
+        filteredChan = cellbender_ambient_rna_input
+        .filter { tuple ->
+            !params.cellbender_ignore_list.contains(tuple[0])
+        }
+        filteredChan.subscribe { println "Filtered tuple: $it" }
+
         cellbender__remove_background(
             outdir,
-            cellbender_ambient_rna_input,
+            filteredChan,
             params.cellbender_rb.fpr.value
         )
 

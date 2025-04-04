@@ -73,10 +73,6 @@ workflow celltype{
             sc_out = Channel.of()
         }        
         all_extra_fields2 = all_extra_fields.mix(sc_out).mix(hastag_labels)
-        az_out.collect().unique().subscribe { println "az_out: $it" }
-        ct_out.collect().unique().subscribe { println "ct_out: $it" }
-        all_extra_fields2.collect().unique().subscribe { println "all_extra_fields2: $it" }
-        keras_files.collect().unique().subscribe { println "keras_files: $it" }
         CELLTYPE_FILE_MERGE(az_out.collect().unique(),ct_out.collect().unique(),all_extra_fields2.collect().unique(),keras_files.collect().unique()) 
 
         file__anndata_merged2=CELLTYPE_FILE_MERGE.out.file__anndata_merged2
