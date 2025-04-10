@@ -96,10 +96,10 @@ for i,row1 in Data.iterrows():
         analysis_folder = glob.glob(data_10x_format+'/analysis')[0]
         os.symlink(analysis_folder, f"{outdir}/analysis")   
         # filtered matrix
-        sample_filtered_feature_bc_matrix = glob.glob(data_10x_format+'/*filtered_*bc_matrix')[0]
+        sample_filtered_feature_bc_matrix = glob.glob(data_10x_format+'/*filtered_p*bc_matrix')[0]
         os.symlink(f"{sample_filtered_feature_bc_matrix}", f"{outdir}/filtered_feature_bc_matrix")   
  
-        raw_feature_bc_matrix =  glob.glob(data_10x_format+'/*raw_*bc_matrix')[0]
+        raw_feature_bc_matrix =  glob.glob(data_10x_format+'/*raw_p*bc_matrix')[0]
         os.symlink(raw_feature_bc_matrix, f"{outdir}/raw_feature_bc_matrix")       
         # sample_alignments.bam
         possorted_genome_bam = glob.glob(data_10x_format+'/*.bam')[0]

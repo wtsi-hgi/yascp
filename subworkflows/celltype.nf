@@ -46,15 +46,15 @@ process CELLTYPE_FILE_MERGE{
         path "donor_celltype_report.tsv"
 
     input:
-        tuple path(azimuth_files), path(celltypist_paths), path(all_other_paths)
-        tuple val(expid), path(file__anndata_input)
+        path(azimuth_files)
+        path(celltypist_paths)
+        path(all_other_paths)
     script:
         def merged_files_outpath = workflow.workDir.toString()
         file(merged_files_outpath).mkdirs()
         def azimuth_files_path = "${merged_files_outpath}/azimuth_files.tsv"
         def celltypist_files_path = "${merged_files_outpath}/celltypist_files.tsv"
         def all_other_files_path = "${merged_files_outpath}/other_files.tsv"
-        def adatas_path = "${merged_files_outpath}/adatas.tsv"
 
         new File(azimuth_files_path).text = azimuth_files.join("\n")
         new File(celltypist_files_path).text = celltypist_paths.join("\n")
@@ -66,10 +66,8 @@ process CELLTYPE_FILE_MERGE{
             other_paths = ""
         }
 
-        new File(adatas_path).text = file__anndata_input.join("\n")
-
         """
-        generate_combined_celltype_anotation_file.py --all_azimuth_files ${azimuth_files_path} --all_celltypist_files ${celltypist_files_path} ${other_paths} --adata '${adatas_path}'
+        generate_combined_celltype_anotation_file.py --all_azimuth_files ${azimuth_files_path} --all_celltypist_files ${celltypist_files_path} ${other_paths}
         """
 
 }
@@ -143,25 +141,7 @@ workflow celltype{
             sc_out = Channel.of()
         }        
         all_extra_fields2 = all_extra_fields.mix(sc_out).mix(hastag_labels)
-
-        az_out.subscribe { println "az_out: $it" }
-        ct_out.subscribe { println "ct_out: $it" }
-        all_extra_fields2.subscribe { println "all_extra_fields2: $it" }
-        az_ch_experiment_filth5.subscribe { println "az_ch_experiment_filth5: $it" }
-        
-        az_out_all = az_out.collect()
-        ct_out_all = ct_out.collect()
-        all_extra_fields2_all = all_extra_fields2.collect()
-        collected_inputs = tuple(
-            az_out_all,
-            ct_out_all,
-            all_extra_fields2_all
-        )
-
-        CELLTYPE_FILE_MERGE(        
-            collected_inputs,
-            az_ch_experiment_filth5
-        ) 
+        CELLTYPE_FILE_MERGE(az_out.collect().unique(),ct_out.collect().unique(),all_extra_fields2.collect().unique()) 
         
         celltype_assignments=CELLTYPE_FILE_MERGE.out.celltype_assignments
 
