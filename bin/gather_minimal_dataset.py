@@ -451,8 +451,7 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
         df_cellbender = df_cellbender.reset_index()
         df_cellbender = df_cellbender.drop_duplicates(subset=['experiment_id'])
         df_cellbender = df_cellbender.set_index('experiment_id')
-        df2 = glob.glob(f'{args.results_dir}/preprocessing/data_modalities_split/preprocess/{expid}/Gene_Expression-{expid}.h5ad')[0]
-
+        df2 = glob.glob(f'{args.results_dir}/preprocessing/data_modalities_split/filterd_after_cb/{expid}/Gene_Expression-{expid}.h5ad')[0]
         f=df_cellbender.loc[expid, 'data_path_10x_format']
         if (type(f) == str):
             f=[f]
@@ -1058,8 +1057,8 @@ if __name__ == '__main__':
     else:
         # Here we have run the cellbender as par of pipeline. 
         # cellbender/*/cellbender-epochs_*/cellbender-FPR_0pt01-filtered_10x_mtx
-        file_path = glob.glob(f'{args.results_dir}/nf-preprocessing/cellbender/*/cellbender-epochs_*/*{args.resolution}*10x_mtx*')
-        file_path2 = glob.glob(f'{args.results_dir}/nf-preprocessing/cellbender/*/*{args.resolution}*10x_mtx*')
+        file_path = glob.glob(f'{args.results_dir}/preprocessing/cellbender/*/cellbender-epochs_*/*{args.resolution}*10x_mtx*')
+        file_path2 = glob.glob(f'{args.results_dir}/preprocessing/cellbender/*/*{args.resolution}*10x_mtx*')
         joined_file_paths = file_path+file_path2
         df_cellbender = pd.DataFrame(joined_file_paths,columns=['data_path_10x_format'])
         df_cellbender['experiment_id']=df_cellbender['data_path_10x_format'].str.split('/').str[-3]

@@ -78,13 +78,13 @@ def main():
         help='List of csv-delimited files of celltypes assigned by azimuth.'
     )
 
-    parser.add_argument(
-        '-ad', '--adata',
-        action='store',
-        dest='andata',
-        required=True,
-        help='Input adata to add labels to'
-    )
+    # parser.add_argument(
+    #     '-ad', '--adata',
+    #     action='store',
+    #     dest='andata',
+    #     required=True,
+    #     help='Input adata to add labels to'
+    # )
 
     parser.add_argument(
         '-ct', '--all_celltypist_files',
@@ -130,11 +130,11 @@ def main():
     Data_All['Exp'] =Exp
     Data_All.to_csv('All_Celltype_Assignments.tsv',sep='\t')
 
-    adatas_df = pd.read_csv(options.andata, header=None, names=['file_path'])
-    adatas = adatas_df['file_path'].tolist()
-    adatasets = []
-    # adatasets2 = adatasets[:2]
-    adatasets__experiment_ids = []
+    # adatas_df = pd.read_csv(options.andata, header=None, names=['file_path'])
+    # adatas = adatas_df['file_path'].tolist()
+    # adatasets = []
+    # # adatasets2 = adatasets[:2]
+    # adatasets__experiment_ids = []
 
     # for ad1 in adatas:
     #     adata1 = scanpy.read_h5ad(ad1)

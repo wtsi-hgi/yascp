@@ -37,9 +37,6 @@ workflow DECONV_INPUTS{
 
 workflow prepare_inputs {
 	// this workflow processes the outputs from cellbender to perform the data preparation
-	// TODO: Curently it has been left as close as possible to the original imput of the celbender pipeline, however the sub workflow in  the prepeare_inputs folder is redundant and needs to be cleaned up. 
-	// TODO: We shuld also add an input check to make sure that correct format is provided, as per template in locals/inputs provided by nfCore.
-
     take: channel_input_data_table
     main:
 
@@ -101,7 +98,6 @@ workflow prepare_inputs {
 
         prep_collectmetadata(channel__metadata)
         channel__metadata=merge_metadata(prep_collectmetadata.out.metadata.collect())
-
 
         channel_input_data_table
             .splitCsv(header: true, sep: params.input_tables_column_delimiter)

@@ -102,7 +102,6 @@ workflow match_genotypes {
         PLOT_CONCORDANCES_ALL(collect_file1.out.output_collection)
     }
 
-
   emit:
     pool_id_donor_assignments_csv = MATCH_GT_VIREO.out.pool_id_donor_assignments_csv
     donor_match_table = MATCH_GT_VIREO.out.donor_match_table
