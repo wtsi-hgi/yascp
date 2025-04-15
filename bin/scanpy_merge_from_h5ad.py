@@ -568,6 +568,30 @@ def scanpy_merge(
             # make_unique=False
         )
 
+        prop_ens_in_symbols = adata.var['gene_symbols'].str.startswith("ENSG").mean()
+        prop_ens_in_index = adata.var.index.to_series().str.startswith("ENSG").mean()
+
+        print("Proportion of ENSG in gene_symbols column:", prop_ens_in_symbols)
+        print("Proportion of ENSG in index:", prop_ens_in_index)
+
+        # Define a threshold (here 50% is used, adjust if needed)
+        if prop_ens_in_symbols > 0.5 and prop_ens_in_index < 0.5:
+            # The gene_symbols column is mostly ENSG IDs while the index contains gene symbols.
+            
+            # Save the ENSG IDs from the gene_symbols column to a new column 'gene_ids'
+            adata.var['gene_ids'] = adata.var['gene_symbols']
+            
+            # Replace the gene_symbols column with the current index (the gene symbols)
+            adata.var['gene_symbols'] = adata.var.index
+            
+            # Set the index (var_names) to these gene symbols
+            adata.var_names = pd.Index(adata.var['gene_ids'])
+            
+            print("Swapped: gene_ids now contain ENSG IDs and gene_symbols (and the index) now contain gene symbols.")
+        else:
+            print("Swap condition not met. No action taken.")
+
+
         adata_orig_cols = list(adata.obs.columns)
         adata_orig_cols.append("donor")
         adata = check_adata(adata, row['experiment_id'])
