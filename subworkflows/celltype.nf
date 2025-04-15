@@ -147,12 +147,15 @@ workflow celltype{
         az_out.subscribe { println "az_out: $it" }
         ct_out.subscribe { println "ct_out: $it" }
         all_extra_fields2.subscribe { println "all_extra_fields2: $it" }
+        az_ch_experiment_filth5.subscribe { println "az_ch_experiment_filth5: $it" }
         
-
+        az_out_all = az_out.collect()
+        ct_out_all = ct_out.collect()
+        all_extra_fields2_all = all_extra_fields2.collect()
         collected_inputs = tuple(
-            az_out.collect(),
-            ct_out.collect(),
-            all_extra_fields2.collect()
+            az_out_all,
+            ct_out_all,
+            all_extra_fields2_all
         )
 
         CELLTYPE_FILE_MERGE(        

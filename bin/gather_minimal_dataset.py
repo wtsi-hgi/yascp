@@ -498,8 +498,8 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
         
     
     try:
-        Donor_Cohort_Assignments = pd.read_csv(f'{args.results_dir}/gtmatch/{expid}/{expid}_gt_donor_assignments.csv')
-        All_assignments = pd.read_csv(f'{args.results_dir}/gtmatch/assignments_all_pools.tsv',sep='\t')
+        Donor_Cohort_Assignments = pd.read_csv(f'{args.results_dir}/deconvolution/gtmatch/{expid}/{expid}_gt_donor_assignments.csv')
+        All_assignments = pd.read_csv(f'{args.results_dir}/deconvolution/gtmatch/assignments_all_pools.tsv',sep='\t')
         All_assignments = All_assignments.set_index(All_assignments['pool']+'__'+All_assignments['donor_gt'].astype(str).str.replace('^0*', '', regex=True).str.replace('.*THP1.*', 'THP1', regex=True).str.replace('.*U937.*', 'U937', regex=True))
         All_assignments['tp2'] = All_assignments.index
         all_dubs =  list(set(All_assignments[All_assignments['tp2'].duplicated()].index))
