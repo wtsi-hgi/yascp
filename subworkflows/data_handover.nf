@@ -14,9 +14,7 @@ workflow data_handover{
         genome
     main:
         log.info 'running data handover'
-        // outdir = file(outdir)
-        // outdir = file("${launchDir}/${outdir}").ifEmpty(outdir)
-        
+
         if (params.gather_and_calculate_stats){
           GATHER_DATA(outdir,qc_input.collect(),input_channel)
           gh_out  = GATHER_DATA.out.outfiles_dataset
@@ -26,21 +24,11 @@ workflow data_handover{
         }
 
         if (params.split_bam){
-            // val(sample), path(barcodes), path(bam)
-            GATHER_DATA.out.barcodes_files.subscribe{ println "barcodes_files: $it" }
             GATHER_DATA.out.barcodes_files.flatten().map{sample -> tuple("${sample}".replaceFirst(/.*\//,"").replaceFirst(/\..*/,""),"${sample}".replaceFirst(/.*\//,"").replaceFirst(/\.tsv.*/,""),sample)}.set{barcodes}
             barcodes.combine(sample_possorted_bam_vireo_donor_ids, by: 0).set{full_split_chanel_input}
-            barcodes.subscribe { println "barcodes: $it" }
-            full_split_chanel_input.subscribe { println "full_split_chanel_input: $it" }
-            // genome.subscribe { println "genome: $it" }
-            // SUBSET_BAM_PER_BARCODES(full_split_chanel_input,genome)
-            // split_bam_by_donor(sample_possorted_bam_vireo_donor_ids, genome)
-            // ENCRYPT_TARGET(split_bam_by_donor.out.possorted_cram_files)
-            // cram_encrypted_dirs = ENCRYPT_TARGET.out.encrypted_dir
         } else {
           cram_encrypted_dirs = Channel.empty()
         }
-
 
         if (params.encrypt){
             ENCRYPT_DIR(GATHER_DATA.out.outfiles_dataset)
@@ -57,12 +45,7 @@ workflow data_handover{
               )
         }
 
-
-
         SUMMARY_STATISTICS_PLOTS(outdir,gh_out,params.input_data_table)
-
-        // We also generate a report.
-        // If we run it in sanger we transfer the data to the local website.
         TRANSFER(SUMMARY_STATISTICS_PLOTS.out.summary_plots,params.rsync_to_web_file,outdir)
 
 }
