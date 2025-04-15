@@ -131,10 +131,13 @@ def generate_plots(adata,cell_qc_column,metadata_columns,metadata_columns_origin
         lh.set_alpha(1)
         lh._sizes = [50]
     sns_plot.map_diag(sns.kdeplot)
-    sns_plot.map_lower(
-        sns.kdeplot,
-        levels=3
-    )
+    try:
+        sns_plot.map_lower(
+            sns.kdeplot,
+            levels=3
+        )
+    except:
+        _=''
     sns_plot.savefig(f'{of}-outlier_cells__{cell_qc_column}.png')
 
     # Plot the cell density

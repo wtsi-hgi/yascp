@@ -48,8 +48,7 @@ workflow YASCP {
 
         if (!params.input_data_table.contains('fake_file')){
             prepare_inputs(input_channel)
-            channel__file_paths_10x=prepare_inputs.out.channel__file_paths_10x
-            channel__file_paths_10x_single=prepare_inputs.out.ch_experimentid_paths10x_filtered
+            
             input_channel = prepare_inputs.out.channel_input_data_table
             if (params.reference_assembly_fasta_dir=='https://yascp.cog.sanger.ac.uk/public/10x_reference_assembly'){
                 RETRIEVE_RECOURSES()  
@@ -82,44 +81,31 @@ workflow YASCP {
 
                 // CITESEQ and other data modality seperation
                 // Split citeseq if available
-                ch_experimentid_paths10x_raw = prepare_inputs.out.ch_experimentid_paths10x_raw
-                ch_experiment_filth5 = ch_experimentid_paths10x_filtered = prepare_inputs.out.ch_experimentid_paths10x_filtered
-
-                
-                // here we run CB with citeseq
-                if (params.cellbender_with_citeseq){
-                    log.info ' ---- Running cellbender with citeseq ---'
-                    SPLIT_CITESEQ_GEX_FILTERED_NOCB(prepare_inputs.out.ch_experimentid_paths10x_filtered,'filterd')
-                    SPLIT_CITESEQ_GEX_NOCB( prepare_inputs.out.ch_experimentid_paths10x_raw,'raw')
-                }else{
-                    // If citeseq data is present in the 10x mtx then we strip it before the ambient rna correction.
-                    SPLIT_CITESEQ_GEX_FILTERED(prepare_inputs.out.ch_experimentid_paths10x_filtered,'filterd')
-                    SPLIT_CITESEQ_GEX( prepare_inputs.out.ch_experimentid_paths10x_raw,'raw')
-                    ch_experimentid_paths10x_raw = SPLIT_CITESEQ_GEX.out.gex_data
-                }
 
 
+                // If citeseq data is present in the 10x mtx then we strip it before the ambient rna correction.
+                SPLIT_CITESEQ_GEX_FILTERED(prepare_inputs.out.ch_experimentid_paths10x_filtered,'filterd')
+                SPLIT_CITESEQ_GEX( prepare_inputs.out.ch_experimentid_paths10x_raw,'raw')
 
                 // Either run ambient RNA removal with cellbender or use cellranger filtered reads (cellbender|cellranger)
                 if (params.input == 'cellbender'){
-                    // Here we are using the existing cellbender from a different run, Nothe that the structure of the cellbender folder should be same as produced by this pipeline.
-                    log.info ' ---- using existing cellbender output for deconvolution---'
-
-                    // here we either run ambient RNA removal with citeseq counts or without.
-                    ambient_RNA( ch_experimentid_paths10x_raw,
-                        ch_experimentid_paths10x_filtered,prepare_inputs.out.channel__metadata)
-
-                    // here we run CB with citeseq
-                    if (params.cellbender_with_citeseq){
-                        SPLIT_CITESEQ_GEX_FILTERED(ambient_RNA.out.cellbender_path,'filterd_after_cb')
-                        SPLIT_CITESEQ_GEX( ambient_RNA.out.cellbender_path_raw,'raw_after_cb')
+                    if (params.cellbender_with_citeseq){                          // here we run CB with citeseq
+                        log.info ' ---- Running cellbender with citeseq ---'
+                        ch_experimentid_paths10x_raw = prepare_inputs.out.ch_experimentid_paths10x_raw
+                    }else{
                         ch_experimentid_paths10x_raw = SPLIT_CITESEQ_GEX.out.gex_data
                     }
+                    // Here we either run ambient RNA removal with citeseq counts or without.
+                    ambient_RNA( ch_experimentid_paths10x_raw,
+                        prepare_inputs.out.ch_experimentid_paths10x_filtered,prepare_inputs.out.channel__metadata)
 
+                    // Now we convert the CB processed files to h5ad files and split the modalities if they were left in
+                    SPLIT_CITESEQ_GEX_FILTERED_NOCB(ambient_RNA.out.cellbender_path,'filterd_after_cb')
+                    SPLIT_CITESEQ_GEX_NOCB( ambient_RNA.out.cellbender_path_raw,'raw_after_cb')
+                    
                     DECONV_INPUTS(ambient_RNA.out.cellbender_path,prepare_inputs)
 
                     channel__file_paths_10x = DECONV_INPUTS.out.channel__file_paths_10x
-                    channel__file_paths_10x_single=DECONV_INPUTS.out.channel__file_paths_10x_single
                     ch_experiment_bam_bai_barcodes= DECONV_INPUTS.out.ch_experiment_bam_bai_barcodes
                     ch_experiment_filth5= ambient_RNA.out.cellbender_path
 
@@ -127,14 +113,17 @@ workflow YASCP {
                 else if (params.input == 'cellranger'){
                     // This is where we skip the cellbender and use the cellranger filtered datasets.
                     log.info '--- using cellranger filtered data instead of cellbender (skipping cellbender)---'
+                    channel__file_paths_10x=prepare_inputs.out.channel__file_paths_10x
+                    ch_experiment_filth5 = SPLIT_CITESEQ_GEX.out.gex_data
                     ch_experiment_bam_bai_barcodes=prepare_inputs.out.ch_experiment_bam_bai_barcodes
+                    
                 }
                 else{
                     log.info '--- input mode is not selected - please choose --- (existing_cellbender cellranger)'
                 }
 
 
-                // if we have multiplexing capture file then we proceed with hastag deconvolution
+                // If we have multiplexing capture file then we proceed with hastag deconvolution
                 SPLIT_CITESEQ_GEX.out.multiplexing_capture_channel_for_demultiplexing
                     .map { sample_name, path1, path2 ->
                         def directories = path1.findAll { it.isDirectory() }
@@ -144,17 +133,12 @@ workflow YASCP {
                 HASTAG_DEMULTIPLEX(filtered_multiplexing_capture_channel)
                 hastag_labels = HASTAG_DEMULTIPLEX.out.results
                 
-                
-                channel__file_paths_10x=SPLIT_CITESEQ_GEX_FILTERED.out.channel__file_paths_10x
-                channel__file_paths_10x_single=SPLIT_CITESEQ_GEX_FILTERED.out.gex_data
-                ch_experiment_filth5 = SPLIT_CITESEQ_GEX.out.gex_data
-
-
-                // PREPOCESS_FILES( channel__file_paths_10x_single,'preprocess')
-                channel__file_paths_10x_gex = SPLIT_CITESEQ_GEX_FILTERED.out.channel__file_paths_10x
-                gex_h5ad = SPLIT_CITESEQ_GEX_FILTERED.out.gex_h5ad
-                
-
+                if (params.doublets_and_celltypes_on_cellbender_corrected_counts){
+                    channel__file_paths_10x_gex = SPLIT_CITESEQ_GEX_FILTERED_NOCB.out.channel__file_paths_10x
+                }
+                else{
+                    channel__file_paths_10x_gex = SPLIT_CITESEQ_GEX_FILTERED.out.channel__file_paths_10x
+                }
 
                 // ###################################
                 // ###################################
@@ -173,7 +157,6 @@ workflow YASCP {
 
 
                 if (params.celltype_assignment.run_celltype_assignment){
-                    
                     celltype(channel__file_paths_10x_gex,hastag_labels)
                     celltype_assignments=celltype.out.celltype_assignments
                 }else{
@@ -219,7 +202,7 @@ workflow YASCP {
                     vireo_paths = Channel.from("$projectDir/assets/fake_file.fq")
                     matched_donors = Channel.from("$projectDir/assets/fake_file.fq")
                 }
-                // TODO: Here add a fundtion to take an extra h5ad and merge it together with the current run. This will be required for the downstream analysis when we want to integrate multiple datasets and account for the batches in these
+                
                 if (!params.skip_merge){
                     file__anndata_merged = MERGE_SAMPLES.out.file__anndata_merged
                     dummy_filtered_channel(file__anndata_merged,params.id_in)
@@ -243,7 +226,6 @@ workflow YASCP {
                     vireo_paths = Channel.from("$projectDir/assets/fake_file.fq")
                     matched_donors = Channel.from("$projectDir/assets/fake_file.fq")
                 }
-                
                 
                 if("${mode}"!='default'){
                     // Here we have rerun GT matching upstream - done for freeze1
@@ -269,20 +251,6 @@ workflow YASCP {
 
             }
 
-            // ###################################
-            // ################################### Readme
-            // CELLTYPE ASSIGNMENT
-            // After background removal and demultiplexing we perform qc metrics and clustering of the processed cells.
-            // This step of the pipeline also performs celltype assignments and removes cells that fail adaptive filtering.
-            // ###################################
-            // ###################################
-            // file__anndata_merged_ct = gex_h5ad.map{row-> tuple('all_together',row[0]) }
-            // file__anndata_merged_ct.subscribe { println "file__anndata_merged_ct: $it" }
-            // if (params.celltype_assignment.run_celltype_assignment){
-            //     file__anndata_merged.map{val1 -> tuple('full_ct', val1)}.set{file__anndata_merged2}
-            //     celltype(file__anndata_merged2,hastag_labels)
-            //     file__anndata_merged=celltype.out.file__anndata_merged2
-            // }
 
             // ###################################
             // ################################### Readme
@@ -308,18 +276,6 @@ workflow YASCP {
                 process_finish_check_channel = Channel.of([1, 'dummy'])
             }
 
-            // // ###################################
-            // // ################################### Readme
-            // // PSEUDOBULK AGGREGATION AND PREP STEP FOR eQTL MAPPING
-            // // Once we have a QC'd data we can use this to perform a pseudobulk aggregation of data that can be used as an input in eQTL pipeline: https://github.com/wtsi-hgi//eqtl 
-            // // ###################################
-            // // ###################################
-
-            // if (params.genotype_input.run_with_genotype_input){
-            //     eQTL(file__anndata_merged,assignments_all_pools)
-            // }
-            
-
         }else{
             // since for the downstreem preocess we do a bam split, and this is generated as part of a main_deconvolution step, we have to generate this input artificially here based on the results directory and fech location.
             CREATE_ARTIFICIAL_BAM_CHANNEL(input_channel)
@@ -328,12 +284,9 @@ workflow YASCP {
 
         }
         //This runs the Clusterring and qc assessments of the datasets.
-
         // The idea is to also run eQTL analysis, however this is currently not implemented as part of this pipeline.
         // // // Performing eQTL mapping.
-
         //This part gathers the plots for the reporting in a Summary folder. If run through gitlab CI it will triger the data transfer to web.
-
         // ###################################
         // ################################### Readme
         // DATA HANDOVER, REPORTS, DATA ENCRYPTION, DONOR H5AD, BAM SPLIT

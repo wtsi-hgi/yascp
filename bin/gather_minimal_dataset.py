@@ -451,8 +451,7 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
         df_cellbender = df_cellbender.reset_index()
         df_cellbender = df_cellbender.drop_duplicates(subset=['experiment_id'])
         df_cellbender = df_cellbender.set_index('experiment_id')
-        df2 = glob.glob(f'{args.results_dir}/preprocessing/data_modalities_split/preprocess/{expid}/Gene_Expression-{expid}.h5ad')[0]
-
+        df2 = glob.glob(f'{args.results_dir}/preprocessing/data_modalities_split/filterd_after_cb/{expid}/Gene_Expression-{expid}.h5ad')[0]
         f=df_cellbender.loc[expid, 'data_path_10x_format']
         if (type(f) == str):
             f=[f]
@@ -498,8 +497,8 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
         
     
     try:
-        Donor_Cohort_Assignments = pd.read_csv(f'{args.results_dir}/gtmatch/{expid}/{expid}_gt_donor_assignments.csv')
-        All_assignments = pd.read_csv(f'{args.results_dir}/gtmatch/assignments_all_pools.tsv',sep='\t')
+        Donor_Cohort_Assignments = pd.read_csv(f'{args.results_dir}/deconvolution/gtmatch/{expid}/{expid}_gt_donor_assignments.csv')
+        All_assignments = pd.read_csv(f'{args.results_dir}/deconvolution/gtmatch/assignments_all_pools.tsv',sep='\t')
         All_assignments = All_assignments.set_index(All_assignments['pool']+'__'+All_assignments['donor_gt'].astype(str).str.replace('^0*', '', regex=True).str.replace('.*THP1.*', 'THP1', regex=True).str.replace('.*U937.*', 'U937', regex=True))
         All_assignments['tp2'] = All_assignments.index
         all_dubs =  list(set(All_assignments[All_assignments['tp2'].duplicated()].index))
@@ -1058,8 +1057,8 @@ if __name__ == '__main__':
     else:
         # Here we have run the cellbender as par of pipeline. 
         # cellbender/*/cellbender-epochs_*/cellbender-FPR_0pt01-filtered_10x_mtx
-        file_path = glob.glob(f'{args.results_dir}/nf-preprocessing/cellbender/*/cellbender-epochs_*/*{args.resolution}*10x_mtx*')
-        file_path2 = glob.glob(f'{args.results_dir}/nf-preprocessing/cellbender/*/*{args.resolution}*10x_mtx*')
+        file_path = glob.glob(f'{args.results_dir}/preprocessing/cellbender/*/cellbender-epochs_*/*{args.resolution}*10x_mtx*')
+        file_path2 = glob.glob(f'{args.results_dir}/preprocessing/cellbender/*/*{args.resolution}*10x_mtx*')
         joined_file_paths = file_path+file_path2
         df_cellbender = pd.DataFrame(joined_file_paths,columns=['data_path_10x_format'])
         df_cellbender['experiment_id']=df_cellbender['data_path_10x_format'].str.split('/').str[-3]
