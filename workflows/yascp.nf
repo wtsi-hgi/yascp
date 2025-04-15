@@ -7,7 +7,6 @@ include { GET_SOFTWARE_VERSIONS } from "$projectDir/modules/local/get_software_v
 include { main_deconvolution } from "$projectDir/subworkflows/main_deconvolution"
 include {ambient_RNA} from "$projectDir/subworkflows/ambient_RNA"
 include {qc} from "$projectDir/subworkflows/qc"
-include {eQTL} from "$projectDir/subworkflows/eQTL"
 include {celltype} from "$projectDir/subworkflows/celltype"
 include {data_handover} from "$projectDir/subworkflows/data_handover"
 include { prepare_inputs } from "$projectDir/subworkflows/prepare_inputs"
@@ -30,7 +29,6 @@ include { PREPROCESS_GENOME } from "$projectDir/modules/nf-core/modules/subset_b
 //  1) Ambient RNA removal using cellbender - this is a lenghty process as GPU is required. ../subworkflows/ambient_RNA.nf
 //  2) Deconvolution and GT match (if genotypes provided) ../subworkflows/main_deconvolution.nf
 //  3) Celltype assignment  ../subworkflows/celltype.nf
-//  4) eQTL preparations  ../subworkflows/eQTL.nf
 //  5) Data handover preparation  ../subworkflows/data_handover.nf
 
 
@@ -283,10 +281,7 @@ workflow YASCP {
             process_finish_check_channel = Channel.of([1, 'dummy'])
 
         }
-        //This runs the Clusterring and qc assessments of the datasets.
-        // The idea is to also run eQTL analysis, however this is currently not implemented as part of this pipeline.
-        // // // Performing eQTL mapping.
-        //This part gathers the plots for the reporting in a Summary folder. If run through gitlab CI it will triger the data transfer to web.
+
         // ###################################
         // ################################### Readme
         // DATA HANDOVER, REPORTS, DATA ENCRYPTION, DONOR H5AD, BAM SPLIT
