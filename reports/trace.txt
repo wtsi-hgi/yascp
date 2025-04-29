@@ -1,0 +1,2 @@
+task_id	hash	native_id	name	status	exit	submit	duration	realtime	%cpu	peak_rss	peak_vmem	rchar	wchar
+1	d7/635d17	279584	imeta_samples_csv (input.tsv)	COMPLETED	0	2025-04-15 16:53:24.695	38.1s	3.2s	28.1%	18.9 MB	86.9 MB	10.2 MB	7.4 KB

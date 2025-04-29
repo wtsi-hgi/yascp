@@ -722,6 +722,10 @@ def scanpy_merge(
             ],
             inplace=True
         )
+        adata_merged.obs.loc[adata_merged.obs['pct_counts_gene_group__mito_transcript']!=adata_merged.obs['pct_counts_gene_group__mito_transcript'],'pct_counts_gene_group__mito_transcript']=0
+        adata_merged.obs.loc[adata_merged.obs['pct_counts_gene_group__mito_protein']!=adata_merged.obs['pct_counts_gene_group__mito_protein'],'pct_counts_gene_group__mito_protein']=0
+        adata_merged.obs.loc[adata_merged.obs['pct_counts_gene_group__ribo_protein']!=adata_merged.obs['pct_counts_gene_group__ribo_protein'],'pct_counts_gene_group__ribo_protein']=0
+        adata_merged.obs.loc[adata_merged.obs['pct_counts_gene_group__ribo_rna']!=adata_merged.obs['pct_counts_gene_group__ribo_rna'],'pct_counts_gene_group__ribo_rna']=0
     except:
         _='most likely different data format such as ATAC which doesnt have gene IDs'
     # adata_merged.obs = obs_prior

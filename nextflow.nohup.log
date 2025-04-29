@@ -1,0 +1,329 @@
+
+ N E X T F L O W   ~  version 24.10.5
+
+WARN: It appears you have never run this project before -- Option `-resume` is ignored
+Launching `/software/hgi/pipelines/yascp_nf_irods_to_lustre_versions/yascp_nf_irods_to_lustre_1.1/scripts/../pipelines/main.nf` [tender_liskov] DSL2 - revision: 7704fd60cb
+
+[-        ] imeta_samples_csv -
+
+[-        ] imeta_samples_csv              -
+[-        ] run…_irods_tsv:iget_study_cram -
+[-        ] run…m_irods_tsv:crams_to_fastq -
+[-        ] run…tsv:imeta_study_cellranger -
+[-        ] run…_tsv:iget_study_cellranger -
+[-        ] yascp_input                    -
+
+[-        ] imeta_samples_csv              -
+[-        ] run…_irods_tsv:iget_study_cram -
+[-        ] run…m_irods_tsv:crams_to_fastq -
+[-        ] run…tsv:imeta_study_cellranger -
+[-        ] run…_tsv:iget_study_cellranger -
+[-        ] yascp_input                    -
+WARN: There's no process matching config selector: cellbender__rb__get_input_cells
+WARN: There's no process matching config selector: SUBSET_GENOTYPE2
+WARN: There's no process matching config selector: BBKNN
+WARN: There's no process matching config selector: JOIN_INFERED_EXPECTED_MERGE
+WARN: There's no process matching config selector: ENHANCE_STATS_GT_MATCH
+WARN: There's no process matching config selector: ASSIGN_DONOR_FROM_PANEL
+WARN: There's no process matching config selector: DOUBLET_DECON
+WARN: There's no process matching config selector: DOUBLET_FINDER
+WARN: There's no process matching config selector: PREPROCESS_GENOTYPES
+WARN: There's no process matching config selector: HARMONY
+WARN: There's no process matching config selector: CELLTYPE_FILE_MERGE
+WARN: There's no process matching config selector: ASSESS_CALL_RATE
+WARN: There's no process matching config selector: SCRUBLET
+WARN: There's no process matching config selector: AZIMUTH
+WARN: There's no process matching config selector: CELLTYPIST
+WARN: There's no process matching config selector: cluster_validate_resolution_keras
+WARN: There's no process matching config selector: NORMALISE_AND_PCA
+WARN: There's no process matching config selector: LISI
+WARN: There's no process matching config selector: RESOLVE_POOL_VCFS
+WARN: There's no process matching config selector: SPLIT_BATCH_H5AD
+WARN: There's no process matching config selector: JOIN_STUDIES_MERGE
+WARN: There's no process matching config selector: GT_MATCH_POOL_AGAINST_PANEL
+WARN: There's no process matching config selector: FREEBAYES
+WARN: There's no process matching config selector: VIREO_ADD_SAMPLE_PREFIX
+WARN: There's no process matching config selector: REPLACE_GT_DONOR_ID2
+WARN: There's no process matching config selector: JOIN_CHROMOSOMES
+WARN: There's no process matching config selector: serialize_known_markers
+WARN: There's no process matching config selector: OUTLIER_FILTER
+WARN: There's no process matching config selector: cluster
+WARN: There's no process matching config selector: VIREO_GT_FIX_HEADER
+WARN: There's no process matching config selector: SPLIT_BAM_BY_CELL_BARCODES
+WARN: There's no process matching config selector: CONCORDANCE_CALCLULATIONS
+WARN: There's no process matching config selector: OTHER_DONOR_CONCORDANCE_CALCLULATIONS
+WARN: There's no process matching config selector: CELLSNP
+WARN: There's no process matching config selector: DYNAMIC_DONOR_EXCLUSIVE_SNP_SELECTION
+WARN: There's no process matching config selector: prep_collectmetadata
+WARN: There's no process matching config selector: VIREO
+WARN: There's no process matching config selector: DSB_INTEGRATE
+WARN: There's no process matching config selector: MULTIMODAL_INTEGRATION
+WARN: There's no process matching config selector: umap_gather
+WARN: There's no process matching config selector: plot_predicted_sex
+
+[-        ] imeta_samples_csv              | 0 of 1
+[-        ] run…_irods_tsv:iget_study_cram -
+[-        ] run…m_irods_tsv:crams_to_fastq -
+[-        ] run…tsv:imeta_study_cellranger -
+[-        ] run…_tsv:iget_study_cellranger -
+[-        ] yascp_input                    -
+WARN: There's no process matching config selector: cellbender__rb__get_input_cells
+WARN: There's no process matching config selector: SUBSET_GENOTYPE2
+WARN: There's no process matching config selector: BBKNN
+WARN: There's no process matching config selector: JOIN_INFERED_EXPECTED_MERGE
+WARN: There's no process matching config selector: ENHANCE_STATS_GT_MATCH
+WARN: There's no process matching config selector: ASSIGN_DONOR_FROM_PANEL
+WARN: There's no process matching config selector: DOUBLET_DECON
+WARN: There's no process matching config selector: DOUBLET_FINDER
+WARN: There's no process matching config selector: PREPROCESS_GENOTYPES
+WARN: There's no process matching config selector: HARMONY
+WARN: There's no process matching config selector: CELLTYPE_FILE_MERGE
+WARN: There's no process matching config selector: ASSESS_CALL_RATE
+WARN: There's no process matching config selector: SCRUBLET
+WARN: There's no process matching config selector: AZIMUTH
+WARN: There's no process matching config selector: CELLTYPIST
+WARN: There's no process matching config selector: cluster_validate_resolution_keras
+WARN: There's no process matching config selector: NORMALISE_AND_PCA
+WARN: There's no process matching config selector: LISI
+WARN: There's no process matching config selector: RESOLVE_POOL_VCFS
+WARN: There's no process matching config selector: SPLIT_BATCH_H5AD
+WARN: There's no process matching config selector: JOIN_STUDIES_MERGE
+WARN: There's no process matching config selector: GT_MATCH_POOL_AGAINST_PANEL
+WARN: There's no process matching config selector: FREEBAYES
+WARN: There's no process matching config selector: VIREO_ADD_SAMPLE_PREFIX
+WARN: There's no process matching config selector: REPLACE_GT_DONOR_ID2
+WARN: There's no process matching config selector: JOIN_CHROMOSOMES
+WARN: There's no process matching config selector: serialize_known_markers
+WARN: There's no process matching config selector: OUTLIER_FILTER
+WARN: There's no process matching config selector: cluster
+WARN: There's no process matching config selector: VIREO_GT_FIX_HEADER
+WARN: There's no process matching config selector: SPLIT_BAM_BY_CELL_BARCODES
+WARN: There's no process matching config selector: CONCORDANCE_CALCLULATIONS
+WARN: There's no process matching config selector: OTHER_DONOR_CONCORDANCE_CALCLULATIONS
+WARN: There's no process matching config selector: CELLSNP
+WARN: There's no process matching config selector: DYNAMIC_DONOR_EXCLUSIVE_SNP_SELECTION
+WARN: There's no process matching config selector: prep_collectmetadata
+WARN: There's no process matching config selector: VIREO
+WARN: There's no process matching config selector: DSB_INTEGRATE
+WARN: There's no process matching config selector: MULTIMODAL_INTEGRATION
+WARN: There's no process matching config selector: umap_gather
+WARN: There's no process matching config selector: plot_predicted_sex
+
+executor >  lsf (1)
+[d7/635d17] imeta_samples_csv (input.tsv)  | 0 of 1
+[-        ] run…_irods_tsv:iget_study_cram -
+[-        ] run…m_irods_tsv:crams_to_fastq -
+[-        ] run…tsv:imeta_study_cellranger -
+[-        ] run…_tsv:iget_study_cellranger -
+[-        ] yascp_input                    -
+WARN: There's no process matching config selector: cellbender__rb__get_input_cells
+WARN: There's no process matching config selector: SUBSET_GENOTYPE2
+WARN: There's no process matching config selector: BBKNN
+WARN: There's no process matching config selector: JOIN_INFERED_EXPECTED_MERGE
+WARN: There's no process matching config selector: ENHANCE_STATS_GT_MATCH
+WARN: There's no process matching config selector: ASSIGN_DONOR_FROM_PANEL
+WARN: There's no process matching config selector: DOUBLET_DECON
+WARN: There's no process matching config selector: DOUBLET_FINDER
+WARN: There's no process matching config selector: PREPROCESS_GENOTYPES
+WARN: There's no process matching config selector: HARMONY
+WARN: There's no process matching config selector: CELLTYPE_FILE_MERGE
+WARN: There's no process matching config selector: ASSESS_CALL_RATE
+WARN: There's no process matching config selector: SCRUBLET
+WARN: There's no process matching config selector: AZIMUTH
+WARN: There's no process matching config selector: CELLTYPIST
+WARN: There's no process matching config selector: cluster_validate_resolution_keras
+WARN: There's no process matching config selector: NORMALISE_AND_PCA
+WARN: There's no process matching config selector: LISI
+WARN: There's no process matching config selector: RESOLVE_POOL_VCFS
+WARN: There's no process matching config selector: SPLIT_BATCH_H5AD
+WARN: There's no process matching config selector: JOIN_STUDIES_MERGE
+WARN: There's no process matching config selector: GT_MATCH_POOL_AGAINST_PANEL
+WARN: There's no process matching config selector: FREEBAYES
+WARN: There's no process matching config selector: VIREO_ADD_SAMPLE_PREFIX
+WARN: There's no process matching config selector: REPLACE_GT_DONOR_ID2
+WARN: There's no process matching config selector: JOIN_CHROMOSOMES
+WARN: There's no process matching config selector: serialize_known_markers
+WARN: There's no process matching config selector: OUTLIER_FILTER
+WARN: There's no process matching config selector: cluster
+WARN: There's no process matching config selector: VIREO_GT_FIX_HEADER
+WARN: There's no process matching config selector: SPLIT_BAM_BY_CELL_BARCODES
+WARN: There's no process matching config selector: CONCORDANCE_CALCLULATIONS
+WARN: There's no process matching config selector: OTHER_DONOR_CONCORDANCE_CALCLULATIONS
+WARN: There's no process matching config selector: CELLSNP
+WARN: There's no process matching config selector: DYNAMIC_DONOR_EXCLUSIVE_SNP_SELECTION
+WARN: There's no process matching config selector: prep_collectmetadata
+WARN: There's no process matching config selector: VIREO
+WARN: There's no process matching config selector: DSB_INTEGRATE
+WARN: There's no process matching config selector: MULTIMODAL_INTEGRATION
+WARN: There's no process matching config selector: umap_gather
+WARN: There's no process matching config selector: plot_predicted_sex
+
+executor >  lsf (1)
+[d7/635d17] imeta_samples_csv (input.tsv)  | 0 of 1
+[-        ] run…_irods_tsv:iget_study_cram -
+[-        ] run…m_irods_tsv:crams_to_fastq -
+[-        ] run…tsv:imeta_study_cellranger -
+[-        ] run…_tsv:iget_study_cellranger -
+[-        ] yascp_input                    -
+WARN: There's no process matching config selector: cellbender__rb__get_input_cells
+WARN: There's no process matching config selector: SUBSET_GENOTYPE2
+WARN: There's no process matching config selector: BBKNN
+WARN: There's no process matching config selector: JOIN_INFERED_EXPECTED_MERGE
+WARN: There's no process matching config selector: ENHANCE_STATS_GT_MATCH
+WARN: There's no process matching config selector: ASSIGN_DONOR_FROM_PANEL
+WARN: There's no process matching config selector: DOUBLET_DECON
+WARN: There's no process matching config selector: DOUBLET_FINDER
+WARN: There's no process matching config selector: PREPROCESS_GENOTYPES
+WARN: There's no process matching config selector: HARMONY
+WARN: There's no process matching config selector: CELLTYPE_FILE_MERGE
+WARN: There's no process matching config selector: ASSESS_CALL_RATE
+WARN: There's no process matching config selector: SCRUBLET
+WARN: There's no process matching config selector: AZIMUTH
+WARN: There's no process matching config selector: CELLTYPIST
+WARN: There's no process matching config selector: cluster_validate_resolution_keras
+WARN: There's no process matching config selector: NORMALISE_AND_PCA
+WARN: There's no process matching config selector: LISI
+WARN: There's no process matching config selector: RESOLVE_POOL_VCFS
+WARN: There's no process matching config selector: SPLIT_BATCH_H5AD
+WARN: There's no process matching config selector: JOIN_STUDIES_MERGE
+WARN: There's no process matching config selector: GT_MATCH_POOL_AGAINST_PANEL
+WARN: There's no process matching config selector: FREEBAYES
+WARN: There's no process matching config selector: VIREO_ADD_SAMPLE_PREFIX
+WARN: There's no process matching config selector: REPLACE_GT_DONOR_ID2
+WARN: There's no process matching config selector: JOIN_CHROMOSOMES
+WARN: There's no process matching config selector: serialize_known_markers
+WARN: There's no process matching config selector: OUTLIER_FILTER
+WARN: There's no process matching config selector: cluster
+WARN: There's no process matching config selector: VIREO_GT_FIX_HEADER
+WARN: There's no process matching config selector: SPLIT_BAM_BY_CELL_BARCODES
+WARN: There's no process matching config selector: CONCORDANCE_CALCLULATIONS
+WARN: There's no process matching config selector: OTHER_DONOR_CONCORDANCE_CALCLULATIONS
+WARN: There's no process matching config selector: CELLSNP
+WARN: There's no process matching config selector: DYNAMIC_DONOR_EXCLUSIVE_SNP_SELECTION
+WARN: There's no process matching config selector: prep_collectmetadata
+WARN: There's no process matching config selector: VIREO
+WARN: There's no process matching config selector: DSB_INTEGRATE
+WARN: There's no process matching config selector: MULTIMODAL_INTEGRATION
+WARN: There's no process matching config selector: umap_gather
+WARN: There's no process matching config selector: plot_predicted_sex
+
+executor >  lsf (1)
+[d7/635d17] imeta_samples_csv (input.tsv)  | 0 of 1 ✔
+[-        ] run…_irods_tsv:iget_study_cram -
+[-        ] run…m_irods_tsv:crams_to_fastq -
+[-        ] run…tsv:imeta_study_cellranger -
+[-        ] run…_tsv:iget_study_cellranger -
+[-        ] yascp_input                    -
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+executor >  lsf (1)
+[d7/635d17] imeta_samples_csv (input.tsv)  | 1 of 1 ✔
+[-        ] run…_irods_tsv:iget_study_cram -
+[-        ] run…m_irods_tsv:crams_to_fastq -
+[-        ] run…tsv:imeta_study_cellranger -
+[-        ] run…_tsv:iget_study_cellranger -
+[-        ] yascp_input                    -
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+executor >  lsf (1)
+[d7/635d17] imeta_samples_csv (input.tsv)  | 1 of 1 ✔
+[-        ] run…_irods_tsv:iget_study_cram -
+[-        ] run…m_irods_tsv:crams_to_fastq -
+[-        ] run…tsv:imeta_study_cellranger -
+[-        ] run…_tsv:iget_study_cellranger -
+[-        ] yascp_input                    -
+Pipeline completed at: 2025-04-15T16:54:12.785182+01:00
+Command line: nextflow run /software/hgi/pipelines/yascp_nf_irods_to_lustre_versions/yascp_nf_irods_to_lustre_1.1/scripts/../pipelines/main.nf -c /software/hgi/pipelines/yascp_nf_irods_to_lustre_versions/yascp_nf_irods_to_lustre_1.1/scripts/../nextflow.config -c /software/hgi/pipelines/yascp_nf_irods_to_lustre_versions/yascp_nf_irods_to_lustre_1.1/scripts/../scripts/inputs.nf -profile lsf -with-dag flowchart.png -with-report report.html -resume --nf_ci_loc /lustre/scratch127/humgen/teams/hgi/mo11/tmp_projects127/yascp_tests/v8/yascp_v1.9
+Execution status: OK
+
+executor >  lsf (1)
+[d7/635d17] imeta_samples_csv (input.tsv)  | 1 of 1 ✔
+[-        ] run…_irods_tsv:iget_study_cram -
+[-        ] run…m_irods_tsv:crams_to_fastq -
+[-        ] run…tsv:imeta_study_cellranger -
+[-        ] run…_tsv:iget_study_cellranger -
+[-        ] yascp_input                    -
+Pipeline completed at: 2025-04-15T16:54:12.785182+01:00
+Command line: nextflow run /software/hgi/pipelines/yascp_nf_irods_to_lustre_versions/yascp_nf_irods_to_lustre_1.1/scripts/../pipelines/main.nf -c /software/hgi/pipelines/yascp_nf_irods_to_lustre_versions/yascp_nf_irods_to_lustre_1.1/scripts/../nextflow.config -c /software/hgi/pipelines/yascp_nf_irods_to_lustre_versions/yascp_nf_irods_to_lustre_1.1/scripts/../scripts/inputs.nf -profile lsf -with-dag flowchart.png -with-report report.html -resume --nf_ci_loc /lustre/scratch127/humgen/teams/hgi/mo11/tmp_projects127/yascp_tests/v8/yascp_v1.9
+Execution status: OK
+
