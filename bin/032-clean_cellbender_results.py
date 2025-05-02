@@ -17,7 +17,7 @@ import gzip
 import pandas as pd
 import numpy as np
 import anndata
-filter_0_count_cells=False
+filter_0_count_cells=True
 
 def dict_from_h5(file: str) -> Dict[str, np.ndarray]:
     """Read in everything from an h5 file and put into a dictionary."""
@@ -286,6 +286,7 @@ def cellbender_to_tenxmatrix(adata,out_file='',out_dir='tenx_from_adata',verbose
 
     # Save the count-adjusted matrix
     out_mtx = adata.X.transpose()
+    out_mtx = out_mtx.astype(np.int32)
     if not isinstance(out_mtx, scipy.sparse.csr.csr_matrix):
         out_mtx = scipy.sparse.csr_matrix(out_mtx)
     out_f = os.path.join(

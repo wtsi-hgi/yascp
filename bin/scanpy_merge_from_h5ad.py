@@ -730,6 +730,8 @@ def scanpy_merge(
         _='most likely different data format such as ATAC which doesnt have gene IDs'
     # adata_merged.obs = obs_prior
     adata_merged.obs['log10_ngenes_by_count'] = np.log10(adata_merged.obs['n_genes_by_counts']) / np.log10(adata_merged.obs['total_counts'])
+    adata_merged.obs.loc[adata_merged.obs['log10_ngenes_by_count']!=adata_merged.obs['log10_ngenes_by_count'],'log10_ngenes_by_count']=0
+    
     adata_merged.write(
         '{}.h5ad'.format(output_file),
         compression='gzip',
