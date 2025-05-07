@@ -135,10 +135,18 @@ def get_df_from_mangled_index(df, expid):
         if xf.shape[0] != df.shape[0]:
             sys.exit("ERROR: when untangling mangled index.")
     except:
-        df['barcode_idx']= df.index+'-'+expid+'__'+df['donor_id'].astype(str)
+        try:
+            df['barcode_idx']= df.index+'-'+expid+'__'+df['donor_id'].astype(str)
+        except:
+            df['donor_id']=df['Donor']
         df2 = df.reset_index() 
         df2 = df2.rename({'index':'barcode','donor_id':'donor'},axis=1)
-        xf = df2[['barcode','donor']]
+        # df2['barcode'] = df2['barcode'].str.split(pat='-{}'.format(expid)).str[0]
+        try:
+            xf = df2[['barcode','donor']]
+        except:
+            xf = df2[['barcode','Donor']]
+            xf.rename(columns={'Donor':'donor'})
         xf.index=df2['barcode']
     return xf
 
@@ -566,6 +574,8 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
     ############################################################
     # Loading deconvoluted data including unassigned and doublets
     ###########################################
+    if 'convoluted_samplename' not in adqc.obs.columns:
+        adqc.obs['convoluted_samplename'] = adqc.obs['Donor'].copy()
 
     s = adqc.obs['convoluted_samplename'] == expid
     ad = adqc[s]
@@ -573,7 +583,9 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
     #df.insert(0, 'barcode', df.index.values)
     df_pre = pandas.concat([df,ad.obs], axis = 1)
     df_pre['mengled_index'] = df_pre.index
+    df_pre['barcode'] = df_pre['barcode'].str.replace(r'^((?:[^-]+-){1}[^-]+)-.*$', r'\1', regex=True)
     df = df_pre.set_index("barcode", drop = True)
+    
 
     if cell_bender_path is not None:
         # cellbender removes the barcodes - 
@@ -583,6 +595,9 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
             sys.exit("ERROR: barcodes missing in cellbender file.")
         df = dc.copy()
         dc=dc.set_index('mengled_index')
+    if 'donor' not in df.columns:
+        df = df.loc[:, ~df.columns.duplicated()]
+        df['donor']=df['Donor']
         
     obsqc = df
     all_QC_lane = ad
@@ -1093,6 +1108,9 @@ if __name__ == '__main__':
         adqc.obs['G2M_score'] = adqc_norm.obs['G2M_score']
     except:
         _='not normalised'
+        
+    if 'convoluted_samplename' not in adqc.obs.columns:
+        adqc.obs['convoluted_samplename'] = adqc.obs['Donor'].copy()
         
     fctr = 0
     data_tranche_all=[]
