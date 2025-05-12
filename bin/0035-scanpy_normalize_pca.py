@@ -576,6 +576,10 @@ def scanpy_normalize_and_pca(
     adata_nr_cells = {}
     count=0
     os.makedirs('./donor_level_anndata_QCfiltered')
+    
+    if 'convoluted_samplename' not in adata.obs.columns:
+        adata.obs['convoluted_samplename'] = adata.obs['Donor'].copy()
+        
     for donor_id in adata.obs['convoluted_samplename'].unique():
         donor_id = str(donor_id)
         print('filtering cells of AnnData to convoluted_samplename ' + donor_id)

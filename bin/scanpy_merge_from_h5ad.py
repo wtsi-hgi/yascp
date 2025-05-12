@@ -559,14 +559,13 @@ def scanpy_merge(
     
     for idx, row in h5ad_data.iterrows():
         print(row)
-        idx1 = row['experiment_id'].split('__')[0]
+        idx1 = row['experiment_id'].split('__')[0].split('---')[0]
         # Load the data
-        adata = sc.read_h5ad(
-            filename=row['data_path_h5ad_format'] + '/h5ad.h5ad' #,
-            # var_names='gene_symbols',
-            # ivar_names='gene_ids',
-            # make_unique=False
-        )
+        path = row['data_path_h5ad_format']
+        if os.path.isdir(path+'/h5ad.h5ad/') and os.path.exists(os.path.join(path+'/h5ad.h5ad/', "matrix.mtx.gz")):
+            adata = sc.read_10x_mtx(path+'/h5ad.h5ad/', var_names="gene_ids", make_unique=False)
+        else:
+            adata = sc.read_h5ad(os.path.join(path, "h5ad.h5ad"))
 
         prop_ens_in_symbols = adata.var['gene_symbols'].str.startswith("ENSG").mean()
         prop_ens_in_index = adata.var.index.to_series().str.startswith("ENSG").mean()
@@ -623,7 +622,7 @@ def scanpy_merge(
         # NOTE: it would be more memory efficient to stash this in
         #       unstructured dict-like annotation (adata.uns)
         metadata_smpl = metadata[
-            metadata[metadata_key] == row['experiment_id']
+            metadata[metadata_key] == idx1
         ]
         try:
             extra_sample_metadata = extra_metadata[extra_metadata[metadata_key]==idx1]
@@ -633,7 +632,10 @@ def scanpy_merge(
         
         # Add celltypes. 
         obs_df = adata.obs.copy()
-        obs_df['merge_key'] = obs_df.index + '-' + obs_df['convoluted_samplename'].astype(str)
+        try:
+            obs_df['merge_key'] = obs_df.index + '-' + obs_df['convoluted_samplename'].astype(str)
+        except:
+            obs_df['merge_key'] = obs_df.index + '-' + idx1
         celltype['merge_key'] = celltype.index
         try:
             del celltype['Donor']
@@ -673,6 +675,9 @@ def scanpy_merge(
         # Ensure we have experiment_in the final dataframe.
         if 'experiment_id' not in adata.obs.columns:
             adata.obs['experiment_id'] = adata.obs[metadata_key]
+
+        if 'convoluted_samplename' not in adata.obs.columns:
+            adata.obs['convoluted_samplename'] = idx1
 
         # Add in per cell metadata if we have it.
         if cellmetadata_filepaths is not None:

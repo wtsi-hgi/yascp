@@ -962,7 +962,9 @@ def main():
     # Reset X to counts
     adata.X = adata.layers['counts'].copy()   
     
-    
+    if 'ensembl_gene_id' not in adata.var:
+        adata.var['ensembl_gene_id']=adata.var['gene_ids']
+        
     # We assume anndata.var.index corresponds to ensembl gene ids
     if 'ensembl_gene_id' not in adata.var:
         warnings.warn(
@@ -1078,10 +1080,8 @@ def main():
             )
             # NOTE: if we get an error below it is likely because the columns
             # are not all unique.
-            df_X_fixed = df_X.reindex(
-                columns=[*df_X.columns.tolist(), *missing_cols],
-                fill_value=0.0
-            )
+            new_columns = list(df_X.columns) + list(missing_cols)
+            df_X_fixed = df_X.reindex(columns=new_columns, fill_value=0.0)
         # for i in missing_cols:
         #     df_X[i] = 0.0  # np.nan will not work
         # Re-order the ensembl ids to fit the model
@@ -1095,11 +1095,13 @@ def main():
 
     # Celltype probabilities ##################################################
     # Predict the labels of each cell using the model
-    prediction_classes = model.predict(X_std)
+    prediction_classes = model.predict(X_std[:, np.newaxis, :])
     # NOTE: model.predict_proba same as model.predict
     # prediction_classes_proba = model.predict_proba(X_std)
 
     # Make a dataframe of the cell id and their prediction matrix
+    prediction_classes = np.squeeze(prediction_classes, axis=1)
+
     df_prediction_classes = pd.DataFrame(prediction_classes)
     df_prediction_classes.index = adata.obs.index
     # NOTE: the mappings of predictions cols follow the df_weights order,

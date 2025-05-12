@@ -22,23 +22,7 @@ workflow MERGE_SAMPLES{
                 .map{row -> tuple(row.experiment_id, file(row.h5ad_filepath))}.set{channel__file_paths_10x_paths}
         
             prep_merge_samples_from_h5ad(channel__file_paths_10x_paths)
-            
-            // This is currently not finished -- currently hard filters happen in the merging part next. We may want to keep this seperate so we can filter the stuff out after celltype assignments.
-            // CELL_HARD_FILTERS(prep_merge_samples_from_h5ad.out.h5ad,params.hard_filters_file) //ad with all cells goes in and adata with removed cells comes out.
-            prep_merge_samples_from_h5ad.out.h5ad.collect().subscribe { println "prep_merge_samples_from_h5ad.out.h5ad.collect(): $it" }
-            file_metadata.subscribe { println "file_metadata: $it" }
-            celltype_file.subscribe { println "celltype_file: $it" }
-
-            merge_samples_from_h5ad(
-                    channel__file_paths_10x,
-                    file_metadata,
-                    params.file_cellmetadata,
-                    params.metadata_key_column.value,
-                    prep_merge_samples_from_h5ad.out.h5ad.collect(),
-                    celltype_file
-            )
-            
-            file__anndata_merged = merge_samples_from_h5ad.out.anndata
+            input_merge =  prep_merge_samples_from_h5ad.out.h5ad.collect()
             // file__cells_filtered = merge_samples_from_h5ad.out.cells_filtered
 
         }else if (mode == 'barcodes'){
@@ -47,21 +31,37 @@ workflow MERGE_SAMPLES{
             // for deconvolution the default output -i.e - /lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/mo11_work/outputs/test_qc/inputs/file_metadata.tsv
             // format - experiment_id \t celldata1 \celldata2
             prep_merge_samples(channel__file_paths_10x)
-            
-            merge_samples(
-                params.outdir,
-                params.input_data_table,
+            input_merge = prep_merge_samples.out.mtx.collect()
+            // merge_samples(
+            //     params.outdir,
+            //     params.input_data_table,
+            //     file_metadata,
+            //     params.file_cellmetadata,
+            //     params.metadata_key_column.value,
+            //     prep_merge_samples.out.barcodes.collect(),
+            //     prep_merge_samples.out.features.collect(),
+            //     prep_merge_samples.out.matrix.collect(),
+            //     params.anndata_compression_opts
+            // )
+            // file__anndata_merged = merge_samples.out.anndata
+            // file__cells_filtered = merge_samples.out.cells_filtered
+        }
+
+        input_merge.subscribe { println "input_merge: $it" }
+        channel__file_paths_10x.subscribe { println "channel__file_paths_10x: $it" }
+        file_metadata.subscribe { println "file_metadata: $it" }
+        celltype_file.subscribe { println "celltype_file: $it" }
+        
+        merge_samples_from_h5ad(
                 file_metadata,
                 params.file_cellmetadata,
                 params.metadata_key_column.value,
-                prep_merge_samples.out.barcodes.collect(),
-                prep_merge_samples.out.features.collect(),
-                prep_merge_samples.out.matrix.collect(),
-                params.anndata_compression_opts
-            )
-            file__anndata_merged = merge_samples.out.anndata
-            // file__cells_filtered = merge_samples.out.cells_filtered
-        }
+                input_merge,
+                celltype_file
+        )
+        
+        file__anndata_merged = merge_samples_from_h5ad.out.anndata
+
     emit:
         file__anndata_merged
         // file__cells_filtered

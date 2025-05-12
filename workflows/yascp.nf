@@ -111,7 +111,7 @@ workflow YASCP {
                 else if (params.input == 'cellranger'){
                     // This is where we skip the cellbender and use the cellranger filtered datasets.
                     log.info '--- using cellranger filtered data instead of cellbender (skipping cellbender)---'
-                    channel__file_paths_10x=prepare_inputs.out.channel__file_paths_10x
+                    channel__file_paths_10x = prepare_inputs.out.channel__file_paths_10x
                     ch_experiment_filth5 = SPLIT_CITESEQ_GEX.out.gex_data
                     ch_experiment_bam_bai_barcodes=prepare_inputs.out.ch_experiment_bam_bai_barcodes
                     

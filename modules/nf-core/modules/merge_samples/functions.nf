@@ -47,7 +47,6 @@ process merge_samples_from_h5ad {
     }
 
     input:
-        path(file_paths_h5ad)
         path(file_metadata)
         val(file_cellmetadata)
         val(metadata_key)
@@ -202,15 +201,12 @@ process prep_merge_samples {
         )
     label 'process_tiny'
     output:
-        path("${experiment_id}---barcodes.tsv.gz", emit: barcodes)
-        path("${experiment_id}---features.tsv.gz", emit: features)
-        path("${experiment_id}---matrix.mtx.gz", emit: matrix)
+        path("${experiment_id}---matrix", emit: mtx)
 
     script:
         """
-        ln --physical ${file_10x_barcodes} ${experiment_id}---barcodes.tsv.gz
-        ln --physical ${file_10x_features} ${experiment_id}---features.tsv.gz
-        ln --physical ${file_10x_matrix} ${experiment_id}---matrix.mtx.gz
+        mkdir ${experiment_id}---matrix
+        cd ${experiment_id}---matrix && ln ../${file_10x_barcodes} ./ && ln ../${file_10x_features} ./  && ln ../${file_10x_matrix} ./ 
         """
 }
 
