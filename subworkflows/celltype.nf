@@ -77,18 +77,24 @@ workflow celltype{
     
     take:
         file__anndata_merged
-        hastag_labels
-        
+        mode
     main:
 
-        log.info '---Splitting the assignment for each batch---'
-        // file__anndata_merged.subscribe { println "file__anndata_merged: $it" }
-
+        
 
         // Here we may want to not split it and just pass in an entire h5ad file for annotations.
         // We need a combined h5ad file with all donors to perform further data integrations
-        file__anndata_merged_post = CONVERT_MTX_TO_H5AD(file__anndata_merged).gex_h5ad
-        // SPLIT_BATCH_H5AD(file__anndata_merged_post,params.split_ad_per_bach)
+        if (mode=='yascp_full'){
+            file__anndata_merged_post = CONVERT_MTX_TO_H5AD(file__anndata_merged).gex_h5ad
+        }else{
+            log.info '---Splitting the assignment for each batch---'
+            SPLIT_BATCH_H5AD(file__anndata_merged,params.doublet_celltype_split_column)
+            SPLIT_BATCH_H5AD.out.sample_file
+                .splitCsv(header: true, sep: "\t", by: 1)
+                .map{row -> tuple(row.experiment_id, file(row.h5ad_filepath))}.set{file__anndata_merged_post}           
+        }
+        
+        //
         ch_experiment_filth5 = file__anndata_merged_post 
         az_ch_experiment_filth5 = file__anndata_merged_post
 
@@ -106,8 +112,6 @@ workflow celltype{
         if (params.celltype_assignment.run_azimuth){
             AZIMUTH(az_ch_experiment_filth5,Channel.fromList( params.azimuth.celltype_refsets))
             az_out = AZIMUTH.out.predicted_celltype_labels.collect()
-            // REMAP_AZIMUTH(AZIMUTH.out.celltype_tables_all,params.mapping_file)
-            // az_out = REMAP_AZIMUTH.out.predicted_celltype_labels.collect()
         }else{
             az_out = Channel.from("$projectDir/assets/fake_file1.fq")
             az_out = az_out.ifEmpty(Channel.from("$projectDir/assets/fake_file1.fq"))
@@ -132,11 +136,9 @@ workflow celltype{
         }else{
             sc_out = Channel.of()
         }        
-        all_extra_fields2 = all_extra_fields.mix(sc_out).mix(hastag_labels)
+        all_extra_fields2 = all_extra_fields.mix(sc_out)
         CELLTYPE_FILE_MERGE(az_out.collect().unique(),ct_out.collect().unique(),all_extra_fields2.collect().unique()) 
-        
         celltype_assignments=CELLTYPE_FILE_MERGE.out.celltype_assignments
-
     emit:
         celltype_assignments
 }

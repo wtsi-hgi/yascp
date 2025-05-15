@@ -306,15 +306,18 @@ workflow  main_deconvolution {
         not_deconvoluted.map{ experiment, donorsvcf, npooled,t,t2 -> tuple(experiment, 'None')}.set{not_deconvoluted2}
         split_channel = vireo_out_sample_donor_ids.combine(ch_experiment_filth5, by: 0)
         split_channel2 = not_deconvoluted2.combine(ch_experiment_filth5, by: 0)
+        scrublet_paths.subscribe { println "scrublet_paths: $it" }
         // combining these 2 channels in one
         split_channel3 = split_channel.mix(split_channel2)
+        split_channel3.subscribe { println "split_channel3: $it" }
         // adding the scrublet paths to the channel.
-        split_channel4 = split_channel3.combine(scrublet_paths, by: 0)
+        split_channel4 = split_channel3
+        split_channel4.subscribe { println "split_channel4: $it" }
         split_channel5 = split_channel4.map{
-            val_sample, val_donor_ids_tsv, val_filtered_matrix_h5, path_scrublet ->
-            [  val_sample,file(val_donor_ids_tsv),file(val_filtered_matrix_h5),path_scrublet,params.outdir]
+            val_sample, val_donor_ids_tsv, val_filtered_matrix_h5 ->
+            [  val_sample,file(val_donor_ids_tsv),file(val_filtered_matrix_h5),params.outdir]
         }
-
+        split_channel5.subscribe { println "split_channel5: $it" }
         SPLIT_DONOR_H5AD(split_channel5)
         PREP_ASSIGNMENTS_FILE(split_channel5)
         cell_assignments = PREP_ASSIGNMENTS_FILE.out.cell_assignments

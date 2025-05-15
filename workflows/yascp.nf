@@ -43,10 +43,8 @@ workflow YASCP {
             // here we have rerun something upstream - done for freeze1
             assignments_all_pools = mode
         }
-
+        prepare_inputs(input_channel)
         if (!params.input_data_table.contains('fake_file')){
-            prepare_inputs(input_channel)
-            
             input_channel = prepare_inputs.out.channel_input_data_table
             if (params.reference_assembly_fasta_dir=='https://yascp.cog.sanger.ac.uk/public/10x_reference_assembly'){
                 RETRIEVE_RECOURSES()  
@@ -59,14 +57,14 @@ workflow YASCP {
             chanel_cr_outs = prepare_inputs.out.chanel_cr_outs
             channel_dsb = prepare_inputs.out.channel_dsb
         }
-            vireo_paths = Channel.from("$projectDir/assets/fake_file.fq")
-            matched_donors = Channel.from("$projectDir/assets/fake_file.fq")
+        vireo_paths = Channel.from("$projectDir/assets/fake_file.fq")
+        matched_donors = Channel.from("$projectDir/assets/fake_file.fq")
 
-            ch_poolid_csv_donor_assignments = Channel.empty()
-            bam_split_channel = Channel.of()
-            out_ch = params.outdir
-                ? Channel.fromPath(params.outdir, checkIfExists:true)
-                : Channel.from("${launchDir}/${params.outdir}")
+        ch_poolid_csv_donor_assignments = Channel.empty()
+        bam_split_channel = Channel.of()
+        out_ch = params.outdir
+            ? Channel.fromPath(params.outdir, checkIfExists:true)
+            : Channel.from("${launchDir}/${params.outdir}")
                  
         if(!params.just_reports){
             // sometimes we just want to rerun report generation as a result of alterations, hence if we set params.just_reports =True pipeline will use the results directory and generate a new reports.
@@ -111,8 +109,8 @@ workflow YASCP {
                 else if (params.input == 'cellranger'){
                     // This is where we skip the cellbender and use the cellranger filtered datasets.
                     log.info '--- using cellranger filtered data instead of cellbender (skipping cellbender)---'
-                    channel__file_paths_10x = prepare_inputs.out.channel__file_paths_10x
-                    ch_experiment_filth5 = SPLIT_CITESEQ_GEX.out.gex_data
+                    channel__file_paths_10x = SPLIT_CITESEQ_GEX_FILTERED.out.gex_data
+                    ch_experiment_filth5 = SPLIT_CITESEQ_GEX_FILTERED.out.gex_data
                     ch_experiment_bam_bai_barcodes=prepare_inputs.out.ch_experiment_bam_bai_barcodes
                     
                 }
@@ -146,16 +144,16 @@ workflow YASCP {
                 // ###################################
                 if (params.filter_multiplets.run_process){
                     MULTIPLET(
-                        channel__file_paths_10x_gex
+                        channel__file_paths_10x_gex,'yascp_full'
                     )
-                    scrublet_paths = MULTIPLET.out.scrublet_paths
+                    doublet_paths = MULTIPLET.out.scrublet_paths
                 }else{
-                    scrublet_paths = Channel.of()
+                    doublet_paths = Channel.from("$projectDir/assets/fake_file.fq")
                 }
 
 
                 if (params.celltype_assignment.run_celltype_assignment){
-                    celltype(channel__file_paths_10x_gex,hastag_labels)
+                    celltype(channel__file_paths_10x_gex,'yascp_full')
                     celltype_assignments=celltype.out.celltype_assignments
                 }else{
                     celltype_assignments = Channel.from("$projectDir/assets/fake_file.fq")
@@ -175,7 +173,7 @@ workflow YASCP {
                         prepare_inputs.out.ch_experiment_npooled,
                         ch_experiment_filth5,
                         prepare_inputs.out.ch_experiment_donorsvcf_donorslist,
-                        scrublet_paths,
+                        doublet_paths,
                         vcf_input,
                         genome)
                     vireo_paths = main_deconvolution.out.vireo_paths2
@@ -185,6 +183,7 @@ workflow YASCP {
                     assignments_all_pools = main_deconvolution.out.assignments_all_pools
 
                     if (!params.skip_merge){
+                        log.info '--- merging samples'
                         MERGE_SAMPLES(main_deconvolution.out.out_h5ad,main_deconvolution.out.vireo_out_sample__exp_summary_tsv,celltype_assignments,'h5ad')
                     }else{
                         file__anndata_merged = main_deconvolution.out.out_h5ad

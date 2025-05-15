@@ -661,24 +661,22 @@ def scanpy_merge(
                     d2 = extra_sample_metadata[col].values
                     adata.obs[col] = np.repeat(list(set(d2)), adata.n_obs)
         adata_orig_cols = list(adata.obs.columns)
-        
-        for col in metadata_smpl.columns:
-            if col in list(adata_orig_cols):
-                print(f' {col} already exist')
-            if (col == 'experiment_id'):
-                print(col)
-                adata.obs[col] = np.repeat(metadata_smpl[col].values, adata.n_obs)             
-            else:
-                print(col)
-                adata.obs[col] = np.repeat(metadata_smpl[col].values, adata.n_obs)
-
-        # Ensure we have experiment_in the final dataframe.
-        if 'experiment_id' not in adata.obs.columns:
-            adata.obs['experiment_id'] = adata.obs[metadata_key]
+        if len(metadata_smpl)!=0:
+            for col in metadata_smpl.columns:
+                if col in list(adata_orig_cols):
+                    print(f' {col} already exist')
+                if (col == 'experiment_id'):
+                    print(col)
+                    adata.obs[col] = np.repeat(metadata_smpl[col].values, adata.n_obs)             
+                else:
+                    print(col)
+                    adata.obs[col] = np.repeat(metadata_smpl[col].values, adata.n_obs)
 
         if 'convoluted_samplename' not in adata.obs.columns:
             adata.obs['convoluted_samplename'] = idx1
-
+        # Ensure we have experiment_in the final dataframe.
+        if 'experiment_id' not in adata.obs.columns:
+            adata.obs['experiment_id'] = adata.obs['convoluted_samplename']
         # Add in per cell metadata if we have it.
         if cellmetadata_filepaths is not None:
             if row['experiment_id'] in cellmetadata_filepaths.index:
@@ -826,7 +824,7 @@ def main():
         '-em', '--extra_metadata',
         action='store',
         dest='extra_metadata',
-        default='',
+        default='None',
         help='Provide extra sample metadata file to be merged with the input'
     )
 

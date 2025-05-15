@@ -2,7 +2,6 @@
 import os
 import argparse
 import scanpy as sc
-import anndata as ad
 import pandas as pd
 from scipy import io
 import anndata as ad

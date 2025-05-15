@@ -99,7 +99,7 @@ workflow WORK_DIR_REMOVAL{
 
 workflow JUST_CELLTYPES{
     file__anndata_merged = Channel.from(params.file__anndata_merged)
-    celltype(file__anndata_merged)
+    celltype(file__anndata_merged,'celltype_mode')
 }
 
 workflow JUST_CELLBENDER{
@@ -114,30 +114,9 @@ workflow JUST_CELLBENDER{
 
 
 workflow JUST_DOUBLETS{
-    // input_channel = Channel.fromPath(params.input_data_table, followLinks: true, checkIfExists: true)
-    // YASCP_INPUTS(input_channel)
-    // channel_input_data_table = YASCP_INPUTS.out.input_file_corectly_formatted
-
-
-    // channel__file_paths_10x =  channel_input_data_table
-    //     .splitCsv(header: true, sep: params.input_tables_column_delimiter)
-    //     .map{row -> tuple(
-    //     row.experiment_id,
-    //     file("${row.data_path_10x_format}/filtered_feature_bc_matrix")
-    // )}
     file__anndata_merged = Channel.from(params.file__anndata_merged)
-    channel__file_paths_10x = CONVERT_H5AD_TO_MTX(file__anndata_merged).channel__file_paths_10x
-
-    channel__file_paths_10x =  channel__file_paths_10x
-        .map{row -> tuple(
-        row[0],
-        file("${row[1]}/barcodes.tsv.gz"),
-        file("${row[1]}/features.tsv.gz"),
-        file("${row[1]}/matrix.mtx.gz")
-    )}
-
     MULTIPLET(
-        channel__file_paths_10x
+        file__anndata_merged,'doublet_mode'
     )
 }
 

@@ -9,8 +9,8 @@ process SPLIT_BATCH_H5AD {
     }
     
     input:
-        tuple val(name), path(file__anndata) // anndata h5ad file seurat_azimuth_pbmc_1.0
-        val(mode)
+        path(file__anndata)
+        val(doublet_celltype_split_column)
 
     output:
         path("AZ_${outfil_prfx}_*.h5ad", emit:files_anndata_batch)
@@ -25,8 +25,7 @@ process SPLIT_BATCH_H5AD {
         outfil_prfx = "${file__anndata}".minus(".h5ad")
         outfile = "${outfil_prfx}".plus("_files.txt")
         """
-
-           scanpy_split_h5ad.py ${file__anndata} ${outfil_prfx} ${mode}
+           scanpy_split_h5ad.py ${file__anndata} ${outfil_prfx} ${doublet_celltype_split_column}
         """
 
 }

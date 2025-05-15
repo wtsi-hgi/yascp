@@ -15,7 +15,17 @@ import pandas
 import scanpy
 import anndata
 import numpy as np
+import scipy.sparse as sp
 ## split h5ad file by chromium channel
+
+
+# Define a no-op function (does nothing)
+def no_op(*args, **kwargs):
+    pass  # Do nothing
+
+# Properly override AnnData class method
+anndata.AnnData.strings_to_categoricals = no_op  # This works for new instances
+
 
 # for testing use
 # infnam = "/lustre/scratch123/hgi/mdt1/projects/ukbb_scrna/pipelines/Pilot_UKB/qc/franke_data/work/2a/ebdc5079ae949777263ce3b1aca510/BF61CE54F4603C9F-adata.h5ad"
@@ -87,26 +97,45 @@ def write_h5_out_for_ct(ad,oufn_list_AZ,oufnam,oufn_list,samples,samples_AZ,bl,c
     adata.var = adb_AZ.var
     adb_AZ = adata
     # disable
-    if anndata_compression_opts is None:
-        adb.write(oufnam)
-        adb_AZ.write(f"AZ_{oufnam}")
-    else:
-        adb.write(
-            oufnam,
-            compression='gzip',
-            compression_opts=anndata_compression_opts
-        )
-        adb_AZ.write(
-            f"AZ_{oufnam}",
-            compression='gzip',
-            compression_opts=anndata_compression_opts
-        )                
+    
+    
+    # Save to .h5ad file
+    for col in adb.var.select_dtypes(include=['category']).columns:
+        adb.var[col] = np.array(adb.var[col].astype(str), dtype=str)
+
+    for col in adb.obs.select_dtypes(include=['category']).columns:
+        adb.obs[col] = np.array(adb.obs[col].astype(str), dtype=str)
         
+    
+    # Save to .h5ad file
+    for col in adb_AZ.var.select_dtypes(include=['category']).columns:
+        adb_AZ.var[col] = np.array(adb_AZ.var[col].astype(str), dtype=str)
+
+    for col in adb_AZ.obs.select_dtypes(include=['category']).columns:
+        adb_AZ.obs[col] = np.array(adb_AZ.obs[col].astype(str), dtype=str)
+        
+    if not sp.isspmatrix_csr(adb.X):
+        adb.X = sp.csr_matrix(adb.X)
+        
+    if not sp.isspmatrix_csr(adb_AZ.X):
+        adb_AZ.X = sp.csr_matrix(adb_AZ.X)
+        
+    gene_symbols_series = adb.var['gene_symbols'].astype(str)
+    adb.var['gene_ids'] = adb.var.index
+    adb.var_names = adb.var['gene_symbols']
+    
+    adb.write(
+        oufnam,compression='gzip',compression_opts=4
+    )
+    adb_AZ.write(
+        f"AZ_{oufnam}",compression='gzip',compression_opts=4
+    )                
+    
     oufn_list_AZ.append(f'AZ_{oufnam}')
     oufn_list.append(oufnam)
     return oufn_list_AZ,oufn_list,samples,samples_AZ
 
-def split_h5ad_by_batch(ad, oufnprfx, colnam_batch = 'batch', anndata_compression_opts=None, option='true'):
+def split_h5ad_by_batch(ad, oufnprfx, colnam_batch = 'batch', anndata_compression_opts=None, option=False):
     oufn_list_fnam = '{}_files.txt'.format(oufnprfx)
     oufn_list = []
     oufn_list_AZ = []
@@ -115,12 +144,15 @@ def split_h5ad_by_batch(ad, oufnprfx, colnam_batch = 'batch', anndata_compressio
         # here we do not have a batch id since the data is not deconvoluted yet
     except:
         ad.obs[colnam_batch] = oufnprfx
-        
-    batch_labels = pandas.Categorical(ad.obs[colnam_batch].apply(lambda a: a.split('__')[0])) # <class 'pandas.core.series.Series'>
+# categories = ["batch1", "batch2", "batch3"]
+
+# # Assign a random category to each observation
+# ad.obs[colnam_batch] = np.random.choice(categories, size=ad.n_obs)
+    batch_labels = pandas.Categorical(ad.obs[colnam_batch]) # <class 'pandas.core.series.Series'>
     samples = {}
     samples_AZ = {}
     count=0
-    if (option == 'true'):
+    if (option):
         print("Here we split the h5ad we just normalise for celltype assignmet")
         for bl in batch_labels.categories:
             print(bl)
@@ -151,9 +183,12 @@ if __name__ == '__main__':
     #     sys.exit("usage: %s ./<input_file *.h5ad> <output_file_prefix>".format(sys.argv[0]))
     infnam = sys.argv[1]
     oufnprfx = sys.argv[2]
-    option = sys.argv[3]
-
+    batch_label = sys.argv[3]
+    if batch_label=='None':
+        option=False
+    else:
+        option=True
     # print(infnam)
     ad = scanpy.read(infnam)
-    split_h5ad_by_batch(ad, oufnprfx, colnam_batch = 'batch', anndata_compression_opts = None,option=option)
+    split_h5ad_by_batch(ad, oufnprfx, colnam_batch = batch_label, anndata_compression_opts = None,option=option)
     sys.exit()

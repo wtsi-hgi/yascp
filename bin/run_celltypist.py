@@ -181,7 +181,11 @@ def run_celltypist(samplename, filtered_matrix_h5, celltypist_model,
 
     predictions.to_table(folder = output_dir, prefix = samplename + '___'+celltypist_model1+'___')
     Data = adata.obs
-    Data= Data.drop('cell_barcode',axis=1)
+    try:
+        Data= Data.drop('cell_barcode',axis=1)
+    except:
+        _=''
+        
     Data=Data.add_prefix(f'{celltypist_model1}:')
     Data.to_csv(f'{output_dir}/{samplename}___{celltypist_model1}___predicted_labels.csv')
     ###predictions.to_table(folder = os.getcwd())

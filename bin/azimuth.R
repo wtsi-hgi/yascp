@@ -19,6 +19,7 @@ library(Matrix)
 library(hdf5r)
 library(ggplot2)
 library(tools)
+options(future.globals.maxSize = 2000 * 1024^2)
 args =list()
 # inputfile.h5ad='./Pool1.h5ad'
 # REFERENCE_DIR='/lustre/scratch123/hgi/teams/hgi/mo11/tmp_projects/jaguar_yascp/nieks_pipeline/yascp_run/ref_kidney'
