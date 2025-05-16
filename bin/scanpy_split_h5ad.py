@@ -49,7 +49,7 @@ def write_h5_out_for_ct(ad,oufn_list_AZ,oufnam,oufn_list,samples,samples_AZ,bl,c
         
     adb_AZ = adb.copy()
     # disable
-    adb_AZ.obs = pandas.DataFrame(adb_AZ.obs.index, index = adb_AZ.obs.index, columns = ["cell_barcode"])
+    # adb_AZ.obs = pandas.DataFrame(adb_AZ.obs.index, index = adb_AZ.obs.index, columns = ["cell_barcode"])
 
     # adb.layers['counts'] = adb.X.copy()
 

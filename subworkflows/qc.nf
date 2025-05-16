@@ -98,14 +98,14 @@ workflow qc {
 
 
                 DSB_PROCESS.out.ch_for_norm.subscribe { println "1:: DSB_PROCESS.out.ch_for_norm: $it" }
-                
-                // PREPROCESS_PROCESS()
-                // DSB_PROCESS.out.citeseq_rsd.subscribe { println "1:: DSB_PROCESS.out.citeseq_rsd: $it" }
+
                 vireo_paths_map = vireo_paths.flatten().map{row->tuple("${row}".replaceFirst(/.*vireo_/,""), row)}
                 vireo_paths_map.subscribe { println "1:: vireo_paths_map $it" }
                 DSB_PROCESS.out.ch_for_norm.subscribe { println "1:: vireo_paths_map $it" }
                 vireo_paths_map.combine(DSB_PROCESS.out.ch_for_norm, by: 0).set{norm_chanel}
+                norm_chanel.subscribe { println "1:: norm_chanel $it" }
                 norm_chanel.combine(matched_donors).set{inp4}
+                inp4.subscribe { println "1:: inp4 $it" }
                 PREPROCESS_PROCESS(inp4,params.reduced_dims.vars_to_regress.value)
 
                 if(params.seurat_integration.run_process){

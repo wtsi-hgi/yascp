@@ -543,18 +543,32 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
     #Cell-type assignments
     #############
 
-    azt = pd.read_csv(f'{args.results_dir}/celltype_assignemt/All_Celltype_Assignments.tsv',sep='\t',index_col=0)
-    azt_cols_to_add = azt.columns[azt.columns.str.contains('Azimuth')]
-    ct_cols_to_add = azt.columns[azt.columns.str.contains('Celltypist')]
-    sc_cols_to_add = azt.columns[azt.columns.str.contains('scpred_prediction')]
+    azt_path = os.path.join(args.results_dir, "celltype_assignemt", "All_Celltype_Assignments.tsv")
+
+    if os.path.exists(azt_path) and os.path.getsize(azt_path) > 0:
+        try:
+            azt = pd.read_csv(azt_path, sep='\t', index_col=0)
+        except Exception as e:
+            sys.stderr.write(f"WARNING: Failed to load Azimuth file '{azt_path}': {str(e)}\n")
+            azt = pd.DataFrame()
+    else:
+        sys.stderr.write(f"WARNING: Azimuth file '{azt_path}' not found or empty.\n")
+        azt = pd.DataFrame()
+    if not azt.empty:
+        azt_cols_to_add = azt.columns[azt.columns.str.contains('Azimuth')]
+        ct_cols_to_add = azt.columns[azt.columns.str.contains('Celltypist')]
+        sc_cols_to_add = azt.columns[azt.columns.str.contains('scpred_prediction')]
+    else:
+        azt_cols_to_add = []
+        ct_cols_to_add = []
+        sc_cols_to_add = []
     for i3 in set(azt_cols_to_add) - set(columns_output.keys()):
         columns_output = {**columns_output,  **{i3:i3}}
     for i3 in set(sc_cols_to_add) - set(columns_output.keys()):
         columns_output = {**columns_output,  **{i3:i3}}
     for i3 in set(ct_cols_to_add) - set(columns_output.keys()):
         columns_output = {**columns_output,  **{i3:i3}}
-        
-        
+
     cols = pd.DataFrame(adqc.obs.columns)
     cols =cols[cols[0].str.contains('cell_passes_qc')]
     for i3 in set(cols[0]) - set(columns_output.keys()):
@@ -850,8 +864,19 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
             data_donor_for_stats['cells failing QC'].append(Donor_cells_fails_qc)
             data_donor_for_stats['cells passing QC'].append(Donor_cells_passes_qc)
             
-            Donor_cell_assignments = azt.loc[list(set(azt.index).intersection(set(Mengled_barcodes_donor)))] #for this have to figure out when the cell type is unasigned.
-            Cell_types_detected = len(set(Donor_cell_assignments['Azimuth:predicted.celltype.l2']))
+            if not azt.empty and 'Azimuth:predicted.celltype.l2' in azt.columns:
+                Donor_cell_assignments = azt.loc[
+                    list(set(azt.index).intersection(set(Mengled_barcodes_donor)))
+                ]
+                Cell_types_detected = len(
+                    set(Donor_cell_assignments['Azimuth:predicted.celltype.l2'].dropna())
+                )
+                # Optional: fall back if no matching barcodes
+                if Cell_types_detected == 0:
+                    Cell_types_detected = 'None detected'
+            else:
+                Donor_cell_assignments = pd.DataFrame()
+                Cell_types_detected = 0
             Donor_UMIS_mapped_to_mitochondrial_genes = sum(Donor_qc_files.obs['total_counts_gene_group__mito_transcript'])
             Donor_UMIS_mapped_to_ribo_genes = sum(Donor_qc_files.obs['total_counts_gene_group__ribo_protein'])
             Donor_UMIS_mapped_to_ribo_rna = sum(Donor_qc_files.obs['total_counts_gene_group__ribo_rna'])
@@ -864,9 +889,10 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
             Median_UMIs_per_cell= statistics.median(pd.DataFrame(Donor_qc_files.X.sum(axis=1))[0])
 
             Cell_numbers = ''
-            for type1 in set(Donor_cell_assignments['Azimuth:predicted.celltype.l2']):
-                nr_cells_of_this_type = len(Donor_cell_assignments[Donor_cell_assignments['Azimuth:predicted.celltype.l2']==type1])
-                Cell_numbers+=f"{type1}:{nr_cells_of_this_type} ; "
+            if not Donor_cell_assignments.empty and 'Azimuth:predicted.celltype.l2' in Donor_cell_assignments.columns:
+                for type1 in set(Donor_cell_assignments['Azimuth:predicted.celltype.l2']):
+                    nr_cells_of_this_type = len(Donor_cell_assignments[Donor_cell_assignments['Azimuth:predicted.celltype.l2']==type1])
+                    Cell_numbers+=f"{type1}:{nr_cells_of_this_type} ; "
 
             
             Donor_Stats = gather_donor(
