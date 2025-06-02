@@ -63,8 +63,9 @@ process RETRIEVE_RECOURSES_TEST_DATASET{
         cd \$cwd1
         wget -c ${params.genotype_input.tsv_donor_panel_vcfs} -O  input_test_vcf_file.tsv
         wget -c ${params.input_data_table} -O input_test_data_file.tsv
-        sed -i 's#/path/to/replace/pointing/to/downloaded/files#${outdir}/preprocessing/recourses/full_test_dataset/smaller_dataset/genotypes#' input_test_vcf_file.tsv
-        sed -i 's#/path/to/replace/pointing/to/downloaded/files#${outdir}/preprocessing/recourses/full_test_dataset#' input_test_data_file.tsv
+        sed -i "s#/path/to/replace/pointing/to/downloaded/files#\$cwd1/full_test_dataset/smaller_dataset/genotypes#" input_test_vcf_file.tsv
+        sed -i "s#/path/to/replace/pointing/to/downloaded/files#\$cwd1/full_test_dataset#" input_test_data_file.tsv
+
         touch Done > Done.tmp
     """    
 }
