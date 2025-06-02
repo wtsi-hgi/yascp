@@ -15,7 +15,7 @@ process CELLTYPIST {
       params.celltypist.run
 
     input: 
-      tuple val(sample), val(filtered_matrix_h5), val(celltypist_model)
+      tuple val(sample), path(filtered_matrix_h5), val(celltypist_model)
 
     output: 
       tuple val(sample), path("outputs/*_predicted_labels.csv"), emit: sample_predicted_labels_csv
@@ -27,14 +27,6 @@ process CELLTYPIST {
 
     script:
       model="${celltypist_model}".replaceAll(/^.*[\\/]/, "").replaceFirst(".pkl","")
-
-      filtered_matrix_h5_path = file("${filtered_matrix_h5}/../filtered_feature_bc_matrix.h5")
-      if (filtered_matrix_h5_path.exists()){
-        _=""
-        
-      }else{
-        filtered_matrix_h5_path = file("${filtered_matrix_h5}/../cellbender_FPR_0pt05_filtered.h5")
-      }
 
       if (params.celltypist.sample_plot_probs){
         sample_plot_probs = "--sample_plot_probs"
