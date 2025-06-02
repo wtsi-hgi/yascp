@@ -20,6 +20,7 @@ process AZIMUTH{
 
     input:
         tuple val(samplename),path(file_h5ad_batch)
+        each path(mapping_file)
         each refset
     output:
         tuple(val(outfil_prfx), val(refset.refset), path("*predicted_*.tsv"),emit:celltype_tables_all) 
@@ -37,14 +38,14 @@ process AZIMUTH{
         outfil_prfx = "${file_h5ad_batch}".minus(".h5ad")
         //outfil_prfx = "${file_h5ad_batch}".minus(".h5ad")
         if (refset.refset =='PBMC' && params.mapping_file!='' && params.remap_celltypes){
-            com="remap_azimuth_l2.R --out_file ${samplename}___predicted_celltype_l2.tsv --mapping ${params.mapping_file} --az_file ${samplename}___predicted_celltype_l2.tsv"
+            com="remap_azimuth_l2.R --out_file ${samplename}___predicted_celltype_l2.tsv --mapping ${mapping_file} --az_file ${samplename}___predicted_celltype_l2.tsv"
         }else{
             com=""
         }
     
     """ 
         azimuth.R ./${file_h5ad_batch} ${refset.refset} ${refset.annotation_labels} ${samplename}
-        echo ${params.mapping_file}
+        echo ${mapping_file}
         echo ${params.remap_celltypes}
         ${com}
     """

@@ -110,7 +110,7 @@ workflow celltype{
         
         // AZIMUTH
         if (params.celltype_assignment.run_azimuth){
-            AZIMUTH(az_ch_experiment_filth5,Channel.fromList( params.azimuth.celltype_refsets))
+            AZIMUTH(az_ch_experiment_filth5,params.mapping_file,Channel.fromList( params.azimuth.celltype_refsets))
             az_out = AZIMUTH.out.predicted_celltype_labels.collect()
         }else{
             az_out = Channel.from("$projectDir/assets/fake_file1.fq")
