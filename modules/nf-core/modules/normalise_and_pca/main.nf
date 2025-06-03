@@ -101,9 +101,9 @@ process NORMALISE_AND_PCA {
         val(analysis_mode)
         val(layer)
         val(minimum_number_of_cells_for_donor)
-        val(file__genes_exclude_hvg)
-        val(file__genes_score)
-        val(genes_exclude)
+        path(file__genes_exclude_hvg)
+        path(file__genes_score)
+        path(genes_exclude)
         val(genes_at_least_in_nr_cells)
         each vars_to_regress
 
@@ -133,26 +133,19 @@ process NORMALISE_AND_PCA {
         }
 
         outdir = "${params.outdir}/clustering_and_integration/normalize=total_count.${param_details}"
-        // Add details on the genes we are exlcuding from hgv list.
-        // file_vge = "${file__genes_exclude_hvg}"
-        // outdir = "${outdir}.hvg_exclude=${file_vge}"
-        // Add details on the scores we are using.
-        // file_score = "${file__genes_score}"
-        // outdir = "${outdir}.scores=${file_score}"
-        // this is where the subfolder 1 is determined
-        // Customize command for optional files.
+
         cmd__genes_exclude_hvg = ""
-        if (file__genes_exclude_hvg != "") {
+        if (!"${file__genes_exclude_hvg}".contains('fake_file')){
             cmd__genes_exclude_hvg = "--variable_genes_exclude '${file__genes_exclude_hvg}'"
         }
 
         cmd__genes_exclude = ""
-        if (genes_exclude != "") {
+        if (!"${genes_exclude}".contains('fake_file')){
             cmd__genes_exclude = "--exclude_gene_list '${genes_exclude}'"
         }
         
         cmd__genes_score = ""
-        if (file__genes_score != "") {
+        if (!"${file__genes_score}".contains('fake_file')){
             cmd__genes_score = "--score_genes ${file__genes_score}"
         }
 
