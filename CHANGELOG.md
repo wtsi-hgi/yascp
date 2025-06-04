@@ -26,7 +26,7 @@ New release of nf-core/yascp, created with the [nf-core](https://nf-co.re/) temp
 - Dropped support for `.mtx` inputs in `--doublets` and `--celltypes` modes.
 
 
-## [v1.8] - 2025-02-XX
+## [v1.8] - 2025-02-01
 
 ### `Added`
 - Hashtag-based deconvolution module.
@@ -43,7 +43,7 @@ New release of nf-core/yascp, created with the [nf-core](https://nf-co.re/) temp
 - N/A
 
 
-## [v1.7] - 2024-11-XX
+## [v1.7] - 2024-11-01
 
 Used for all *Cardinal Freeze* datasets.
 
@@ -61,7 +61,7 @@ Used for all *Cardinal Freeze* datasets.
 - N/A
 
 
-## [v1.6.1] - 2024-08-XX
+## [v1.6.1] - 2024-08-01
 
 ### `Added`
 - Improved logic for conditional module execution.
@@ -76,7 +76,7 @@ Used for all *Cardinal Freeze* datasets.
 - N/A
 
 
-## [v1.6] - 2024-07-XX
+## [v1.6] - 2024-07-01
 
 ### `Added`
 - Fully modular execution across ambient RNA, celltype, clustering, and doublets.
@@ -92,7 +92,7 @@ Used for all *Cardinal Freeze* datasets.
 - N/A
 
 
-## [v1.5] - 2024-05-XX
+## [v1.5] - 2024-05-01
 
 ### `Added`
 - Five additional doublet detection methods.
@@ -109,7 +109,7 @@ Used for all *Cardinal Freeze* datasets.
 - N/A
 
 
-## [v1.4] - 2024-03-XX
+## [v1.4] - 2024-03-01
 
 ### `Added`
 - Cell Ranger 7 compatibility.
@@ -127,7 +127,7 @@ Used for all *Cardinal Freeze* datasets.
 - N/A
 
 
-## [v1.3] - 2023-12-XX
+## [v1.3] - 2023-12-01
 
 ### `Added`
 - `--cluster` mode (`--JUST_RECLUSTER`) added for subclustering and integration-free workflows.
@@ -142,7 +142,7 @@ Used for all *Cardinal Freeze* datasets.
 - N/A
 
 
-## [v1.2] - 2023-10-XX
+## [v1.2] - 2023-10-01
 
 ### `Added`
 - Improved documentation and user messages for `--JUST_CELLTYPES`.
@@ -157,7 +157,7 @@ Used for all *Cardinal Freeze* datasets.
 - N/A
 
 
-## [v1.1] - 2023-08-XX
+## [v1.1] - 2023-08-01
 
 ### `Added`
 - New entry point: `--celltypes` to run only cell type assignment.
@@ -172,7 +172,7 @@ Used for all *Cardinal Freeze* datasets.
 - N/A
 
 
-## [v1.0] - 2023-06-XX
+## [v1.0] - 2023-06-01
 
 Initial release.
 
