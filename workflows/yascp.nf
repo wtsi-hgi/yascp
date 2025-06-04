@@ -129,7 +129,7 @@ workflow YASCP {
                 HASTAG_DEMULTIPLEX(filtered_multiplexing_capture_channel)
                 hastag_labels = HASTAG_DEMULTIPLEX.out.results
                 
-                if (params.doublets_and_celltypes_on_cellbender_corrected_counts){
+                if (params.doublets_and_celltypes_on_cellbender_corrected_counts && params.input == 'cellbender'){
                     channel__file_paths_10x_gex = SPLIT_CITESEQ_GEX_FILTERED_NOCB.out.channel__file_paths_10x
                 }
                 else{

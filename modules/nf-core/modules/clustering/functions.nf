@@ -59,7 +59,7 @@ process cluster {
         val(outdir_prev, emit: outdir__reduced_dims)
         path("*.pdf") optional true
         path("*.png") optional true
-
+        
     script:
         
         resolution_str = "${resolution}" //.replaceAll("\\.", "pt")
