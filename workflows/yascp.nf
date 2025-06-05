@@ -3,7 +3,7 @@
     IMPORT LOCAL MODULES/SUBWORKFLOWS
 ========================================================================================
 */
-include { GET_SOFTWARE_VERSIONS } from "$projectDir/modules/local/get_software_versions" addParams( options: [publish_files : ['tsv':'']] )
+
 include { main_deconvolution } from "$projectDir/subworkflows/main_deconvolution"
 include {ambient_RNA} from "$projectDir/subworkflows/ambient_RNA"
 include {qc} from "$projectDir/subworkflows/qc"

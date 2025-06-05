@@ -10,7 +10,7 @@ include {collect_file as collect_file1;
         collect_file as collect_file5;
         collect_file as collect_file6;
         collect_file as collect_file7;
-        collect_file as collect_file8} from "$projectDir/modules/nf-core/modules/collect_file/main"
+        collect_file as collect_file8} from "$projectDir/modules/local/collect_file/main"
 
 
 process VACUTAINER_TO_DONOR_ID {
