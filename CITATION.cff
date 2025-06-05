@@ -21,8 +21,6 @@ authors:
     given-names: Hannes
   - family-names: Ovchinnikov
     given-names: Vladimir
-  - family-names: Iyer
-    given-names: Vivek
   - family-names: Taylor
     given-names: Henry
   - family-names: Alegbe
@@ -41,10 +39,13 @@ authors:
     given-names: Niek
   - family-names: Watt
     given-names: Stephen
-  - family-names: Soranzo
-    given-names: Nicole
   - family-names: Stegle
     given-names: Oliver
+  - family-names: Iyer
+    given-names: Vivek
+  - family-names: Soranzo
+    given-names: Nicole
+
 
 abstract: >
   YASCP (Yet Another Single Cell Pipeline) is a reproducible, modular Nextflow pipeline 
