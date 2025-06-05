@@ -11,6 +11,10 @@ import argparse
 import pandas as pd
 
 
+def choose_folder (folder1, folder2):
+    if not os.path.isdir(folder1):
+        folder1=folder2
+    return folder1
 
 def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res=None,web_transfer=False,project_name='all'):
     
@@ -26,7 +30,7 @@ def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res
     try:
         os.mkdir(f'{name_dir}/Cellbender')
     except:
-        print('dire exists')
+        print('dir exists')
     
     if (cellbender)=='cellranger':
         # here we do not use cellbender and go with default cellranger
@@ -58,7 +62,7 @@ def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res
             if os.path.isdir(dir1):
                 print("yes22!!")
                 try:
-                    copyfile(f'{dir1_b}/plots/cellbender_results-cellbender_FPR_{cb_res}_filtered-ambient_signature-scatter_genenames.png', f'{name_dir}/Cellbender/{folder}_ambient_signature-scatter_genenames.png')
+                    copyfile(f'{dir1}/plots/cellbender_results-cellbender_FPR_{cb_res}_filtered-ambient_signature-scatter_genenames.png', f'{name_dir}/Cellbender/{folder}_ambient_signature-scatter_genenames.png')
                 except:
                     print('missing1')
                 try:
@@ -97,20 +101,32 @@ def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res
     for i,p2 in  df_raw.iterrows():
         # print(p1)
         p1 = p2['data_path_10x_format']
-        
+        try:
+            p3 = p1.split('iget_study_cellranger')[0]+'iget_study_cellranger/'+p1.split('iget_study_cellranger')[1].split("/")[1]
+        except:
+            p3 = p1
+        d0 = glob.glob(f"{p1}/web_summary.html")
         d1 = glob.glob(f"{p1}/*/web_summary.html")
         d2 = glob.glob(f"{p1}/*/*/web_summary.html")
         d3 = glob.glob(f"{p1}/*/*/*/web_summary.html")
         d4 =glob.glob(f"{p1}/*/*/*/*/web_summary.html")
-        ts3 = [ *d1, *d2,*d3,*d4]
+        d1_2 = glob.glob(f"{p3}/*/web_summary.html")
+        d2_2 = glob.glob(f"{p3}/*/*/web_summary.html")
+        d3_2 = glob.glob(f"{p3}/*/*/*/web_summary.html")
+        d4_2 =glob.glob(f"{p3}/*/*/*/*/web_summary.html")
+        ts3 = [ *d0,*d1, *d2,*d3,*d4, *d1_2, *d2_2,*d3_2,*d4_2]
         for t1 in ts3:
             copyfile(t1, f'{name_dir}/Fetch Pipeline/html_{i}.html')
         
         d1 = glob.glob(f"{p1}/*/metrics_summary.csv")
         d2 = glob.glob(f"{p1}/*/*/metrics_summary.csv")
         d3 = glob.glob(f"{p1}/*/*/*/metrics_summary.csv")
-        d4 =glob.glob(f"{p1}/*/*/*/*/metrics_summary.csv")
-        ts3 = [ *d1, *d2,*d3,*d4]
+        d4 =glob.glob(f"{p3}/*/*/*/*/metrics_summary.csv")
+        d1_2 = glob.glob(f"{p3}/*/metrics_summary.csv")
+        d2_2 = glob.glob(f"{p3}/*/*/metrics_summary.csv")
+        d3_2 = glob.glob(f"{p3}/*/*/*/metrics_summary.csv")
+        d4_2 =glob.glob(f"{p3}/*/*/*/*/metrics_summary.csv")
+        ts3 = [  *d1, *d2,*d3,*d4, *d1_2, *d2_2,*d3_2,*d4_2]
         for t1 in ts3:   
             metadata = pd.read_csv(t1,sep=',',index_col=False)
             metadata['Sample_id']=i
@@ -180,6 +196,8 @@ def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res
     try:
     #NOW COPY THE GT OUTPUTS 
         folder1 = f'{directory}/deconvolution/vireo_gt_fix'
+        folder2 = f'{directory}/deconvolution/vireo_processed'
+        folder1=choose_folder (folder1, folder2)
         if os.path.isdir(folder1):
             copyfile(f'{folder1}/assignments_all_pools.tsv', f'{name_dir}/GT Match___1000/assignments_all_pools.tsv')
     except:
@@ -187,28 +205,64 @@ def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res
 
     #if (pipeline=='Deconvolution'):
     folder1 = f'{directory}/deconvolution/split_donor_h5ad'
+    folder2 = f'{directory}/deconvolution/split_donor_h5ad'
+    folder1=choose_folder (folder1, folder2)
     if os.path.isdir(folder1):
         print('prepearing Deconvolution folder')
         try:
             os.mkdir(f'{name_dir}/Deconvolution')
         except:
-            print('dire exists')
+            print('dir exists')
         Folders = listdir(folder1)
         for folder in Folders:
             copyfile(f'{folder1}/{folder}/Vireo_plots.pdf', f'{name_dir}/Deconvolution/Vireo_plots_{folder}.pdf')
         
         
         
+        try:
+            os.mkdir(f'{name_dir}/Deconvolution/csv')
+        except:
+            print('dir exists')    
+        if os.path.exists(f'{directory}/deconvolution/vireo_raw'):
+            try:
+                copyfile(f'{directory}/deconvolution/vireo_raw/correlations.png', f'{name_dir}/Deconvolution/correlations.png')
+                copyfile(f'{directory}/deconvolution/vireo_raw/matched_donors.txt', f'{name_dir}/Deconvolution/csv/matched_donors.tsv')
+                copyfile(f'{directory}/deconvolution/vireo_raw/donor_corelations_matrix.tsv', f'{name_dir}/Deconvolution/csv/donor_corelations_matrix.tsv')
+            except:
+                _='corelations not performed'
+        else:
+            try:
+                copyfile(f'{directory}/deconvolution/vireo/correlations.png', f'{name_dir}/Deconvolution/correlations.png')
+                copyfile(f'{directory}/deconvolution/vireo/matched_donors.txt', f'{name_dir}/Deconvolution/csv/matched_donors.tsv')
+                copyfile(f'{directory}/deconvolution/vireo/donor_corelations_matrix.tsv', f'{name_dir}/Deconvolution/csv/donor_corelations_matrix.tsv')
+            except:
+                _='corelations not performed'
+        
     folder1 = f'{directory}/doublets'
+    folder2 = f'{directory}/doublet_detection'
+    folder1=choose_folder (folder1, folder2)
     if os.path.isdir(folder1):
         print('prepearing Doublet folder')
         try:
             os.mkdir(f'{name_dir}/Doublets___301')
+            os.mkdir(f'{name_dir}/Doublets___301/tsv')
         except:
-            print('dire exists')
-        files = glob.glob(f'{folder1}/*.tsv')
-
+            print('dir exists')
+        if 'doublet_detection' in folder1:
+            files = glob.glob(f'{folder1}/doublet_results_combined/*.tsv')
+            files2 = glob.glob(f'{folder1}/droplet_type_distribution/*.png')
+        else:
+            files = glob.glob(f'{folder1}/*.tsv')
+            files2 = glob.glob(f'{folder1}/*.png')
         for file1 in files:
+            print(file1)
+            try:
+                copy(file1, f'{name_dir}/Doublets___301/tsv')
+            except:
+                print('picked up directory')
+                continue
+                    
+        for file1 in files2:
             print(file1)
             try:
                 copy(file1, f'{name_dir}/Doublets___301')
@@ -218,16 +272,18 @@ def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res
                     
         
     folder1 = f'{directory}/celltype/celltypist'
+    folder2 = f'{directory}/celltype_assignemt/celltypist'
+    folder1=choose_folder (folder1, folder2)
     if os.path.isdir(folder1):
         print('prepearing celltype folder')
         try:
             os.mkdir(f'{name_dir}/Cell-type assignment')
         except:
-            print('dire exists')
+            print('dir exists')
         try:
             os.mkdir(f'{name_dir}/Cell-type assignment/celltypist')
         except:
-            print('dire exists')
+            print('dir exists')
         Folders = listdir(folder1)
         for model_type in Folders:
             print(model_type)
@@ -237,22 +293,22 @@ def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res
                 copyfile(f'{folder1}/{model_type}/{donor}/{donor}_majority_voting.pdf', f'{name_dir}/Cell-type assignment/celltypist/{model_type}_{donor}_majority_voting.pdf')
 
     folder1 = f'{directory}/celltype/azimuth'
-
-
+    folder2 = f'{directory}/celltype_assignemt/azimuth'
+    folder1=choose_folder (folder1, folder2)
     # folder1 = f'{directory}/plots'
     if os.path.isdir(folder1):
         try:
             os.mkdir(f'{name_dir}/Cell-type assignment')
         except:
-            print('dire exists')
+            print('dir exists')
         try:
             os.mkdir(f'{name_dir}/Cell-type assignment/azimuth')
         except:
-            print('dire exists')
+            print('dir exists')
         # try:
         #     os.mkdir(f'{name_dir}/Cell-type assignment/azimuth')
         # except:
-        #     print('dire exists')
+        #     print('dir exists')
         # copyfile(fil1, f'{name_dir}/QC metrics/plot_ecdf-x_log10.var=total_counts.color=experiment_id-adata.png')
         files = glob.glob(f'{folder1}/*[!.gz]')
         files2 = glob.glob(f'{folder1}/*/*[!.gz]')
@@ -264,37 +320,79 @@ def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res
             except:
                 print('picked up directory')
                 continue
+            
+    folder1 = f'{directory}/celltype/scpred'
+    folder2 = f'{directory}/celltype_assignemt/scpred'
+    folder1=choose_folder (folder1, folder2)
+    if os.path.isdir(folder1):
+        try:
+            os.mkdir(f'{name_dir}/Cell-type assignment')
+        except:
+            print('dir exists')
+        try:
+            os.mkdir(f'{name_dir}/Cell-type assignment/scpred')
+        except:
+            print('dir exists')
+        # try:
+        #     os.mkdir(f'{name_dir}/Cell-type assignment/azimuth')
+        # except:
+        #     print('dir exists')
+        # copyfile(fil1, f'{name_dir}/QC metrics/plot_ecdf-x_log10.var=total_counts.color=experiment_id-adata.png')
+        files = glob.glob(f'{folder1}/*[!.RDS]')
+        files2 = glob.glob(f'{folder1}/*/*[!.RDS]')
+        files = files + files2
+        for file1 in files:
+            print(file1)
+            try:
+                copy(file1, f'{name_dir}/Cell-type assignment/scpred')
+            except:
+                print('picked up directory')
+                continue
     try:
         copy(f'{directory}/celltype/All_Celltype_Assignments.csv', f'{name_dir}/Cell-type assignment/All_Celltype_Assignments.csv')
+    except:
+        print('doesnt exist')       
+    try:
+        copy(f'{directory}/celltype/All_Celltype_Assignments.tsv', f'{name_dir}/Cell-type assignment/All_Celltype_Assignments.tsv')
+    except:
+        print('doesnt exist')    
+    try:
+        copy(f'{directory}/celltype_assignemt/All_Celltype_Assignments.tsv', f'{name_dir}/Cell-type assignment/All_Celltype_Assignments.tsv')
     except:
         print('doesnt exist')    
     
     
     folder1 = f'{directory}/plots/per_celltype_outliers'
+    folder2 = f'{directory}/clustering_and_integration/plots/per_celltype_outliers'
+    folder1=choose_folder (folder1, folder2)
     if os.path.isdir(folder1):
         print('yes')
         try:
             os.mkdir(f'{name_dir}/QC metrics')
         except:
-            print('dire exists')
+            print('dir exists')
         os.system(f'ln -s ./{folder1} {name_dir}/QC metrics')
 
 
     folder1 = f'{directory}/plots'
+    folder2 = f'{directory}/clustering_and_integration/plots'
+    folder1=choose_folder (folder1, folder2)
     if os.path.isdir(folder1):
         try:
             os.mkdir(f'{name_dir}/QC metrics')
         except:
-            print('dire exists')
+            print('dir exists')
             
         density_files = glob.glob(f'{folder1}/*cell_desity*')
         density_files2 = glob.glob(f'{folder1}/merged_h5ad/plots/*cell_desity*')
+        density_files3 = glob.glob(f'{folder1}/handover/merged_h5ad/plots/*cell_desity*')
         density_files.extend(density_files2)
+        density_files.extend(density_files3)
         for dens_file in density_files:
             try:
                 os.mkdir(f'{name_dir}/QC metrics/density')
             except:
-                print('dire exists')
+                print('dir exists')
             nam1 = dens_file.split('/')[-1]
             try:
                 copyfile(f'{dens_file}', f'{name_dir}/QC metrics/density/{nam1}')
@@ -303,12 +401,14 @@ def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res
 
         density_files = glob.glob(f'{folder1}/*adata-outlier_cells*')
         density_files2 = glob.glob(f'{folder1}/merged_h5ad/plots/*adata-outlier_cells*')
+        density_files3 = glob.glob(f'{folder1}/handover/merged_h5ad/plots/*adata-outlier_cells*')
         density_files.extend(density_files2)
+        density_files.extend(density_files3)
         for dens_file in density_files:
             try:
                 os.mkdir(f'{name_dir}/QC metrics/outlier_cells')
             except:
-                print('dire exists')
+                print('dir exists')
             nam1 = dens_file.split('/')[-1]
             try:
                 copyfile(f'{dens_file}', f'{name_dir}/QC metrics/outlier_cells/{nam1}')
@@ -333,16 +433,18 @@ def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res
 
 
     folder1 = f'{directory}/clustering'
+    folder2 = f'{directory}/clustering_and_integration'
+    folder1=choose_folder (folder1, folder2)
     if os.path.isdir(folder1):
         try:
             os.mkdir(f'{name_dir}/Clustering')
             os.mkdir(f'{name_dir}/Clustering/Harmony')
         except:
-            print('dire exists')
+            print('dir exists')
             try:
                 os.mkdir(f'{name_dir}/Clustering/Harmony')
             except:
-                print('dire exists')
+                print('dir exists')
         Harmony_UMAPS = glob.glob(f'{folder1}/*/*harmony*/*/plots/umap*')
         for umap1 in Harmony_UMAPS:
             
@@ -353,16 +455,18 @@ def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res
 
 
     folder1 = f'{directory}/clustering'
+    folder2 = f'{directory}/clustering_and_integration'
+    folder1=choose_folder (folder1, folder2)
     if os.path.isdir(folder1):
         try:
             os.mkdir(f'{name_dir}/Clustering')
             os.mkdir(f'{name_dir}/Clustering/BBKNN')
         except:
-            print('dire exists')
+            print('dir exists')
             try:
                 os.mkdir(f'{name_dir}/Clustering/BBKNN')
             except:
-                print('dire exists')
+                print('dir exists')
         Harmony_UMAPS = glob.glob(f'{folder1}/*/*bbknn*/*/plots/umap*')
         for umap1 in Harmony_UMAPS:
             
@@ -372,7 +476,7 @@ def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res
             copyfile(umap1, f'{name_dir}/Clustering/BBKNN/{resolution}res_BBKNN_{name}')
 
 
-    folder1 = f'{directory}/UMAPs'
+    folder1 = f'{directory}/handover/UMAPs'
     if os.path.isdir(folder1):
         try:
             os.mkdir(f'{name_dir}/Clustering')
@@ -381,8 +485,8 @@ def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res
             try:
                 os.mkdir(f'{name_dir}/Clustering/Coloured')
             except:
-                print('dire exists')
-            print('dire exists')
+                print('dir exists')
+            print('dir exists')
         Coloured_UMAPS = glob.glob(f'{folder1}/*')
         for umap1 in Coloured_UMAPS:
             name = umap1.split('/')[-1]
@@ -394,8 +498,10 @@ def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res
         try:
             copytree(folder1, f'{name_dir}/Summary')
         except:
-            print('dire exists')
+            print('dir exists')
     folder1 = f'{directory}/celltype'
+    folder2 = f'{directory}/celltype_assignemt'
+    folder1=choose_folder (folder1, folder2)
     if os.path.isdir(folder1):
         try:
             copyfile(f"{folder1}/donor_celltype_report.tsv", f'{name_dir}/Summary/donor_celltype_report.tsv')  

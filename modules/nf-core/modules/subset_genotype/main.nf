@@ -91,9 +91,9 @@ process CHECK_DONORS_IN_VCF_HEADER {
 process SELECT_DONOR_GENOTYPES_FROM_VCF {
   label 'process_tiny'
   if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-      container "https://yascp.cog.sanger.ac.uk/public/singularity_images/wtsihgi-nf_yascp_htstools-1.1.sif"
+      container "${params.yascp_container}"
   } else {
-      container "mercury/wtsihgi-nf_yascp_htstools-1.1"
+      container "${params.yascp_container_docker}"
   }
 
   input:
@@ -114,9 +114,9 @@ process CONCAT_STUDY_VCFS {
   label 'process_small'
 
   if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-      container "https://yascp.cog.sanger.ac.uk/public/singularity_images/wtsihgi-nf_yascp_htstools-1.1.sif"
+      container "${params.yascp_container}"
   } else {
-      container "mercury/wtsihgi-nf_yascp_htstools-1.1"
+      container "${params.yascp_container_docker}"
   }
 
   input:
@@ -136,13 +136,13 @@ process CONCAT_STUDY_VCFS {
 process SUBSET_GENOTYPE {
     tag "${samplename}.${sample_subset_file}"
     label 'process_medium'
-    publishDir "${params.outdir}/subset_genotypes/", mode: "${params.copy_mode}", pattern: "${samplename}.${sample_subset_file}.subset.vcf.gz"
+    publishDir "${params.outdir}/preprocessing/subset_genotypes/", mode: "${params.copy_mode}", pattern: "${samplename}.${sample_subset_file}.subset.vcf.gz"
 
 
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/wtsihgi-nf_yascp_htstools-1.1.sif"
+        container "${params.yascp_container}"
     } else {
-        container "mercury/wtsihgi-nf_yascp_htstools-1.1"
+        container "${params.yascp_container_docker}"
     }
 
     input:
@@ -170,10 +170,12 @@ process SUBSET_GENOTYPE2 {
 
 
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_62bd56a-2021-12-15-4d1ec9312485.sif"
+        // println "container: /software/hgi/containers/wtsihgi-nf_genotype_match-1.0.sif\n"
+        container "${params.yascp_container}"
     } else {
-        container "mercury/wtsihgi-nf_yascp_htstools-1.1"
+        container "${params.yascp_container_docker}"
     }
+
     // [CRD_CMB13101669, 'S2-998-90008,0030007538435,S2-998-90009', GT_UKBB, /lustre/scratch123/hgi/projects/ukbiobank_genotypes/FullRelease/Imputed/VCFs/hg38_1kg_AF05_exons/sorted_hg38_ukb_imp_chr8_v3_1kgAF05coding.bcf.gz, /lustre/scratch123/hgi/projects/ukbiobank_genotypes/FullRelease/Imputed/VCFs/hg38_1kg_AF05_exons/sorted_hg38_ukb_imp_chr8_v3_1kgAF05coding.bcf.gz.csi]
 
     input:
@@ -210,12 +212,12 @@ process SUBSET_GENOTYPE2 {
 process JOIN_CHROMOSOMES{
     tag "${samplename}"
     label 'process_medium'
-    publishDir "${params.outdir}/subset_genotypes/", mode: "${params.copy_mode}", pattern: "${samplename}.${sample_subset_file}.subset.vcf.gz"
+    publishDir "${params.outdir}/preprocessing/subset_genotypes/", mode: "${params.copy_mode}", pattern: "${samplename}.${sample_subset_file}.subset.vcf.gz"
 
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/scrna_deconvolution_v3.img"
+        container "${params.yascp_container}"
     } else {
-        container "mercury/wtsihgi-nf_yascp_htstools-1.1"
+        container "${params.yascp_container_docker}"
     }
     // [CRD_CMB13101669, 'S2-998-90008,0030007538435,S2-998-90009', GT_UKBB, /lustre/scratch123/hgi/projects/ukbiobank_genotypes/FullRelease/Imputed/VCFs/hg38_1kg_AF05_exons/sorted_hg38_ukb_imp_chr8_v3_1kgAF05coding.bcf.gz, /lustre/scratch123/hgi/projects/ukbiobank_genotypes/FullRelease/Imputed/VCFs/hg38_1kg_AF05_exons/sorted_hg38_ukb_imp_chr8_v3_1kgAF05coding.bcf.gz.csi]
 
@@ -254,7 +256,7 @@ process JOIN_CHROMOSOMES{
 
 process RESOLVE_POOL_VCFS{
     tag "${samplename}"
-    publishDir "${params.outdir}/subset_genotypes", mode: "${params.copy_mode}",
+    publishDir "${params.outdir}/preprocessing/subset_genotypes", mode: "${params.copy_mode}",
     saveAs: {filename ->
           if (filename.contains("AllExpectedGT")) {
             if (filename.contains("Data_Pipeline___")) {
@@ -273,9 +275,9 @@ process RESOLVE_POOL_VCFS{
     
     // publishDir "${params.outdir}/subset_genotypes/Genotype_${samplename}", mode: "${params.copy_mode}"
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_62bd56a-2021-12-15-4d1ec9312485.sif"
+        container "${params.yascp_container}"
     } else {
-        container "mercury/wtsihgi-nf_yascp_htstools-1.1"
+        container "${params.yascp_container_docker}"
     }
     input:
       tuple val(samplename), path(vcf),path(vcf_csi)
@@ -303,9 +305,9 @@ process JOIN_STUDIES_MERGE{
 
 
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_62bd56a-2021-12-15-4d1ec9312485.sif"
+        container "${params.yascp_container}"
     } else {
-        container "mercury/wtsihgi-nf_yascp_htstools-1.1"
+        container "${params.yascp_container_docker}"
     }
     // [CRD_CMB13101669, 'S2-998-90008,0030007538435,S2-998-90009', GT_UKBB, /lustre/scratch123/hgi/projects/ukbiobank_genotypes/FullRelease/Imputed/VCFs/hg38_1kg_AF05_exons/sorted_hg38_ukb_imp_chr8_v3_1kgAF05coding.bcf.gz, /lustre/scratch123/hgi/projects/ukbiobank_genotypes/FullRelease/Imputed/VCFs/hg38_1kg_AF05_exons/sorted_hg38_ukb_imp_chr8_v3_1kgAF05coding.bcf.gz.csi]
 
@@ -408,7 +410,7 @@ workflow SUBSET_WORKF{
       // RESOLVE_POOL_VCFS.out.user_data
       // pools_panels.subscribe {println "pools_panels:= ${it}\n"}
       if (mode=='AllExpectedGT'){
-        collect_file1(RESOLVE_POOL_VCFS.out.user_data.collect(),"Genotypes_all_pools.tsv",params.outdir+'/subset_genotypes',1,'')
+        collect_file1(RESOLVE_POOL_VCFS.out.user_data.collect(),"Genotypes_all_pools.tsv",params.outdir+'/preprocessing/subset_genotypes',1,'')
       }
       pools_panels.splitCsv(header: true, sep: '\t').map { row -> tuple(row['Pool_id'], file(row.vcf), file(row.vcf_csi)) }
                 .set{merged_expected_genotypes}

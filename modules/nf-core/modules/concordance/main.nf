@@ -3,13 +3,12 @@ process CONCORDANCE_CALCLULATIONS {
     tag "${pool_id}"
     label 'process_medium'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_62bd56a-2021-12-15-4d1ec9312485.sif"
-        //// container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_latest.img"
+        container "${params.yascp_container}"
     } else {
-        container "mercury/scrna_deconvolution:62bd56a"
+        container "${params.yascp_container_docker}"
     }
 
-    publishDir  path: "${params.outdir}/concordances/${pool_id}",
+    publishDir  path: "${params.outdir}/deconvolution/concordances/${pool_id}",
                 mode: "${params.copy_mode}",
                 overwrite: "true"
 
@@ -46,13 +45,12 @@ process OTHER_DONOR_CONCORDANCE_CALCLULATIONS {
     tag "${pool_id}"
     label 'process_medium'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_62bd56a-2021-12-15-4d1ec9312485.sif"
-        //// container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_latest.img"
+        container "${params.yascp_container}"
     } else {
-        container "mercury/scrna_deconvolution:62bd56a"
+       container "${params.yascp_container_docker}"
     }
 
-    publishDir  path: "${params.outdir}/concordances/${pool_id}",
+    publishDir  path: "${params.outdir}/deconvolution/concordances/${pool_id}",
                 mode: "${params.copy_mode}",
                 overwrite: "true"
 
@@ -74,13 +72,12 @@ process COMBINE_FILES{
     tag "${pool_id}"
     label 'process_low'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_62bd56a-2021-12-15-4d1ec9312485.sif"
-        //// container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_latest.img"
+        container "${params.yascp_container}"
     } else {
-        container "mercury/scrna_deconvolution:62bd56a"
+        container "${params.yascp_container_docker}"
     }
 
-    publishDir  path: "${params.outdir}/concordances/${pool_id}",
+    publishDir  path: "${params.outdir}/deconvolution/concordances/${pool_id}",
                 mode: "${params.copy_mode}",
                 overwrite: "true"
 
@@ -109,13 +106,12 @@ process PLOT_CONCORDANCES_ALL{
     tag "${pool_id}"
     label 'process_low'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_62bd56a-2021-12-15-4d1ec9312485.sif"
-        //// container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_latest.img"
+        container "${params.scrna_deconvolution}"
     } else {
-        container "mercury/scrna_deconvolution:62bd56a"
+        container "${params.yascp_container_docker}"
     }
 
-    publishDir  path: "${params.outdir}/concordances",
+    publishDir  path: "${params.outdir}/deconvolution/concordances",
                 mode: "${params.copy_mode}",
                 overwrite: "true"
 

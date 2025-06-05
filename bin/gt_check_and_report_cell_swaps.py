@@ -47,9 +47,25 @@ for subsampling_file in subsampling_itterations['col']:
     os.system(f'bcftools gtcheck --no-HWE-prob -g {reference_vcf} {subsampling_vcf} > {subsampling_file}gt_score_check.tsv')
     # Now that we have performed the GT check we look at how much the cell identities have changed for each of the donors between the refeence and the 
     # subsampled datasets for each of the cells. 
-    GT_Data = pd.read_csv(f'{subsampling_file}gt_score_check.tsv',sep='\t',comment='#', skiprows=15)
+    # GT_Data = pd.read_csv(f'{subsampling_file}gt_score_check.tsv',sep='\t',comment='#', skiprows=15)
+    
+    with open(f'{subsampling_file}gt_score_check.tsv', 'r') as f:
+        lines = f.readlines()
+
+    # Skip the first 15 lines (if needed) and filter out lines that start with '#' or 'INFO'
+    filtered_lines = [
+        line.replace('\n','').split('\t') for i, line in enumerate(lines) 
+        if not (line.startswith('# ') or line.startswith('INFO') or line =='#\n' )
+    ]
+
+    # Read the filtered content
+    GT_Data =pd.DataFrame(filtered_lines)   
+    GT_Data.columns = GT_Data.iloc[0]
+
+    # Optionally, drop the row that is now redundant as it has become the header
+    GT_Data = GT_Data[1:].reset_index(drop=True)
     # Now loop through each of the donors and see which have changed identities.
-    GT_Data.columns=['DC','[2]Query Sample','[3]Genotyped Sample','[4]Discordance','[5]-log P(HWE)','[6]Number of sites compared']
+    # GT_Data.columns=['DC','[2]Query Sample','[3]Genotyped Sample','[4]Discordance','[5]-log P(HWE)','[6]Number of sites compared']
     Cell_identities_subsampled2=Cell_identities_subsampled.set_index('cell')
     for donor1 in set(GT_Data['[2]Query Sample']):
         don_data = GT_Data[GT_Data['[2]Query Sample']==donor1]
@@ -73,26 +89,16 @@ for subsampling_file in subsampling_itterations['col']:
         Missing_Cells_in_subsampling = Donor_Original_Cells - Donor_Subsampled_Cells
         New_Cells_in_subsampling = Donor_Subsampled_Cells - Donor_Original_Cells
         
-        New_Identities = Cell_identities_subsampled2.loc[Missing_Cells_in_subsampling]
+        New_Identities = Cell_identities_subsampled2.loc[list(Missing_Cells_in_subsampling)]
         Becoming_Unassigned = New_Identities[New_Identities['donor_id']=='unassigned']
         
         New_Identities=New_Identities[New_Identities['donor_id']!='unassigned']
         Becoming_Doublet=New_Identities[New_Identities['donor_id']=='doublet']
         Becoming_Different_Donor=New_Identities[New_Identities['donor_id']!='doublet']
-        # if len(Becoming_Different_Donor)>0
-        #     # here we want to check whether we have eliminated all the sites that support the particular cell.
-        #     # need cells and their sites that are not ./.
-        #     samples = set(Becoming_Different_Donor.index)
-        #     pd.DataFrame(samples).to_csv('samples.tsv',index=False,header=False)
-        #     sites_supporting_deconvolutions3 = len(sites_supporting_deconvolutions.loc[samples]['Concordant_Site_Identities'].str.split(';')[0])
-        #     os.system('bcftools view -S samples.tsv ')
-            
-        # Now we add up all of this for the cells in the dataframe, that can be used for further quantification downstream.
-        
-        Reference_cell_identities2.loc[set(Becoming_Doublet.index),'Nr times becoming Doublet in subsampling'] = Reference_cell_identities2.loc[set(Becoming_Doublet.index),'Nr times becoming Doublet in subsampling']+1
-        Reference_cell_identities2.loc[set(Becoming_Unassigned.index),'Nr times becoming Unassigned in subsampling'] = Reference_cell_identities2.loc[set(Becoming_Unassigned.index),'Nr times becoming Unassigned in subsampling']+1
-        Reference_cell_identities2.loc[set(Becoming_Different_Donor.index),'Nr times becoming different donor in subsampling'] = Reference_cell_identities2.loc[set(Becoming_Different_Donor.index),'Nr times becoming different donor in subsampling']+1
-        Reference_cell_identities2.loc[set(Becoming_Different_Donor.index),'New Donor Identities'] = Reference_cell_identities2.loc[Becoming_Different_Donor.index,'New Donor Identities']+Becoming_Different_Donor['donor_id']+';'
+        Reference_cell_identities2.loc[list(set(Becoming_Doublet.index)),'Nr times becoming Doublet in subsampling'] = Reference_cell_identities2.loc[list(set(Becoming_Doublet.index)),'Nr times becoming Doublet in subsampling']+1
+        Reference_cell_identities2.loc[list(set(Becoming_Unassigned.index)),'Nr times becoming Unassigned in subsampling'] = Reference_cell_identities2.loc[list(set(Becoming_Unassigned.index)),'Nr times becoming Unassigned in subsampling']+1
+        Reference_cell_identities2.loc[list(set(Becoming_Different_Donor.index)),'Nr times becoming different donor in subsampling'] = Reference_cell_identities2.loc[list(set(Becoming_Different_Donor.index)),'Nr times becoming different donor in subsampling']+1
+        Reference_cell_identities2.loc[list(set(Becoming_Different_Donor.index)),'New Donor Identities'] = Reference_cell_identities2.loc[Becoming_Different_Donor.index,'New Donor Identities']+Becoming_Different_Donor['donor_id']+';'
     Reference_cell_identities2['Nr vireo subsampling itterations']=Reference_cell_identities2['Nr vireo subsampling itterations']+1
 Reference_cell_identities2.to_csv('subsampling_donor_swap_quantification.tsv',sep='\t')    
 

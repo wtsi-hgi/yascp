@@ -5,7 +5,8 @@ include {SC_DBLFINDER} from "$projectDir/modules/nf-core/modules/scDblFinder/mai
 include { DOUBLET_FINDER} from "$projectDir/modules/nf-core/modules/doubletfinder/main"
 include { SCDS} from "$projectDir/modules/nf-core/modules/scds/main"
 include { SPLIT_CITESEQ_GEX; SPLIT_CITESEQ_GEX as SPLIT_CITESEQ_GEX_FILTERED } from "$projectDir/modules/nf-core/modules/citeseq/main"
-include { CONVERT_MTX_TO_H5AD } from "$projectDir/modules/local/convert_h5ad_to_mtx/main"
+include { CONVERT_MTX_TO_H5AD; CONVERT_H5AD_TO_MTX } from "$projectDir/modules/local/convert_h5ad_to_mtx/main"
+include {SPLIT_BATCH_H5AD} from "$projectDir/modules/nf-core/modules/split_batch_h5ad/main"
 
 def random_hex(n) {
     Long.toUnsignedString(new Random().nextLong(), n).toUpperCase()
@@ -16,7 +17,7 @@ process make_cellmetadata_pipeline_input {
     // ------------------------------------------------------------------------
     //cache false        // cache results from run
 
-    publishDir  path: "${params.outdir}/multiplet.method=scrublet",
+    publishDir  path: "${params.outdir}/scrublet",
                 saveAs: {filename -> filename.replaceAll("-", "")},
                 mode: "${params.copy_mode}",
                 overwrite: "true"
@@ -42,13 +43,20 @@ process MERGE_DOUBLET_RESULTS{
     tag "${experiment_id}"
     label 'process_medium'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/nf_scrna_qc_v3.img"
+        container "${params.yascp_container}"
+
     } else {
-        container "mercury/nf_scrna_qc:v3"
+        container "wtsihgi/nf_scrna_qc:6bb6af5"
     }
-    publishDir  path: "${params.outdir}/doublets",
-                mode: "${params.copy_mode}",
-                overwrite: "true"
+
+    publishDir path: "${params.outdir}/doublet_detection/droplet_type_distribution", 
+               mode: "${params.copy_mode}", 
+               pattern: "*.png",
+               overwrite: "true"
+    publishDir path: "${params.outdir}/doublet_detection/doublet_results_combined", 
+               mode: "${params.copy_mode}", 
+               pattern: "*.tsv",
+               overwrite: "true"
 
     input:
         tuple(
@@ -76,11 +84,32 @@ process MERGE_DOUBLET_RESULTS{
 workflow MULTIPLET {
     take:
         channel__file_paths_10x
-        
+        mode
     main:
-        // Identify multiplets using scrublet.
-        gex_h5ad = CONVERT_MTX_TO_H5AD(channel__file_paths_10x).gex_h5ad
+        // Identify multiplets.
+        log.info '---Identifying doublets and multiplets---'
         input_channel = Channel.of()
+        if (mode=='yascp_full'){
+            gex_h5ad = CONVERT_MTX_TO_H5AD(channel__file_paths_10x).gex_h5ad
+        }else{
+            log.info '---Splitting the assignment for each batch---'
+            SPLIT_BATCH_H5AD(channel__file_paths_10x,params.doublet_celltype_split_column)
+            SPLIT_BATCH_H5AD.out.sample_file
+                .splitCsv(header: true, sep: "\t", by: 1)
+                .map{row -> tuple(row.experiment_id, file(row.h5ad_filepath))}.set{gex_h5ad}      
+            SPLIT_BATCH_H5AD.out.sample_file
+                .splitCsv(header: true, sep: "\t", by: 1)
+                .map{row -> file(row.h5ad_filepath)}.set{gex_h5ad_file} 
+            channel__file_paths_10x_pre = CONVERT_H5AD_TO_MTX(gex_h5ad_file).channel__file_paths_10x    
+            channel__file_paths_10x =  channel__file_paths_10x_pre
+                .map{row -> tuple(
+                row[0],
+                file("${row[1]}/barcodes.tsv.gz"),
+                file("${row[1]}/features.tsv.gz"),
+                file("${row[1]}/matrix.mtx.gz")
+            )} 
+        }
+
         if (params.filter_multiplets.scrublet.run_process){
             SCRUBLET(
                 channel__file_paths_10x,
@@ -92,6 +121,7 @@ workflow MULTIPLET {
             input_channel = input_channel.mix(SCRUBLET.out.result)
         }else{
             out = Channel.of()
+            input_channel = Channel.of()
         }
 
         if (params.filter_multiplets.doubletDetection.run_process){
@@ -130,10 +160,7 @@ workflow MULTIPLET {
             out = Channel.of()
         }
 
-
         input_channel2 = input_channel.groupTuple()
-        input_channel2.subscribe { println "1:: input_channel.out.citeseq_rsd: $it" }
-        
         MERGE_DOUBLET_RESULTS(input_channel2) 
 
 

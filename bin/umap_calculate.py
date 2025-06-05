@@ -228,7 +228,7 @@ def main():
     # Subset number of PCs to be exactly nPCs - here we assume PCs are ordered.
     print('Subetting PCs - we assume they are ordered by column index.')
     df_pca = df_pca.iloc[:, range(0, n_pcs)]
-    print('PC columns:\t{}'.format(np.array_str(df_pca.columns)))
+    print(f'PC columns:\t{';'.join(df_pca.columns)}' )
 
     # Add the reduced dimensions to the AnnData object.
     # NOTE: We need to do this for BBKNN in the case were we init with X_pca

@@ -1,6 +1,14 @@
 process capture_cellsnp_files{
-  publishDir  path: "${params.outdir}"
-  // cache false
+
+  publishDir  path: "${params.outdir}/deconvolution/",
+        saveAs: {filename ->
+        File file = new File(filename)
+        if (filename == "output_cellsnp.csv" || filename == "existing_cellsnp_do_not_save") {
+          null
+        }else {
+          filename
+        } 
+        }
   label 'process_tiny'
   input:
     path(cellsnp_location)
@@ -11,25 +19,35 @@ process capture_cellsnp_files{
   script:
   """
     echo '${params.cellsnp_recapture}'
-    for OUTPUT in \$(ls ${cellsnp_location})
-    do
-    samplename1=\$(echo \$OUTPUT | sed 's/cellsnp_//g') 
-    echo "\$samplename1 \$PWD/${cellsnp_location}/\$OUTPUT" >> output_cellsnp.csv
+    echo "deconvolution_test"
+    for OUTPUT in \$(ls ${cellsnp_location}); do
+        if [ ${cellsnp_location} == "existing_cellsnp" ] && [ -d ${cellsnp_location} ]; then
+            file_count=\$(ls -1 ${cellsnp_location} | wc -l)
+            if [ "\$file_count" -eq 1 ] && [ "\$OUTPUT" == "readme.md" ]; then
+                echo "Skipping folder ${cellsnp_location}"
+                mv ${cellsnp_location} existing_cellsnp_do_not_save
+            else
+              samplename1=\$(echo \$OUTPUT | sed 's/cellsnp_//g') 
+              echo "\$samplename1 \$PWD/${cellsnp_location}/\$OUTPUT" >> output_cellsnp.csv
+            fi
+        else
+          samplename1=\$(echo \$OUTPUT | sed 's/cellsnp_//g') 
+          echo "\$samplename1 \$PWD/${cellsnp_location}/\$OUTPUT" >> output_cellsnp.csv
+        fi
     done
-  """    
-
+  """
 }
 
 
 process DYNAMIC_DONOR_EXCLUSIVE_SNP_SELECTION{
     label 'process_medium'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_62bd56a-2021-12-15-4d1ec9312485.sif"
-        //// container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_latest.img"
+        container "${params.yascp_container}"
+
     } else {
-        container "mercury/scrna_deconvolution:62bd56a"
+        container "${params.yascp_container_docker}"
     }
-    publishDir "${params.outdir}/cellsnp/cellsnp_${samplename}", mode: "${params.copy_mode}", pattern: "cellsnp_${samplename}", overwrite: true
+    publishDir "${params.outdir}/deconvolution/cellsnp/cellsnp_${samplename}", mode: "${params.copy_mode}", pattern: "cellsnp_${samplename}", overwrite: true
     
     input: 
         val(add_dynamic_sites_or_not_to_panel)
@@ -71,9 +89,9 @@ process ASSESS_CALL_RATE{
     label 'process_tiny'
 
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_62bd56a-2021-12-15-4d1ec9312485.sif"
+        container "${params.yascp_container}"
     } else {
-        container "mercury/scrna_deconvolution:62bd56a"
+        container "${params.yascp_container_docker}"
     }
 
     input: 
@@ -101,14 +119,13 @@ process CELLSNP {
     
     label 'many_cores_small_mem'
     
-    publishDir "${params.outdir}/cellsnp/", mode: "${params.copy_mode}", pattern: "cellsnp_${samplename}", overwrite: true
+    publishDir "${params.outdir}/deconvolution/cellsnp/", mode: "${params.copy_mode}", pattern: "cellsnp_${samplename}", overwrite: true
 
     
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_62bd56a-2021-12-15-4d1ec9312485.sif"
-        //// container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_latest.img"
+        container "${params.yascp_container}"
     } else {
-        container "mercury/scrna_deconvolution:62bd56a"
+        container "${params.yascp_container_docker}"
     }
 
     input: 
@@ -128,6 +145,13 @@ process CELLSNP {
       }else{
         MAF=" --minMAF ${params.cellsnp.min_maf}"
       }
+
+      if (params.atac){
+        umi_tag=' --UMItag None '
+      }else{
+        umi_tag=""
+      }
+
     """
       echo ${n_pooled}
       umask 2 # make files group_writable
@@ -146,6 +170,6 @@ process CELLSNP {
         -O cellsnp_${samplename} \\
         -R region_vcf_no_MHC.vcf.gz \\
         -p ${task.cpus} \\
-        --minCOUNT ${params.cellsnp.min_count} ${MAF} --gzip ${genotype_file}
+        --minCOUNT ${params.cellsnp.min_count} ${MAF} --gzip ${genotype_file} ${umi_tag}
     """
 }

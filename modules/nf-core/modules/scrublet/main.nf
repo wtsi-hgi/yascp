@@ -19,14 +19,12 @@ process SCRUBLET {
 
     label 'process_low'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/wtsihgi_nf_scrna_qc_6bb6af5-2021-12-23-3270149cf265.sif"
-        //// container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/nf_qc_cluster_2.4.img"
-        
+        container "${params.yascp_container}"
     } else {
-        container "wtsihgi/nf_scrna_qc:6bb6af5"
+        container "${params.yascp_container_docker}"
     }
     
-    publishDir  path: "${params.outdir}/doublets/multiplet.method=scrublet",
+    publishDir  path: "${params.outdir}/doublet_detection/scrublet",
                 saveAs: {filename ->
                     if (filename.endsWith("multiplet_calls_published.txt")) {
                         null
@@ -69,8 +67,8 @@ process SCRUBLET {
 
     script:
         
-        outdir = "${params.outdir}/doublets/multiplet"
-        outdir = "${outdir}.method=scrublet"
+        outdir = "${params.outdir}/doublet_detection/"
+        outdir = "${outdir}scrublet"
         outfile = "${experiment_id}"
         // Check to see if we should use use log10 of the doublet simulations
         // to derive the threshold

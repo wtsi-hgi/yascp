@@ -27,7 +27,7 @@ include { TRANSFER;SUMMARY_STATISTICS_PLOTS } from "$projectDir/modules/nf-core/
 include {SUBSET_WORKF; JOIN_STUDIES_MERGE} from "$projectDir/modules/nf-core/modules/subset_genotype/main"
 include {VIREO} from "$projectDir/modules/nf-core/modules/vireo/main"
 include {capture_cellbender_files} from "$projectDir/modules/nf-core/modules/cellbender/functions"
-include { DECONV_INPUTS } from "$projectDir/subworkflows/prepare_inputs/deconvolution_inputs"
+include { DECONV_INPUTS } from "$projectDir/subworkflows/prepare_inputs"
 include { prepare_inputs } from "$projectDir/subworkflows/prepare_inputs"
 include { SPLIT_DONOR_H5AD } from "$projectDir/modules/nf-core/modules/split_donor_h5ad/main"
 include {REPLACE_GT_DONOR_ID2 } from "$projectDir/modules/nf-core/modules/genotypes/main"
@@ -50,11 +50,13 @@ workflow MAIN {
     out_ch = params.outdir
             ? Channel.fromPath(params.outdir, checkIfExists:true)
             : Channel.fromPath("${launchDir}/${outdir}")
-
     if (params.profile=='test_full'){
         RETRIEVE_RECOURSES_TEST_DATASET(out_ch)
         input_channel = RETRIEVE_RECOURSES_TEST_DATASET.out.input_channel
         vcf_inputs = RETRIEVE_RECOURSES_TEST_DATASET.out.vcf_inputs
+        vcf_inputs.splitCsv(header: true, sep: '\t')
+                    .map { row -> tuple(row.label, file(row.vcf_file_path), file("${row.vcf_file_path}.csi")) }
+                    .set { vcf_inputs }
     }else{
         input_channel = Channel.fromPath(params.input_data_table, followLinks: true, checkIfExists: true)
         if (params.genotype_input.run_with_genotype_input) {
@@ -63,6 +65,9 @@ workflow MAIN {
                 followLinks: true,
                 checkIfExists: true
             )
+        vcf_inputs.splitCsv(header: true, sep: '\t')
+                    .map { row -> tuple(row.label, file(row.vcf_file_path), file("${row.vcf_file_path}.csi")) }
+                    .set { vcf_inputs }
         }else{
             vcf_inputs = Channel.of()
         }
@@ -94,7 +99,7 @@ workflow WORK_DIR_REMOVAL{
 
 workflow JUST_CELLTYPES{
     file__anndata_merged = Channel.from(params.file__anndata_merged)
-    celltype(file__anndata_merged)
+    celltype(file__anndata_merged,'celltype_mode')
 }
 
 workflow JUST_CELLBENDER{
@@ -109,30 +114,9 @@ workflow JUST_CELLBENDER{
 
 
 workflow JUST_DOUBLETS{
-    // input_channel = Channel.fromPath(params.input_data_table, followLinks: true, checkIfExists: true)
-    // YASCP_INPUTS(input_channel)
-    // channel_input_data_table = YASCP_INPUTS.out.input_file_corectly_formatted
-
-
-    // channel__file_paths_10x =  channel_input_data_table
-    //     .splitCsv(header: true, sep: params.input_tables_column_delimiter)
-    //     .map{row -> tuple(
-    //     row.experiment_id,
-    //     file("${row.data_path_10x_format}/filtered_feature_bc_matrix")
-    // )}
     file__anndata_merged = Channel.from(params.file__anndata_merged)
-    channel__file_paths_10x = CONVERT_H5AD_TO_MTX(file__anndata_merged).channel__file_paths_10x
-
-    channel__file_paths_10x =  channel__file_paths_10x
-        .map{row -> tuple(
-        row[0],
-        file("${row[1]}/barcodes.tsv.gz"),
-        file("${row[1]}/features.tsv.gz"),
-        file("${row[1]}/matrix.mtx.gz")
-    )}
-
     MULTIPLET(
-        channel__file_paths_10x
+        file__anndata_merged,'doublet_mode'
     )
 }
 
@@ -169,8 +153,12 @@ workflow FREEZE1_GENERATION{
     }else{
         vcf_inputs = Channel.of()
     }
-    
+    vcf_input.splitCsv(header: true, sep: '\t')
+                .map { row -> tuple(row.label, file(row.vcf_file_path), file("${row.vcf_file_path}.csi")) }
+                .set { vcf_input }
     YASCP (GENOTYPE_UPDATE.out.assignments_all_pools,input_channel,vcf_inputs)
+
+
 
 }
 
@@ -206,7 +194,7 @@ workflow GENOTYPE_UPDATE{
 
     // For Freeze1 we take the existing datasets and cp -as results folder so we can start from a breakpoint in pipeline
     // We rerun the GT match for all tranches as this has changed significantly since the beggining.
-    myFileChannel = Channel.fromPath( "${params.outdir}/deconvolution/vireo/*/GT_donors.vireo.vcf.gz" )
+    myFileChannel = Channel.fromPath( "${params.outdir}/deconvolution/vireo_raw/*/GT_donors.vireo.vcf.gz" )
     myFileChannel.map{row -> tuple(row[-2], row)}.set{vireo_out_sample_donor_vcf}
 
     if (params.genotype_input.run_with_genotype_input) {
@@ -284,7 +272,7 @@ workflow GENOTYPE_UPDATE{
             .set { ch_ref_vcf }
     match_genotypes(vireo_out_sample_donor_vcf,merged_expected_genotypes,gt_pool,gt_math_pool_against_panel_input,genome,ch_ref_vcf)
     ENHANCE_STATS_GT_MATCH(match_genotypes.out.donor_match_table_enhanced)
-    collect_file(ENHANCE_STATS_GT_MATCH.out.assignments.collect(),"assignments_all_pools.tsv",params.outdir+'/deconvolution/vireo_gt_fix',1,'')
+    collect_file(ENHANCE_STATS_GT_MATCH.out.assignments.collect(),"assignments_all_pools.tsv",params.outdir+'/deconvolution/vireo_processed',1,'')
     assignments_all_pools = collect_file.out.output_collection
     // We start the pipeline from the pre_qc breakpoint.
     emit:

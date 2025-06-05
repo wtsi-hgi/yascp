@@ -7,10 +7,10 @@ process PCA {
 
     label 'process_medium'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/nf_qc_scrna_v1.img"
+        container "${params.yascp_container}"
         // /software/hgi/containers/nf_qc_scrna_v1.img
     } else {
-        container "mercury/nf_qc_scrna:v3"
+        container "${params.yascp_container_docker}"
     }
 
     publishDir  path: "${outdir}",
@@ -18,7 +18,7 @@ process PCA {
                 mode: "${params.copy_mode}",
                 overwrite: "true"
     
-    publishDir  path: "${params.outdir}/merged_h5ad/",
+    publishDir  path: "${params.outdir}/handover/merged_h5ad/",
             saveAs: {filename ->
                     if (filename.contains("adata-normalized_pca-counts.h5ad")) {
                         filename = '5.adata-normalized_pca-counts.h5ad'
@@ -84,10 +84,9 @@ process NORMALISE_AND_PCA {
     scratch false      // use tmp directory
     label 'process_medium'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/nf_qc_scrna_v1.img"
-        // /software/hgi/containers/nf_qc_scrna_v1.img
+        container "${params.yascp_container}"
     } else {
-        container "mercury/nf_qc_scrna:v3"
+        container "${params.yascp_container_docker}"
     }
 
 
@@ -102,9 +101,9 @@ process NORMALISE_AND_PCA {
         val(analysis_mode)
         val(layer)
         val(minimum_number_of_cells_for_donor)
-        val(file__genes_exclude_hvg)
-        val(file__genes_score)
-        val(genes_exclude)
+        path(file__genes_exclude_hvg)
+        path(file__genes_score)
+        path(genes_exclude)
         val(genes_at_least_in_nr_cells)
         each vars_to_regress
 
@@ -133,27 +132,20 @@ process NORMALISE_AND_PCA {
             cmd__vars_to_regress = "--vars_to_regress ${vars_to_regress}"
         }
 
-        outdir = "${params.outdir}/clustering/normalize=total_count.${param_details}"
-        // Add details on the genes we are exlcuding from hgv list.
-        // file_vge = "${file__genes_exclude_hvg}"
-        // outdir = "${outdir}.hvg_exclude=${file_vge}"
-        // Add details on the scores we are using.
-        // file_score = "${file__genes_score}"
-        // outdir = "${outdir}.scores=${file_score}"
-        // this is where the subfolder 1 is determined
-        // Customize command for optional files.
+        outdir = "${params.outdir}/clustering_and_integration/normalize=total_count.${param_details}"
+
         cmd__genes_exclude_hvg = ""
-        if (file__genes_exclude_hvg != "") {
+        if (!"${file__genes_exclude_hvg}".contains('fake_file')){
             cmd__genes_exclude_hvg = "--variable_genes_exclude '${file__genes_exclude_hvg}'"
         }
 
         cmd__genes_exclude = ""
-        if (genes_exclude != "") {
+        if (!"${genes_exclude}".contains('fake_file')){
             cmd__genes_exclude = "--exclude_gene_list '${genes_exclude}'"
         }
         
         cmd__genes_score = ""
-        if (file__genes_score != "") {
+        if (!"${file__genes_score}".contains('fake_file')){
             cmd__genes_score = "--score_genes ${file__genes_score}"
         }
 

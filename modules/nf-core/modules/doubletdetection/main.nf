@@ -3,21 +3,19 @@ process DOUBLET_DETECTION {
     tag "${experiment_id}"
     label 'process_low'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/nf_scrna_qc_v3.img"
+        container "${params.yascp_container}"
     } else {
-        container "mercury/nf_scrna_qc:v3"
+        container "${params.yascp_container_docker}"
     }
     
-    publishDir  path: "${params.outdir}/doublets/multiplet.method=doubletdetection",
+    publishDir  path: "${params.outdir}/doublet_detection/multiplet.method=doubletdetection",
                 mode: "${params.copy_mode}",
                 overwrite: "true"
 
     input:
         tuple(
             val(experiment_id),
-            path(file_10x_barcodes),
-            path(file_10x_features),
-            path(file_10x_matrix)
+            path(gex_h5ad)
         )
 
     output:
@@ -27,16 +25,12 @@ process DOUBLET_DETECTION {
 
     script:
         
-        outdir = "${params.outdir}/doublets/multiplet"
+        outdir = "${params.outdir}/doublet_detection/multiplet"
         outdir = "${outdir}.method=doubletdetection"
         outfile = "${experiment_id}"
 
         """
-            mkdir TMP_DIR
-            ln --physical ${file_10x_barcodes} TMP_DIR
-            ln --physical ${file_10x_features} TMP_DIR
-            ln --physical ${file_10x_matrix} TMP_DIR
-            DoubletDetection.py --tenxdata_dir ./TMP_DIR --n_iterations 100
+            DoubletDetection.py --tenxdata_dir ${gex_h5ad} --n_iterations 100
             ln -s DoubletDetection_results.txt ${experiment_id}__DoubletDetection_results.txt
         """
 }

@@ -2,10 +2,9 @@ process prep_collectmetadata{
     label 'process_tiny'
 
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/nf_scrna_deconv_v2.img"
-        //// container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_latest.img"
+        container "${params.yascp_container}"
     } else {
-        container "mercury/scrna_deconvolution:v2"
+        container "${params.yascp_container_docker}"
     }
     
     input:
@@ -21,10 +20,9 @@ process prep_collectmetadata{
 process merge_metadata{
     label 'process_tiny'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/nf_scrna_deconv_v2.img"
-        //// container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_latest.img"
+        container "${params.yascp_container}"
     } else {
-        container "mercury/scrna_deconvolution:v2"
+       container "${params.yascp_container_docker}"
     }
 
     input:

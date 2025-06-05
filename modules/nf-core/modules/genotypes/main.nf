@@ -5,10 +5,9 @@ process MERGE_GENOTYPES_IN_ONE_VCF_IDX_PAN{
           mode: "${params.copy_mode}",
           overwrite: "true"
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        // println "container: /software/hgi/containers/wtsihgi-nf_genotype_match-1.0.sif\n"
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/wtsihgi-nf_yascp_htstools-1.1.sif"
+        container "${params.yascp_container}"
     } else {
-        container "mercury/wtsihgi-nf_yascp_htstools-1.1"
+        container "${params.yascp_container_docker}"
     }
 
     input:
@@ -54,7 +53,7 @@ process MERGE_GENOTYPES_IN_ONE_VCF_FREEBAYES{
           mode: "${params.copy_mode}",
           overwrite: "true"
 
-    publishDir  path: "${params.outdir}/deconvolution/vireo",
+    publishDir  path: "${params.outdir}/deconvolution/vireo_raw",
           saveAs: {filename ->
                     if (filename.endsWith("vireo_${panel}")) {
                         filename
@@ -67,9 +66,9 @@ process MERGE_GENOTYPES_IN_ONE_VCF_FREEBAYES{
     
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         // println "container: /software/hgi/containers/wtsihgi-nf_genotype_match-1.0.sif\n"
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/wtsihgi-nf_yascp_htstools-1.1.sif"
+        container "${params.yascp_container}"
     } else {
-        container "mercury/wtsihgi-nf_yascp_htstools-1.1"
+        container "${params.yascp_container_docker}"
     }
 
     input:
@@ -111,9 +110,9 @@ process MERGE_GENOTYPES_IN_ONE_VCF{
           overwrite: "true"
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         // println "container: /software/hgi/containers/wtsihgi-nf_genotype_match-1.0.sif\n"
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/wtsihgi-nf_yascp_htstools-1.1.sif"
+        container "${params.yascp_container}"
     } else {
-        container "mercury/wtsihgi-nf_yascp_htstools-1.1"
+        container "${params.yascp_container_docker}"
     }
 
     input:
@@ -156,9 +155,9 @@ process VIREO_ADD_SAMPLE_PREFIX{
 
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         // println "container: /software/hgi/containers/wtsihgi-nf_genotype_match-1.0.sif\n"
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/wtsihgi-nf_yascp_htstools-1.1.sif"
+        container "${params.yascp_container}"
     } else {
-        container "mercury/wtsihgi-nf_yascp_htstools-1.1"
+        container "${params.yascp_container_docker}"
     }
 
     input:
@@ -179,14 +178,14 @@ process VIREO_ADD_SAMPLE_PREFIX{
 process VIREO_GT_FIX_HEADER
 {
   tag "${pool_id}"
-  publishDir  path: "${params.outdir}/infered_genotypes/${pool_id}/",
+  publishDir  path: "${params.outdir}/deconvolution/infered_genotypes/${pool_id}/",
         mode: "${params.copy_mode}",
         overwrite: "true"
   if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
       // println "container: /software/hgi/containers/wtsihgi-nf_genotype_match-1.0.sif\n"
-      container "https://yascp.cog.sanger.ac.uk/public/singularity_images/scrna_deconvolution_v3.img"
+      container "${params.yascp_container}"
   } else {
-      container "mercury/wtsihgi-nf_yascp_htstools-1.1"
+      container "${params.yascp_container_docker}"
   }
 
   label 'process_low'
@@ -234,29 +233,20 @@ process VIREO_GT_FIX_HEADER
 }
 process REPLACE_GT_DONOR_ID2{
     tag "${samplename}"
-    publishDir  path: "${params.outdir}/deconvolution/vireo_gt_fix/${samplename}/",
+    publishDir  path: "${params.outdir}/deconvolution/vireo_processed/${samplename}/",
           pattern: "GT_replace_*",
           mode: "${params.copy_mode}",
           overwrite: "true"
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_62bd56a-2021-12-15-4d1ec9312485.sif"
-        //// container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_latest.img"
+        container "${params.yascp_container}"
     } else {
-        container "mercury/scrna_deconvolution:62bd56a"
+        container "${params.yascp_container_docker}"
     }
 
   label 'process_low'
 
   input:
     tuple val(samplename), path(gt_donors), path(vireo_sample_summary),path(vireo___exp_sample_summary),path(vireo__donor_ids),path(vcf_file),path(donor_gt_csi),val(mode)
-      // [pool76, 
-      // /lustre/scratch125/humgen/teams/hgi/mo11/oneK1k/work/d7/1335406a9dcd23d0f1a66241124dd4/vireo_pool76/GT_donors.vireo.vcf.gz, 
-      // /lustre/scratch125/humgen/teams/hgi/mo11/oneK1k/work/d7/1335406a9dcd23d0f1a66241124dd4/vireo_pool76/pool76.sample_summary.txt, 
-      // /lustre/scratch125/humgen/teams/hgi/mo11/oneK1k/work/d7/1335406a9dcd23d0f1a66241124dd4/vireo_pool76/pool76__exp.sample_summary.txt, 
-      // /lustre/scratch125/humgen/teams/hgi/mo11/oneK1k/work/d7/1335406a9dcd23d0f1a66241124dd4/vireo_pool76/donor_ids.tsv, 
-      // /lustre/scratch125/humgen/teams/hgi/mo11/oneK1k/work/d7/1335406a9dcd23d0f1a66241124dd4/Study_Merge_AllExpectedGT_F2708B7QS_out.vcf.gz,
-      //  /lustre/scratch125/humgen/teams/hgi/mo11/oneK1k/work/d7/1335406a9dcd23d0f1a66241124dd4/Study_Merge_AllExpectedGT_F2708B7QS_out.vcf.gz.csi, 
-      // true]
 
   output:
     tuple val(samplename), path("GT_replace_donor_ids_${mode}.tsv"), emit: sample_donor_ids
@@ -267,6 +257,7 @@ process REPLACE_GT_DONOR_ID2{
     path("GT_replace_${samplename}_assignments_${mode}.tsv"), emit: assignments
     tuple  val(samplename), path("GT_replace_GT_donors.vireo_${mode}.vcf.gz"), path("GT_replace_${samplename}.sample_summary_${mode}.txt"),path("GT_replace_${samplename}__exp.sample_summary_${mode}.txt"),path("GT_replace_donor_ids_${mode}.tsv"),path(vcf_file),path(donor_gt_csi), emit: all_required_data
     tuple val(samplename), path("GT_replace_donor_ids_${mode}.tsv"), emit: cell_assignments
+    path("vireo_gt_rep_${samplename}"), emit: output_dir
   script:
 
     in=""
@@ -275,19 +266,20 @@ process REPLACE_GT_DONOR_ID2{
       bcftools query -l ${gt_donors} > ${mode}_donors_in_vcf.tsv
       replace_donors.py -id ${samplename} ${in} --input_file "${params.input_data_table}" -m ${mode}
       bcftools view ${gt_donors} | bcftools reheader --samples replacement_assignments_${mode}.tsv -o GT_replace_GT_donors.vireo_${mode}.vcf.gz
+      mkdir -p "vireo_gt_rep_${samplename}"
+      ln -sf "\$(realpath "GT_replace_GT_donors.vireo_${mode}.vcf.gz")" "vireo_gt_rep_${samplename}/GT_replace_GT_donors.vireo_${mode}.vcf.gz"
     """
 }
 
 process ENHANCE_STATS_GT_MATCH{
 
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_62bd56a-2021-12-15-4d1ec9312485.sif"
-        //// container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_latest.img"
+        container "${params.yascp_container}"
     } else {
-        container "mercury/scrna_deconvolution:62bd56a"
+        container "${params.yascp_container_docker}"
     }
   tag "${samplename}"
-  publishDir  path: "${params.outdir}/gtmatch/${samplename}",
+  publishDir  path: "${params.outdir}/deconvolution/gtmatch/${samplename}",
           mode: "${params.copy_mode}",
           overwrite: "true"
 
@@ -325,14 +317,14 @@ process GT_MATCH_POOL_IBD
 {
   tag "${pool_id}_ibd"
   label 'process_small'
-  publishDir  path: "${params.outdir}/gtmatch/${pool_id}",
+  publishDir  path: "${params.outdir}/deconvolution/gtmatch/${pool_id}",
           mode: "${params.copy_mode}",
           overwrite: "true"
 
   if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-      container "https://yascp.cog.sanger.ac.uk/public/singularity_images/nf_qc_scrna_v2.img"
+      container "${params.yascp_container}"
   } else {
-      container "mercury/nf_qc_scrna:v2"
+      container "${params.yascp_container_docker}"
   }
 
   
@@ -361,9 +353,9 @@ process GT_MATCH_POOL_AGAINST_PANEL
 
   if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
       // println "container: /software/hgi/containers/wtsihgi-nf_genotype_match-1.0.sif\n"
-      container "https://yascp.cog.sanger.ac.uk/public/singularity_images/wtsihgi-nf_yascp_htstools-1.1.sif"
+      container "${params.yascp_container}"
   } else {
-      container "mercury/wtsihgi-nf_yascp_htstools-1.1"
+      container "${params.yascp_container_docker}"
   }
 
   label 'process_tiny'
@@ -380,18 +372,48 @@ process GT_MATCH_POOL_AGAINST_PANEL
   panel_filnam = "${ref_gt_vcf}" - (~/\.[bv]cf(\.gz)?$/)
   gt_check_output_txt = "${pool_id}_gtcheck_${panel_filnam}.txt"
   """
-    STR=\$(bcftools index -s ${ref_gt_vcf} | cut -f1 | head -n1)
+    bcftools gtcheck --no-HWE-prob -g ${ref_gt_vcf} ${vireo_gt_vcf} > ${gt_check_output_txt}
+  """
+}
+
+
+process PREPROCESS_GENOTYPES
+{
+  tag "${pool_id}_vs_${panel_id}"
+
+  if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
+      // println "container: /software/hgi/containers/wtsihgi-nf_genotype_match-1.0.sif\n"
+       container "${params.yascp_container}"
+  } else {
+      container "${params.yascp_container_docker}"
+  }
+
+  label 'process_tiny'
+  input:
+    tuple val(pool_id), path(ref_gt_vcf), path(ref_gt_csi)
+
+  output:
+    tuple val(pool_id), path("renamed_*.vcf.gz"), path("renamed_*.vcf.gz.csi")
+
+  script:
+
+  """
+    renamed_vcf_basename=\$(basename "${ref_gt_vcf}" | sed -E 's/\\.(vcf|bcf)(\\.gz)?\$//')
+    renamed_vcf="renamed_\${renamed_vcf_basename}.vcf" 
+
+    # Check if the VCF file has chromosome prefixes
+    STR=\$(bcftools index -s ${ref_gt_vcf} | cut -f1 | head -n1 || echo "no_chr")
     SUB='chr'
     if [[ "\$STR" == *"\$SUB"* ]]; then
-        # echo -e "1 chr1\\n2 chr2\\n3 chr3\\n4 chr4\\n5 chr5\\n6 chr6\\n7 chr7\\n8 chr8\\n9 chr9\\n10 chr10\\n11 chr11\\n12 chr12\\n13 chr13\\n14 chr14\\n15 chr15\\n16 chr16\\n17 chr17\\n18 chr18\\n19 chr19\\n20 chr20\\n21 chr21\\n22 chr22\\n23 chr23" >> chr_name2_conv.txt
-        # b cftools annotate --rename-chrs chr_name2_conv.txt  ${ref_gt_vcf} -Oz -o renamed.vcf.gz
-        zcat ${ref_gt_vcf} | awk '{gsub(/^chr/,""); print}' | awk '{gsub(/ID=chr/,"ID="); print}' > renamed.vcf
-        bgzip renamed.vcf
+      # Remove 'chr' prefix and re-save with the 'renamed_' prefix
+      zcat "${ref_gt_vcf}" | awk '{gsub(/^chr/,""); print}' | awk '{gsub(/ID=chr/,"ID="); print}' > "\${renamed_vcf}"
+      bgzip "\${renamed_vcf}"  # bgzip will add .gz automatically
+      bcftools index "\${renamed_vcf}.gz"
     else
-        ln -s ${ref_gt_vcf} renamed.vcf.gz
+      # Create symbolic links with 'renamed_' prefix
+      ln -s "${ref_gt_vcf}" "renamed_\${renamed_vcf_basename}.vcf.gz"
+      ln -s "${ref_gt_csi}" "renamed_\${renamed_vcf_basename}.vcf.gz.csi"
     fi
-    bcftools index renamed.vcf.gz
-    bcftools gtcheck --no-HWE-prob -g renamed.vcf.gz ${vireo_gt_vcf} > ${gt_check_output_txt}
   """
 }
 
@@ -400,15 +422,15 @@ process ASSIGN_DONOR_FROM_PANEL
   // sum gtcheck discrepancy scores from multiple ouputput files of the same panel
   tag "${pool_panel_id}"
   label 'process_medium'
-  publishDir  path: "${params.outdir}/gtmatch/${pool_id}",
+  publishDir  path: "${params.outdir}/deconvolution/gtmatch/${pool_id}",
           pattern: "*.csv",
           mode: "${params.copy_mode}",
           overwrite: "true"
   if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
       // println "container: /software/hgi/containers/wtsihgi-nf_genotype_match-1.0.sif\n"
-      container "https://yascp.cog.sanger.ac.uk/public/singularity_images/wtsihgi-nf_genotype_match-1.0.sif"
+      container "${params.yascp_container}"
   } else {
-      container "mercury/wtsihgi-nf_genotype_match-1.0"
+      container "${params.yascp_container_docker}"
   }
 
   input:
@@ -435,16 +457,16 @@ process ASSIGN_DONOR_OVERALL
   // decide final donor assignment across different panels from per-panel donor assignments
   tag "${pool_id}"
 
-  publishDir  path: "${params.outdir}/gtmatch/${pool_id}",
+  publishDir  path: "${params.outdir}/deconvolution/gtmatch/${pool_id}",
           pattern: "*.csv",
           mode: "${params.copy_mode}",
           overwrite: "true"
 
   if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
       // println "container: /software/hgi/containers/wtsihgi-nf_genotype_match-1.0.sif\n"
-      container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_62bd56a-2021-12-15-4d1ec9312485.sif"
+      container "${params.yascp_container}"
   } else {
-      container "mercury/wtsihgi-nf_genotype_match-1.0"
+      container "${params.yascp_container_docker}"
   }
 
   input:
@@ -471,16 +493,15 @@ process ASSIGN_DONOR_OVERALL
 
 process REPLACE_GT_ASSIGNMENTS_WITH_PHENOTYPE{
   label 'process_low'
-  publishDir  path: "${params.outdir}/gtmatch/",
+  publishDir  path: "${params.outdir}/deconvolution/gtmatch/",
           pattern: "*_assignments.csv",
           mode: "${params.copy_mode}",
           overwrite: "true"
 
   if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-      container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_62bd56a-2021-12-15-4d1ec9312485.sif"
-      //// container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_latest.img"
+      container "${params.yascp_container}"
   } else {
-      container "mercury/scrna_deconvolution:62bd56a"
+      container "${params.yascp_container_docker}"
   }
 
   input:
@@ -492,7 +513,6 @@ process REPLACE_GT_ASSIGNMENTS_WITH_PHENOTYPE{
   script:
     """
       perform_replacement.py --genotype_phenotype_mapping ${params.genotype_phenotype_mapping_file} --assignemts ${gt_match_results}
-
     """
 
 }
@@ -501,16 +521,15 @@ process ENHANCE_STATS_FILE{
 
   tag "${pool_id}"
 
-  publishDir  path: "${params.outdir}/gtmatch/${pool_id}",
+  publishDir  path: "${params.outdir}/deconvolution/gtmatch/${pool_id}",
         mode: "${params.copy_mode}",
         overwrite: "true"
 
 
   if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-      container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_62bd56a-2021-12-15-4d1ec9312485.sif"
-      //// container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_latest.img"
+      container "${params.yascp_container}"
   } else {
-      container "mercury/scrna_deconvolution:62bd56a"
+      container "${params.yascp_container_docker}"
   }
 
   label 'process_small'
@@ -548,10 +567,9 @@ process ENHANCE_STATS_FILE{
 
 process ENHANCE_VIREO_METADATA_WITH_DONOR{
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_62bd56a-2021-12-15-4d1ec9312485.sif"
-        //// container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_latest.img"
+        container "${params.yascp_container}"
     } else {
-        container "mercury/scrna_deconvolution:62bd56a"
+        container "${params.yascp_container_docker}"
     }
   label 'process_small'
 
@@ -574,10 +592,9 @@ process ENHANCE_VIREO_METADATA_WITH_DONOR{
 
 process COMBINE_MATCHES_IN_EXPECTED_FORMAT{
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_62bd56a-2021-12-15-4d1ec9312485.sif"
-        //// container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_latest.img"
+        container "${params.yascp_container}"
     } else {
-        container "mercury/scrna_deconvolution:62bd56a"
+        container "${params.yascp_container_docker}"
     }
   label 'process_small'
 
@@ -618,7 +635,6 @@ workflow MATCH_GT_VIREO {
     ASSIGN_DONOR_FROM_PANEL.out.gtcheck_assignments.unique()
       .groupTuple()
       .set{ ch_donor_assign_panel }
-    // ch_donor_assign_panel.subscribe {println "ASSIGN_DONOR_OVERALL: ch_donor_assign_panel = ${it}\n"}
 
     ASSIGN_DONOR_OVERALL(ch_donor_assign_panel)
 

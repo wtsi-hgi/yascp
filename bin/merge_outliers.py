@@ -43,6 +43,9 @@ def main():
 
     # Load the AnnData file.
     adata = sc.read_h5ad(filename=options.h5)
+    if 'cell_passes_qc' in adata.obs.columns:
+        del adata.obs['cell_passes_qc']
+        
     files = glob.glob('./outlier_filtered_adata-outliers_filtered__*.tsv')
     combo_files = pd.DataFrame()
     for f1 in files:
@@ -52,7 +55,7 @@ def main():
     adata.obs = pd.concat([adata.obs,combo_files],axis=1)
 
     adata.write(
-        'outlier_filtered_adata.h5ad',
+        '4.outlier_filtered_adata.h5ad',
         compression='gzip',
         compression_opts=options.anndata_compression_opts
     )

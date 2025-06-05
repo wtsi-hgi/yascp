@@ -1,9 +1,0 @@
-name: bff
-channels:
-  - conda-forge
-  - bioconda
-dependencies:
-  - samtools=1.19.2
-  - bedtools
-  - bcftools=1.19
-  - freebayes=1.2

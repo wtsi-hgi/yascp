@@ -5,10 +5,9 @@ def random_hex(n) {
 process dummy_filtered_channel{
     label 'process_low' 
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/wtsihgi_nf_scrna_qc_6bb6af5-2021-12-23-3270149cf265.sif"
-        //// container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/nf_qc_cluster_2.4.img"
+        container "${params.yascp_container}"
     } else {
-        container "wtsihgi/nf_scrna_qc:6bb6af5"
+        container "${params.yascp_container_docker}"
     }
 
     input:
@@ -37,31 +36,27 @@ process merge_samples_from_h5ad {
     label 'process_medium_single_CPU' 
     label 'process_medium_memory'
 
-    publishDir  path: "${outdir}/merged_h5ad",
+    publishDir  path: "${params.outdir}/handover/merged_h5ad",
                 saveAs: {filename -> filename.replaceAll("-", "pre_QC_")},
                 mode: "${params.copy_mode}",
                 overwrite: "true"
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/wtsihgi_nf_scrna_qc_6bb6af5-2021-12-23-3270149cf265.sif"
-        //// container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/nf_qc_cluster_2.4.img"
+        container "${params.yascp_container}"
     } else {
-        container "wtsihgi/nf_scrna_qc:6bb6af5"
-        //// container "quay.io/biocontainers/multiqc:1.10.1--py_0"
+       container "${params.yascp_container_docker}"
     }
 
     input:
-        val(outdir_prev)
-        path(file_paths_h5ad)
         path(file_metadata)
         val(file_cellmetadata)
         val(metadata_key)
         file(file_h5ad)
-        val(anndata_compression_opts)
+        path(celltype)
 
     // NOTE: use path here and not file see:
     //       https://github.com/nextflow-io/nextflow/issues/1414
     output:
-        path("pre_QC_adata.h5ad", emit: anndata)
+        path("1.pre_QC_adata.h5ad", emit: anndata)
         // path(
         //     "pre_QC_adata-cell_filtered_per_experiment.tsv.gz",
         //     emit: cells_filtered
@@ -70,10 +65,7 @@ process merge_samples_from_h5ad {
         path("plots/*.pdf") optional true
 
     script:
-        outdir = "${outdir_prev}"
-        // String filename = './parameters.yml'
-        // yaml.dump(file_params , new FileWriter(filename))
-        // Customize command for optional files.
+
         if (params.extra_metadata!=''){
             extra_metadata = "--extra_metadata ${params.extra_metadata}"
         }else{
@@ -96,7 +88,7 @@ process merge_samples_from_h5ad {
         }
         files__h5ad = file_h5ad.join(',')
         """
-        echo "publish_directory: ${outdir}"
+        echo "publish_directory: ${celltype}"
         rm -fr plots
         nf_helper__prep_h5addata_file.py \
             --h5ad_list ${files__h5ad} \
@@ -108,8 +100,8 @@ process merge_samples_from_h5ad {
             --sample_metadata_columns_delete "sample_status,study,study_id" \
             --metadata_key ${metadata_key} \
             --number_cpu ${task.cpus} \
-            --output_file pre_QC_adata \
-            --anndata_compression_opts ${anndata_compression_opts} \
+            --output_file 1.pre_QC_adata \
+            --anndata_compression_opts ${params.anndata_compression_opts} --celltype ${celltype} \
             ${cmd__params} \
             ${cmd__cellmetadata} ${extra_metadata}
         mkdir plots
@@ -126,16 +118,14 @@ process merge_samples {
     tag "${samplename}"
     
     label 'process_high'
-    publishDir  path: "${outdir}/merged_h5ad",
+    publishDir  path: "${outdir}/handover/merged_h5ad",
                 saveAs: {filename -> filename.replaceAll("-", "pre_QC_")},
                 mode: "${params.copy_mode}",
                 overwrite: "true"
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/wtsihgi_nf_scrna_qc_6bb6af5-2021-12-23-3270149cf265.sif"
-        //// container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/nf_qc_cluster_2.4.img"
+        container "${params.yascp_container}"
     } else {
-        container "wtsihgi/nf_scrna_qc:6bb6af5"
-        //// container "quay.io/biocontainers/multiqc:1.10.1--py_0"
+        container "${params.yascp_container_docker}"
     }
 
     input:
@@ -211,15 +201,12 @@ process prep_merge_samples {
         )
     label 'process_tiny'
     output:
-        path("${experiment_id}---barcodes.tsv.gz", emit: barcodes)
-        path("${experiment_id}---features.tsv.gz", emit: features)
-        path("${experiment_id}---matrix.mtx.gz", emit: matrix)
+        path("${experiment_id}---matrix", emit: mtx)
 
     script:
         """
-        ln --physical ${file_10x_barcodes} ${experiment_id}---barcodes.tsv.gz
-        ln --physical ${file_10x_features} ${experiment_id}---features.tsv.gz
-        ln --physical ${file_10x_matrix} ${experiment_id}---matrix.mtx.gz
+        mkdir ${experiment_id}---matrix
+        cd ${experiment_id}---matrix && ln ../${file_10x_barcodes} ./ && ln ../${file_10x_features} ./  && ln ../${file_10x_matrix} ./ 
         """
 }
 

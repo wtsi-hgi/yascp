@@ -19,11 +19,11 @@ class ScoreMatrix:
     def parse_gtcheck_scores(self, infh):
         ctr = 0
         for lin in infh:
-            if lin[:2] == 'DC':
+            if lin[:2] == 'DC' or lin[:2] == 'DCv2':
                 fld = lin.strip().split('\t')
                 if DEBUG:
                     print(fld)
-                if len(fld) > 3 and 'DC' == fld[0].strip():
+                if len(fld) > 3 and 'DC' in fld[0].strip():
                     ctr += 1
                     donor_query = fld[1].strip()
                     donor_ref = fld[2].strip()
@@ -92,7 +92,7 @@ class ScoreMatrix:
             if DEBUG:
                 print(self.gtchkd[k])
             donor0, score0 = self.gtchkd[k][0]
-            score1 = 0
+            donor1, score1 = None, 0
             score_n = 0
             n = 0
             d0 = float(0)
@@ -125,7 +125,7 @@ class ScoreMatrix:
                         sd = score1 - score0
             z0 = d0/sd
             z1 = d1/sd
-            rsltd[k] = (donor0, score0, score1, score_n, n, m, sd, z0, z1, dd1/sd)
+            rsltd[k] = (donor0, donor1, score0, score1, score_n, n, m, sd, z0, z1, dd1/sd)
         return rsltd
 
 if __name__ == '__main__':
@@ -159,24 +159,22 @@ if __name__ == '__main__':
     oufh_mtx.close()
 
     oufh = open(fnout, 'w')
-    oufh.write("donor_query,donor_gt,score0,score1,score_n,n,mean,sd,z0,z1\n")
+    oufh.write("donor_query,donor_gt,donor_1,score0,score1,score_n,n,mean,sd,z0,z1\n")
 
     rsltd = scm.find_matches()
     if DEBUG:
         print(rsltd)
     sys.stdout.write("\nAssignments:\n")
     for k in rsltd:
-        (donorid, score0, score1, score_n, n, m, sd, z0, z1, zz1) = rsltd[k]
-        # if z0 < SMVAL:
-        #     donorid = 'UNASSIGNED'
+        (donorid, donor1_id, score0, score1, score_n, n, m, sd, z0, z1, zz1) = rsltd[k]
         sys.stdout.write(
-            "{:s} -> {:s} score0 = {:.1f}, score1 = {:.1f}, score_last = {:.1f}, n_samples = {:d}, "
+            "{:s} -> {:s} (Best), {:s} (Second-best), score0 = {:.1f}, score1 = {:.1f}, score_last = {:.1f}, n_samples = {:d}, "
             "mean = {:.1f}, sd = {:.1f}, z0 = {:.1f}, z1 = {:.1f}, zz1 = {:.1f}\n"
-            .format(k, donorid, score0, score1, score_n, n, m, sd, z0, z1, zz1)
-            )
-        oufh.write("{:s},{:s},{:.1f},{:.1f},{:.1f},{:d},{:.1f},{:.1f},{:.1f},{:.1f}\n"
-            .format(k, donorid, score0, score1, score_n, n, m, sd, z0, z1)
-            )
+            .format(k, donorid, donor1_id, score0, score1, score_n, n, m, sd, z0, z1, zz1)
+        )
+        oufh.write("{:s},{:s},{:s},{:.1f},{:.1f},{:.1f},{:d},{:.1f},{:.1f},{:.1f},{:.1f}\n"
+            .format(k, donorid, donor1_id, score0, score1, score_n, n, m, sd, z0, z1)
+        )
     oufh.close()
 
     sys.exit(0)

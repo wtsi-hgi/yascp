@@ -14,6 +14,7 @@ import h5py
 import pandas
 import anndata
 import re
+import scanpy as sc
 import os
 os.environ['NUMBA_CACHE_DIR']='/tmp'
 os.environ['MPLCONFIGDIR']='/tmp'
@@ -45,12 +46,24 @@ AZIMUTH_ASSIGNMENTS_FNSUFFIX = '_predicted_celltype_l2.tsv'
 SCRUBLET_ASSIGNMENTS_FNSUFFIX = 'scrublet.tsv'
 
 COLUMNS_AZIMUTH = {
+    
+    'Azimuth:L0_predicted.celltype.l2': 'l2.mapped.azimuth.celltyp.l0',
+    'Azimuth:L1_predicted.celltype.l2': 'l2.mapped.azimuth.celltyp.l1',
+    'Azimuth:mapping.score.celltype.l1': 'azimuth.pred.score.l1',
+    'Azimuth:mapping.score.celltype.l2': 'azimuth.pred.score.l2',
+    'Azimuth:mapping.score.celltype.l3': 'azimuth.pred.score.l3',
+    'Azimuth:predicted.celltype.l1': 'azimuth.celltyp.l1',
+    'Azimuth:predicted.celltype.l1.score': 'azimuth.pred.score.l1',
+    'Azimuth:predicted.celltype.l2': 'azimuth.celltyp.l2',
+    'Azimuth:predicted.celltype.l2.score': 'azimuth.pred.score.l2',
+    'Azimuth:predicted.celltype.l3': 'azimuth.celltyp.l3',
+    'Azimuth:predicted.celltype.l3.score': 'azimuth.pred.score.l3',
     'Azimuth:predicted.celltype.l2': 'azimuth.celltyp.l2',
     'Azimuth:predicted.celltype.l3': 'azimuth.celltyp.l3',
-    'Azimuth:predicted.celltype.l1': 'azimuth.celltyp.l1',
+    'Azimuth:L1_predicted.celltype.l2': 'azimuth.celltyp.l1',
     'Azimuth:predicted.celltype.l2.score': 'azimuth.pred.score.l2',
     'Azimuth:mapping.score.celltype.l2': 'azimuth.map.score',
-    'Celltypist*':'Celltypist*',
+    'Celltypist*':'Celltypist*'
     }
 
 COLUMNS_DECONV = {
@@ -59,8 +72,8 @@ COLUMNS_DECONV = {
     'prob_doublet': 'vireo.prob.doublet'
     }
 COLUMNS_QC = {
-    'cell_passes_hard_filters': 'cell_passes_hard_filters',
-    'cell_passes_qc': 'qc.filter.pass',
+    'cell_passes_hard_filters': 'cell_passes_hard_filters', 'State':'State','Donor id':'Donor id','Vacutainer ID':'Vacutainer ID', 'live_cell_count':'live_cell_count', 'viability':'viability', 'SITE':'SITE', 'GEM_BATCH':'GEM_BATCH', 'Gender':'Gender', 'DRAW_DATE':'DRAW_DATE', 'customer_measured_volume':'customer_measured_volume',
+    'cell_passes_qc': 'qc.filter.pass',"id_pool_lims":'lims.pool.id','chromium_channel':'chromium.run.id',
     'cell_passes_qc:score':'qc.filter.pass:score',
     'cell_passes_qc-per:all_together::exclude':'qc.filter.pass.spikein_exclude',
     'cell_passes_qc-per:all_together::exclude:score':'qc.filter.pass.spikein_exclude:score',
@@ -122,10 +135,18 @@ def get_df_from_mangled_index(df, expid):
         if xf.shape[0] != df.shape[0]:
             sys.exit("ERROR: when untangling mangled index.")
     except:
-        df['barcode_idx']= df.index+'-'+expid+'__'+df['donor_id'].astype(str)
+        try:
+            df['barcode_idx']= df.index+'-'+expid+'__'+df['donor_id'].astype(str)
+        except:
+            df['donor_id']=df['experiment_id']
         df2 = df.reset_index() 
         df2 = df2.rename({'index':'barcode','donor_id':'donor'},axis=1)
-        xf = df2[['barcode','donor']]
+        # df2['barcode'] = df2['barcode'].str.split(pat='-{}'.format(expid)).str[0]
+        try:
+            xf = df2[['barcode','donor']]
+        except:
+            xf = df2[['barcode','experiment_id']]
+            xf.rename(columns={'experiment_id':'donor'})
         xf.index=df2['barcode']
     return xf
 
@@ -261,36 +282,17 @@ def load_scrublet_assignments(expid, datadir_scrublet):
     scb = pandas.read_table(filpath).set_index('cell_barcode', drop = True)
     return scb
 
-def fetch_qc_obs_from_anndata(adqc, expid, cell_bender_path = None,Resolution='0pt5'):
-
-    s = adqc.obs['convoluted_samplename'] == expid
-    ad = adqc[s]
-    df = get_df_from_mangled_index(ad.obs, expid)
-    #df.insert(0, 'barcode', df.index.values)
-    df_pre = pandas.concat([df,ad.obs], axis = 1)
-    df_pre['mengled_index'] = df_pre.index
-    df = df_pre.set_index("barcode", drop = True)
-
-    if cell_bender_path is not None:
-        # cellbender removes the barcodes - 
-        dfcb = fetch_cellbender_annotation(cell_bender_path, expid,Resolution)
-        dc = pandas.concat([df, dfcb], axis = 1, join = 'inner')
-        if dc.shape[0] != df.shape[0]:
-            sys.exit("ERROR: barcodes missing in cellbender file.")
-        df = dc.copy()
-        dc=dc.set_index('mengled_index')
-        
-        ad.obs['cellbender_latent_probability']=dc['cellbender_latent_probability']
-    return df,ad
-
 def fetch_cellbender_annotation(dirpath, expid,Resolution):
     
     try:
         h5_path = f"{args.results_dir}/{os.path.dirname(dirpath)}/cellbender_FPR_{Resolution}_filtered.h5"
         f = h5py.File(h5_path, 'r')
     except:
-        
-        h5_path = glob.glob(f"{os.path.dirname(dirpath)}/cellbender*{Resolution}_filtered.h5")[0]
+        try:
+            h5_path = glob.glob(f"{os.path.dirname(dirpath)}/cellbender*{Resolution}_filtered.h5")[0]
+        except:
+            Resolution=Resolution.replace('pt','.')
+            h5_path = glob.glob(f"{os.path.dirname(dirpath)}/cellbender*{Resolution}_filtered.h5")[0]
         f = h5py.File(h5_path, 'r')
     # ad = scanpy.read_10x_h5(h5_path, genome='background_removed')
     # interesting data is in /matrix/barcodes and matrix/latent_cell_probability
@@ -333,7 +335,7 @@ def write_subsample(adat, oufnam, sample_size_perc = DEFAULT_SAMPLE_SIZE_PERC):
     ad.obs.to_csv(oufnam + '.tsv', sep = "\t", na_rep = "N/A")
     return
 
-def gather_donor(donor_id, ad, ad_lane_raw, azimuth_annot, qc_obs, columns_output = COLUMNS_OUTPUT,outdir = os.curdir,oufh = sys.stdout,lane_id=1):
+def gather_donor(donor_id, ad, ad_lane_raw, qc_obs, columns_output = COLUMNS_OUTPUT,outdir = os.curdir,oufh = sys.stdout,lane_id=1):
     
     oufnam = "{}.{}".format(expid, donor_id)
     sys.stderr.write("processing {} {} ...\n".format(expid, donor_id))
@@ -341,45 +343,30 @@ def gather_donor(donor_id, ad, ad_lane_raw, azimuth_annot, qc_obs, columns_outpu
         oufh.write("{}\t{}\t{}.h5ad\t{}.tsv\n".format(expid, donor_id, oufnam, oufnam))
 
     # loading deconvoluted dataset
-    
-
+    try:
+        ad=ad.to_memory()
+    except:
+        _='already loaded'
     ad.var.index.name = "ensembl_id"
     ad.raw = ad_lane_raw[ad.obs.index, :]
     if donor_id != "unassigned" and donor_id != "doublet":
-        # add annotation from QC
-        donor_azt = azimuth_annot.loc[azimuth_annot.Donor == donor_id]
-        donor_azt = donor_azt.loc[donor_azt.Exp == expid]
-        donor_azt['barcode'] = donor_azt.index.str.split('-').str[0]+'-'+donor_azt.index.str.split('-').str[1]
-        donor_azt = donor_azt.set_index('barcode')
-        df = pandas.concat([ad.obs, donor_azt], axis = 1, join = 'outer')
-        df =df.loc[:,~df.columns.duplicated()]
-        df = df[['experiment_id'] + 
-                list(set(df.columns).intersection(set(COLUMNS_DECONV.keys()))) + 
-                list(set(df.columns).intersection(set(COLUMNS_AZIMUTH.keys())))]
+
+        dt = qc_obs[qc_obs.donor == donor_id]
         try:
-            df = get_lane_and_runid_from_experiment_id(df, insert_pos = 1)
+            dt = dt.set_index(dt['barcode'])
         except:
-            # here we do not know the lane ID.
-            df['chromium_lane']=lane_id
-            df['chromium_run_id']=df['experiment_id'][0]
-
-
-        dfqc = qc_obs[qc_obs.donor == donor_id]
-        dt = pandas.concat([df,dfqc], axis = 1, join = 'inner')
-
+            _='barcode is already the index'
+        df = pandas.concat([ad.obs, dt], axis = 1, join = 'outer')
+        df =df.loc[:,~df.columns.duplicated(keep='last')]
+        df['tranche.id']=args.experiment_name
         colnams = list(columns_output.keys())
-        colnams_overlap = sorted(set(colnams).intersection(set(dt.columns)))
-        ad.obs = dt[colnams_overlap].rename(columns = columns_output)
-        dt = pandas.concat([df, dfqc], axis = 1, join = 'outer')[colnams_overlap]
-        dt.rename(columns = columns_output, inplace = True)
-
+        colnams_overlap = sorted(set(colnams).intersection(set(df.columns)))
+        ad.obs = df[colnams_overlap].rename(columns = columns_output)
+        dt=df[colnams_overlap].rename(columns = columns_output)
         # Stats
         print('Performing the stats analysis')
-        experiment_id = list(set(df.experiment_id))[0]
-        try:
-            pool_id = list(set(df.chromium_run_id))[0] #???
-        except:
-            pool_id=' '
+        experiment_id = args.experiment_name
+        pool_id = list(set(df.experiment_id))[0]
         try:
             chromium_channel_number = list(set(df.chromium_channel))[0]
         except:
@@ -393,7 +380,7 @@ def gather_donor(donor_id, ad, ad_lane_raw, azimuth_annot, qc_obs, columns_outpu
     ad.obs.index.name = 'barcode'
     ad.obs = ad.obs.loc[:,~ad.obs.columns.duplicated()]
     dt = dt.loc[:,~dt.columns.duplicated()].copy()
-    dt[set(dt.columns)].to_csv(os.path.join(outdir, oufnam + '.tsv'), sep = "\t", na_rep = "N/A")
+    dt[list(set(dt.columns))].to_csv(os.path.join(outdir, oufnam + '.tsv'), sep = "\t", na_rep = "N/A")
     sys.stderr.write("writing file {} ...\n".format(oufnam))
     
     if write_h5:
@@ -404,6 +391,11 @@ def gather_donor(donor_id, ad, ad_lane_raw, azimuth_annot, qc_obs, columns_outpu
             pass
         ad.obs['cell_passes_hard_filters'] = ad.obs['cell_passes_hard_filters'].astype('bool')
         ad.obs['qc.filter.pass'] = ad.obs['qc.filter.pass'].astype('bool')
+        # Convert boolean columns in adata.obs to integers
+        for col in ad.obs.columns:
+            if ad.obs[col].dtype == object:
+                ad.obs[col] = ad.obs[col].astype(str)
+
         ad.write(path1,compression='gzip')
 
     return {
@@ -422,7 +414,6 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
     except:
         print('dir exists')
 
-    
     ######################
     #Cellranger datasets
     ######################
@@ -435,7 +426,6 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
                 os.symlink(f"{df_raw.loc[expid, 'data_path_10x_format']}/raw_feature_bc_matrix.h5", f"./{outdir}/Cellranger_raw_feature_bc_matrix__{expid}.h5")
         except:
             print('File already linked')
-    
     except:
         adata_cellranger_raw = scanpy.read_10x_mtx(f"{df_raw.loc[expid, 'data_path_10x_format']}/raw_feature_bc_matrix")
         try:
@@ -448,6 +438,7 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
     # Reading filtered cellranger files
 
     adata_cellranger_filtered = scanpy.read_10x_mtx(f"{df_raw.loc[expid, 'data_path_10x_format']}/filtered_feature_bc_matrix")
+
     try:
         if write_h5:
             os.symlink(f"{df_raw.loc[expid, 'data_path_10x_format']}/filtered_feature_bc_matrix.h5",f"{outdir}/Cellranger_filtered_feature_bc_matrix__{expid}.h5")  
@@ -468,30 +459,32 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
         df_cellbender = df_cellbender.reset_index()
         df_cellbender = df_cellbender.drop_duplicates(subset=['experiment_id'])
         df_cellbender = df_cellbender.set_index('experiment_id')
+        df2 = glob.glob(f'{args.results_dir}/preprocessing/data_modalities_split/filterd_after_cb/{expid}/Gene_Expression-{expid}.h5ad')[0]
         f=df_cellbender.loc[expid, 'data_path_10x_format']
         if (type(f) == str):
             f=[f]
         for id in f:
             print(id)
-            try:
-                cell_bender_path = id
-                cellbender_h5 = f"{cell_bender_path}/../cellbender_FPR_{Resolution}_filtered.h5"
-                ad_lane_filtered = scanpy.read_10x_mtx(cell_bender_path)
-                print('loaded')
-                break
-            except:
-                print('failed')
-                continue
+            cell_bender_path = id
+        try:
+            ad_lane_filtered = anndata.read_h5ad(df2)
+            if write_h5:
+                try:
+                    path2 = os.path.realpath(df2)
+                    os.symlink(path2, f"./{outdir}/Cellbender_filtered_{Resolution}__{expid}.h5ad")
+                except:
+                    print('File already linked')
+        except:
+            ad_lane_filtered = scanpy.read_10x_mtx(cell_bender_path)  
+            if write_h5:
+                ad_lane_filtered.write(
+                f"./{outdir}/Cellbender_filtered_{Resolution}__{expid}.h5ad" ,
+                compression='gzip'
+                )      
 
-        if write_h5:
-            try:
-                path2 = os.path.realpath(cellbender_h5)
-                os.symlink(path2, f"./{outdir}/Cellbender_filtered_{Resolution}__{expid}.h5")
-            except:
-                print('File already linked')
         columns_output = {**columns_output, **COLUMNS_CELLBENDER}
     else:
-        ad_lane_filtered = scanpy.read_10x_mtx(f"{df_raw.loc[expid, 'data_path_10x_format']}/filtered_feature_bc_matrix")
+        ad_lane_filtered = adata_cellranger_filtered
         df_cellbender=None
         cell_bender_path=None
 
@@ -505,25 +498,77 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
     #Cellranger Metrics Datasheet
     #############
 
-    metrics = pd.read_csv(df_raw.loc[expid, 'data_path_10x_format']+'/metrics_summary.csv')
-
+    try:
+        metrics = pd.read_csv(df_raw.loc[expid, 'data_path_10x_format']+'/metrics_summary.csv')
+    except:
+        metrics = pd.read_csv(df_raw.loc[expid, 'data_path_10x_format']+'/summary.csv')
+        
     
+    try:
+        Donor_Cohort_Assignments = pd.read_csv(f'{args.results_dir}/deconvolution/gtmatch/{expid}/{expid}_gt_donor_assignments.csv')
+        All_assignments = pd.read_csv(f'{args.results_dir}/deconvolution/gtmatch/assignments_all_pools.tsv',sep='\t')
+        All_assignments = All_assignments.set_index(All_assignments['pool']+'__'+All_assignments['donor_gt'].astype(str).str.replace('^0*', '', regex=True).str.replace('.*THP1.*', 'THP1', regex=True).str.replace('.*U937.*', 'U937', regex=True))
+        All_assignments['tp2'] = All_assignments.index
+        all_dubs =  list(set(All_assignments[All_assignments['tp2'].duplicated()].index))
+        all_dubs2 =  All_assignments.loc[all_dubs]
+        All_assignments = All_assignments.drop_duplicates(subset=['tp2'],keep=False)
+    except:
+        Donor_Cohort_Assignments = pd.DataFrame(columns=['panel'])
+        All_assignments= pd.DataFrame(columns=['panel'])
+
+    if (args.extra_meta):
+        Metadata = pd.read_csv(f"{args.extra_meta}",sep='\t')
+        Metadata = Metadata.set_index(Metadata['Pool ID']+'__'+Metadata['donor'].astype(str).str.replace('^0*', '', regex=True).str.replace('.*THP1.*', 'THP1', regex=True).str.replace('.*U937.*', 'U937', regex=True))
+        Metadata['donor2']=All_assignments['donor_query']
+        Metadata = Metadata.set_index(Metadata['Pool ID']+'__'+Metadata['donor2'])
+        
+        if len(all_dubs2)>0:
+            for i,n in all_dubs2.iterrows():
+                print(i)
+                new =Metadata[Metadata['experiment_id']==i]
+                new['donor2']=n['donor_query']
+                Metadata = Metadata.append(new, ignore_index=True)
+            Metadata = Metadata.drop_duplicates()
+        Metadata = Metadata.set_index(Metadata['Pool ID']+'__'+Metadata['donor2'])
+        Metadata['tp2'] = Metadata.index
+        Metadata = Metadata.drop_duplicates(subset=['tp2'],keep=False)
+        Metadata = Metadata.drop('tp2',axis=1)
+        Metadata = Metadata.drop('donor2',axis=1)
+        Metadata = Metadata.drop('donor',axis=1)
+        Metadata = Metadata.drop('experiment_id',axis=1)
+    else:
+        Metadata = pd.DataFrame()
+
     #############
     #Cell-type assignments
     #############
 
-    azt = pd.read_csv(f'{args.results_dir}/celltype/All_Celltype_Assignments.tsv',sep='\t',index_col=0)
-    azt_cols_to_add = azt.columns[azt.columns.str.contains('Azimuth')]
-    ct_cols_to_add = azt.columns[azt.columns.str.contains('Celltypist')]
-    sc_cols_to_add = azt.columns[azt.columns.str.contains('scpred_prediction')]
+    azt_path = os.path.join(args.results_dir, "celltype_assignemt", "All_Celltype_Assignments.tsv")
+
+    if os.path.exists(azt_path) and os.path.getsize(azt_path) > 0:
+        try:
+            azt = pd.read_csv(azt_path, sep='\t', index_col=0)
+        except Exception as e:
+            sys.stderr.write(f"WARNING: Failed to load Azimuth file '{azt_path}': {str(e)}\n")
+            azt = pd.DataFrame()
+    else:
+        sys.stderr.write(f"WARNING: Azimuth file '{azt_path}' not found or empty.\n")
+        azt = pd.DataFrame()
+    if not azt.empty:
+        azt_cols_to_add = azt.columns[azt.columns.str.contains('Azimuth')]
+        ct_cols_to_add = azt.columns[azt.columns.str.contains('Celltypist')]
+        sc_cols_to_add = azt.columns[azt.columns.str.contains('scpred_prediction')]
+    else:
+        azt_cols_to_add = []
+        ct_cols_to_add = []
+        sc_cols_to_add = []
     for i3 in set(azt_cols_to_add) - set(columns_output.keys()):
         columns_output = {**columns_output,  **{i3:i3}}
     for i3 in set(sc_cols_to_add) - set(columns_output.keys()):
         columns_output = {**columns_output,  **{i3:i3}}
     for i3 in set(ct_cols_to_add) - set(columns_output.keys()):
         columns_output = {**columns_output,  **{i3:i3}}
-        
-        
+
     cols = pd.DataFrame(adqc.obs.columns)
     cols =cols[cols[0].str.contains('cell_passes_qc')]
     for i3 in set(cols[0]) - set(columns_output.keys()):
@@ -532,7 +577,7 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
     ##########################
     # Scrublet
     #########################
-    doublet_data = glob.glob(f'{args.results_dir}/doublets/*.tsv')
+    doublet_data = glob.glob(f'{args.results_dir}/doublet_detection/doublet_results_combined/*.tsv')
     doublet_data_combined = pd.DataFrame()
     for f1 in doublet_data:
         print(f1)
@@ -545,30 +590,38 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
     
 
     columns_output = {**columns_output,  **COLUMNS_SCRUBLET}    
-        
-    # doublet_data_combined.iloc[0]
-    # datadir_scrublet=glob.glob(f'{args.results_dir}/*/multiplet.method=scrublet')[0]
-    # if os.path.isdir(datadir_scrublet):
-    #     # Scrublet loading QC
-    #     try:
-    #         scb = load_scrublet_assignments(
-    #             expid,
-    #             datadir_scrublet=datadir_scrublet
-    #         )
-    #         columns_output = {**columns_output,  **COLUMNS_SCRUBLET}
-    #         scb = pd.concat([scb,doublet_data_combined.loc[scb.index]],axis=1)
-    #     except:
-    #         print('Scrubblet was not performed for this pool - potential reason is that there are not enough cells for assignment')
-    #         scb = None
-    # else:
-    #     scb = None
-        
-    
+    columns_output = {k: v for k, v in columns_output.items() if 'idx1' not in k and 'idx' not in v}
+
     ############################################################
     # Loading deconvoluted data including unassigned and doublets
     ###########################################
+    if 'convoluted_samplename' not in adqc.obs.columns:
+        adqc.obs['convoluted_samplename'] = adqc.obs['Donor'].copy()
 
-    obsqc,all_QC_lane = fetch_qc_obs_from_anndata(adqc, expid, cell_bender_path = cell_bender_path,Resolution=Resolution)
+    s = adqc.obs['convoluted_samplename'] == expid
+    ad = adqc[s]
+    df = get_df_from_mangled_index(ad.obs, expid)
+    #df.insert(0, 'barcode', df.index.values)
+    df_pre = pandas.concat([df,ad.obs], axis = 1)
+    df_pre['mengled_index'] = df_pre.index
+    df_pre['barcode'] = df_pre['barcode'].str.replace(r'^((?:[^-]+-){1}[^-]+)-.*$', r'\1', regex=True)
+    df = df_pre.set_index("barcode", drop = True)
+    
+
+    if cell_bender_path is not None:
+        # cellbender removes the barcodes - 
+        dfcb = fetch_cellbender_annotation(cell_bender_path, expid,Resolution)
+        dc = pandas.concat([df, dfcb], axis = 1, join = 'inner')
+        if dc.shape[0] != df.shape[0]:
+            sys.exit("ERROR: barcodes missing in cellbender file.")
+        df = dc.copy()
+        dc=dc.set_index('mengled_index')
+    if 'donor' not in df.columns:
+        df = df.loc[:, ~df.columns.duplicated()]
+        df['donor']=df['experiment_id']
+        
+    obsqc = df
+    all_QC_lane = ad
 
     donor_tables=pd.DataFrame([])
     for d1 in set(obsqc['donor']):
@@ -584,8 +637,20 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
     df_donors = donor_tables
     df_donors = df_donors.reset_index(drop=True)
     if scb is not None:
-        obsqc = pandas.concat([obsqc,scb], axis = 1, join = 'outer')
-    
+        obsqc = pandas.concat([obsqc,scb], axis = 1, join = 'inner')
+
+    if len(Metadata)>0:
+        obsqc['barcode']= obsqc.index
+        obsqc = obsqc.set_index(obsqc['convoluted_samplename'].astype(str)+'__'+obsqc['donor_id'].astype(str))
+        obsqc['chromium_channel']=Metadata['chromium_channel']
+        obsqc.update(Metadata)
+        for col in Metadata.columns:
+            if col not in obsqc.columns:
+                obsqc[col] = Metadata[col]
+    if len(All_assignments)>0:
+        All_assignments = All_assignments.set_index(All_assignments['pool']+'__'+All_assignments['donor_query'])
+        obsqc['Donor id']=All_assignments['donor_gt original']
+        obsqc['Vacutainer ID']=All_assignments['donor_gt']
     fctr = 0
 
     #####################
@@ -677,7 +742,7 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
     try:
         Valid_Droplet_percentage = metrics['Valid Barcodes'].values[0]
     except:
-        Valid_Droplet_percentage = metrics['Valid barcodes'].values[0]
+        _='metric not available'
     df1 = ad_lane_filtered.to_df()
     Number_of_cells = len(set(df1.index))
     Total_UMIs_before_10x_filter = np.sum(ad_lane_raw.X) #this may be after the normalisation
@@ -697,11 +762,8 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
     UMIS_mapped_to_ribo_genes = sum(all_QC_lane.obs['total_counts_gene_group__ribo_protein'])
     UMIS_mapped_to_ribo_rna = sum(all_QC_lane.obs['total_counts_gene_group__ribo_rna'])
     UMIs_mapped_to_genes = sum(all_QC_lane.obs['total_counts'])
-    try:
-        Donor_Cohort_Assignments = pd.read_csv(f'{args.results_dir}/gtmatch/{expid}/{expid}_gt_donor_assignments.csv')
-    except:
-        Donor_Cohort_Assignments = pd.DataFrame(columns=['panel'])
-        
+
+   
     Total_donors_deconvoluted_in_pool = len(Donor_Cohort_Assignments[Donor_Cohort_Assignments['panel']!='NONE'].index)
     ELGH_Donors_Deconvoluted_in_pool = len(Donor_Cohort_Assignments[Donor_Cohort_Assignments['panel']=='GT_ELGH'].index)
     UKB_Donors_Deconvoluted_in_pool = len(Donor_Cohort_Assignments[Donor_Cohort_Assignments['panel']=='GT_UKBB'].index)
@@ -714,6 +776,7 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
                             'cells failing QC':[],
                             'cells passing QC':[],
     }
+    all_probs = pd.DataFrame()
     all_probs = pd.DataFrame()
 
     Tranche_Pass_Fail='PASS'
@@ -730,15 +793,33 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
             Tranche_Failure_Reason +='Mean reads per cell for all cells in pool <=25000; '
     except:
         _='cant validate reasoning'        
-    
+    try:
+        Summary_check = pd.read_csv(f'{args.results_dir}/deconvolution/vireo_raw/{expid}/vireo_{expid}/summary.tsv',sep='\t')
+    except:
+        Summary_check =pd.DataFrame()
+        
+    try:
+        Doublets_donor = int(Summary_check[Summary_check['Var1']=='doublet']['Freq'].values[0])
+    except:
+        Doublets_donor = 0
+    try:
+        Unassigned_donor = int(Summary_check[Summary_check['Var1']=='unassigned']['Freq'].values[0])
+    except:
+        Unassigned_donor = 0
     for i in df_donors.index:
         print(i)
+        # if df_donors.loc[i]["donor_id"] != 'donor2':
+        #     continue
+        # else:
+        #     _=''
         Donor_Stats=[]
         row = df_donors.loc[i]
         print(row)
         path1 = row['file_path_h5ad']
         if(path1=='all_QC_lane'):
-            Deconvoluted_Donor_Data = all_QC_lane[all_QC_lane.obs['donor_id']==row['donor_id']]
+            tp1 = pd.DataFrame(all_QC_lane.obs)
+            tp1 = tp1[tp1['donor_id']==row['donor_id']].index
+            Deconvoluted_Donor_Data = adqc[tp1]
             Donor_barcodes = Deconvoluted_Donor_Data.obs.index.str.split('-').str[:2]
             Donor_barcodes = Donor_barcodes.str[0]+'-'+Donor_barcodes.str[1]
             Deconvoluted_Donor_Data.obs.index = Donor_barcodes
@@ -763,26 +844,39 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
             s = s.set_index('donor_id')
             s.columns=['index']
             try:
-                Mengled_barcodes_donor = list(s.loc[row["donor_id"]]['index'])
+                Mengled_barcodes_donor = list(s.loc[row["donor_id"]]['index'].str.split('__').str[0])
             except:
                 continue
             donor_number =row["donor_id"].replace('donor','') #Todo - will need to change upon Vireo runs with genotype, can just pick it as an fctr
             donor_id = row["donor_id"]
             intersect_set = set(Donor_barcodes).intersection(set(ad_lane_filtered.obs.index))
-
-            all_probs = pd.concat([all_probs,pd.DataFrame(Deconvoluted_Donor_Data.obs['prob_doublet'])])
-            Donor_qc_files = all_QC_lane[Mengled_barcodes_donor]
+            try:
+                all_probs = pd.concat([all_probs,pd.DataFrame(Deconvoluted_Donor_Data.obs['prob_doublet'])])
+            except:
+                _='doesnt exist'
+            Donor_qc_files = Deconvoluted_Donor_Data
             UMIs = np.sum(Donor_qc_files.X)
-            Donor_cells_for_donor=len(all_QC_lane[Mengled_barcodes_donor].obs)
-            Donor_cells_passes_qc = len(all_QC_lane[Mengled_barcodes_donor].obs[all_QC_lane.obs['cell_passes_qc']])
-            Donor_cells_fails_qc = len(all_QC_lane[Mengled_barcodes_donor].obs[all_QC_lane.obs['cell_passes_qc']==False])
+            Donor_cells_for_donor=len(Deconvoluted_Donor_Data.obs)
+            Donor_cells_passes_qc = len(Deconvoluted_Donor_Data.obs[Deconvoluted_Donor_Data.obs['cell_passes_qc']])
+            Donor_cells_fails_qc = len(Deconvoluted_Donor_Data.obs[Deconvoluted_Donor_Data.obs['cell_passes_qc']==False])
             
             data_donor_for_stats['cells before QC filters'].append(Donor_cells_for_donor)
             data_donor_for_stats['cells failing QC'].append(Donor_cells_fails_qc)
             data_donor_for_stats['cells passing QC'].append(Donor_cells_passes_qc)
-
-            Donor_cell_assignments = azt.loc[Mengled_barcodes_donor] #for this have to figure out when the cell type is unasigned.
-            Cell_types_detected = len(set(Donor_cell_assignments['Azimuth:predicted.celltype.l2']))
+            
+            if not azt.empty and 'Azimuth:predicted.celltype.l2' in azt.columns:
+                Donor_cell_assignments = azt.loc[
+                    list(set(azt.index).intersection(set(Mengled_barcodes_donor)))
+                ]
+                Cell_types_detected = len(
+                    set(Donor_cell_assignments['Azimuth:predicted.celltype.l2'].dropna())
+                )
+                # Optional: fall back if no matching barcodes
+                if Cell_types_detected == 0:
+                    Cell_types_detected = 'None detected'
+            else:
+                Donor_cell_assignments = pd.DataFrame()
+                Cell_types_detected = 0
             Donor_UMIS_mapped_to_mitochondrial_genes = sum(Donor_qc_files.obs['total_counts_gene_group__mito_transcript'])
             Donor_UMIS_mapped_to_ribo_genes = sum(Donor_qc_files.obs['total_counts_gene_group__ribo_protein'])
             Donor_UMIS_mapped_to_ribo_rna = sum(Donor_qc_files.obs['total_counts_gene_group__ribo_rna'])
@@ -795,16 +889,16 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
             Median_UMIs_per_cell= statistics.median(pd.DataFrame(Donor_qc_files.X.sum(axis=1))[0])
 
             Cell_numbers = ''
-            for type1 in set(Donor_cell_assignments['Azimuth:predicted.celltype.l2']):
-                nr_cells_of_this_type = len(Donor_cell_assignments[Donor_cell_assignments['Azimuth:predicted.celltype.l2']==type1])
-                Cell_numbers+=f"{type1}:{nr_cells_of_this_type} ; "
+            if not Donor_cell_assignments.empty and 'Azimuth:predicted.celltype.l2' in Donor_cell_assignments.columns:
+                for type1 in set(Donor_cell_assignments['Azimuth:predicted.celltype.l2']):
+                    nr_cells_of_this_type = len(Donor_cell_assignments[Donor_cell_assignments['Azimuth:predicted.celltype.l2']==type1])
+                    Cell_numbers+=f"{type1}:{nr_cells_of_this_type} ; "
 
-
+            
             Donor_Stats = gather_donor(
-                row["donor_id"],
-                Deconvoluted_Donor_Data,
-                ad_lane_raw,
-                azimuth_annot = azt,
+                donor_id=row["donor_id"],
+                ad= Donor_qc_files,
+                ad_lane_raw=ad_lane_raw,
                 qc_obs = obsqc,
                 columns_output = columns_output,
                 outdir = outdir,
@@ -872,7 +966,10 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
 
         fctr += 1
     all_probs = all_probs[~all_probs.index.duplicated(keep='first')]
-    azt['prob_doublet']=all_probs['prob_doublet']
+    try:
+        azt['prob_doublet']=all_probs['prob_doublet']
+    except:
+        _='Doesnt exist'
     Donor_df = pd.DataFrame(data_donor)
 
     try:
@@ -975,6 +1072,9 @@ def set_argument_parser():
     parser.add_argument("--experiment_name", required = False,default='default',
             help="Cellbender resolution used",
             dest='experiment_name')
+    parser.add_argument("--extra_meta", required = False,default=None,
+            help="Extra Meta To merge in final files",
+            dest='extra_meta')
                 
     return parser.parse_args()
 
@@ -998,8 +1098,8 @@ if __name__ == '__main__':
     else:
         # Here we have run the cellbender as par of pipeline. 
         # cellbender/*/cellbender-epochs_*/cellbender-FPR_0pt01-filtered_10x_mtx
-        file_path = glob.glob(f'{args.results_dir}/nf-preprocessing/cellbender/*/cellbender-epochs_*/*{args.resolution}*10x_mtx*')
-        file_path2 = glob.glob(f'{args.results_dir}/nf-preprocessing/cellbender/*/*{args.resolution}*10x_mtx*')
+        file_path = glob.glob(f'{args.results_dir}/preprocessing/cellbender/*/cellbender-epochs_*/*{args.resolution}*10x_mtx*')
+        file_path2 = glob.glob(f'{args.results_dir}/preprocessing/cellbender/*/*{args.resolution}*10x_mtx*')
         joined_file_paths = file_path+file_path2
         df_cellbender = pd.DataFrame(joined_file_paths,columns=['data_path_10x_format'])
         df_cellbender['experiment_id']=df_cellbender['data_path_10x_format'].str.split('/').str[-3]
@@ -1008,15 +1108,43 @@ if __name__ == '__main__':
     Resolution = args.resolution
     
     # Load the final QCd dataset
+    a1 = glob.glob(f'{args.results_dir}/*/*/*outlier_filtered_adata.h5ad')
+    a2 =glob.glob(f'{args.results_dir}/*/*outlier_filtered_adata.h5ad')
+    a3 =glob.glob(f'{args.results_dir}/*outlier_filtered_adata.h5ad')
+    all_inter = list(set(a3).union(set(a2)).union(set(a1)))[0]
+    adqc = anndata.read_h5ad(all_inter, backed='r')
+    
+    if 'log1p_cp10k' not in adqc.layers:
+        adqc = adqc.to_memory()
+        normalized_counts = sc.pp.normalize_total(
+            adqc,
+            target_sum=1e4,
+            exclude_highly_expressed=False,
+            key_added='normalization_factor',  # add to adata.obs
+            inplace=False
+        )['X']
+        log1p_cp10k = np.log1p(normalized_counts)
+        adqc.layers['log1p_cp10k'] = log1p_cp10k
+        adqc.uns['log1p_cp10k'] = {'transformation': 'ln(CP10k+1)'}
+        del normalized_counts
+        del log1p_cp10k
+    
     try:
-        adqc = anndata.read_h5ad(f'{args.results_dir}/merged_h5ad/outlier_filtered_adata.h5ad')
+        a1 = glob.glob(f'{args.results_dir}/*/*/*adata-normalized_*.h5ad')
+        a2 =glob.glob(f'{args.results_dir}/*/*adata-normalized_*.h5ad')
+        a3 =glob.glob(f'{args.results_dir}/*adata-normalized_*.h5ad')
+        all_inter = list(set(a3).union(set(a2)).union(set(a1)))[0]
+        adqc_norm = anndata.read_h5ad(all_inter, backed='r')
+        # Here we want to add any metadata columns that may be missed for donors. 
+        adqc.obs['phase'] = adqc_norm.obs['phase']
+        adqc.obs['S_score'] = adqc_norm.obs['S_score']
+        adqc.obs['G2M_score'] = adqc_norm.obs['G2M_score']
     except:
-        try:
-            adqc = anndata.read_h5ad(f'{args.results_dir}/adata.h5ad')
-        except:
-            d2 = glob.glob(f'{args.results_dir}/*/*/adatanormalized.h5ad')[0]
-            adqc = anndata.read_h5ad(d2)
-    # adqc.obs['experiment_id'] = adqc.obs['experiment_id'].str.split("__").str[0]
+        _='not normalised'
+        
+    if 'convoluted_samplename' not in adqc.obs.columns:
+        adqc.obs['convoluted_samplename'] = adqc.obs['Donor'].copy()
+        
     fctr = 0
     data_tranche_all=[]
     data_donor_all=[]
@@ -1025,33 +1153,30 @@ if __name__ == '__main__':
     Sample_metadata = pd.DataFrame()
     
     # SETTING TRANCHE NAME
-    try:
-        adqc.obs['cell_passes_qc-per:Azimuth:L0_predicted.celltype.l2'] = adqc.obs['cell_passes_qc-per:Azimuth:L0_predicted.celltype.l2:score'].astype(float,errors='ignore')
-    except:
-        _='no values associated'
-    try:
-        adqc.obs['cell_passes_qc-per:all_together::exclude:score']= adqc.obs['cell_passes_qc-per:all_together::exclude:score'].astype(float,errors='ignore')
-    except:
-        _='no values associated'
+    # try:
+    #     adqc.obs['cell_passes_qc-per:Azimuth:L0_predicted.celltype.l2'] = adqc.obs['cell_passes_qc-per:Azimuth:L0_predicted.celltype.l2:score'].astype(float,errors='ignore')
+    # except:
+    #     _='no values associated'
+    # try:
+    #     adqc.obs['cell_passes_qc-per:all_together::exclude:score']= adqc.obs['cell_passes_qc-per:all_together::exclude:score'].astype(float,errors='ignore')
+    # except:
+    #     _='no values associated'
     
     # Now we calculate all the statistics for each of the pools.
     for expid in df_raw.index:
         print(expid)
+        # if expid != 'CRD_CMB13637311':
+        #     continue
         s = adqc.obs['convoluted_samplename'] == expid
         ad = adqc[s]
         if ad.n_obs == 0:
             continue #Here no cells has passed the qc thresholds.
         nf, data_tranche, data_donor = gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = oufh, lane_id=count,Resolution=Resolution)
-        # add the stuff to the adata.
-
-        # All_probs_and_celltypes=pd.concat([All_probs_and_celltypes,azt])
         data_tranche_all.append(data_tranche)
         data_donor_all= data_donor_all+data_donor
         count += 1
         fctr += nf
-        # except:
-        #     print(f"pool {expid} was ignored as it did not contain deconvoluted donors.")
-    
+
     Donor_Report = pd.DataFrame(data_donor_all)
     Tranche_Report = pd.DataFrame(data_tranche_all)
 

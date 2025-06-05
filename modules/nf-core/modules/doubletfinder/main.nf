@@ -3,12 +3,12 @@ process DOUBLET_FINDER {
     tag "${experiment_id}"
     label 'process_medium'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/azimuth_dsb_6_03_2024.sif"
+        container "${params.yascp_container}"
     } else {
-        container "mercury/azimuth_dsb:6_03_2024"
+        container "${params.yascp_container_docker}"
     }
     
-    publishDir  path: "${params.outdir}/doublets/multiplet.method=DoubletFinder",
+    publishDir  path: "${params.outdir}/doublet_detection/DoubletFinder",
                 mode: "${params.copy_mode}",
                 overwrite: "true"
 
@@ -27,8 +27,8 @@ process DOUBLET_FINDER {
 
     script:
         
-        outdir = "${params.outdir}/doublets/multiplet"
-        outdir = "${outdir}.method=doubletFinder"
+        outdir = "${params.outdir}/doublet_detection/"
+        outdir = "${outdir}doubletFinder"
         outfile = "${experiment_id}"
 
         """

@@ -16,6 +16,7 @@ import scanpy as sc
 import csv
 from distutils.version import LooseVersion
 
+from scikeras.wrappers import KerasClassifier
 # import joblib  # for numpy matrix, joblib faster than pickle
 import matplotlib.pyplot as plt
 from matplotlib import colors
@@ -29,11 +30,12 @@ from sklearn.metrics import classification_report
 from sklearn.model_selection import GridSearchCV
 
 import keras
-from keras.utils import np_utils
+from tensorflow.keras.utils import to_categorical
+
 from keras.models import Sequential
 from keras.layers import Dense
 from keras.regularizers import L1L2
-from keras.wrappers.scikit_learn import KerasClassifier
+# from keras.wrappers.scikit_learn import KerasClassifier
 
 from tensorflow.python.client import device_lib
 import tensorflow as tf
@@ -102,7 +104,7 @@ def class_report(y_true, y_pred, classes, y_pred_proba=None):
     model_report = pd.DataFrame(classification_report(
         y_true,
         y_pred,
-        classes,
+        
         output_dict=True
     )).transpose()
 
@@ -169,7 +171,7 @@ def keras_grid(
 ):
     # Run same proceedure on the test data
     y_encoded = encoder.transform(y)
-    Y_onehot = np_utils.to_categorical(y_encoded)
+    Y_onehot = to_categorical(y_encoded)
 
     # Initial parameter sweep for different activation, optimizer, and loss.
     # NOTE: From 100k TI single cells, best settings were:
@@ -284,10 +286,10 @@ def fit_model_keras(
     # encoder.fit(y_train)
     y_train_encoded = encoder.transform(y_train)
     # convert integers to dummy variables (i.e. one hot encoded)
-    Y_train_onehot = np_utils.to_categorical(y_train_encoded)
+    Y_train_onehot = to_categorical(y_train_encoded)
     # Run same proceedure on the test data
     y_test_encoded = encoder.transform(y_test)
-    Y_test_onehot = np_utils.to_categorical(y_test_encoded)
+    Y_test_onehot = to_categorical(y_test_encoded)
 
     # Training
     model = model_function(
@@ -328,7 +330,7 @@ def fit_model_keras(
     # Make a classifier report
     classes = np.argmax(model.predict(X_test), axis=1)
     y_test_pred = encoder.inverse_transform(classes)
-    y_test_proba = model.predict_proba(X_test)
+    y_test_proba = model.predict(X_test)
     model_report = class_report(
         y_test,
         y_test_pred,
@@ -587,6 +589,7 @@ def main():
         with_mean=True,
         with_std=True
     )
+    X = np.asarray(X)
     X_std = scaler.fit_transform(X)
     if verbose:
         print('center={} scale={}'.format(
@@ -849,8 +852,13 @@ def main():
 
         # Save the model and weights (coefficients) seperately
         # open('{}.json'.format(out_file_base), 'w').write(model.to_json())
-        open('{}.yml'.format(out_file_base), 'w').write(model.to_yaml())
-        model.save_weights('{}-weights.h5'.format(out_file_base))
+        # Save the model architecture in JSON format
+        with open('{}.json'.format(out_file_base), 'w') as json_file:
+            json_file.write(model.to_json())
+
+        # Save the model weights
+        weights_filename = '{}.weights.h5'.format(out_file_base)
+        model.save_weights(weights_filename)
         # Example read functions
         # model = model_from_yaml(open('my_model_architecture.yaml').read())
         # model.load_weights('my_model_weights.h5')
@@ -1014,7 +1022,7 @@ def main():
                 #dpi=300,
                 bbox_inches='tight'
             )
-            plt.xscale('log', basex=10)
+            plt.xscale('log', base=10)
             fig.savefig(
                 '{}-cluster_size_{}_log10.png'.format(out_file_base, i),
                 #dpi=300,

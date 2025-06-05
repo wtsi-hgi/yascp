@@ -484,7 +484,8 @@ def scanpy_merge(
     output_file,
     cellmetadata_filepaths=None,
     anndata_compression_opts=4,
-    extra_metadata=None
+    extra_metadata=None,
+    celltype=None
 ):
     """Merge h5ad data.
 
@@ -558,14 +559,37 @@ def scanpy_merge(
     
     for idx, row in h5ad_data.iterrows():
         print(row)
-        idx1 = row['experiment_id'].split('__')[0]
+        idx1 = row['experiment_id'].split('__')[0].split('---')[0]
         # Load the data
-        adata = sc.read_h5ad(
-            filename=row['data_path_h5ad_format'] + '/h5ad.h5ad' #,
-            # var_names='gene_symbols',
-            # ivar_names='gene_ids',
-            # make_unique=False
-        )
+        path = row['data_path_h5ad_format']
+        if os.path.isdir(path+'/h5ad.h5ad/') and os.path.exists(os.path.join(path+'/h5ad.h5ad/', "matrix.mtx.gz")):
+            adata = sc.read_10x_mtx(path+'/h5ad.h5ad/', var_names="gene_ids", make_unique=False)
+        else:
+            adata = sc.read_h5ad(os.path.join(path, "h5ad.h5ad"))
+
+        prop_ens_in_symbols = adata.var['gene_symbols'].str.startswith("ENSG").mean()
+        prop_ens_in_index = adata.var.index.to_series().str.startswith("ENSG").mean()
+
+        print("Proportion of ENSG in gene_symbols column:", prop_ens_in_symbols)
+        print("Proportion of ENSG in index:", prop_ens_in_index)
+
+        # Define a threshold (here 50% is used, adjust if needed)
+        if prop_ens_in_symbols > 0.5 and prop_ens_in_index < 0.5:
+            # The gene_symbols column is mostly ENSG IDs while the index contains gene symbols.
+            
+            # Save the ENSG IDs from the gene_symbols column to a new column 'gene_ids'
+            adata.var['gene_ids'] = adata.var['gene_symbols']
+            
+            # Replace the gene_symbols column with the current index (the gene symbols)
+            adata.var['gene_symbols'] = adata.var.index
+            
+            # Set the index (var_names) to these gene symbols
+            adata.var_names = pd.Index(adata.var['gene_ids'])
+            
+            print("Swapped: gene_ids now contain ENSG IDs and gene_symbols (and the index) now contain gene symbols.")
+        else:
+            print("Swap condition not met. No action taken.")
+
 
         adata_orig_cols = list(adata.obs.columns)
         adata_orig_cols.append("donor")
@@ -598,13 +622,34 @@ def scanpy_merge(
         # NOTE: it would be more memory efficient to stash this in
         #       unstructured dict-like annotation (adata.uns)
         metadata_smpl = metadata[
-            metadata[metadata_key] == row['experiment_id']
+            metadata[metadata_key] == idx1
         ]
         try:
             extra_sample_metadata = extra_metadata[extra_metadata[metadata_key]==idx1]
             extra_sample_metadata= extra_sample_metadata.drop_duplicates(subset=['experiment_id'], keep='last')
         except:
             extra_sample_metadata = pd.DataFrame()
+        
+        # Add celltypes. 
+        obs_df = adata.obs.copy()
+        try:
+            obs_df['merge_key'] = obs_df.index + '-' + obs_df['convoluted_samplename'].astype(str)
+        except:
+            obs_df['merge_key'] = obs_df.index + '-' + idx1
+        celltype['merge_key'] = celltype.index
+        try:
+            del celltype['Donor']
+        except:
+            _=''
+        try:
+            del celltype['Exp']
+        except:
+            _=''
+            
+        merged_df = obs_df.merge(celltype, on='merge_key', how='left')
+        merged_df = merged_df.set_index(obs_df.index)
+        adata.obs = merged_df
+        
         if (len(extra_sample_metadata)>0):
             for col in extra_sample_metadata.columns:
                 # print(col)
@@ -616,21 +661,22 @@ def scanpy_merge(
                     d2 = extra_sample_metadata[col].values
                     adata.obs[col] = np.repeat(list(set(d2)), adata.n_obs)
         adata_orig_cols = list(adata.obs.columns)
-        
-        for col in metadata_smpl.columns:
-            if col in list(adata_orig_cols):
-                print(f' {col} already exist')
-            if (col == 'experiment_id'):
-                print(col)
-                adata.obs[col] = np.repeat(metadata_smpl[col].values, adata.n_obs)             
-            else:
-                print(col)
-                adata.obs[col] = np.repeat(metadata_smpl[col].values, adata.n_obs)
+        if len(metadata_smpl)!=0:
+            for col in metadata_smpl.columns:
+                if col in list(adata_orig_cols):
+                    print(f' {col} already exist')
+                if (col == 'experiment_id'):
+                    print(col)
+                    adata.obs[col] = np.repeat(metadata_smpl[col].values, adata.n_obs)             
+                else:
+                    print(col)
+                    adata.obs[col] = np.repeat(metadata_smpl[col].values, adata.n_obs)
 
+        if 'convoluted_samplename' not in adata.obs.columns:
+            adata.obs['convoluted_samplename'] = idx1
         # Ensure we have experiment_in the final dataframe.
         if 'experiment_id' not in adata.obs.columns:
-            adata.obs['experiment_id'] = adata.obs[metadata_key]
-
+            adata.obs['experiment_id'] = adata.obs['convoluted_samplename']
         # Add in per cell metadata if we have it.
         if cellmetadata_filepaths is not None:
             if row['experiment_id'] in cellmetadata_filepaths.index:
@@ -655,7 +701,7 @@ def scanpy_merge(
             )
 
     adata_merged = adatasets[0].concatenate(
-        *adatasets[1:],
+        *adatasets[1:], join='outer',
         batch_categories=adatasets__experiment_ids
     )
     try:
@@ -668,18 +714,27 @@ def scanpy_merge(
     # Re-calculate basic qc metrics of var (genes) for the whole dataset.
     # NOTE: we are only changing adata.var
     # obs_prior = adata_merged.obs.copy()
-    sc.pp.calculate_qc_metrics(
-        adata_merged,
-        qc_vars=[
-            'gene_group__mito_transcript',
-            'gene_group__mito_protein',
-            'gene_group__ribo_protein',
-            'gene_group__ribo_rna'
-        ],
-        inplace=True
-    )
+    try:
+        sc.pp.calculate_qc_metrics(
+            adata_merged,
+            qc_vars=[
+                'gene_group__mito_transcript',
+                'gene_group__mito_protein',
+                'gene_group__ribo_protein',
+                'gene_group__ribo_rna'
+            ],
+            inplace=True
+        )
+        adata_merged.obs.loc[adata_merged.obs['pct_counts_gene_group__mito_transcript']!=adata_merged.obs['pct_counts_gene_group__mito_transcript'],'pct_counts_gene_group__mito_transcript']=0
+        adata_merged.obs.loc[adata_merged.obs['pct_counts_gene_group__mito_protein']!=adata_merged.obs['pct_counts_gene_group__mito_protein'],'pct_counts_gene_group__mito_protein']=0
+        adata_merged.obs.loc[adata_merged.obs['pct_counts_gene_group__ribo_protein']!=adata_merged.obs['pct_counts_gene_group__ribo_protein'],'pct_counts_gene_group__ribo_protein']=0
+        adata_merged.obs.loc[adata_merged.obs['pct_counts_gene_group__ribo_rna']!=adata_merged.obs['pct_counts_gene_group__ribo_rna'],'pct_counts_gene_group__ribo_rna']=0
+    except:
+        _='most likely different data format such as ATAC which doesnt have gene IDs'
     # adata_merged.obs = obs_prior
     adata_merged.obs['log10_ngenes_by_count'] = np.log10(adata_merged.obs['n_genes_by_counts']) / np.log10(adata_merged.obs['total_counts'])
+    adata_merged.obs.loc[adata_merged.obs['log10_ngenes_by_count']!=adata_merged.obs['log10_ngenes_by_count'],'log10_ngenes_by_count']=0
+    
     adata_merged.write(
         '{}.h5ad'.format(output_file),
         compression='gzip',
@@ -769,8 +824,16 @@ def main():
         '-em', '--extra_metadata',
         action='store',
         dest='extra_metadata',
-        default='',
+        default='None',
         help='Provide extra sample metadata file to be merged with the input'
+    )
+
+    parser.add_argument(
+        '-ct', '--celltype',
+        action='store',
+        dest='celltype',
+        default='',
+        help='Provide celltype file to be merged with the input'
     )
 
     parser.add_argument(
@@ -838,6 +901,11 @@ def main():
         extra_metadata = pd.read_csv(options.extra_metadata, sep='\t')
     except:
         extra_metadata = pd.DataFrame()
+    # 
+    try:
+        celltype = pd.read_csv(options.celltype, sep='\t',index_col=0)
+    except:
+        celltype = pd.DataFrame()
 
     # Delete the metadata columns that we do not want.
     if options.mcd != '':
@@ -868,7 +936,8 @@ def main():
         output_file=options.of,
         cellmetadata_filepaths=cellmetadata_filepaths,
         anndata_compression_opts=options.anndata_compression_opts,
-        extra_metadata= extra_metadata
+        extra_metadata= extra_metadata,
+        celltype = celltype
     )
 
 

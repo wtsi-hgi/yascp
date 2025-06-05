@@ -3,7 +3,7 @@ process CONVERT_H5AD_TO_MTX {
     label 'process_low'
    
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/wtsihgi_nf_scrna_qc_6bb6af5-2021-12-23-3270149cf265.sif"
+        container "${params.yascp_container}"
     } else {
         container "wtsihgi/nf_scrna_qc:6bb6af5"
     }
@@ -34,7 +34,7 @@ process CONVERT_MTX_TO_H5AD {
     label 'process_low'
    
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/wtsihgi_nf_scrna_qc_6bb6af5-2021-12-23-3270149cf265.sif"
+        container "${params.yascp_container}"
     } else {
         container "wtsihgi/nf_scrna_qc:6bb6af5"
     }

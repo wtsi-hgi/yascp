@@ -1,10 +1,9 @@
 process REMOVE_DUPLICATED_DONORS_FROM_GT{
     label 'process_tiny'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_62bd56a-2021-12-15-4d1ec9312485.sif"
-        //// container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_latest.img"
+        container "${params.yascp_container}"
     } else {
-        container "mercury/scrna_deconvolution:62bd56a"
+        container "${params.yascp_container_docker}"
     }
 
   input:
@@ -43,10 +42,9 @@ process VIREO_SUBSAMPLING {
     label 'medium_cpus'
 
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_62bd56a-2021-12-15-4d1ec9312485.sif"
-        //// container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_latest.img"
+        container "${params.yascp_container}"
     } else {
-        container "mercury/scrna_deconvolution:62bd56a"
+        container "${params.yascp_container_docker}"
     }
 
     input:
@@ -138,14 +136,13 @@ process VIREO_SUBSAMPLING {
 process GENOTYPE_MATCHER{
     tag "${samplename}"
     label 'process_low'
-    publishDir "${params.outdir}/deconvolution/vireo/",  mode: "${params.vireo.copy_mode}", overwrite: true
+    publishDir "${params.outdir}/deconvolution/vireo_raw/",  mode: "${params.vireo.copy_mode}", overwrite: true
 	  // saveAs: {filename -> filename.replaceFirst("vireo_${samplename}/","") }
     
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_62bd56a-2021-12-15-4d1ec9312485.sif"
-        //// container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_latest.img"
+        container "${params.yascp_container}"
     } else {
-        container "mercury/scrna_deconvolution:62bd56a"
+        container "${params.yascp_container_docker}"
     } 
 
     input:
@@ -154,20 +151,14 @@ process GENOTYPE_MATCHER{
     output:
       path("correlations.png"), emit: correlations
       path("matched_donors.txt"), emit: matched_donors
-
-    if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_62bd56a-2021-12-15-4d1ec9312485.sif"
-        //// container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_latest.img"
-    } else {
-        container "mercury/scrna_deconvolution:62bd56a"
-    }
+      path("donor_corelations_matrix.tsv"), emit: donor_corelations_matrix
 
     script:
       """
         matcher.py \
         \$PWD \
         \$PWD \
-        -m 0.9
+        -m ${params.genotype_input.genotype_correlation_threshold}
       """
 
 }
@@ -175,16 +166,15 @@ process GENOTYPE_MATCHER{
 process VIREO {
     tag "${samplename}"
     label 'medium_cpus'
-    publishDir "${params.outdir}/deconvolution/vireo/${samplename}/",  mode: "${params.vireo.copy_mode}", overwrite: true,
+    publishDir "${params.outdir}/deconvolution/vireo_raw/${samplename}/",  mode: "${params.vireo.copy_mode}", overwrite: true,
 	  saveAs: {filename -> filename.replaceFirst("vireo_${samplename}/","") }
 
 
 
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_62bd56a-2021-12-15-4d1ec9312485.sif"
-        //// container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_latest.img"
+        container "${params.yascp_container}"
     } else {
-        container "mercury/scrna_deconvolution:62bd56a"
+       container "${params.yascp_container_docker}"
     }
 
      when:
@@ -257,7 +247,7 @@ process POSTPROCESS_SUMMARY{
 
 process CAPTURE_VIREO{
   label 'process_tiny'
-  publishDir "${params.outdir}/deconvolution/vireo/",  mode: "${params.copy_mode}", overwrite: true,
+  publishDir "${params.outdir}/deconvolution/vireo_raw/",  mode: "${params.copy_mode}", overwrite: true,
   saveAs: {filename -> filename.replaceFirst("vireo_/","") }
 
   input:
@@ -284,16 +274,15 @@ process CAPTURE_VIREO{
 process VIREO_SUBSAMPLING_PROCESSING{
     tag "${samplename}"
     label 'medium_cpus'
-    publishDir  path: "${params.outdir}/concordances/${samplename}",
+    publishDir  path: "${params.outdir}/deconvolution/concordances/${samplename}",
                 mode: "${params.copy_mode}",
                 overwrite: "true"
 
 
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_62bd56a-2021-12-15-4d1ec9312485.sif"
-        //// container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_latest.img"
+        container "${params.yascp_container}"
     } else {
-        container "mercury/scrna_deconvolution:62bd56a"
+        container "${params.yascp_container_docker}"
     }
     input:
       tuple val(samplename), path(vireo_subsampling_folders)

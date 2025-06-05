@@ -12,15 +12,16 @@
 
 ## expects input *.h5 file as argument
 ## writes plots to a single PDF file Rplots.pdf
-
+library(Azimuth)
 library(Seurat)
 library(SeuratDisk)
 library(Matrix)
 library(hdf5r)
 library(ggplot2)
 library(tools)
+options(future.globals.maxSize = 2000 * 1024^2)
 args =list()
-# inputfile.h5ad='./AZ_adata_full.h5ad'
+# inputfile.h5ad='./Pool1.h5ad'
 # REFERENCE_DIR='/lustre/scratch123/hgi/teams/hgi/mo11/tmp_projects/jaguar_yascp/nieks_pipeline/yascp_run/ref_kidney'
 # levels='annotation.l3,annotation.l2,annotation.l1'
 
@@ -491,40 +492,17 @@ Convert(inputfile.h5ad, dest="h5seurat", overwrite = TRUE)
 inputfile.h5seurat <- paste0(file_path_sans_ext(inputfile.h5ad), ".h5seurat")
 cat("inputfile.h5seurat = ", inputfile.h5seurat, "\n")
 cat("Loading file", inputfile.h5seurat, "\n")
-query <- LoadH5Seurat(inputfile.h5seurat)
+
+query <- LoadH5Seurat(inputfile.h5seurat, meta.data = FALSE, misc = FALSE)
 # Download the Azimuth reference and extract the archive
 saveRDS(query, file = "query.rds")
 # Load the reference
 # Change the file path based on where the reference is located on your system.
 ## reference <- LoadReference(path = "https://seurat.nygenome.org/azimuth/references/v1.0.0/human_pbmc")
-reference <- LoadReference(REFERENCE_DIR)
-
-# Load the query object for mapping
-# Change the file path based on where the query file is located on your system.
-# cat("Loading file", input_file, "\n")
-#query <- LoadFileInput(path = input_file)
-#query <- Seurat::Read10X(
-#  input_dir
-#  gene.column = 2 # 1: ensembl_ids, 2: gene_symbols
-#  )
+reference <- Azimuth:::LoadReference(REFERENCE_DIR)
 
 cat("query file loaded.\n")
 
-# Calculate nCount_RNA and nFeature_RNA if the query does not
-# contain them already
-if (!all(c("nCount_RNA", "nFeature_RNA") %in% c(colnames(x = query[[]])))) {
-    calcn <- as.data.frame(x = Seurat:::CalcN(object = query))
-    colnames(x = calcn) <- paste(
-      colnames(x = calcn),
-      "RNA",
-      sep = '_'
-    )
-    query <- AddMetaData(
-      object = query,
-      metadata = calcn
-    )
-    rm(calcn)
-}
 
 # Calculate percent mitochondrial genes if the query contains genes
 # matching the regular expression "^MT-"
@@ -536,24 +514,6 @@ if (any(grepl(pattern = '^MT-', x = rownames(x = query)))) {
     assay = "RNA"
   )
 }
-
-## cells must have been filtered by this stage
-# Filter cells based on the thresholds for nCount_RNA and nFeature_RNA
-# you set in the app
-# cells.use <- query[["nCount_RNA", drop = TRUE]] <= 37340 &
-#  query[["nCount_RNA", drop = TRUE]] >= 500 &
-#  query[["nFeature_RNA", drop = TRUE]] <= 5321 &
-#  query[["nFeature_RNA", drop = TRUE]] >= 50
-
-# If the query contains mitochondrial genes, filter cells based on the
-# thresholds for percent.mt you set in the app
-#if ("percent.mt" %in% c(colnames(x = query[[]]))) {
-#  cells.use <- cells.use & (query[["percent.mt", drop = TRUE]] <= 80 &
-#    query[["percent.mt", drop = TRUE]] >= 0)
-#}
-
-# Remove filtered cells from the query
-#query <- query[, cells.use]
 
 # Preprocess with SCTransform
 query <- SCTransform(
@@ -594,11 +554,17 @@ anchors <- FindTransferAnchors(
 # The imputed assay is named "impADT" if computed
 
 # levels<- list("celltype.l2", "celltype.l1", "celltype.l3")
-
 for (celltype_level in levels) {
+    id <- celltype_level  # Choose a correct metadata column (class, subclass, etc.)
+    print(paste("Processing:", id))
 
-      id <- celltype_level
-      # id <- paste0(id,"_",prefix)
+    # Ensure the selected column exists
+    if (!id %in% colnames(reference$map[[]])) {
+        stop(paste("Column", id, "not found in reference metadata. Available columns:", 
+                   paste(colnames(reference$map[[]]), collapse = ", ")))
+    }
+
+    # Extract correct cell type labels
       print(id)
       refdata <- lapply(X = celltype_level, function(x) {
         reference$map[[x, drop = TRUE]]
@@ -670,7 +636,7 @@ for (celltype_level in levels) {
       predicted.id.score <- paste0(predicted.id, ".score")
 
       # write a table of cell-type assignments, prediction and mapping scores:
-      fnam.table <- paste0(prefix,"_",gsub(".", "_", predicted.id, fixed = TRUE),".tsv")
+      fnam.table <- paste0(prefix,"___",gsub(".", "_", predicted.id, fixed = TRUE),".tsv")
       data <- FetchData(object = query, vars = c(predicted.id, predicted.id.score, paste0("mapping.score.", id)), slot = "data")
       write.table(data, fnam.table, quote = FALSE, sep="\t")
       #gzip(fnam.table, overwrite = TRUE)
@@ -697,7 +663,7 @@ for (celltype_level in levels) {
       p <- ggplot(tdf, aes(x=cell_type, y=count, fill = threshold))
       p <- p + geom_col(position = "dodge")
       p <- p + theme(axis.text.x = element_text(angle = 90))
-      ggsave(paste0(prefix,"_",id,".ncells_by_type_barplot.pdf"))
+      ggsave(paste0(prefix,"___",id,".ncells_by_type_barplot.pdf"))
 
       # DimPlot of the reference
       #ref.plt <- DimPlot(object = reference$plot, reduction = "refUMAP", group.by = id, label = TRUE) + NoLegend()
@@ -706,21 +672,22 @@ for (celltype_level in levels) {
 
       # DimPlot of the query, colored by predicted cell type
       DimPlot(object = query, reduction = "proj.umap", group.by = predicted.id, label = TRUE) + NoLegend()
-      ggsave(paste0(prefix,"_",id,".query_umap.pdf"))
+      ggsave(paste0(prefix,"___",id,".query_umap.pdf"))
 
       # Plot the score for the predicted cell type of the query
       FeaturePlot(object = query, features = paste0(predicted.id, ".score"), reduction = "proj.umap")
-      ggsave(paste0(prefix,"_",id,".prediction_score_umap.pdf"))
+      ggsave(paste0(prefix,"___",id,".prediction_score_umap.pdf"))
       VlnPlot(object = query, features = paste0(predicted.id, ".score"), group.by = predicted.id) + NoLegend()
-      ggsave(paste0(prefix,"_",id,".prediction_score_vln.pdf"))
+      ggsave(paste0(prefix,"___",id,".prediction_score_vln.pdf"))
 
       # Plot the mapping score
       FeaturePlot(object = query, features = paste0("mapping.score.", id), reduction = "proj.umap")
-      ggsave(paste0(prefix,"_",id,".mapping_score_umap.pdf"))
+      ggsave(paste0(prefix,"___",id,".mapping_score_umap.pdf"))
       VlnPlot(object = query, features = paste0("mapping.score.", id), group.by = predicted.id) + NoLegend()
-      ggsave(paste0(prefix,"_",id,".mapping_score_vln.pdf"))
+      ggsave(paste0(prefix,"___",id,".mapping_score_vln.pdf"))
+    # Continue processing...
+}
 
-} 
 
   # save mapped data set
   #save(query, file = "azimuth.bin")

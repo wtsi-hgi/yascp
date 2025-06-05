@@ -73,6 +73,11 @@ option_list <-  list(
               type = "character", 
               default = ".", 
               help = crayon::green("Output path to store results [default= %default]"), 
+              metavar = "character"),
+  make_option("--reference", 
+              type = "character", 
+              default = ".", 
+              help = crayon::green("Loaded reference"), 
               metavar = "character")
 )
 
@@ -179,7 +184,8 @@ echo("DONE....................................................................",
 echo("Loading scPred reference................................................",
      "yellow")
 
-reference <- readRDS("/hier_scpred.RDS")
+reference <- readRDS(opt$reference)
+
 
 echo("DONE....................................................................",
      "yellow")
@@ -206,16 +212,29 @@ if (is.null(opt$batch)){
 echo("Classifiying cells .....................................................",
      "green")
 
-classify <- function(xs){
+classify <- function(xs) {
   p <- progressor(along = xs)
-  future_mapply(function(x, i, n){
+  future_mapply(function(x, i, n) {
+    
+    if (!inherits(x, "Seurat")) {
+      stop("Error: New data must be a Seurat object!")
+    }
+    
+    # Extract RNA assay data explicitly
+    x <- subset(x, features = rownames(x@assays$RNA@data))  # Ensure features match
+    x@assays$data <- x@assays$RNA  # Force `data` slot to refer to RNA
+
+    # Run prediction
     x <- predictTree(reference, newData = x, threshold = opt$thr, max.iter.harmony = opt$iter)
+    
     p(message = sprintf("| Batch %d/%d", i, n))
     x
   }, xs, seq_along(xs), MoreArgs = list(n = length(xs)), SIMPLIFY = FALSE, future.seed = TRUE)
 }
 
+# Run classification again
 batches <- classify(batches)
+
 
 echo("DONE....................................................................",
      "green")

@@ -15,11 +15,9 @@ process umap_calculate {
     scratch false      // use tmp directory
     label 'process_medium'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/wtsihgi_nf_scrna_qc_6bb6af5-2021-12-23-3270149cf265.sif"
-        //// container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/nf_qc_cluster_2.4.img"
-        
+        container "${params.yascp_container}"
     } else {
-        container "wtsihgi/nf_scrna_qc:6bb6af5"
+        container "${params.yascp_container_docker}"
     }
 
     input:
@@ -44,10 +42,10 @@ process umap_calculate {
             file(file__metadata),
             file(file__pcs),
             file(file__reduced_dims),
-            file("${outfile}.h5ad"),
+            file("*${outfile_pattern}.h5ad"),
             emit: outdir_anndata
         )
-        path("${outfile}.h5ad",emit:adata_out)
+        path("*${outfile_pattern}.h5ad",emit:adata_out)
 
     script:
         runid = random_hex(16)
@@ -55,6 +53,8 @@ process umap_calculate {
         // For output file, use anndata name. First need to drop the runid
         // from the file__anndata job.
         outfile = "${file__anndata}".minus(".h5ad")
+        outfile_pattern = "${outfile}_${method}_umap_${n_neighbors}_${umap_spread}_${umap_init}_${umap_min_dist}"
+        
         outfile = "${runid}-${outfile}_${method}_umap_${n_neighbors}_${umap_spread}_${umap_init}_${umap_min_dist}"
         // Check to see if we should use PCs in the reduced dims slot.
         // Important for BBKNN where reduced_dims == UMAPs not adjusted PCs.
@@ -82,11 +82,9 @@ process generate_final_UMAPS{
 
     label 'process_medium'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/wtsihgi_nf_scrna_qc_6bb6af5-2021-12-23-3270149cf265.sif"
-        //// container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/nf_qc_cluster_2.4.img"
-        
+        container "${params.yascp_container}"
     } else {
-        container "wtsihgi/nf_scrna_qc:6bb6af5"
+        container "${params.yascp_container_docker}"
     }
 
   publishDir  path: "${outdir}",
@@ -99,7 +97,7 @@ process generate_final_UMAPS{
     path("umap-*")
   
   script:
-    outdir = "${outdir_prev}/UMAPs"
+    outdir = "${outdir_prev}/handover/UMAPs"
     """
         umap_plot_final.py \
             --h5_anndata ${file__anndata} \
@@ -120,9 +118,9 @@ process umap_gather {
     scratch false      // use tmp directory
     label 'process_medium'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/wtsihgi_nf_scrna_qc_6bb6af5-2021-12-23-3270149cf265.sif"
+        container "${params.yascp_container}"
     } else {
-        container "wtsihgi/nf_scrna_qc:6bb6af5"
+        container "${params.yascp_container_docker}"
     }
     publishDir  path: "${outdir}",
                 saveAs: {filename ->
@@ -178,11 +176,9 @@ process umap_plot_swarm {
     scratch false      // use tmp directory
     label 'process_medium'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/wtsihgi_nf_scrna_qc_6bb6af5-2021-12-23-3270149cf265.sif"
-        //// container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/nf_qc_cluster_2.4.img"
-        
+        container "${params.yascp_container}"
     } else {
-        container "wtsihgi/nf_scrna_qc:6bb6af5"
+        container "${params.yascp_container_docker}"
     }
     publishDir  path: "${outdir}/plots",
                 mode: "${params.copy_mode}",
@@ -231,11 +227,9 @@ process umap_calculate_and_plot {
     scratch false      // use tmp directory
     label 'process_medium'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/wtsihgi_nf_scrna_qc_6bb6af5-2021-12-23-3270149cf265.sif"
-        //// container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/nf_qc_cluster_2.4.img"
-        
+        container "${params.yascp_container}"
     } else {
-        container "wtsihgi/nf_scrna_qc:6bb6af5"
+        container "${params.yascp_container_docker}"
     }
     publishDir  path: "${outdir}/plots",
                 mode: "${params.copy_mode}",

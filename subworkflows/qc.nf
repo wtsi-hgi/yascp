@@ -71,19 +71,30 @@ workflow qc {
         
         if (params.normalise_andata){
             log.info """---Normalising data For data clustering and integration.----"""
+
+            if(params.normalise.gene_filters.genes_exclude == ''){
+                genes_exclude = Channel.from("$projectDir/assets/fake_file1.fq")
+            }else{genes_exclude = params.normalise.gene_filters.genes_exclude }
+
+            if(params.normalise.genes_score == ''){
+                genes_score = Channel.from("$projectDir/assets/fake_file.fq")
+            }else{ genes_score = params.normalise.genes_score}
+            
+            if(params.normalise.gene_filters.variable_genes_exclude == ''){
+                variable_genes_exclude = Channel.from("$projectDir/assets/fake_file2.fq")
+            }else{ variable_genes_exclude=params.normalise.gene_filters.variable_genes_exclude }
+
             NORMALISE_AND_PCA(
                 file__anndata_merged,
                 params.normalise.mode,
                 params.normalise.layer,
                 params.normalise.minimum_number_of_cells_for_donor,
-                params.normalise.gene_filters.variable_genes_exclude,
-                params.normalise.genes_score,
-                params.normalise.gene_filters.genes_exclude,
+                variable_genes_exclude,
+                genes_score,
+                genes_exclude,
                 params.normalise.gene_filters.genes_at_least_in_nr_cells,
                 params.reduced_dims.vars_to_regress.value
             )
-
-
 
             if (params.citeseq){
                 log.info """---Integrating data using Seurat integration method----"""
@@ -98,16 +109,14 @@ workflow qc {
 
 
                 DSB_PROCESS.out.ch_for_norm.subscribe { println "1:: DSB_PROCESS.out.ch_for_norm: $it" }
-                
-                // PREPROCESS_PROCESS()
-                // DSB_PROCESS.out.citeseq_rsd.subscribe { println "1:: DSB_PROCESS.out.citeseq_rsd: $it" }
+
                 vireo_paths_map = vireo_paths.flatten().map{row->tuple("${row}".replaceFirst(/.*vireo_/,""), row)}
                 vireo_paths_map.subscribe { println "1:: vireo_paths_map $it" }
                 DSB_PROCESS.out.ch_for_norm.subscribe { println "1:: vireo_paths_map $it" }
                 vireo_paths_map.combine(DSB_PROCESS.out.ch_for_norm, by: 0).set{norm_chanel}
+                norm_chanel.subscribe { println "1:: norm_chanel $it" }
                 norm_chanel.combine(matched_donors).set{inp4}
                 inp4.subscribe { println "1:: inp4 $it" }
-                matched_donors.subscribe { println "1:: matched_donors $it" }
                 PREPROCESS_PROCESS(inp4,params.reduced_dims.vars_to_regress.value)
 
                 if(params.seurat_integration.run_process){

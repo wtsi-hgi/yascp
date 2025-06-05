@@ -11,6 +11,7 @@ rm -f nextflow.nohup.PID.txt
 
 # start Nextflow in background:
 export NXF_OPTS="-Xms5G -Xmx5G"
+export NXF_MONITOR_DUMP_INTERVAL=60s  # Default is 5 seconds
 
 CWD1="$PWD"
 parentdir="$(dirname "$CWD1")"
@@ -18,8 +19,10 @@ parentdir="$(dirname "$CWD1")"
 export RUN_ID="${PWD##*/}"
 mkdir $PWD/work || echo 'exists'
 mkdir $PWD/work/tmp || echo 'exists'
-echo $RUN_ID | nextflow run $SCRIPT_DIR/../.. -profile sanger -entry JUST_DOUBLETS $INPUT_FILE  --nf_ci_loc $PWD -resume > nextflow.nohup.log 2>&1 & 
-
+echo $RUN_ID | nextflow run $SCRIPT_DIR/../.. -profile sanger -entry JUST_DOUBLETS $INPUT_FILE  --nf_ci_loc $PWD -resume 2>&1 | \
+    sed -r "s/\x1b\[[0-9;]*m//g" | \
+    ts '[%Y-%m-%d %H:%M:%S]'  | \
+    grep -v '^\[[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}\]$' > nextflow.nohup.log &
 # get process PID 
 sleep 1 && export PID=$(pgrep -f "\\-\\-nf_ci_loc $RUN_DIR")
 echo $PID > nextflow.nohup.PID.txt

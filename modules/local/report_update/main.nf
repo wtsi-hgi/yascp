@@ -4,8 +4,7 @@ process metadata_posthoc
   label 'process_tiny'
 
   if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-      container "https://yascp.cog.sanger.ac.uk/public/singularity_images/wtsihgi_nf_scrna_qc_6bb6af5-2021-12-23-3270149cf265.sif"
-      //// container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/nf_qc_cluster_2.4.img"
+      container "${params.yascp_container}"
   } else {
       container "wtsihgi/nf_scrna_qc:6bb6af5"
   }
@@ -49,7 +48,7 @@ process replace_donors_posthoc
 
     """
 
-      replace_donors_posthoc.py -i ${results}/deconvolution/vireo_gt_fix/assignments_all_pools.tsv --genotype_phenotype_mapping ${params.genotype_phenotype_mapping_file} --input_file "results/handover/Summary_plots/${exp_id}/Fetch Pipeline/Input/input_table.tsv"
+      replace_donors_posthoc.py -i ${results}/deconvolution/vireo_processed/assignments_all_pools.tsv --genotype_phenotype_mapping ${params.genotype_phenotype_mapping_file} --input_file "results/handover/Summary_plots/${exp_id}/Fetch Pipeline/Input/input_table.tsv"
       echo Done > out.txt
     """
 }

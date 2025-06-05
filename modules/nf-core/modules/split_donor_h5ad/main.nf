@@ -7,11 +7,9 @@ process PREP_ASSIGNMENTS_FILE{
     
 
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_62bd56a-2021-12-15-4d1ec9312485.sif"
-        //// container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_latest.img"
-	
+        container "${params.yascp_container}"
     } else {
-        container "mercury/scrna_deconvolution:62bd56a"
+        container "${params.yascp_container_docker}"
     }
   
 
@@ -19,7 +17,7 @@ process PREP_ASSIGNMENTS_FILE{
       params.split_h5ad_per_donor.run
 
     input: 
-      tuple val(sample), path(donor_ids_tsv), path(filtered_matrix_h5), path(scrublet), val(outdir)
+      tuple val(sample), path(donor_ids_tsv), path(filtered_matrix_h5), val(outdir)
 
     output:
       tuple val(sample), path("cell_belongings.tsv"), emit: cell_assignments
@@ -29,7 +27,7 @@ process PREP_ASSIGNMENTS_FILE{
         """
           echo ${donor_ids_tsv}
           echo 'preping file in the right format for concordances.'
-          rename_cols.py --scrublet ${ scrublet}
+          rename_cols.py --scrublet ${ filtered_matrix_h5}
         """
       }else{
         """
@@ -52,20 +50,16 @@ process SPLIT_DONOR_H5AD {
     
 
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_62bd56a-2021-12-15-4d1ec9312485.sif"
-        //// container "https://yascp.cog.sanger.ac.uk/public/singularity_images/mercury_scrna_deconvolution_latest.img"
-	
+        container "${params.yascp_container}"
     } else {
-        container "mercury/scrna_deconvolution:62bd56a"
+        container "${params.yascp_container_docker}"
     }
-
-    
 
     when: 
       params.split_h5ad_per_donor.run
 
     input: 
-    tuple val(sample), path(donor_ids_tsv), path(filtered_matrix_h5), path(scrublet), val(outdir)
+    tuple val(sample), path(donor_ids_tsv), path(filtered_matrix_h5), val(outdir)
       //tuple val(sample), val(donor_ids_tsv), val(filtered_matrix_h5), path(scrublet)
 
     output: 
@@ -91,7 +85,6 @@ process SPLIT_DONOR_H5AD {
     split_h5ad_per_donor.py \\
     --vireo_donor_ids_tsv ${donor_ids_tsv} \\
     --filtered_matrix_h5 ${filtered_matrix_h5} \\
-    --scrublet ${scrublet} \\
     --samplename ${sample} \\
     --output_dir ./outputs \\
     --input_h5_genome_version ${params.split_h5ad_per_donor.input_h5_genome_version} \\

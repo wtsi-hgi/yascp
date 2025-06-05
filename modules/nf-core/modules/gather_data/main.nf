@@ -6,10 +6,9 @@ process GATHER_DATA{
     label 'process_medium'
 
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/wtsihgi_nf_scrna_qc_6bb6af5-2021-12-23-3270149cf265.sif"
-        //// container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/nf_qc_cluster_2.4.img"
+        container "${params.yascp_container}"
     } else {
-        container "wtsihgi/nf_scrna_qc:6bb6af5"
+        container "${params.yascp_container_docker}"
     }
 
     input:
@@ -32,6 +31,12 @@ process GATHER_DATA{
         cellbender_input='cellbender'
       }
 
+      if ("${params.extra_sample_metadata}" != ''){
+        extra_meta = "--extra_meta=${params.extra_sample_metadata}"
+      }else{
+        extra_meta = ""
+      }
+
       """
         echo ${dummy_val}
         gather_minimal_dataset.py \
@@ -41,7 +46,7 @@ process GATHER_DATA{
           --cellbender=${cellbender_input} \
           --resolution=${params.cellbender_resolution_to_use} \
           --write_h5=${params.write_h5} \
-          --experiment_name=${params.RUN}
+          --experiment_name=${params.RUN} ${extra_meta}
       """
 }
 
@@ -54,10 +59,9 @@ process SPLIT_DATA_BY_STUDY
   label 'process_tiny'
 
   if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-      container "https://yascp.cog.sanger.ac.uk/public/singularity_images/wtsihgi_nf_scrna_qc_6bb6af5-2021-12-23-3270149cf265.sif"
-      //// container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/nf_qc_cluster_2.4.img"
+      container "${params.yascp_container}"
   } else {
-      container "wtsihgi/nf_scrna_qc:6bb6af5"
+      container "${params.yascp_container_docker}"
   }
 
   input:
@@ -70,7 +74,7 @@ process SPLIT_DATA_BY_STUDY
     path("${outdir_ukbb}", emit: outdir_ukbb)
 
   script:
-    donor_assignments_tsv = "${outdir_prev}/deconvolution/vireo_gt_fix/assignments_all_pools.tsv"
+    donor_assignments_tsv = "${outdir_prev}/deconvolution/vireo_processed/assignments_all_pools.tsv"
     outdir = "${outdir_prev}"
     outdir_ukbb = "handover_study/GT_UKBB"
     """

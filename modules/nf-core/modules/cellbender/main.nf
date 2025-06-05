@@ -8,7 +8,7 @@ include {
 } from "./functions.nf"
 
 // Set default parameters.
-outdir           = "${params.outdir}/nf-preprocessing"
+outdir           = "${params.outdir}/preprocessing"
 
 workflow CELLBENDER {
     take:
@@ -100,9 +100,16 @@ workflow CELLBENDER {
         cellbender__rb__get_input_cells.out.cb_input.join(channel__combo, by: [0], remainder: false).set{cellbender_ambient_rna_input}
 
         cellbender_ambient_rna_input.subscribe { println "cellbender_ambient_rna_input: $it" }
+        
+        filteredChan = cellbender_ambient_rna_input
+        .filter { tuple ->
+            !params.cellbender_ignore_list.contains(tuple[0])
+        }
+        filteredChan.subscribe { println "Filtered tuple: $it" }
+
         cellbender__remove_background(
             outdir,
-            cellbender_ambient_rna_input,
+            filteredChan,
             params.cellbender_rb.fpr.value
         )
 
@@ -129,11 +136,13 @@ workflow CELLBENDER {
         results_list = cellbender__preprocess_output.out.out_paths
         // prepeare the output channel for utilising in the deconvolution instead of barcode input.
         cellbender_path = cellbender__preprocess_output.out.alternative_input
+        cellbender_path_raw = cellbender__preprocess_output.out.alternative_input_raw
         cellbender_downstream = cellbender__remove_background.out.cb_to_use_downstream
         emit:
             // results_list //results list is not needed to be emited - if done it will wait for all the cellbender stuff to finish.
             cellbender_path
             cellbender_downstream
+            cellbender_path_raw
 
             
 }

@@ -24,7 +24,7 @@ if (future::supportsMulticore()) {
 } else {
   future::plan(future::multisession)
 }
-# args=vector(mode='list', length=6); args[[1]]='STAT3_A1_BM'; args[[2]]='raw_feature_bc_matrix'; args[[3]]='filtered_feature_bc_matrix'; args[[4]]='STAT3_A1_BM___sample_QCd_adata.h5ad'
+# args=vector(mode='list', length=6); args[[1]]='Pool1'; args[[2]]='raw_feature_bc_matrix'; args[[3]]='filtered_feature_bc_matrix'; args[[4]]='Pool1___sample_QCd_adata__7.h5ad'
   #  STAT3_A1_BM raw_feature_bc_matrix filtered_feature_bc_matrix STAT3_A1_BM___sample_QCd_adata.h5ad
 #####
 args = commandArgs(trailingOnly=TRUE)
@@ -32,7 +32,7 @@ args = commandArgs(trailingOnly=TRUE)
 data_dir <- getwd()
 outdir <- getwd()
 
-
+# Pool1 raw_feature_bc_matrix filtered_feature_bc_matrix Pool1___sample_QCd_adata__7.h5ad
 
 
 #####
@@ -47,10 +47,10 @@ outdir <- getwd()
 # filtered_feature_file = cellranger_filepath = args[2]
 #    
 # filtered_cellranger = '/lustre/scratch123/hgi/teams/hgi/mo11/tmp_projects/jaguar_yascp/nieks_pipeline/fetch/results_old/cellranger_data/cellranger700_multi_bc45a1c2fe2a3fbbcde46cf984cf42e2/per_sample_outs/cellranger700_multi_bc45a1c2fe2a3fbbcde46cf984cf42e2/count/sample_filtered_feature_bc_matrix.h5'
-sample_name <- 'LDP69'
+sample_name <- '1d2cdcc2c618a275fd6ded8bbccd936c'
 cellranger_rawfile_path <- 'raw_feature_bc_matrix'
 filtered_cellranger = 'filtered_feature_bc_matrix'
-file_with_qc_applied = 'LDP69___sample_QCd_adata.h5ad'
+file_with_qc_applied = '1d2cdcc2c618a275fd6ded8bbccd936c___sample_QCd_adata__7.h5ad'
 sample_name <- args[1]
 cellranger_rawfile_path <- args[2]
 filtered_cellranger = args[3][1]
@@ -149,14 +149,23 @@ Convert(
   # assays is 'Antibody Capture' (otherwise, could be GEX + some other assay that's not CITE)
     # Use QC'ed cells from single cell rnaseq pipeline (from the scpred seurat file)
   # qced_cells <- readRDS(scpred_file_with_qc)
+  print('Loading')
   qced_cells <- LoadH5Seurat(paste('tmp',"h5seurat",sep='.'),assays = "RNA")
+  print('Loaded')
   qced_barcodes <- gsub('_.*','',colnames(qced_cells))
   qced_barcodes <- gsub('-1.*','-1',(qced_barcodes))
   qced_barcodes <- gsub('-2.*','-2',(qced_barcodes))
   qced_barcodes <- gsub('-cellranger.*','',(qced_barcodes))
   qced_cells = RenameCells(qced_cells, new.names = qced_barcodes)
 
-  genes <-  read.table(paste0(cellranger_rawfile_path,"/features.tsv.gz"), sep = "\t", col.names = c("ENSG_ID","Gene_ID", "FeatureType"))
+  genes <- read.table(paste0(cellranger_rawfile_path, "/features.tsv.gz"),  
+                      sep = "\t", 
+                      fill = TRUE, 
+                      header = FALSE,  # Ensure it doesn't try to use the first row as headers
+                      colClasses = c("character", "character", "character", "NULL", "NULL", "NULL", "NULL"), 
+                      nrows = -1) 
+  colnames(genes) <- c("ENSG_ID", "Gene_ID", "FeatureType")
+  
   qced_cells[["RNA"]] <- AddMetaData(qced_cells[["RNA"]], rownames(qced_cells[["RNA"]]), col.name = "ENSG_ID")
   qced_cells[["RNA"]] <- AddMetaData(qced_cells[["RNA"]], genes[match(rownames(qced_cells[["RNA"]]),genes$ENSG_ID),]$Gene_ID, col.name = "Gene_ID")
   cts = qced_cells@assays$RNA@counts

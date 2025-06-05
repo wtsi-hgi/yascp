@@ -1,14 +1,24 @@
 process collect_file{
   label 'process_tiny'
   if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-    container "https://yascp.cog.sanger.ac.uk/public/singularity_images/wtsihgi_nf_scrna_qc_6bb6af5-2021-12-23-3270149cf265.sif"
-    //// container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/wtsihgi_nf_cellbender_v1.2.img"
+    container "${params.yascp_container}"
   } else {
-    container "wtsihgi/nf_scrna_qc:6bb6af5"
+    container "${params.yascp_container_docker}"
   }
     // In nf there is a function collectFile - however if you provide a symlinked file directory tusing nf function will overwrite the source instead of replacing the file
     // This snipped is a replication of the function but as a nf module and hence the problem is avoided.
-  publishDir "${outpath}/",  mode: "${params.copy_mode}", overwrite: true
+
+  publishDir  "${outpath2}/",
+              saveAs: {filename ->
+                  if ("${outpath}" == "0") {
+                      null
+                  }else {
+                      filename
+                  }
+              },
+              mode: "${params.copy_mode}",
+              overwrite: "true"
+
   input:
     path(files_to_concentrate)
     val(name)
@@ -17,9 +27,16 @@ process collect_file{
     val(seed)
    
   output:
-    // tuple val(pool_id), path("${vireo_fixed_vcf}"), path("${vireo_fixed_vcf}.tbi"), emit: gt_pool
     path("${name}"),emit:output_collection
+
+  
   script:
+
+    if ("${outpath}" == "0") {
+        outpath2="${params.outdir}"
+    }else {
+        outpath2=outpath
+    }
     file1 = files_to_concentrate[0]
     files= files_to_concentrate.join(" ")
     if (seed!='' ){

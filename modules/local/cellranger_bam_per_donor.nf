@@ -52,7 +52,7 @@ process SPLIT_BAM_BY_CELL_BARCODES
     label 'process_medium'
 
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-      container "https://yascp.cog.sanger.ac.uk/public/singularity_images/wtsihgi-nf_yascp_htstools-1.0.sif"
+      container "${params.yascp_container}"
     } else {
       container "mercury/wtsihgi-nf_yascp_htstools-1.0"
     }

@@ -15,23 +15,29 @@ import scanpy
 def combine_reports(all_alternitive,mode):
     all_indexes_full=set({})
     for d1 in all_alternitive:
+        pool = d1.split('__')[0]
         if d1 in ('fake_file.fq', 'fake_file1.fq', 'fake_file2.fq'):
             Dataset = pd.DataFrame()
         else:
             Dataset = pd.read_csv(d1,sep='\t',index_col=0)
+            
             if(len(Dataset.columns)==0):
                 Dataset = pd.read_csv(d1,sep=',',index_col=0)
+            Dataset.index = Dataset.index +'-'+pool
         Dataset=Dataset.add_prefix(mode)
+        
         all_indexes = set(Dataset.index)
         all_indexes_full = all_indexes_full.union(all_indexes)
     Data_All_alt=pd.DataFrame(index=list(set(all_indexes_full)))    
     for d1 in all_alternitive:
+        pool = d1.split('__')[0]
         if d1 in ('fake_file.fq', 'fake_file1.fq', 'fake_file2.fq'):
             Dataset = pd.DataFrame()
         else:
             Dataset = pd.read_csv(d1,sep='\t',index_col=0)
             if(len(Dataset.columns)==0):
                 Dataset = pd.read_csv(d1,sep=',',index_col=0)
+            Dataset.index = Dataset.index +'-'+pool
         Dataset=Dataset.add_prefix(mode)
         for col1 in Dataset.columns:
             try:
@@ -72,13 +78,13 @@ def main():
         help='List of csv-delimited files of celltypes assigned by azimuth.'
     )
 
-    parser.add_argument(
-        '-ad', '--adata',
-        action='store',
-        dest='andata',
-        required=True,
-        help='Input adata to add labels to'
-    )
+    # parser.add_argument(
+    #     '-ad', '--adata',
+    #     action='store',
+    #     dest='andata',
+    #     required=True,
+    #     help='Input adata to add labels to'
+    # )
 
     parser.add_argument(
         '-ct', '--all_celltypist_files',
@@ -124,29 +130,29 @@ def main():
     Data_All['Exp'] =Exp
     Data_All.to_csv('All_Celltype_Assignments.tsv',sep='\t')
 
-    adatas_df = pd.read_csv(options.andata, header=None, names=['file_path'])
-    adatas = adatas_df['file_path'].tolist()
-    adatasets = []
-    # adatasets2 = adatasets[:2]
-    adatasets__experiment_ids = []
+    # adatas_df = pd.read_csv(options.andata, header=None, names=['file_path'])
+    # adatas = adatas_df['file_path'].tolist()
+    # adatasets = []
+    # # adatasets2 = adatasets[:2]
+    # adatasets__experiment_ids = []
 
-    for ad1 in adatas:
-        adata1 = scanpy.read_h5ad(ad1)
-        if adata1.n_obs > 0:
-            adatasets.append(adata1)
+    # for ad1 in adatas:
+    #     adata1 = scanpy.read_h5ad(ad1)
+    #     if adata1.n_obs > 0:
+    #         adatasets.append(adata1)
 
-    ad = adatasets[0].concatenate(*adatasets[1:])
-    if(len(adatasets)>1):
-        # in this case the concentration adds a -1 -2 -3 to index that has to be removed.
-        all_index = pd.DataFrame(ad.obs.index,columns=['col'])
-        all_indexes = all_index['col'].str.split('-')
-        all_together = all_indexes.apply(lambda x: '-'.join(x[:-1]))
-        ad.obs.set_index(all_together, inplace=True)
+    # ad = adatasets[0].concatenate(*adatasets[1:])
+    # if(len(adatasets)>1):
+    #     # in this case the concentration adds a -1 -2 -3 to index that has to be removed.
+    #     all_index = pd.DataFrame(ad.obs.index,columns=['col'])
+    #     all_indexes = all_index['col'].str.split('-')
+    #     all_together = all_indexes.apply(lambda x: '-'.join(x[:-1]))
+    #     ad.obs.set_index(all_together, inplace=True)
 
         
     # ad2 = adatasets2[0].concatenate(*adatasets2[1:])
     # ad = scanpy.read(adata)
-    ad.obs = ad.obs.merge(Data_All, left_index=True, right_index=True, how='left')
+    # ad.obs = ad.obs.merge(Data_All, left_index=True, right_index=True, how='left')
     # set(ad.obs.index)-set(Data_All.index)
     donor_celltype_report={}
     tranche_exp_report={}
@@ -187,11 +193,11 @@ def main():
     pd_tranche_exp_report.to_csv('tranche_celltype_report.tsv',sep='\t')
     
     # Generate Experiment report of counts
-    ad.write(
-        'adata.h5ad',
-        compression='gzip',
-        compression_opts=9  # takes ages, but we want a small file for system
-    )
+    # ad.write(
+    #     'adata.h5ad',
+    #     compression='gzip',
+    #     compression_opts=9  # takes ages, but we want a small file for system
+    # )
 
 if __name__ == '__main__':
     main()

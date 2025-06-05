@@ -154,37 +154,13 @@ def split_h5ad_per_donor(vireo_donor_ids_tsv, filtered_matrix_h5, samplename,
     else:
         logging.info('Samples are not deconvoluted')
         adata.obs['convoluted_samplename'] = samplename
-        method = 'Scrublet'
-        # here we add doublets from multiplet scrubblet output
-        # scrublet = '222CC24C93C884F3-Card_Val11211773-scrublet.tsv.gz'
-        try:
-            scrublet_data = pd.read_csv(scrublet,compression='gzip',sep='\t')
-        except:
-            scrublet_data = pd.read_csv(scrublet,sep='\t')
-        doublets = scrublet_data[scrublet_data['scrublet__predicted_multiplet']]
-        doublets_nr = len(doublets)
-        donor_cell_nr = len(scrublet_data)-doublets_nr
+        method = 'After cellbender'
+        donor_cell_nr = len(adata.obs)
         cells_per_donor_count_dic = {}
         cells_per_donor_count_dic[1]={"donor_id":'donor','n_cells':donor_cell_nr}
-        cells_per_donor_count_dic[2]={'donor_id':'doblets','n_cells':doublets_nr}
+        adata.obs['donor_id']='donor'
+        # cells_per_donor_count_dic[2]={'donor_id':'doblets','n_cells':doublets_nr}
         cells_per_donor_count = pd.DataFrame(cells_per_donor_count_dic).T
-        try:
-            idt = 'cell_barcode'
-            scrublet_data=scrublet_data.set_index('cell_barcode')
-        except:
-            idt = 'barcodes'
-            scrublet_data=scrublet_data.set_index('barcodes')
-        scrublet_data['donor_id']='donor'
-        scrublet_data.loc[list(doublets[idt]),'donor_id']='doublet'
-        scrublet_data['prob_doublet']=scrublet_data['scrublet__multiplet_scores']
-        for new_cell_annotation in ['donor_id','prob_max','prob_doublet','n_vars','best_singlet','best_doublet']:
-            try:
-                adata.obs[new_cell_annotation] = scrublet_data[new_cell_annotation]
-            except:
-                adata.obs[new_cell_annotation] = 'nan'
-                
-
-            
     
     # plot n cells per deconvoluted Vireo donor:
     if plot_n_cells_per_vireo_donor:
@@ -198,7 +174,7 @@ def split_h5ad_per_donor(vireo_donor_ids_tsv, filtered_matrix_h5, samplename,
                                                    axis_text_y=plt9.element_text(colour="black"))
         gplt = gplt + plt9.geom_bar(stat='identity', position='dodge')
         gplt = gplt + plt9.geom_text(plt9.aes(label='n_cells'))
-        gplt = gplt + plt9.labels.ggtitle(f'{method} deconvolution\nnumber of cells per deconvoluted donor\nsample: ' + samplename)
+        gplt = gplt + plt9.labels.ggtitle(f'{method} \nnumber of cells per deconvoluted donor\nsample: ' + samplename)
         gplt = gplt + plt9.labels.xlab('deconvoluted donor')
         gplt = gplt + plt9.labels.ylab(f'Number of cells assigned by {method}')
 

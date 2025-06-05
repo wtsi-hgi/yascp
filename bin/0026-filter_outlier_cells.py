@@ -114,7 +114,7 @@ def generate_plots(adata,cell_qc_column,metadata_columns,metadata_columns_origin
     # print("Making plot")
 
     sns_plot = sns.PairGrid(
-        adata.obs[set(metadata_columns)],
+        adata.obs[list(set(metadata_columns))],
         hue=cell_qc_column,
         height=2.5,
         diag_sharey=False
@@ -127,20 +127,23 @@ def generate_plots(adata,cell_qc_column,metadata_columns,metadata_columns_origin
         edgecolor=None
     )
     sns_plot.add_legend()
-    for lh in sns_plot._legend.legendHandles:
+    for lh in sns_plot._legend.legend_handles:
         lh.set_alpha(1)
         lh._sizes = [50]
     sns_plot.map_diag(sns.kdeplot)
-    sns_plot.map_lower(
-        sns.kdeplot,
-        levels=3
-    )
+    try:
+        sns_plot.map_lower(
+            sns.kdeplot,
+            levels=3
+        )
+    except:
+        _=''
     sns_plot.savefig(f'{of}-outlier_cells__{cell_qc_column}.png')
 
     # Plot the cell density
     # print("Making density plot")
     sns_plot = sns.PairGrid(
-        adata.obs[set(metadata_columns_original)],
+        adata.obs[list(set(metadata_columns_original))],
         height=2.5,
         diag_sharey=False
     )
@@ -150,7 +153,7 @@ def generate_plots(adata,cell_qc_column,metadata_columns,metadata_columns_origin
         shade=True
     )
     sns_plot.add_legend()
-    for lh in sns_plot._legend.legendHandles:
+    for lh in sns_plot._legend.legend_handles:
         lh.set_alpha(1)
         lh._sizes = [50]
     sns_plot.map_diag(sns.kdeplot)
@@ -541,15 +544,16 @@ def main():
                 method
             )
             df_cells_filtered = df_cells_filtered[filter_columns]
-            df_cell_filt_per_exp = df_cell_filt_per_exp.append(
-                df_cells_filtered,
+            df_cell_filt_per_exp = pd.concat(
+                [df_cell_filt_per_exp, df_cells_filtered], 
                 ignore_index=True
             )
             df_cells_filtered['filter_type'] = 'after_filters'
-            df_cell_filt_per_exp = df_cell_filt_per_exp.append(
-                df_cells_filtered,
+            df_cell_filt_per_exp = pd.concat(
+                [df_cell_filt_per_exp, df_cells_filtered], 
                 ignore_index=True
             )
+
             # Save the final dataframe
             df_cell_filt_per_exp.to_csv(
                 f'{options.of}-cell_filtered_per_experiment__{cell_qc_column}.tsv',

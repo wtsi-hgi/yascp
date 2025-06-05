@@ -8,9 +8,9 @@ process SOUPORCELL_VS_VIREO {
 	overwrite: true
     
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "https://yascp.cog.sanger.ac.uk/public/singularity_images/scrna_deconvolution_latest.img"
+        container "${params.yascp_container}"
     } else {
-        container "quay.io/biocontainers/multiqc:1.10.1--py_0"
+        container "${params.yascp_container_docker}"
     }
 
 
