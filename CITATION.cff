@@ -7,6 +7,7 @@ repository-code: https://github.com/wtsi-hgi/yascp
 url: https://github.com/wtsi-hgi/yascp
 license: GPL-3.0
 type: software
+doi: 10.5281/zenodo.15600242
 
 authors:
   - family-names: Ozols
