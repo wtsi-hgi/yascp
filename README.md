@@ -104,12 +104,13 @@ We wellcome all contributions. If you would like to contribute to this pipeline,
 
 ## Citations
 
-Currently pipeline has not been published but we would really appreciate if you could please acknowlage the use of this pipeline in your work:
 
-> Ozols, M. et al. YASCP: GitHub. https://github.com/wtsi-hgi/yascp. 
+If you use  YASCP for your analysis, please cite it using the following doi: [10.5281/zenodo.15600242 ](https://doi.org/10.5281/zenodo.15600242 )
+> Ozols, M. et al. YASCP: GitHub. https://github.com/wtsi-hgi/yascp [![DOI](https://zenodo.org/badge/423515781.svg)](https://doi.org/10.5281/zenodo.15600242)
+We are also working on publishing this pipeline. 
 
 <!-- TODO nf-core: Add citation for pipeline after first release. Uncomment lines below and update Zenodo doi and badge at the top of this file. -->
-<!-- If you use  nf-core/yascp for your analysis, please cite it using the following doi: [10.5281/zenodo.XXXXXX](https://doi.org/10.5281/zenodo.XXXXXX) -->
+
 <!-- TODO nf-core: Add bibliography of tools and data used in your pipeline -->
 
 An extensive list of references for the tools used by the pipeline can be found in the [`CITATIONS.md`](CITATIONS.md) file.
