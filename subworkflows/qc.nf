@@ -1,21 +1,21 @@
 
 // Load base.config by default for all pipelines - typically included in the nextflow config.
 // Modules to include.
-include {OUTLIER_FILTER; MERGE_OUTLIER_FILES} from "$projectDir/modules/nf-core/modules/outlier_filter/main"
-include {PLOT_STATS} from "$projectDir/modules/nf-core/modules/plot_stats/main"
-include {ESTIMATE_PCA_ELBOW} from "$projectDir/modules/nf-core/modules/estimate_pca_elbow/main"
-include {SUBSET_PCS} from "$projectDir/modules/nf-core/modules/subset_pcs/main"
-include {NORMALISE_AND_PCA; PCA} from "$projectDir/modules/nf-core/modules/normalise_and_pca/main"
-include {HARMONY} from "$projectDir/modules/nf-core/modules/harmony/main"
-include {BBKNN} from "$projectDir/modules/nf-core/modules/bbknn/main"
-include {ADD_EXTRA_METADATA_TO_H5AD} from "$projectDir/modules/nf-core/modules/adata_manipulations/main"
-include {LISI} from "$projectDir/modules/nf-core/modules/lisi/main"
-include {UMAP; UMAP as UMAP_HARMONY; UMAP as UMAP_BBKNN;} from "$projectDir/modules/nf-core/modules/umap/main"
-include {CLUSTERING; CLUSTERING as CLUSTERING_HARMONY; CLUSTERING as CLUSTERING_BBKNN;} from "$projectDir/modules/nf-core/modules/clustering/main"
-include {CELL_HARD_FILTERS} from "$projectDir/modules/nf-core/modules/cell_hard_filters/main"
-include {DONT_INTEGRATE} from "$projectDir/modules/nf-core/modules/reduce_dims/main"
-include {TOTAL_VI_INTEGRATION} from "$projectDir/modules/nf-core/modules/totalVi/main"
-include { DSB_PROCESS; PREPROCESS_PROCESS; DSB_INTEGRATE; MULTIMODAL_INTEGRATION; VDJ_INTEGRATION } from '../modules/nf-core/modules/citeseq/main'
+include {OUTLIER_FILTER; MERGE_OUTLIER_FILES} from "$projectDir/modules/local/outlier_filter/main"
+include {PLOT_STATS} from "$projectDir/modules/local/plot_stats/main"
+include {ESTIMATE_PCA_ELBOW} from "$projectDir/modules/local/estimate_pca_elbow/main"
+include {SUBSET_PCS} from "$projectDir/modules/local/subset_pcs/main"
+include {NORMALISE_AND_PCA; PCA} from "$projectDir/modules/local/normalise_and_pca/main"
+include {HARMONY} from "$projectDir/modules/local/harmony/main"
+include {BBKNN} from "$projectDir/modules/local/bbknn/main"
+include {ADD_EXTRA_METADATA_TO_H5AD} from "$projectDir/modules/local/adata_manipulations/main"
+include {LISI} from "$projectDir/modules/local/lisi/main"
+include {UMAP; UMAP as UMAP_HARMONY; UMAP as UMAP_BBKNN;} from "$projectDir/modules/local/umap/main"
+include {CLUSTERING; CLUSTERING as CLUSTERING_HARMONY; CLUSTERING as CLUSTERING_BBKNN;} from "$projectDir/modules/local/clustering/main"
+include {CELL_HARD_FILTERS} from "$projectDir/modules/local/cell_hard_filters/main"
+include {DONT_INTEGRATE} from "$projectDir/modules/local/reduce_dims/main"
+include {TOTAL_VI_INTEGRATION} from "$projectDir/modules/local/totalVi/main"
+include { DSB_PROCESS; PREPROCESS_PROCESS; DSB_INTEGRATE; MULTIMODAL_INTEGRATION; VDJ_INTEGRATION } from '../modules/local/citeseq/main'
 
 workflow qc {
     take:

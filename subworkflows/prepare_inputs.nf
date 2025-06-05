@@ -1,7 +1,7 @@
 nextflow.enable.dsl=2
 
-include {prep_collectmetadata; merge_metadata} from "$projectDir/modules/nf-core/modules/merge_metadata/main"
-include { YASCP_INPUTS } from "$projectDir/modules/nf-core/modules/prepere_yascp_inputs/main"
+include {prep_collectmetadata; merge_metadata} from "$projectDir/modules/local/merge_metadata/main"
+include { YASCP_INPUTS } from "$projectDir/modules/local/prepere_yascp_inputs/main"
 
 workflow DECONV_INPUTS{
     // This is a function that prpeares the inputs for deconvolution that is utilised twice.

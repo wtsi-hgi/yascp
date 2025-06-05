@@ -12,13 +12,13 @@ include {data_handover} from "$projectDir/subworkflows/data_handover"
 include { prepare_inputs } from "$projectDir/subworkflows/prepare_inputs"
 include { DECONV_INPUTS } from "$projectDir/subworkflows/prepare_inputs"
 include { CREATE_ARTIFICIAL_BAM_CHANNEL } from "$projectDir/modules/local/create_artificial_bam_channel/main"
-include {MERGE_SAMPLES} from "$projectDir/modules/nf-core/modules/merge_samples/main"
-include {dummy_filtered_channel} from "$projectDir/modules/nf-core/modules/merge_samples/functions"
+include {MERGE_SAMPLES} from "$projectDir/modules/local/merge_samples/main"
+include {dummy_filtered_channel} from "$projectDir/modules/local/merge_samples/functions"
 include {MULTIPLET} from "$projectDir/subworkflows/doublet_detection"
-include { SPLIT_CITESEQ_GEX; SPLIT_CITESEQ_GEX as SPLIT_CITESEQ_GEX_FILTERED;SPLIT_CITESEQ_GEX as SPLIT_CITESEQ_GEX_FILTERED_NOCB;SPLIT_CITESEQ_GEX as SPLIT_CITESEQ_GEX_NOCB; SPLIT_CITESEQ_GEX as PREPOCESS_FILES; HASTAG_DEMULTIPLEX } from '../modules/nf-core/modules/citeseq/main'
-include { GENOTYPE_MATCHER } from "$projectDir/modules/nf-core/modules/vireo/main"
-include { RETRIEVE_RECOURSES } from "$projectDir/subworkflows/local/retrieve_recourses"
-include { PREPROCESS_GENOME } from "$projectDir/modules/nf-core/modules/subset_bam_per_barcodes_and_variants/main"
+include { SPLIT_CITESEQ_GEX; SPLIT_CITESEQ_GEX as SPLIT_CITESEQ_GEX_FILTERED;SPLIT_CITESEQ_GEX as SPLIT_CITESEQ_GEX_FILTERED_NOCB;SPLIT_CITESEQ_GEX as SPLIT_CITESEQ_GEX_NOCB; SPLIT_CITESEQ_GEX as PREPOCESS_FILES; HASTAG_DEMULTIPLEX } from '../modules/local/citeseq/main'
+include { GENOTYPE_MATCHER } from "$projectDir/modules/local/vireo/main"
+include { RETRIEVE_RECOURSES } from "$projectDir/modules/local/retrieve_recourses/retrieve_recourses"
+include { PREPROCESS_GENOME } from "$projectDir/modules/local/subset_bam_per_barcodes_and_variants/main"
 /*
 ========================================================================================
     RUN MAIN WORKFLOW

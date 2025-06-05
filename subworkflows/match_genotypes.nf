@@ -1,10 +1,10 @@
 // match deconvoluted donors by genotype to a reference panel
 
-include { MATCH_GT_VIREO; GT_MATCH_POOL_IBD } from "$projectDir/modules/nf-core/modules/genotypes/main"
-include {COMBINE_MATCHES_IN_EXPECTED_FORMAT} from "$projectDir/modules/nf-core/modules/genotypes/main"
-include {Relationships_Between_Infered_Expected; Relationships_Between_Infered_Expected as Relationships_Between_Infered_GT_Matched} from '../modules/nf-core/modules/infered_expected_relationship/main'
-include {SUBSET_WORKF} from "$projectDir/modules/nf-core/modules/subset_genotype/main"
-include {CONCORDANCE_CALCLULATIONS; COMBINE_FILES; PLOT_CONCORDANCES_ALL} from "$projectDir/modules/nf-core/modules/concordance/main"
+include { MATCH_GT_VIREO; GT_MATCH_POOL_IBD } from "$projectDir/modules/local/genotypes/main"
+include {COMBINE_MATCHES_IN_EXPECTED_FORMAT} from "$projectDir/modules/local/genotypes/main"
+include {Relationships_Between_Infered_Expected; Relationships_Between_Infered_Expected as Relationships_Between_Infered_GT_Matched} from '../modules/local/infered_expected_relationship/main'
+include {SUBSET_WORKF} from "$projectDir/modules/local/subset_genotype/main"
+include {CONCORDANCE_CALCLULATIONS; COMBINE_FILES; PLOT_CONCORDANCES_ALL} from "$projectDir/modules/local/concordance/main"
 include {collect_file as collect_file1;
         collect_file as collect_file2;
         collect_file as collect_file3;
@@ -13,7 +13,7 @@ include {collect_file as collect_file1;
         collect_file as collect_file6;
         collect_file as collect_file7;
         collect_file as collect_file8;
-        collect_file as collect_file9} from "$projectDir/modules/nf-core/modules/collect_file/main"
+        collect_file as collect_file9} from "$projectDir/modules/local/collect_file/main"
 
 
 workflow match_genotypes {

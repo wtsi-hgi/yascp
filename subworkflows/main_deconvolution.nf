@@ -2,26 +2,26 @@ nextflow.enable.dsl=2
 
 // main deconvolution modules, common to all input modes:
 
-include { CELLSNP;capture_cellsnp_files;DYNAMIC_DONOR_EXCLUSIVE_SNP_SELECTION; ASSESS_CALL_RATE } from "$projectDir/modules/nf-core/modules/cellsnp/main"
-include { SUBSET_GENOTYPE } from "$projectDir/modules/nf-core/modules/subset_genotype/main"
-include { VIREO;POSTPROCESS_SUMMARY;VIREO as VIREO_SINGLE_DONOR; REMOVE_DUPLICATED_DONORS_FROM_GT;VIREO_SUBSAMPLING;VIREO_SUBSAMPLING_PROCESSING; GENOTYPE_MATCHER; CAPTURE_VIREO } from "$projectDir/modules/nf-core/modules/vireo/main"
-include { SUBSET_BAM_PER_BARCODES_AND_VARIANTS } from "$projectDir/modules/nf-core/modules/subset_bam_per_barcodes_and_variants/main"
-include { FREEBAYES } from "$projectDir/modules/nf-core/modules/freebayes/main"
-include { GUZIP_VCF } from "$projectDir/modules/nf-core/modules/guzip_vcf/main"
-include { PREPROCESS_GENOTYPES } from "$projectDir/modules/nf-core/modules/genotypes/main"
-include { SOUPORCELL } from "$projectDir/modules/nf-core/modules/souporcell/main"
-include { SPLIT_DONOR_H5AD; PREP_ASSIGNMENTS_FILE } from "$projectDir/modules/nf-core/modules/split_donor_h5ad/main"
-include { PLOT_DONOR_CELLS } from "$projectDir/modules/nf-core/modules/plot_donor_cells/main"
-include {SOUPORCELL_VS_VIREO} from "$projectDir/modules/nf-core/modules/plot_souporcell_vs_vireo/main"
-include { REPLACE_GT_ASSIGNMENTS_WITH_PHENOTYPE; ENHANCE_VIREO_METADATA_WITH_DONOR } from "$projectDir/modules/nf-core/modules/genotypes/main"
+include { CELLSNP;capture_cellsnp_files;DYNAMIC_DONOR_EXCLUSIVE_SNP_SELECTION; ASSESS_CALL_RATE } from "$projectDir/modules/local/cellsnp/main"
+include { SUBSET_GENOTYPE } from "$projectDir/modules/local/subset_genotype/main"
+include { VIREO;POSTPROCESS_SUMMARY;VIREO as VIREO_SINGLE_DONOR; REMOVE_DUPLICATED_DONORS_FROM_GT;VIREO_SUBSAMPLING;VIREO_SUBSAMPLING_PROCESSING; GENOTYPE_MATCHER; CAPTURE_VIREO } from "$projectDir/modules/local/vireo/main"
+include { SUBSET_BAM_PER_BARCODES_AND_VARIANTS } from "$projectDir/modules/local/subset_bam_per_barcodes_and_variants/main"
+include { FREEBAYES } from "$projectDir/modules/local/freebayes/main"
+include { GUZIP_VCF } from "$projectDir/modules/local/guzip_vcf/main"
+include { PREPROCESS_GENOTYPES } from "$projectDir/modules/local/genotypes/main"
+include { SOUPORCELL } from "$projectDir/modules/local/souporcell/main"
+include { SPLIT_DONOR_H5AD; PREP_ASSIGNMENTS_FILE } from "$projectDir/modules/local/split_donor_h5ad/main"
+include { PLOT_DONOR_CELLS } from "$projectDir/modules/local/plot_donor_cells/main"
+include {SOUPORCELL_VS_VIREO} from "$projectDir/modules/local/plot_souporcell_vs_vireo/main"
+include { REPLACE_GT_ASSIGNMENTS_WITH_PHENOTYPE; ENHANCE_VIREO_METADATA_WITH_DONOR } from "$projectDir/modules/local/genotypes/main"
 include { match_genotypes } from './match_genotypes'
-include {ENHANCE_STATS_GT_MATCH } from "$projectDir/modules/nf-core/modules/genotypes/main"
-include {SUBSET_WORKF} from "$projectDir/modules/nf-core/modules/subset_genotype/main"
-include {REPLACE_GT_DONOR_ID2; REPLACE_GT_DONOR_ID2 as REPLACE_GT_DONOR_ID_SUBS } from "$projectDir/modules/nf-core/modules/genotypes/main"
+include {ENHANCE_STATS_GT_MATCH } from "$projectDir/modules/local/genotypes/main"
+include {SUBSET_WORKF} from "$projectDir/modules/local/subset_genotype/main"
+include {REPLACE_GT_DONOR_ID2; REPLACE_GT_DONOR_ID2 as REPLACE_GT_DONOR_ID_SUBS } from "$projectDir/modules/local/genotypes/main"
 include { STAGE_FILE } from "$projectDir/subworkflows/local/retrieve_recourses"
-include {GT_MATCH_POOL_IBD } from "$projectDir/modules/nf-core/modules/genotypes/main"
+include {GT_MATCH_POOL_IBD } from "$projectDir/modules/local/genotypes/main"
 
-include {VIREO_GT_FIX_HEADER; VIREO_GT_FIX_HEADER as VIREO_GT_FIX_HEADER_SUBS; MERGE_GENOTYPES_IN_ONE_VCF; VIREO_ADD_SAMPLE_PREFIX; MERGE_GENOTYPES_IN_ONE_VCF_IDX_PAN; MERGE_GENOTYPES_IN_ONE_VCF_FREEBAYES; MERGE_GENOTYPES_IN_ONE_VCF as MERGE_GENOTYPES_IN_ONE_VCF_SUBSET} from "$projectDir/modules/nf-core/modules/genotypes/main"
+include {VIREO_GT_FIX_HEADER; VIREO_GT_FIX_HEADER as VIREO_GT_FIX_HEADER_SUBS; MERGE_GENOTYPES_IN_ONE_VCF; VIREO_ADD_SAMPLE_PREFIX; MERGE_GENOTYPES_IN_ONE_VCF_IDX_PAN; MERGE_GENOTYPES_IN_ONE_VCF_FREEBAYES; MERGE_GENOTYPES_IN_ONE_VCF as MERGE_GENOTYPES_IN_ONE_VCF_SUBSET} from "$projectDir/modules/local/genotypes/main"
 include {collect_file as collect_file1;
         collect_file as collect_file2;
         collect_file as collect_file3;
@@ -31,7 +31,7 @@ include {collect_file as collect_file1;
         collect_file as collect_file7;
         collect_file as collect_file8;
         collect_file as collect_file9;
-        collect_file as collect_file10} from "$projectDir/modules/nf-core/modules/collect_file/main"
+        collect_file as collect_file10} from "$projectDir/modules/local/collect_file/main"
 
 workflow  main_deconvolution {
 

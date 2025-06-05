@@ -1,9 +1,9 @@
 
 // Load base.config by default for all pipelines - typically included in the nextflow config.
-include { CELLBENDER } from '../modules/nf-core/modules/cellbender/main'
-include { SPLIT_CITESEQ_GEX; DSB } from '../modules/nf-core/modules/citeseq/main'
+include { CELLBENDER } from '../modules/local/cellbender/main'
+include { SPLIT_CITESEQ_GEX; DSB } from '../modules/local/citeseq/main'
 
-include {capture_cellbender_files} from "$projectDir/modules/nf-core/modules/cellbender/functions"
+include {capture_cellbender_files} from "$projectDir/modules/local/cellbender/functions"
 
 workflow ambient_RNA {
     take:

@@ -1,12 +1,12 @@
-include { SCRUBLET } from "$projectDir/modules/nf-core/modules/scrublet/main"
-include { DOUBLET_DETECTION } from "$projectDir/modules/nf-core/modules/doubletdetection/main"
-include { DOUBLET_DECON} from "$projectDir/modules/nf-core/modules/doubletdecon/main"
-include {SC_DBLFINDER} from "$projectDir/modules/nf-core/modules/scDblFinder/main"
-include { DOUBLET_FINDER} from "$projectDir/modules/nf-core/modules/doubletfinder/main"
-include { SCDS} from "$projectDir/modules/nf-core/modules/scds/main"
-include { SPLIT_CITESEQ_GEX; SPLIT_CITESEQ_GEX as SPLIT_CITESEQ_GEX_FILTERED } from "$projectDir/modules/nf-core/modules/citeseq/main"
+include { SCRUBLET } from "$projectDir/modules/local/scrublet/main"
+include { DOUBLET_DETECTION } from "$projectDir/modules/local/doubletdetection/main"
+include { DOUBLET_DECON} from "$projectDir/modules/local/doubletdecon/main"
+include {SC_DBLFINDER} from "$projectDir/modules/local/scDblFinder/main"
+include { DOUBLET_FINDER} from "$projectDir/modules/local/doubletfinder/main"
+include { SCDS} from "$projectDir/modules/local/scds/main"
+include { SPLIT_CITESEQ_GEX; SPLIT_CITESEQ_GEX as SPLIT_CITESEQ_GEX_FILTERED } from "$projectDir/modules/local/citeseq/main"
 include { CONVERT_MTX_TO_H5AD; CONVERT_H5AD_TO_MTX } from "$projectDir/modules/local/convert_h5ad_to_mtx/main"
-include {SPLIT_BATCH_H5AD} from "$projectDir/modules/nf-core/modules/split_batch_h5ad/main"
+include {SPLIT_BATCH_H5AD} from "$projectDir/modules/local/split_batch_h5ad/main"
 
 def random_hex(n) {
     Long.toUnsignedString(new Random().nextLong(), n).toUpperCase()

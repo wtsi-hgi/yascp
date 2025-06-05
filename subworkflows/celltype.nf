@@ -1,11 +1,11 @@
 
-include {AZIMUTH;REMAP_AZIMUTH} from "$projectDir/modules/nf-core/modules/azimuth/main"
-include {CELLTYPIST} from "$projectDir/modules/nf-core/modules/celltypist/main"
-include {SPLIT_BATCH_H5AD} from "$projectDir/modules/nf-core/modules/split_batch_h5ad/main"
-include {KERAS_CELLTYPE} from "$projectDir/modules/nf-core/modules/keras_celltype/main"
-// include {CELLTYPE_FILE_MERGE} from "$projectDir/modules/nf-core/modules/cell_type_assignment/functions"
-include {SCPRED} from "$projectDir/modules/nf-core/modules/scpred/main"
-include {  DSB } from '../modules/nf-core/modules/citeseq/main'
+include {AZIMUTH;REMAP_AZIMUTH} from "$projectDir/modules/local/azimuth/main"
+include {CELLTYPIST} from "$projectDir/modules/local/celltypist/main"
+include {SPLIT_BATCH_H5AD} from "$projectDir/modules/local/split_batch_h5ad/main"
+include {KERAS_CELLTYPE} from "$projectDir/modules/local/keras_celltype/main"
+// include {CELLTYPE_FILE_MERGE} from "$projectDir/modules/local/cell_type_assignment/functions"
+include {SCPRED} from "$projectDir/modules/local/scpred/main"
+include {  DSB } from '../modules/local/citeseq/main'
 include { CONVERT_MTX_TO_H5AD } from "$projectDir/modules/local/convert_h5ad_to_mtx/main"
 
 process CELLTYPE_FILE_MERGE{
