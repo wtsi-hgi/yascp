@@ -1,0 +1,53 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "YASCP: Yet Another Single Cell Pipeline"
+version: "v1.9"
+date-released: 2025-06-05
+repository-code: https://github.com/wtsi-hgi/yascp
+url: https://github.com/wtsi-hgi/yascp
+license: GPL-3.0
+type: software
+
+authors:
+  - family-names: Ozols
+    given-names: Matiss
+    orcid: https://orcid.org/0000-0001-5663-1053
+  - family-names: Taylor
+    given-names: Leland
+  - family-names: Noell
+    given-names: Guillaume
+  - family-names: Ponstingl
+    given-names: Hannes
+  - family-names: Ovchinnikov
+    given-names: Vladimir
+  - family-names: Iyer
+    given-names: Vivek
+  - family-names: Taylor
+    given-names: Henry
+  - family-names: Alegbe
+    given-names: Tobi
+  - family-names: Krzak
+    given-names: Monika
+  - family-names: Raveane
+    given-names: Alessandro
+  - family-names: Anderson
+    given-names: Carl
+  - family-names: Lorenc
+    given-names: Anna
+  - family-names: Jang
+    given-names: Haerin
+  - family-names: de Klein
+    given-names: Niek
+  - family-names: Watt
+    given-names: Stephen
+  - family-names: Soranzo
+    given-names: Nicole
+  - family-names: Stegle
+    given-names: Oliver
+
+abstract: >
+  YASCP (Yet Another Single Cell Pipeline) is a reproducible, modular Nextflow pipeline 
+  for processing single-cell RNA-seq data, including ambient RNA removal, donor deconvolution, 
+  cell type assignment, clustering, and doublet detection. It was developed for large-scale 
+  scRNA-seq analysis as part of the Cardinal project and is broadly applicable to single-cell 
+  workflows. Version 1.9 introduces a unified container, simplified inputs, and configuration cleanup.
