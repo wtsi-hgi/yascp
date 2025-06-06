@@ -83,7 +83,33 @@ Pipeline has a modular design ensuring that the bits and piecies can be run inde
 15. Citeseq DSB normalisations, 
 16. Cell genotype concordance Calculations
 
-
+## List of programs used in the pipeline
+1. [Azimuth](https://github.com/satijalab/azimuth)
+2. [BBKNN](https://github.com/Teichlab/bbknn)
+3. [Bcftools](https://samtools.github.io/bcftools/)
+4. [Bgzip](https://github.com/samtools/htslib)
+5. [Cellbender](https://github.com/broadinstitute/CellBender)
+6. [CellSNP](https://github.com/single-cell-genetics/cellSNP)
+7. [Celltypist](https://github.com/Teichlab/celltypist)
+8. [Cellxgene](https://github.com/chanzuckerberg/cellxgene)
+9. [DoubletDecon](https://github.com/EDePasquale/DoubletDecon)
+10. [DoubletDetection](https://github.com/JonathanShor/DoubletDetection)
+11. [DoubletFinder](https://github.com/chris-mcginnis-ucsf/DoubletFinder)
+12. [Ega-cryptor](https://github.com/EbiEga/ega-cryptor)
+13. [Freebayes](https://github.com/freebayes/freebayes)
+14. [Harmony](https://github.com/immunogenomics/harmony)
+15. [Keras](https://github.com/broadinstitute/keras-rcnn)
+16. [Lisi](https://github.com/immunogenomics/LISI)
+17. [Plink](https://github.com/chrchang/plink-ng)
+18. [Samtools](https://github.com/samtools/samtools)
+19. [Scanpy](https://github.com/scverse/scanpy)
+20. [Sccaf](https://github.com/SCCAF/sccaf)
+21. [scDblFinder](https://github.com/plger/scDblFinder)
+22. [SCDS](https://github.com/kostkalab/scds)
+23. [scPred](https://github.com/powellgenomicslab/scPred)
+24. [Scrublet](https://github.com/swolock/scrublet)
+25. [Tabix](https://github.com/samtools/htslib)
+26. [Vireo](https://github.com/single-cell-genetics/vireo)
 
 
 ## Documentation: Prepearing your own data and interpreting the results
