@@ -78,7 +78,6 @@ workflow YASCP {
                 // CITESEQ and other data modality seperation
                 // Split citeseq if available
 
-
                 // If citeseq data is present in the 10x mtx then we strip it before the ambient rna correction.
                 SPLIT_CITESEQ_GEX_FILTERED(prepare_inputs.out.ch_experimentid_paths10x_filtered,'filterd')
                 SPLIT_CITESEQ_GEX( prepare_inputs.out.ch_experimentid_paths10x_raw,'raw')
@@ -284,7 +283,6 @@ workflow YASCP {
         // ###################################
         // ################################### Readme
         // DATA HANDOVER, REPORTS, DATA ENCRYPTION, DONOR H5AD, BAM SPLIT
-        // 
         // ###################################
         // ###################################
 
