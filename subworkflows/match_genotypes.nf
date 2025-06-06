@@ -1,10 +1,14 @@
 // match deconvoluted donors by genotype to a reference panel
 
-include { MATCH_GT_VIREO; GT_MATCH_POOL_IBD } from "$projectDir/modules/local/genotypes/main"
-include {COMBINE_MATCHES_IN_EXPECTED_FORMAT} from "$projectDir/modules/local/genotypes/main"
-include {Relationships_Between_Infered_Expected; Relationships_Between_Infered_Expected as Relationships_Between_Infered_GT_Matched} from '../modules/local/infered_expected_relationship/main'
-include {SUBSET_WORKF} from "$projectDir/modules/local/subset_genotype/main"
-include {CONCORDANCE_CALCLULATIONS; COMBINE_FILES; PLOT_CONCORDANCES_ALL} from "$projectDir/modules/local/concordance/main"
+include { MATCH_GT_VIREO; 
+          GT_MATCH_POOL_IBD } from "$projectDir/modules/local/genotypes/main"
+include { COMBINE_MATCHES_IN_EXPECTED_FORMAT } from "$projectDir/modules/local/genotypes/main"
+include { Relationships_Between_Infered_Expected; 
+          Relationships_Between_Infered_Expected as Relationships_Between_Infered_GT_Matched } from '../modules/local/infered_expected_relationship/main'
+include { SUBSET_WORKF } from "$projectDir/modules/local/subset_genotype/main"
+include { CONCORDANCE_CALCLULATIONS; 
+          COMBINE_FILES; 
+          PLOT_CONCORDANCES_ALL } from "$projectDir/modules/local/concordance/main"
 include {collect_file as collect_file1;
         collect_file as collect_file2;
         collect_file as collect_file3;
@@ -30,7 +34,6 @@ workflow match_genotypes {
     informative_uninformative_sites
   main:
 
-       
     MATCH_GT_VIREO(gt_math_pool_against_panel_input)
     // «««««««««
     // This channel creates an input that contains the GT matched results as per input
@@ -85,14 +88,11 @@ workflow match_genotypes {
       }
     }.set{input32}
 
-    // input32.subscribe { println "input32: $it" }
     input4 = input32.combine(cellsnp_cell_vcfs2, by: 0)
-    // input4.subscribe { println "input4: $it" }
     input5 = input4.combine(MATCH_GT_VIREO.out.donor_match_table_with_pool_id, by:0)
-    // input5.subscribe { println "input5: $it" }
     input6 = input5.combine(cell_assignments, by:0)
     input7 = input6.combine(informative_uninformative_sites, by:0)
-    // input6.subscribe { println "input6: $it" }
+
     if (params.concordance_calculations){
         CONCORDANCE_CALCLULATIONS(input7)
         ch_combine = subsampling_donor_swap.combine(CONCORDANCE_CALCLULATIONS.out.concordances, by: 0)

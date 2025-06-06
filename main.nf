@@ -10,31 +10,37 @@
 nextflow.enable.dsl = 2
 
 include { YASCP } from "$projectDir/workflows/yascp"
-include { RETRIEVE_RECOURSES;RETRIEVE_RECOURSES_TEST_DATASET } from "$projectDir/modules/local/retrieve_recourses/retrieve_recourses"
-include {RSYNC_RESULTS_REMOVE_WORK_DIR} from "$projectDir/modules/local/rsync_results_remove_work_dir/main"
-include {celltype} from "$projectDir/subworkflows/celltype"
-include {qc} from "$projectDir/subworkflows/qc"
-include {dummy_filtered_channel} from "$projectDir/modules/local/merge_samples/functions"
-include {CLUSTERING; CLUSTERING as CLUSTERING_HARMONY; CLUSTERING as CLUSTERING_BBKNN;} from "$projectDir/modules/local/clustering/main"
+include { RETRIEVE_RECOURSES; RETRIEVE_RECOURSES_TEST_DATASET } from "$projectDir/modules/local/retrieve_recourses/retrieve_recourses"
+include { RSYNC_RESULTS_REMOVE_WORK_DIR} from "$projectDir/modules/local/rsync_results_remove_work_dir/main"
+include { celltype} from "$projectDir/subworkflows/celltype"
+include { qc_and_integration } from "$projectDir/subworkflows/qc_and_integration"
+include { dummy_filtered_channel } from "$projectDir/modules/local/merge_samples/functions"
+include { CLUSTERING; CLUSTERING as CLUSTERING_HARMONY; 
+          CLUSTERING as CLUSTERING_BBKNN} from "$projectDir/modules/local/clustering/main"
 include { MATCH_GT_VIREO; GT_MATCH_POOL_IBD } from "$projectDir/modules/local/genotypes/main"
 include { YASCP_INPUTS } from "$projectDir/modules/local/prepere_yascp_inputs/main"
-include {MULTIPLET} from "$projectDir/subworkflows/doublet_detection"
+include { MULTIPLET } from "$projectDir/subworkflows/doublet_detection"
 include { match_genotypes } from "$projectDir/subworkflows/match_genotypes"
-include { metadata_posthoc;replace_donors_posthoc } from "$projectDir/modules/local/report_update/main"
-include {data_handover} from "$projectDir/subworkflows/data_handover"
+include { metadata_posthoc;
+          replace_donors_posthoc } from "$projectDir/modules/local/report_update/main"
+include { data_handover } from "$projectDir/subworkflows/data_handover"
 include { CREATE_ARTIFICIAL_BAM_CHANNEL } from "$projectDir/modules/local/create_artificial_bam_channel/main"
-include { TRANSFER;SUMMARY_STATISTICS_PLOTS } from "$projectDir/modules/local/summary_statistics_plots/main"
-include {SUBSET_WORKF; JOIN_STUDIES_MERGE} from "$projectDir/modules/local/subset_genotype/main"
-include {VIREO} from "$projectDir/modules/local/vireo/main"
+include { TRANSFER;
+          SUMMARY_STATISTICS_PLOTS } from "$projectDir/modules/local/summary_statistics_plots/main"
+include { SUBSET_WORKF; 
+          JOIN_STUDIES_MERGE} from "$projectDir/modules/local/subset_genotype/main"
+include { VIREO } from "$projectDir/modules/local/vireo/main"
 include {capture_cellbender_files} from "$projectDir/modules/local/cellbender/functions"
 include { DECONV_INPUTS } from "$projectDir/subworkflows/prepare_inputs"
 include { prepare_inputs } from "$projectDir/subworkflows/prepare_inputs"
 include { SPLIT_DONOR_H5AD } from "$projectDir/modules/local/split_donor_h5ad/main"
-include {REPLACE_GT_DONOR_ID2 } from "$projectDir/modules/local/genotypes/main"
-include {CAPTURE_VIREO } from "$projectDir/modules/local/vireo/main"
-include {VIREO_GT_FIX_HEADER; VIREO_ADD_SAMPLE_PREFIX; MERGE_GENOTYPES_IN_ONE_VCF as MERGE_GENOTYPES_IN_ONE_VCF_INFERED; MERGE_GENOTYPES_IN_ONE_VCF as MERGE_GENOTYPES_IN_ONE_VCF_SUBSET} from "$projectDir/modules/local/genotypes/main"
-include {ENHANCE_STATS_GT_MATCH } from "$projectDir/modules/local/genotypes/main"
-include {collect_file} from "$projectDir/modules/local/collect_file/main"
+include { REPLACE_GT_DONOR_ID2 } from "$projectDir/modules/local/genotypes/main"
+include { CAPTURE_VIREO } from "$projectDir/modules/local/vireo/main"
+include { VIREO_GT_FIX_HEADER; VIREO_ADD_SAMPLE_PREFIX; 
+        MERGE_GENOTYPES_IN_ONE_VCF as MERGE_GENOTYPES_IN_ONE_VCF_INFERED; 
+        MERGE_GENOTYPES_IN_ONE_VCF as MERGE_GENOTYPES_IN_ONE_VCF_SUBSET } from "$projectDir/modules/local/genotypes/main"
+include { ENHANCE_STATS_GT_MATCH } from "$projectDir/modules/local/genotypes/main"
+include { collect_file} from "$projectDir/modules/local/collect_file/main"
 include { CELLSNP;capture_cellsnp_files } from "$projectDir/modules/local/cellsnp/main"
 include { CONVERT_H5AD_TO_MTX } from "$projectDir/modules/local/convert_h5ad_to_mtx/main"
 
@@ -113,12 +119,11 @@ workflow JUST_RECLUSTER{
     file__anndata_merged.subscribe { println "file__anndata_merged: $it" }
     dummy_filtered_channel(file__anndata_merged,params.id_in)
     file__cells_filtered = dummy_filtered_channel.out.anndata_metadata
-    qc(file__anndata_merged,file__cells_filtered,gt_outlier_input) //This runs the Clusterring and qc assessments of the datasets.    
+    qc_and_integration(file__anndata_merged,file__cells_filtered,gt_outlier_input) //This runs the Clusterring and qc assessments of the datasets.    
 }
 
 
 workflow GT_MATCH{
-    // 2) All the vcfs provided to us. 
     Channel.fromPath(
     params.genotype_input.tsv_donor_panel_vcfs,
     followLinks: true,

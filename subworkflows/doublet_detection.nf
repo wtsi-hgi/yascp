@@ -1,42 +1,13 @@
 include { SCRUBLET } from "$projectDir/modules/local/scrublet/main"
 include { DOUBLET_DETECTION } from "$projectDir/modules/local/doubletdetection/main"
-include { DOUBLET_DECON} from "$projectDir/modules/local/doubletdecon/main"
-include {SC_DBLFINDER} from "$projectDir/modules/local/scDblFinder/main"
+include { DOUBLET_DECON } from "$projectDir/modules/local/doubletdecon/main"
+include { SC_DBLFINDER } from "$projectDir/modules/local/scDblFinder/main"
 include { DOUBLET_FINDER} from "$projectDir/modules/local/doubletfinder/main"
-include { SCDS} from "$projectDir/modules/local/scds/main"
-include { SPLIT_CITESEQ_GEX; SPLIT_CITESEQ_GEX as SPLIT_CITESEQ_GEX_FILTERED } from "$projectDir/modules/local/citeseq/main"
+include { SCDS } from "$projectDir/modules/local/scds/main"
+include { SPLIT_CITESEQ_GEX; 
+          SPLIT_CITESEQ_GEX as SPLIT_CITESEQ_GEX_FILTERED } from "$projectDir/modules/local/citeseq/main"
 include { CONVERT_MTX_TO_H5AD; CONVERT_H5AD_TO_MTX } from "$projectDir/modules/local/convert_h5ad_to_mtx/main"
-include {SPLIT_BATCH_H5AD} from "$projectDir/modules/local/split_batch_h5ad/main"
-
-def random_hex(n) {
-    Long.toUnsignedString(new Random().nextLong(), n).toUpperCase()
-}
-
-process make_cellmetadata_pipeline_input {
-    // Makes a input tsv file for the main pipeline.
-    // ------------------------------------------------------------------------
-    //cache false        // cache results from run
-
-    publishDir  path: "${params.outdir}/scrublet",
-                saveAs: {filename -> filename.replaceAll("-", "")},
-                mode: "${params.copy_mode}",
-                overwrite: "true"
-
-    input:
-        path("*multiplet_calls_published.txt")
-
-    output:
-        path('file_cellmetadata.tsv', emit: file__cellmetadata)
-
-    script:
-
-        """
-        # Note: the default paste delim is tab
-        cat *multiplet_calls_published.txt \
-            | awk 'BEGIN{print "experiment_id\tdata_path_cellmetadata"}1' \
-            > file_cellmetadata.tsv
-        """
-}
+include { SPLIT_BATCH_H5AD } from "$projectDir/modules/local/split_batch_h5ad/main"
 
 
 process MERGE_DOUBLET_RESULTS{
@@ -65,9 +36,7 @@ process MERGE_DOUBLET_RESULTS{
         )
 
     output:
-        // path("plots/*.pdf") optional true
         path("*.png") optional true
-        // path("${experiment_id}__DoubletDecon_doublets_singlets.tsv"), emit: results
         tuple val(experiment_id), path("${experiment_id}__doublet_results_combined.tsv"), emit: result
 
     script:

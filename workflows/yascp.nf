@@ -6,7 +6,7 @@
 
 include { main_deconvolution } from "$projectDir/subworkflows/main_deconvolution"
 include {ambient_RNA} from "$projectDir/subworkflows/ambient_RNA"
-include {qc} from "$projectDir/subworkflows/qc"
+include {qc_and_integration} from "$projectDir/subworkflows/qc_and_integration"
 include {celltype} from "$projectDir/subworkflows/celltype"
 include {data_handover} from "$projectDir/subworkflows/data_handover"
 include { prepare_inputs } from "$projectDir/subworkflows/prepare_inputs"
@@ -263,7 +263,7 @@ workflow YASCP {
                     gt_outlier_input = Channel.from("$projectDir/assets/fake_file.fq")
                 }
 
-                qc(file__anndata_merged,file__cells_filtered,gt_outlier_input,channel_dsb,vireo_paths,assignments_all_pools,matched_donors,chanel_cr_outs) //This runs the Clusterring and qc assessments of the datasets.
+                qc_and_integration(file__anndata_merged,file__cells_filtered,gt_outlier_input,channel_dsb,vireo_paths,assignments_all_pools,matched_donors,chanel_cr_outs) //This runs the Clusterring and qc assessments of the datasets.
                 process_finish_check_channel = qc.out.LI
                 file__anndata_merged = qc.out.file__anndata_merged
             }else{

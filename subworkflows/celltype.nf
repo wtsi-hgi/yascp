@@ -1,11 +1,9 @@
 
-include {AZIMUTH;REMAP_AZIMUTH} from "$projectDir/modules/local/azimuth/main"
-include {CELLTYPIST} from "$projectDir/modules/local/celltypist/main"
-include {SPLIT_BATCH_H5AD} from "$projectDir/modules/local/split_batch_h5ad/main"
-include {KERAS_CELLTYPE} from "$projectDir/modules/local/keras_celltype/main"
-// include {CELLTYPE_FILE_MERGE} from "$projectDir/modules/local/cell_type_assignment/functions"
-include {SCPRED} from "$projectDir/modules/local/scpred/main"
-include {  DSB } from '../modules/local/citeseq/main'
+include { AZIMUTH; REMAP_AZIMUTH } from "$projectDir/modules/local/azimuth/main"
+include { CELLTYPIST } from "$projectDir/modules/local/celltypist/main"
+include { SPLIT_BATCH_H5AD } from "$projectDir/modules/local/split_batch_h5ad/main"
+include { KERAS_CELLTYPE } from "$projectDir/modules/local/keras_celltype/main"
+include { SCPRED } from "$projectDir/modules/local/scpred/main"
 include { CONVERT_MTX_TO_H5AD } from "$projectDir/modules/local/convert_h5ad_to_mtx/main"
 
 process CELLTYPE_FILE_MERGE{
@@ -40,7 +38,6 @@ process CELLTYPE_FILE_MERGE{
        container "${params.yascp_container_docker}"
     }
     output:
-        // path('adata.h5ad', emit:file__anndata_merged2)
         path("All_Celltype_Assignments.tsv",emit:celltype_assignments)
         path "tranche_celltype_report.tsv"
         path "donor_celltype_report.tsv"
@@ -67,7 +64,7 @@ process CELLTYPE_FILE_MERGE{
         }
 
         """
-        generate_combined_celltype_anotation_file.py --all_azimuth_files ${azimuth_files_path} --all_celltypist_files ${celltypist_files_path} ${other_paths}
+            generate_combined_celltype_anotation_file.py --all_azimuth_files ${azimuth_files_path} --all_celltypist_files ${celltypist_files_path} ${other_paths}
         """
 
 }
@@ -79,8 +76,6 @@ workflow celltype{
         file__anndata_merged
         mode
     main:
-
-        
 
         // Here we may want to not split it and just pass in an entire h5ad file for annotations.
         // We need a combined h5ad file with all donors to perform further data integrations

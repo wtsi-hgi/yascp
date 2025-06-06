@@ -17,7 +17,7 @@ include {DONT_INTEGRATE} from "$projectDir/modules/local/reduce_dims/main"
 include {TOTAL_VI_INTEGRATION} from "$projectDir/modules/local/totalVi/main"
 include { DSB_PROCESS; PREPROCESS_PROCESS; DSB_INTEGRATE; MULTIMODAL_INTEGRATION; VDJ_INTEGRATION } from '../modules/local/citeseq/main'
 
-workflow qc {
+workflow qc_and_integration {
     take:
         file__anndata_merged
         file__cells_filtered
@@ -233,13 +233,6 @@ workflow qc {
             cluster_harmony__metadata = UMAP_HARMONY.out.metadata
             cluster_harmony__pcs = UMAP_HARMONY.out.pcs
             cluster_harmony__reduced_dims = UMAP_HARMONY.out.reduced_dims
-            
-
-            // cluster_harmony__outdir.subscribe { println "cluster_harmony__outdir input: $it" }
-            // cluster_harmony__anndata.subscribe { println "cluster_harmony__anndata input: $it" }
-            // cluster_harmony__reduced_dims.subscribe { println "cluster_harmony__reduced_dims input: $it" }
-            // cluster_harmony__metadata.subscribe { println "cluster_harmony__metadata input: $it" }
-            // cluster_harmony__pcs.subscribe { println "cluster_harmony__pcs input: $it" }
 
             CLUSTERING_HARMONY(
                 cluster_harmony__outdir,
