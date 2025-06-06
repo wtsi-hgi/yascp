@@ -8,7 +8,6 @@ process PCA {
     label 'process_medium'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "${params.yascp_container}"
-        // /software/hgi/containers/nf_qc_scrna_v1.img
     } else {
         container "${params.yascp_container_docker}"
     }

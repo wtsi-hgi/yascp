@@ -56,12 +56,8 @@ workflow CELLBENDER {
         )
         
         // Correct counts matrix to remove ambient RNA
-    // Some samples may fail with the defaults. Hence here we allow for a changes to be applied. 
+        // Some samples may fail with the defaults. Hence here we allow for a changes to be applied. 
 
-    
-    
-    
-    
         epochs_to_use = params.cellbender_rb.epochs.value
         learning_rate_to_use = params.cellbender_rb.learning_rate.value
         zdims_to_use = params.cellbender_rb.zdim.value

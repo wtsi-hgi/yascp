@@ -12,7 +12,7 @@ def random_hex(n) {
 }
 
 process HARMONY{
-        // Takes PCs (rows = cell barcodes) and metadata (rows = cell barcodes),
+    // Takes PCs (rows = cell barcodes) and metadata (rows = cell barcodes),
     // runs Harmony
     // ------------------------------------------------------------------------
     //cache false        // cache results from run
@@ -71,13 +71,7 @@ process HARMONY{
             "reduced_dims-${param_details}.tsv.gz",
             emit: reduced_dims_params
         )
-        // val(n_pcs, emit: n_pcs)
-        // tuple(
-        //     val(outdir),
-        //     path("reduced_dims.tsv.gz"),
-        //     val(n_pcs),
-        //     emit: results
-        // )
+
 
     script:
         runid = "${params__pcs}_${n_pcs}_${variables_and_thetas.variable}"

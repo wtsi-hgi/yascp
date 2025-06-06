@@ -59,12 +59,6 @@ process SUBSET_PCS{
             "reduced_dims-${param_details}.tsv.gz",
             emit: reduced_dims_params
         )
-        // val(n_pcs, emit: n_pcs)
-        // tuple(
-        //     val(outdir),
-        //     path("reduced_dims.tsv.gz"),
-        //     emit: results
-        // )
 
     script:
         

@@ -23,7 +23,6 @@ process SCDS {
         path("plots/*.pdf") optional true
         path("plots/*.png") optional true
         tuple val(experiment_id), path("${experiment_id}__scds_doublets_singlets.tsv"), emit: result
-        // path("${experiment_id}__DoubletDetection_results.txt"), emit: doubletDetection_results
 
     script:
         

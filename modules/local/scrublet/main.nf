@@ -10,12 +10,8 @@ if (binding.hasVariable("echo_mode") == false) {
 
 process SCRUBLET {
     // Runs scrublet for each sample.
-    // ------------------------------------------------------------------------
-    //cache false        // cache results from run
 
     tag "${experiment_id}"
-    //scratch true        // use tmp directory
-
 
     label 'process_low'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
@@ -40,7 +36,6 @@ process SCRUBLET {
                 overwrite: "true"
 
     input:
-        // path(outdir_prev)
         tuple(
             val(experiment_id),
             path(file_10x_barcodes),

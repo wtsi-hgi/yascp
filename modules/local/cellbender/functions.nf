@@ -1,8 +1,5 @@
 #!/usr/bin/env nextflow
 
-// NOTE: label 'big_mem' may be useful at some point
-
-
 def random_hex(n) {
   Long.toUnsignedString(new Random().nextLong(), n).toUpperCase()
 }
@@ -11,20 +8,6 @@ def random_hex(n) {
 if (binding.hasVariable("echo_mode") == false) {
   echo_mode = true
 }
-
-
-// process AMBIENTNESS_QUANTIFICATION{
-//     label 'process_medium'
-  
-//     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-//       container "${params.yascp_container}"
-//       maxRetries = 1
-//     } else {
-//       container "wtsihgi/nf_cellbender_container:3cc9983"
-//     }
-
-// }
-
 
 process cellbender__rb__get_input_cells {
 

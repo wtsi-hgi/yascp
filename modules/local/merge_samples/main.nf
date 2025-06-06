@@ -23,28 +23,12 @@ workflow MERGE_SAMPLES{
         
             prep_merge_samples_from_h5ad(channel__file_paths_10x_paths)
             input_merge =  prep_merge_samples_from_h5ad.out.h5ad.collect()
-            // file__cells_filtered = merge_samples_from_h5ad.out.cells_filtered
 
         }else if (mode == 'barcodes'){
             log.info """---Using barcode input---"""
-            // need a metrics summary for each of them - for 10x and cellbender can use the metrics as an input
-            // for deconvolution the default output -i.e - /lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/mo11_work/outputs/test_qc/inputs/file_metadata.tsv
-            // format - experiment_id \t celldata1 \celldata2
             prep_merge_samples(channel__file_paths_10x)
             input_merge = prep_merge_samples.out.mtx.collect()
-            // merge_samples(
-            //     params.outdir,
-            //     params.input_data_table,
-            //     file_metadata,
-            //     params.file_cellmetadata,
-            //     params.metadata_key_column.value,
-            //     prep_merge_samples.out.barcodes.collect(),
-            //     prep_merge_samples.out.features.collect(),
-            //     prep_merge_samples.out.matrix.collect(),
-            //     params.anndata_compression_opts
-            // )
-            // file__anndata_merged = merge_samples.out.anndata
-            // file__cells_filtered = merge_samples.out.cells_filtered
+
         }
 
         input_merge.subscribe { println "input_merge: $it" }
@@ -64,6 +48,4 @@ workflow MERGE_SAMPLES{
 
     emit:
         file__anndata_merged
-        // file__cells_filtered
-
 }

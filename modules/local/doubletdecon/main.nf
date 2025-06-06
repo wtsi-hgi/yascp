@@ -22,13 +22,10 @@ process DOUBLET_DECON{
             path(h5ad)
         )
 
-
-
     output:
         path("plots/*.pdf") optional true
         path("plots/*.png") optional true
         tuple val(experiment_id), path("${experiment_id}__DoubletDecon_doublets_singlets.tsv"), emit: result  optional true
-        // path("${experiment_id}__DoubletDetection_results.txt"), emit: doubletDetection_results
 
     script:
         

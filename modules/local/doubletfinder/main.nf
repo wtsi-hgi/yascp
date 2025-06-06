@@ -23,7 +23,6 @@ process DOUBLET_FINDER {
         path("plots/*.pdf") optional true
         path("plots/*.png") optional true
         tuple val(experiment_id), path("${experiment_id}__DoubletFinder_doublets_singlets.tsv"), emit: result optional true
-        // path("${experiment_id}__DoubletDetection_results.txt"), emit: doubletDetection_results
 
     script:
         

@@ -107,7 +107,6 @@ process generate_final_UMAPS{
             --drop_legend_n 40 \
             --output_file UMAP
     """
-          //--colors_categorical experiment_id,Azimuth:predicted.celltype.l2,Celltypist:Immune_All_Low,Celltypist:Immune_All_High,Celltypist:Immune_Blood_High,Celltypist:Immune_Blood_Low,donor_id  \
 
 }
 
@@ -287,5 +286,4 @@ process umap_calculate_and_plot {
             --output_file ${outfile}
 
         """
-        // --calculate_densities
 }

@@ -166,17 +166,12 @@ process SUBSET_GENOTYPE {
 process SUBSET_GENOTYPE2 {
     tag "${cohort}___${samplename}"
     label 'process_low'
-    // publishDir "${params.outdir}/subset_genotypes/", mode: "${params.copy_mode}", pattern: "${samplename}.${sample_subset_file}.subset.vcf.gz"
-
 
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        // println "container: /software/hgi/containers/wtsihgi-nf_genotype_match-1.0.sif\n"
         container "${params.yascp_container}"
     } else {
         container "${params.yascp_container_docker}"
     }
-
-    // [CRD_CMB13101669, 'S2-998-90008,0030007538435,S2-998-90009', GT_UKBB, /lustre/scratch123/hgi/projects/ukbiobank_genotypes/FullRelease/Imputed/VCFs/hg38_1kg_AF05_exons/sorted_hg38_ukb_imp_chr8_v3_1kgAF05coding.bcf.gz, /lustre/scratch123/hgi/projects/ukbiobank_genotypes/FullRelease/Imputed/VCFs/hg38_1kg_AF05_exons/sorted_hg38_ukb_imp_chr8_v3_1kgAF05coding.bcf.gz.csi]
 
     input:
       tuple val(samplename), val(sample_subset_file),val(cohort),path(donor_vcf),path(donor_vcf_csi)
@@ -193,7 +188,6 @@ process SUBSET_GENOTYPE2 {
       }
 
     """
-       
         echo "${cohort}___${samplename}"
         echo *_${donor_vcf}_subset.vcf.gz
         bcftools query -l ${donor_vcf} > samples.tsv
@@ -219,7 +213,6 @@ process JOIN_CHROMOSOMES{
     } else {
         container "${params.yascp_container_docker}"
     }
-    // [CRD_CMB13101669, 'S2-998-90008,0030007538435,S2-998-90009', GT_UKBB, /lustre/scratch123/hgi/projects/ukbiobank_genotypes/FullRelease/Imputed/VCFs/hg38_1kg_AF05_exons/sorted_hg38_ukb_imp_chr8_v3_1kgAF05coding.bcf.gz, /lustre/scratch123/hgi/projects/ukbiobank_genotypes/FullRelease/Imputed/VCFs/hg38_1kg_AF05_exons/sorted_hg38_ukb_imp_chr8_v3_1kgAF05coding.bcf.gz.csi]
 
     input:
       tuple val(samplename), path(study_vcf_files),path(study_vcf_csi_files)
@@ -272,8 +265,6 @@ process RESOLVE_POOL_VCFS{
         },
       overwrite: "true"
 
-    
-    // publishDir "${params.outdir}/subset_genotypes/Genotype_${samplename}", mode: "${params.copy_mode}"
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "${params.yascp_container}"
     } else {
@@ -286,9 +277,6 @@ process RESOLVE_POOL_VCFS{
       path('Data_Pipeline___*'), emit: pipeline_data
       path('Genotype___*'), emit: genotype_folder
       path('Data_User___*'), emit: user_data
-      // path(vcf),emit: pool_vcf
-      // tuple val(samplename), path("*__vcf_gz.vcf.gz"),path("*__vcf_gz.vcf.gz.csi"), emit: merged_expected_genotypes
-      // path("*__vcf_gz.vcf.gz",emit:study_merged_vcf)
       // If more than one pool is using the same genotype it is pointless to emit it many times. Hence we produce a vcf pointer files which indicate which pool uses which genotype.
     script:
       vcf=vcf[0]
@@ -301,15 +289,12 @@ process RESOLVE_POOL_VCFS{
 process JOIN_STUDIES_MERGE{
     tag "${samplename}"
     label 'process_medium_memory'
-    // publishDir "${params.outdir}/subset_genotypes/Genotype_${samplename}", mode: "${params.copy_mode}"
-
 
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "${params.yascp_container}"
     } else {
         container "${params.yascp_container_docker}"
     }
-    // [CRD_CMB13101669, 'S2-998-90008,0030007538435,S2-998-90009', GT_UKBB, /lustre/scratch123/hgi/projects/ukbiobank_genotypes/FullRelease/Imputed/VCFs/hg38_1kg_AF05_exons/sorted_hg38_ukb_imp_chr8_v3_1kgAF05coding.bcf.gz, /lustre/scratch123/hgi/projects/ukbiobank_genotypes/FullRelease/Imputed/VCFs/hg38_1kg_AF05_exons/sorted_hg38_ukb_imp_chr8_v3_1kgAF05coding.bcf.gz.csi]
 
     input:
       tuple val(samplename), path(study_vcf_files),path(study_vcf_csi_files)
@@ -364,10 +349,7 @@ workflow SUBSET_WORKF{
   main:
       donors_in_pools.combine(ch_ref_vcf).unique().set{all_GT_pannels_and_pools}
       all_GT_pannels_and_pools.map { row -> tuple("${row[1]}:${row[2]}:${row[3]}:${row[4]}",row[0],row[1],row[2],row[3],row[4]) }.set { combined_pool_subset }
-      // all_GT_pannels_and_pools.groupTuple(by: 1)
-      // subset genotypes per pool, per chromosome split.
-      // all_GT_pannels_and_pools.subscribe {println "all_GT_pannels_and_pools:= ${it}\n"}
-      // If nothing is provided then there are no genotypes emmited, hence nothing is passed down to the chromosome merge.
+
       combined_pool_subset.groupTuple(by: 0).set{grouped_chrs_poolComps}
 
       if (!params.genotype_input.subset_vireo_genotypes && mode=='AllExpectedGT'){
@@ -382,17 +364,11 @@ workflow SUBSET_WORKF{
         // In case where we do not have any info re what is expected but we have run it in genotype avare mode, we do not perform the IBD calculations.
         grouped_chrs_poolComps.map { row -> tuple( row[1].join('::'), "${row[0]}".split(':')[0],  "${row[0]}".split(':')[1],  "${row[0]}".split(':')[2],  "${row[0]}".split(':')[3] ) }.set { combined_pool_subset } // Here we have all the pools that contain the same donor compositions associated with each of the shards
         grouped_chrs_poolComps.map { row -> tuple( row[0], row[1]) }.set { pools_utilising_same_subset } // Here we have a mapping file of which pools should use which genotypes.
-        // pools_utilising_same_subset.subscribe {println "pools_utilising_same_subset:= ${it}\n"}
-        // combined_pool_subset.subscribe {println "combined_pool_subset:= ${it}\n"}
         SUBSET_GENOTYPE2(combined_pool_subset)
-        // SUBSET_GENOTYPE2.out.mapping.subscribe {println "mapping:= ${it}\n"}
-        
+
         SUBSET_GENOTYPE2.out.subset_vcf_file.unique().groupTuple().set{chromosome_vcfs_per_studypool}
 
       }
-
-      // chromosome_vcfs_per_studypool.subscribe {println "chromosome_vcfs_per_studypool:= ${it}\n"}
-      // study_vcfs_per_pool:= [onek1k_topmed_imputed____pool1, [/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/genotypes/onek1k/topmed_imputed/drop_chr_prefix/no_prefix_chr1_R2_0.3_MAF_0.0001.vcf.gz, /lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/genotypes/onek1k/topmed_imputed/drop_chr_prefix/no_prefix_chr2_R2_0.3_MAF_0.0001.vcf.gz, /lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/genotypes/onek1k/topmed_imputed/drop_chr_prefix/no_prefix_chr3_R2_0.3_MAF_0.0001.vcf.gz, /lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/genotypes/onek1k/topmed_imputed/drop_chr_prefix/no_prefix_chr4_R2_0.3_MAF_0.0001.vcf.gz, /lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/genotypes/onek1k/topmed_imputed/drop_chr_prefix/no_prefix_chr5_R2_0.3_MAF_0.0001.vcf.gz, /lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/genotypes/onek1k/topmed_imputed/drop_chr_prefix/no_prefix_chr6_R2_0.3_MAF_0.0001.vcf.gz, /lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/genotypes/onek1k/topmed_imputed/drop_chr_prefix/no_prefix_chr7_R2_0.3_MAF_0.0001.vcf.gz, /lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/genotypes/onek1k/topmed_imputed/drop_chr_prefix/no_prefix_chr8_R2_0.3_MAF_0.0001.vcf.gz, /lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/genotypes/onek1k/topmed_imputed/drop_chr_prefix/no_prefix_chr9_R2_0.3_MAF_0.0001.vcf.gz, /lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/genotypes/onek1k/topmed_imputed/drop_chr_prefix/no_prefix_chr10_R2_0.3_MAF_0.0001.vcf.gz, /lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/genotypes/onek1k/topmed_imputed/drop_chr_prefix/no_prefix_chr11_R2_0.3_MAF_0.0001.vcf.gz, /lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/genotypes/onek1k/topmed_imputed/drop_chr_prefix/no_prefix_chr12_R2_0.3_MAF_0.0001.vcf.gz, /lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/genotypes/onek1k/topmed_imputed/drop_chr_prefix/no_prefix_chr13_R2_0.3_MAF_0.0001.vcf.gz, /lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/genotypes/onek1k/topmed_imputed/drop_chr_prefix/no_prefix_chr14_R2_0.3_MAF_0.0001.vcf.gz, /lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/genotypes/onek1k/topmed_imputed/drop_chr_prefix/no_prefix_chr15_R2_0.3_MAF_0.0001.vcf.gz, /lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/genotypes/onek1k/topmed_imputed/drop_chr_prefix/no_prefix_chr16_R2_0.3_MAF_0.0001.vcf.gz, /lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/genotypes/onek1k/topmed_imputed/drop_chr_prefix/no_prefix_chr17_R2_0.3_MAF_0.0001.vcf.gz, /lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/genotypes/onek1k/topmed_imputed/drop_chr_prefix/no_prefix_chr18_R2_0.3_MAF_0.0001.vcf.gz, /lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/genotypes/onek1k/topmed_imputed/drop_chr_prefix/no_prefix_chr19_R2_0.3_MAF_0.0001.vcf.gz, /lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/genotypes/onek1k/topmed_imputed/drop_chr_prefix/no_prefix_chr20_R2_0.3_MAF_0.0001.vcf.gz, /lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/genotypes/onek1k/topmed_imputed/drop_chr_prefix/no_prefix_chr21_R2_0.3_MAF_0.0001.vcf.gz, /lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/genotypes/onek1k/topmed_imputed/drop_chr_prefix/no_prefix_chr22_R2_0.3_MAF_0.0001.vcf.gz], [/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/genotypes/onek1k/topmed_imputed/drop_chr_prefix/no_prefix_chr1_R2_0.3_MAF_0.0001.vcf.gz.csi, /lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/genotypes/onek1k/topmed_imputed/drop_chr_prefix/no_prefix_chr2_R2_0.3_MAF_0.0001.vcf.gz.csi, /lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/genotypes/onek1k/topmed_imputed/drop_chr_prefix/no_prefix_chr3_R2_0.3_MAF_0.0001.vcf.gz.csi, /lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/genotypes/onek1k/topmed_imputed/drop_chr_prefix/no_prefix_chr4_R2_0.3_MAF_0.0001.vcf.gz.csi, /lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/genotypes/onek1k/topmed_imputed/drop_chr_prefix/no_prefix_chr5_R2_0.3_MAF_0.0001.vcf.gz.csi, /lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/genotypes/onek1k/topmed_imputed/drop_chr_prefix/no_prefix_chr6_R2_0.3_MAF_0.0001.vcf.gz.csi, /lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/genotypes/onek1k/topmed_imputed/drop_chr_prefix/no_prefix_chr7_R2_0.3_MAF_0.0001.vcf.gz.csi, /lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/genotypes/onek1k/topmed_imputed/drop_chr_prefix/no_prefix_chr8_R2_0.3_MAF_0.0001.vcf.gz.csi, /lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/genotypes/onek1k/topmed_imputed/drop_chr_prefix/no_prefix_chr9_R2_0.3_MAF_0.0001.vcf.gz.csi, /lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/genotypes/onek1k/topmed_imputed/drop_chr_prefix/no_prefix_chr10_R2_0.3_MAF_0.0001.vcf.gz.csi, /lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/genotypes/onek1k/topmed_imputed/drop_chr_prefix/no_prefix_chr11_R2_0.3_MAF_0.0001.vcf.gz.csi, /lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/genotypes/onek1k/topmed_imputed/drop_chr_prefix/no_prefix_chr12_R2_0.3_MAF_0.0001.vcf.gz.csi, /lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/genotypes/onek1k/topmed_imputed/drop_chr_prefix/no_prefix_chr13_R2_0.3_MAF_0.0001.vcf.gz.csi, /lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/genotypes/onek1k/topmed_imputed/drop_chr_prefix/no_prefix_chr14_R2_0.3_MAF_0.0001.vcf.gz.csi, /lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/genotypes/onek1k/topmed_imputed/drop_chr_prefix/no_prefix_chr15_R2_0.3_MAF_0.0001.vcf.gz.csi, /lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/genotypes/onek1k/topmed_imputed/drop_chr_prefix/no_prefix_chr16_R2_0.3_MAF_0.0001.vcf.gz.csi, /lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/genotypes/onek1k/topmed_imputed/drop_chr_prefix/no_prefix_chr17_R2_0.3_MAF_0.0001.vcf.gz.csi, /lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/genotypes/onek1k/topmed_imputed/drop_chr_prefix/no_prefix_chr18_R2_0.3_MAF_0.0001.vcf.gz.csi, /lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/genotypes/onek1k/topmed_imputed/drop_chr_prefix/no_prefix_chr19_R2_0.3_MAF_0.0001.vcf.gz.csi, /lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/genotypes/onek1k/topmed_imputed/drop_chr_prefix/no_prefix_chr20_R2_0.3_MAF_0.0001.vcf.gz.csi, /lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/genotypes/onek1k/topmed_imputed/drop_chr_prefix/no_prefix_chr21_R2_0.3_MAF_0.0001.vcf.gz.csi, /lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/genotypes/onek1k/topmed_imputed/drop_chr_prefix/no_prefix_chr22_R2_0.3_MAF_0.0001.vcf.gz.csi]]
 
       // Combining all the chromosomes per pool
       // Now we combine all the chromosomes together for all the unique pool compositions.
@@ -407,8 +383,7 @@ workflow SUBSET_WORKF{
       // After merging studies per unique pool compositions we resolve the matches back to the each of the Pools so that the IBD and Vireo can use the correct genotypes as the inputs and publish these in the correct folder.
       RESOLVE_POOL_VCFS(JOIN_STUDIES_MERGE.out.merged_expected_genotypes,mode)
       pools_panels = RESOLVE_POOL_VCFS.out.pipeline_data
-      // RESOLVE_POOL_VCFS.out.user_data
-      // pools_panels.subscribe {println "pools_panels:= ${it}\n"}
+
       if (mode=='AllExpectedGT'){
         collect_file1(RESOLVE_POOL_VCFS.out.user_data.collect(),"Genotypes_all_pools.tsv",params.outdir+'/preprocessing/subset_genotypes',1,'')
       }

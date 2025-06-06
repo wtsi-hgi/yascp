@@ -91,13 +91,6 @@ process DSB {
     input:
         tuple val(sample_name),path(cellbender_filtered), path(antibody_data), path(cellranger_raw)
 
-
-//         filtered_cellranger = sample_filtered_feature_bc_matrix.h5
-//         cellranger_rawfile_path = 'raw_feature_bc_matrix.h5'
-//         sample_name <-'cellranger700_multi_bc45a1c2fe2a3fbbcde46cf984cf42e2'
-//         file_with_qc_applied <-'cellranger700_multi_bc45a1c2fe2a3fbbcde46cf984cf42e2___sample_QCd_adata.h5ad'
-
-
     output:
         // tuple val(sample_name), path("${sample_name}__gex_data"), emit:gex_data
         path("*.pdf"), emit: plots optional true
@@ -108,7 +101,6 @@ process DSB {
         path(cellranger_raw), emit: cellranger_raw optional true
 
     script:
-        // [LRBA_B1_BM, /lustre/scratch123/hgi/mdt2/teams/hgi/mo11/tmp_projects/ania/analysis_trego/work/c5/b3f8dd3df7e3cc4c22a8dbd8102e17/cellbender_FPR_0.1_filtered.h5, /lustre/scratch123/hgi/mdt2/teams/hgi/mo11/tmp_projects/ania/analysis_trego/work/27/723d08a62a12435a74f99bab3a683e/antibody-LRBA_B1_BM.h5ad, /lustre/scratch123/hgi/mdt2/teams/hgi/mo11/tmp_projects/ania/analysis_trego/work/27/723d08a62a12435a74f99bab3a683e/LRBA_B1_BM__gex_data]
         """
             echo ${sample_name}
             echo ${cellbender_filtered}

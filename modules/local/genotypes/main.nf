@@ -65,7 +65,6 @@ process MERGE_GENOTYPES_IN_ONE_VCF_FREEBAYES{
           overwrite: "true"
     
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        // println "container: /software/hgi/containers/wtsihgi-nf_genotype_match-1.0.sif\n"
         container "${params.yascp_container}"
     } else {
         container "${params.yascp_container_docker}"
@@ -109,7 +108,6 @@ process MERGE_GENOTYPES_IN_ONE_VCF{
           mode: "${params.copy_mode}",
           overwrite: "true"
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        // println "container: /software/hgi/containers/wtsihgi-nf_genotype_match-1.0.sif\n"
         container "${params.yascp_container}"
     } else {
         container "${params.yascp_container_docker}"
@@ -121,7 +119,6 @@ process MERGE_GENOTYPES_IN_ONE_VCF{
 
     output:
        tuple path("${mode}_merged_vcf_file_all_pools.vcf.gz"),path("${mode}_merged_vcf_file_all_pools.vcf.gz.csi"), emit: merged_infered_genotypes
-      //  path("${mode}_merged_vcf_file_all_pools.vcf.gz"), emit: study_merged_vcf optional true
 
     script:
 
@@ -154,7 +151,6 @@ process VIREO_ADD_SAMPLE_PREFIX{
     label 'process_low'
 
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        // println "container: /software/hgi/containers/wtsihgi-nf_genotype_match-1.0.sif\n"
         container "${params.yascp_container}"
     } else {
         container "${params.yascp_container_docker}"
@@ -182,7 +178,6 @@ process VIREO_GT_FIX_HEADER
         mode: "${params.copy_mode}",
         overwrite: "true"
   if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-      // println "container: /software/hgi/containers/wtsihgi-nf_genotype_match-1.0.sif\n"
       container "${params.yascp_container}"
   } else {
       container "${params.yascp_container_docker}"
@@ -297,16 +292,9 @@ process ENHANCE_STATS_GT_MATCH{
       in=""
     }else if (params.use_phenotype_ids_for_gt_match){
       in="--genotype_phenotype_mapping ${params.genotype_phenotype_mapping_file}"
-      // in=""
     }else{
       in=""
     }
-
-    // if(params.input_data_table==''){
-    //   in_f = ""
-    // }else{
-    //   in_f = 
-    // }
 
     """
       enhance_stats.py -id ${samplename} -dm ${enhancement_file} ${in} --input_file '${input_data_table}' -m ${params.genotype_input.vireo_with_gt}
@@ -352,14 +340,12 @@ process GT_MATCH_POOL_AGAINST_PANEL
   tag "${pool_id}_vs_${panel_id}"
 
   if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-      // println "container: /software/hgi/containers/wtsihgi-nf_genotype_match-1.0.sif\n"
       container "${params.yascp_container}"
   } else {
       container "${params.yascp_container_docker}"
   }
 
   label 'process_tiny'
-  //when: params.vireo.run_gtmatch_aposteriori
 
   input:
     tuple val(pool_id), path(vireo_gt_vcf), path(vireo_gt_tbi), val(panel_id), path(ref_gt_vcf), path(ref_gt_csi)
@@ -382,7 +368,6 @@ process PREPROCESS_GENOTYPES
   tag "${pool_id}_vs_${panel_id}"
 
   if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-      // println "container: /software/hgi/containers/wtsihgi-nf_genotype_match-1.0.sif\n"
        container "${params.yascp_container}"
   } else {
       container "${params.yascp_container_docker}"
@@ -427,7 +412,6 @@ process ASSIGN_DONOR_FROM_PANEL
           mode: "${params.copy_mode}",
           overwrite: "true"
   if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-      // println "container: /software/hgi/containers/wtsihgi-nf_genotype_match-1.0.sif\n"
       container "${params.yascp_container}"
   } else {
       container "${params.yascp_container_docker}"
@@ -463,7 +447,6 @@ process ASSIGN_DONOR_OVERALL
           overwrite: "true"
 
   if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-      // println "container: /software/hgi/containers/wtsihgi-nf_genotype_match-1.0.sif\n"
       container "${params.yascp_container}"
   } else {
       container "${params.yascp_container_docker}"

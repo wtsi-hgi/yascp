@@ -20,7 +20,6 @@ process SCPRED{
     when:
         params.celltype_assignment.run_azimuth
     output:
-        // path('*.RDS')
         path("${outfil_prfx}___scpred_prediction.tsv"), emit:predicted_celltype_labels
 
     script:

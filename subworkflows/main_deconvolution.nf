@@ -7,12 +7,10 @@ include { SUBSET_GENOTYPE } from "$projectDir/modules/local/subset_genotype/main
 include { VIREO;POSTPROCESS_SUMMARY;VIREO as VIREO_SINGLE_DONOR; REMOVE_DUPLICATED_DONORS_FROM_GT;VIREO_SUBSAMPLING;VIREO_SUBSAMPLING_PROCESSING; GENOTYPE_MATCHER; CAPTURE_VIREO } from "$projectDir/modules/local/vireo/main"
 include { SUBSET_BAM_PER_BARCODES_AND_VARIANTS } from "$projectDir/modules/local/subset_bam_per_barcodes_and_variants/main"
 include { FREEBAYES } from "$projectDir/modules/local/freebayes/main"
-include { GUZIP_VCF } from "$projectDir/modules/local/guzip_vcf/main"
 include { PREPROCESS_GENOTYPES } from "$projectDir/modules/local/genotypes/main"
 include { SOUPORCELL } from "$projectDir/modules/local/souporcell/main"
 include { SPLIT_DONOR_H5AD; PREP_ASSIGNMENTS_FILE } from "$projectDir/modules/local/split_donor_h5ad/main"
 include { PLOT_DONOR_CELLS } from "$projectDir/modules/local/plot_donor_cells/main"
-include {SOUPORCELL_VS_VIREO} from "$projectDir/modules/local/plot_souporcell_vs_vireo/main"
 include { REPLACE_GT_ASSIGNMENTS_WITH_PHENOTYPE; ENHANCE_VIREO_METADATA_WITH_DONOR } from "$projectDir/modules/local/genotypes/main"
 include { match_genotypes } from './match_genotypes'
 include {ENHANCE_STATS_GT_MATCH } from "$projectDir/modules/local/genotypes/main"
@@ -277,7 +275,7 @@ workflow  main_deconvolution {
             gt_math_pool_against_panel_input2 = Channel.of()
             vir_inp =  Channel.of()
         }
-        // vir_inp.subscribe { println "vir_inp: $it" }
+
         vir_inp2 = vir_inp.collect()
         vir_inp3 = vireo_paths.collect()
         vireo_paths2 = gt_matcher_inp = vir_inp3.mix(vir_inp2)
@@ -317,16 +315,6 @@ workflow  main_deconvolution {
             gt_matches = Channel.from("$projectDir/assets/fake_file.fq")
             assignments_all_pools = Channel.from("$projectDir/assets/fake_file.fq")
         }
-
-        // collect file paths to h5ad files in tsv tables:
-        // header_seed="experiment_id\tdonor\th5ad_filepath"
-        // collect_file2(SPLIT_DONOR_H5AD.out.donors_h5ad_tsv.collect(),"donors_h5ad.tsv",0,0,header_seed)
-
-        // header_seed="experiment_id\th5ad_filepath"
-        // collect_file3(SPLIT_DONOR_H5AD.out.exp__donors_h5ad_tsv.collect(),"exp__donors_h5ad.tsv",0,0,header_seed)
-
-        // header_seed="experiment_id\tdonor\th5ad_filepath"
-        // collect_file4(SPLIT_DONOR_H5AD.out.donors_h5ad_assigned_tsv.collect(),"donors_h5ad_assigned.tsv",0,0,header_seed)
 
         header_seed="experiment_id\th5ad_filepath"
         out_h5ad = collect_file5(SPLIT_DONOR_H5AD.out.exp__donors_h5ad_assigned_tsv.collect(),"exp__donors_h5ad_assigned.tsv",0,0,header_seed)

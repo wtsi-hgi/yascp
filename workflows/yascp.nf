@@ -257,7 +257,6 @@ workflow YASCP {
             // ###################################
 
             if (!params.skip_qc){
-
                 if(params.gt_match_based_adaptive_qc_exclusion_pattern !=''){
                     gt_outlier_input = assignments_all_pools
                 }else{

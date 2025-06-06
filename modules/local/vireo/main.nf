@@ -12,7 +12,6 @@ process REMOVE_DUPLICATED_DONORS_FROM_GT{
     path(input_data_table)
 
   output:
-    // tuple val(pool_id), path("${vireo_fixed_vcf}"), path("${vireo_fixed_vcf}.tbi"), emit: gt_pool
      tuple val(samplename),path("dubs_removed__${subset_genotype}"),path("dubs_removed__${subset_genotype}.csi"),emit:merged_expected_genotypes
     script:
   """
@@ -137,8 +136,7 @@ process GENOTYPE_MATCHER{
     tag "${samplename}"
     label 'process_low'
     publishDir "${params.outdir}/deconvolution/vireo_raw/",  mode: "${params.vireo.copy_mode}", overwrite: true
-	  // saveAs: {filename -> filename.replaceFirst("vireo_${samplename}/","") }
-    
+
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "${params.yascp_container}"
     } else {
@@ -190,7 +188,6 @@ process VIREO {
       tuple val(samplename), path("vireo_${samplename}/GT_donors.vireo.vcf.gz"), path(vcf_file),path(donor_gt_csi), emit: sample_donor_vcf
       tuple val(samplename), path("vireo_${samplename}/GT_donors.vireo.vcf.gz"), emit: infered_vcf
       tuple val(samplename), path("vireo_${samplename}/summary.tsv"), emit: summary
-      // path("vireo_${samplename}/${samplename}__exp.sample_summary.txt"), emit: sample__exp_summary_tsv
       tuple  val(samplename), path("vireo_${samplename}/GT_donors.vireo.vcf.gz"), path("vireo_${samplename}/donor_ids.tsv"),path(vcf_file),path(donor_gt_csi), emit: all_required_data
       tuple val(samplename), path("sub_${samplename}_Expected.vcf.gz"), emit: exp_sub_gt optional true
     script:
@@ -298,7 +295,6 @@ process VIREO_SUBSAMPLING_PROCESSING{
       gt_check_and_report_cell_swaps.py
       ln -s subsampling_donor_swap_quantification.tsv ${samplename}_subsampling_donor_swap_quantification.tsv
     """
-
 
 }
 
