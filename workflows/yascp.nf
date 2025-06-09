@@ -264,8 +264,8 @@ workflow YASCP {
                 }
 
                 qc_and_integration(file__anndata_merged,file__cells_filtered,gt_outlier_input,channel_dsb,vireo_paths,assignments_all_pools,matched_donors,chanel_cr_outs) //This runs the Clusterring and qc assessments of the datasets.
-                process_finish_check_channel = qc.out.LI
-                file__anndata_merged = qc.out.file__anndata_merged
+                process_finish_check_channel = qc_and_integration.out.LI
+                file__anndata_merged = qc_and_integration.out.file__anndata_merged
             }else{
                 // if we are not running qc step we need to account for an dummy channel. 
                 process_finish_check_channel = Channel.of([1, 'dummy'])

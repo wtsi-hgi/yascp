@@ -1,4 +1,3 @@
-include { ENCRYPT_DIR } from './encrypt'
 
 process SPLIT_CELL_BARCODES_PER_DONOR
 {
@@ -159,12 +158,7 @@ workflow split_bam_by_donor
       reference_assembly_fasta_dir
     )
 
-    // ENCRYPT_DIR(
-    //   SPLIT_BAM_BY_CELL_BARCODES.out.possorted_cram_files
-    // )
 
   emit:
     possorted_cram_files = SPLIT_BAM_BY_CELL_BARCODES.out.possorted_cram_files
-    // encrypt_files = ENCRYPT_DIR.out.encrypted
-    // checksum_files = ENCRYPT_DIR.out.checksums
 }
