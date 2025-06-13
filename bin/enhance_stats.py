@@ -129,6 +129,7 @@ for ix in GT_Assignments.index:
                 replacement = 'No_mapping___'+replacement
     else:
         _ = ''
+    replacement=f"{replacement}"
     if len(D2[D2.col1.str.contains(replacement)])>0:
         GT_Assignments.loc[ix,'Match Expected']='True'
         remove_from_set = D2[D2.col1.str.contains(replacement)]['col1'].values[0]
