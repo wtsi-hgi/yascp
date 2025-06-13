@@ -18,7 +18,7 @@ process SCPRED{
         tuple val(exp_id), path(file_h5ad_batch)
         path(reference)
     when:
-        params.celltype_assignment.run_azimuth
+        params.celltype_assignment.run_scpred
     output:
         path("${outfil_prfx}___scpred_prediction.tsv"), emit:predicted_celltype_labels
 

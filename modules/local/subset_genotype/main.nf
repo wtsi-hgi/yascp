@@ -175,6 +175,7 @@ process SUBSET_GENOTYPE2 {
 
     input:
       tuple val(samplename), val(sample_subset_file),val(cohort),path(donor_vcf),path(donor_vcf_csi)
+      path(gp_map)
 
 
     output:
@@ -182,7 +183,7 @@ process SUBSET_GENOTYPE2 {
       path('*_mapping.tsv'), emit: mapping optional true
     script:
       if (params.genotype_phenotype_mapping_file!=''){
-        g_p_map = " -b ${params.genotype_phenotype_mapping_file}"
+        g_p_map = " -b ${gp_map}"
       }else{
         g_p_map = " "
       }
@@ -198,7 +199,7 @@ process SUBSET_GENOTYPE2 {
         else
           echo 'no'
         fi
-        rm samples.tsv sample_file.tsv
+        #rm samples.tsv sample_file.tsv
     """
 }
 
@@ -364,7 +365,15 @@ workflow SUBSET_WORKF{
         // In case where we do not have any info re what is expected but we have run it in genotype avare mode, we do not perform the IBD calculations.
         grouped_chrs_poolComps.map { row -> tuple( row[1].join('::'), "${row[0]}".split(':')[0],  "${row[0]}".split(':')[1],  "${row[0]}".split(':')[2],  "${row[0]}".split(':')[3] ) }.set { combined_pool_subset } // Here we have all the pools that contain the same donor compositions associated with each of the shards
         grouped_chrs_poolComps.map { row -> tuple( row[0], row[1]) }.set { pools_utilising_same_subset } // Here we have a mapping file of which pools should use which genotypes.
-        SUBSET_GENOTYPE2(combined_pool_subset)
+        
+        if (params.genotype_phenotype_mapping_file!=''){
+          g_p_map = Channel.from(params.genotype_phenotype_mapping_file)
+        }else{
+          g_p_map  = Channel.from("$projectDir/assets/fake_file2.fq")
+        }
+
+        
+        SUBSET_GENOTYPE2(combined_pool_subset,g_p_map)
 
         SUBSET_GENOTYPE2.out.subset_vcf_file.unique().groupTuple().set{chromosome_vcfs_per_studypool}
 
