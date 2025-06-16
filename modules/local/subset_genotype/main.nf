@@ -175,17 +175,17 @@ process SUBSET_GENOTYPE2 {
 
     input:
       tuple val(samplename), val(sample_subset_file),val(cohort),path(donor_vcf),path(donor_vcf_csi)
-      path(gp_map)
+      each path(gp_map)
 
 
     output:
       tuple val("${cohort}___${samplename}"), path("${donor_vcf}_subset.vcf.gz"),path("${donor_vcf}_subset.vcf.gz.csi"), emit: subset_vcf_file optional true
       path('*_mapping.tsv'), emit: mapping optional true
     script:
-      if (params.genotype_phenotype_mapping_file!=''){
-        g_p_map = " -b ${gp_map}"
+      if (params.genotype_phenotype_mapping_file==''){
+         g_p_map = " "
       }else{
-        g_p_map = " "
+        g_p_map = " -b ${gp_map}"
       }
 
     """
@@ -326,12 +326,12 @@ process JOIN_STUDIES_MERGE{
         if [ \$(cat fofn_vcfs.txt | wc -l) -gt 1 ]; then
             echo 'yes'
             ${cmd__run}
-            bcftools merge -file-list ${study_vcf_files} -Ou | bcftools sort -T \$PWD -Oz -o pre_${mode}_${mode2}_\${vcf_name}__vcf.vcf.gz
+            bcftools merge -file-list ${study_vcf_files} -Ou | bcftools sort -Oz -o pre_${mode}_${mode2}_\${vcf_name}__vcf.vcf.gz
             bcftools index pre_${mode}_${mode2}_\${vcf_name}__vcf.vcf.gz
             ${cmd}
         else
           echo 'no'
-          bcftools view ${study_vcf_files} | bcftools sort -T \$PWD -Oz -o ${mode}_${mode2}_\${vcf_name}_out.vcf.gz
+          bcftools view ${study_vcf_files} | bcftools sort -Oz -o ${mode}_${mode2}_\${vcf_name}_out.vcf.gz
           bcftools index ${mode}_${mode2}_\${vcf_name}_out.vcf.gz 
           
         fi
@@ -366,13 +366,13 @@ workflow SUBSET_WORKF{
         grouped_chrs_poolComps.map { row -> tuple( row[1].join('::'), "${row[0]}".split(':')[0],  "${row[0]}".split(':')[1],  "${row[0]}".split(':')[2],  "${row[0]}".split(':')[3] ) }.set { combined_pool_subset } // Here we have all the pools that contain the same donor compositions associated with each of the shards
         grouped_chrs_poolComps.map { row -> tuple( row[0], row[1]) }.set { pools_utilising_same_subset } // Here we have a mapping file of which pools should use which genotypes.
         
-        if (params.genotype_phenotype_mapping_file!=''){
-          g_p_map = Channel.from(params.genotype_phenotype_mapping_file)
-        }else{
+        if (params.genotype_phenotype_mapping_file==''){
           g_p_map  = Channel.from("$projectDir/assets/fake_file2.fq")
+        }else{
+          g_p_map = Channel.from(params.genotype_phenotype_mapping_file)
         }
 
-        
+        combined_pool_subset.subscribe {println "combined_pool_subset:= ${it}\n"}
         SUBSET_GENOTYPE2(combined_pool_subset,g_p_map)
 
         SUBSET_GENOTYPE2.out.subset_vcf_file.unique().groupTuple().set{chromosome_vcfs_per_studypool}
