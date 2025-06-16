@@ -76,9 +76,9 @@ workflow match_genotypes {
     // Now we calculate the concordance/discordance scores of each of the cells against the donors.
     // merged_GT_Matched_genotypes.subscribe { println "merged_GT_Matched_genotypes: $it" }
     // merged_expected_genotypes.subscribe { println "merged_expected_genotypes: $it" }
-    MATCH_GT_VIREO.out.donor_match_table_with_pool_id.subscribe { println "MATCH_GT_VIREO.out.donor_match_table_with_pool_id: $it" }
-    cell_assignments.subscribe { println "cell_assignments: $it" }
-    informative_uninformative_sites.subscribe { println "informative_uninformative_sites: $it" }
+    // MATCH_GT_VIREO.out.donor_match_table_with_pool_id.subscribe { println "MATCH_GT_VIREO.out.donor_match_table_with_pool_id: $it" }
+    // cell_assignments.subscribe { println "cell_assignments: $it" }
+    // informative_uninformative_sites.subscribe { println "informative_uninformative_sites: $it" }
     input3 = merged_GT_Matched_genotypes.join(merged_expected_genotypes, remainder: true)
     input3.map { row -> 
       if(row[1]==null){
@@ -94,6 +94,8 @@ workflow match_genotypes {
     input7 = input6.combine(informative_uninformative_sites, by:0)
 
     if (params.concordance_calculations){
+        log.info "-----running CONCORDANCE calculations----"
+        input7.subscribe { println "input7: $it" }
         CONCORDANCE_CALCLULATIONS(input7)
         ch_combine = subsampling_donor_swap.combine(CONCORDANCE_CALCLULATIONS.out.concordances, by: 0)
         COMBINE_FILES(ch_combine) //This step plots scatter plots for each of the pools individually.

@@ -186,8 +186,11 @@ workflow YASCP {
                         MERGE_SAMPLES(main_deconvolution.out.out_h5ad,main_deconvolution.out.vireo_out_sample__exp_summary_tsv,celltype_assignments,'h5ad')
                     }else{
                         file__anndata_merged = main_deconvolution.out.out_h5ad
-                        dummy_filtered_channel(file__anndata_merged,params.id_in)
-                        file__cells_filtered = dummy_filtered_channel.out.anndata_metadata
+                        if (!params.atac){
+                            dummy_filtered_channel(file__anndata_merged,params.id_in)
+                            file__cells_filtered = dummy_filtered_channel.out.anndata_metadata
+                        }
+
                     }
                 }else{
                     channel__metadata = prepare_inputs.out.channel__metadata
@@ -199,7 +202,7 @@ workflow YASCP {
                     matched_donors = Channel.from("$projectDir/assets/fake_file.fq")
                 }
                 
-                if (!params.skip_merge){
+                if (!params.skip_merge && !params.atac){
                     file__anndata_merged = MERGE_SAMPLES.out.file__anndata_merged
                     dummy_filtered_channel(file__anndata_merged,params.id_in)
                     file__cells_filtered = dummy_filtered_channel.out.anndata_metadata
@@ -234,7 +237,7 @@ workflow YASCP {
                     }
                 }
                 
-                if (params.file__cells_filtered ==''){
+                if (params.file__cells_filtered =='' && !params.atac){
                     log.info '''--- No cells filtered input ----'''
                     dummy_filtered_channel(file__anndata_merged,params.id_in)
                     file__cells_filtered = dummy_filtered_channel.out.anndata_metadata
@@ -256,7 +259,7 @@ workflow YASCP {
             // ###################################
             // ###################################
 
-            if (!params.skip_qc){
+            if (!params.skip_qc && !params.atac){
                 if(params.gt_match_based_adaptive_qc_exclusion_pattern !=''){
                     gt_outlier_input = assignments_all_pools
                 }else{

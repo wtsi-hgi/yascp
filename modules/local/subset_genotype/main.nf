@@ -372,7 +372,7 @@ workflow SUBSET_WORKF{
           g_p_map = Channel.from(params.genotype_phenotype_mapping_file)
         }
 
-        combined_pool_subset.subscribe {println "combined_pool_subset:= ${it}\n"}
+        // combined_pool_subset.subscribe {println "combined_pool_subset:= ${it}\n"}
         SUBSET_GENOTYPE2(combined_pool_subset,g_p_map)
 
         SUBSET_GENOTYPE2.out.subset_vcf_file.unique().groupTuple().set{chromosome_vcfs_per_studypool}
