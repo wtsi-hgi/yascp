@@ -24,6 +24,7 @@ process CELLTYPIST {
       tuple val(sample), path("outputs/*_decision_matrix.csv"), emit: sample_decision_matrix_csv
       tuple val(sample), path("outputs/*_*.pdf"), emit: sample_plots_pdf
       tuple val(sample), path("outputs/plot_prob/*_*.pdf"), emit: sample_plots_prob_pdf, optional: true
+      path "versions.yml", emit: versions
 
     script:
       model="${celltypist_model}".replaceAll(/^.*[\\/]/, "").replaceFirst(".pkl","")
@@ -46,5 +47,23 @@ process CELLTYPIST {
           --celltypist_model ${celltypist_model}  \\
           --output_dir \$PWD/outputs  \\
           --input_h5_genome_version ${params.split_h5ad_per_donor.input_h5_genome_version}
+
+        cat <<-END_VERSIONS > versions.yml
+        "${task.process}":
+            python: \$(python --version | sed 's/Python //g')
+            celltypist: \$(python -c "import celltypist; print(celltypist.__version__)")
+            scanpy: \$(python -c "import scanpy; print(scanpy.__version__)")
+            logging: \$(python -c "import logging; print(logging.__version__)")
+            click: \$(python -c "import click; print(click.__version__)")
+            sys: \$(python -c "import sys; print(sys.__version__)")
+            argparse: \$(python -c "import argparse; print(argparse.__version__)")
+            csv: \$(python -c "import csv; print(csv.__version__)")
+            random: \$(python -c "import random; print(random.__version__)")
+            numpy: \$(python -c "import numpy; print(numpy.__version__)")
+            pandas: \$(python -c "import pandas; print(pandas.__version__)")
+            os: \$(python -c "import os; print(os.__version__)")
+            pathlib: \$(python -c "import pathlib; print(pathlib.__version__)")
+            shutil: \$(python -c "import shutil; print(shutil.__version__)")
+        END_VERSIONS
       """
 }

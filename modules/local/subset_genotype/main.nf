@@ -51,11 +51,17 @@ process FETCH_DONOR_IDS_FROM_VCF {
 
   output:
     tuple val(study_label), path(vcf_donor_list_file), emit: study_vcf_donor_list
+    path "versions.yml", emit: versions
 
   script:
   vcf_donor_list_file = "${study_label}.vcf_donor_list.txt"
   """
   bcftools query -l ${study_vcf} > ${vcf_donor_list_file}
+
+  cat <<-END_VERSIONS > versions.yml
+  "${task.process}":
+      bcftools: \$(bcftools --version 2>&1 | head -n1 | sed 's/^.*bcftools //; s/ .*\$//')
+  END_VERSIONS
   """
 }
 
@@ -101,12 +107,18 @@ process SELECT_DONOR_GENOTYPES_FROM_VCF {
 
   output:
     tuple val(study_label), val(pool_id), path(pool_study_bcfgz), emit: study_pool_bcfgz
+    path "versions.yml", emit: versions
 
   script:
   pool_study_bcfgz = "${pool_id}.${study_vcf}.bcf.gz"
   """
     awk 'NR>1 && \$2 !~/^N\$/ {print \$1}' ${donor_table} > donors.lst
     bcftools view -S donors.lst -Ob -o ${pool_study_bcfgz} ${study_vcf}
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        bcftools: \$(bcftools --version 2>&1 | head -n1 | sed 's/^.*bcftools //; s/ .*\$//')
+    END_VERSIONS
   """
 }
 
@@ -124,12 +136,18 @@ process CONCAT_STUDY_VCFS {
 
   output:
     tuple val(study_label), val(pool_id), path(pool_study_bcfgz), emit: study_pool_bcfgz
+    path "versions.yml", emit: versions
 
   script:
   pool_study_bcfgz = "${pool_id}.${study_label}.bcf.gz"
   """
     cat "${study_vcf_files}" > ./fofn_vcfs.txt
     bcftools concat --threads ${task.threads} -f ./fofn_vcfs.txt -Ob -o ${pool_study_bcfgz}
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        bcftools: \$(bcftools --version 2>&1 | head -n1 | sed 's/^.*bcftools //; s/ .*\$//')
+    END_VERSIONS
   """
 }
 
@@ -151,6 +169,7 @@ process SUBSET_GENOTYPE {
 
     output:
     tuple val(samplename), path("${samplename}.subset.vcf.gz"),path("${samplename}.subset.vcf.gz.csi"), emit: samplename_subsetvcf
+    path "versions.yml", emit: versions
     
     script:
     """
@@ -159,6 +178,11 @@ process SUBSET_GENOTYPE {
         bcftools view ${donor_vcf} -s ${sample_subset_file} -Oz -o ${samplename}.subset.vcf.gz
         bcftools index ${samplename}.subset.vcf.gz
         rm ${donor_vcf}.tbi || echo 'not typical VCF'
+
+        cat <<-END_VERSIONS > versions.yml
+        "${task.process}":
+            bcftools: \$(bcftools --version 2>&1 | head -n1 | sed 's/^.*bcftools //; s/ .*\$//')
+        END_VERSIONS
     """
 }
 
@@ -180,6 +204,7 @@ process SUBSET_GENOTYPE2 {
     output:
       tuple val("${cohort}___${samplename}"), path("${donor_vcf}_subset.vcf.gz"),path("${donor_vcf}_subset.vcf.gz.csi"), emit: subset_vcf_file optional true
       path('*_mapping.tsv'), emit: mapping optional true
+      path "versions.yml", emit: versions
     script:
       if (params.genotype_phenotype_mapping_file!=''){
         g_p_map = " -b ${params.genotype_phenotype_mapping_file}"
@@ -199,6 +224,11 @@ process SUBSET_GENOTYPE2 {
           echo 'no'
         fi
         rm samples.tsv sample_file.tsv
+
+        cat <<-END_VERSIONS > versions.yml
+        "${task.process}":
+            bcftools: \$(bcftools --version 2>&1 | head -n1 | sed 's/^.*bcftools //; s/ .*\$//')
+        END_VERSIONS
     """
 }
 
@@ -221,6 +251,7 @@ process JOIN_CHROMOSOMES{
 
     output:
       tuple val(s2), path("*_out.bcf.gz"),path("*_out.bcf.gz.csi"), emit: joined_chromosomes_per_studytrance
+      path "versions.yml", emit: versions
 
     script:
       s1 = samplename.split('___')[0]
@@ -244,6 +275,12 @@ process JOIN_CHROMOSOMES{
         rm -r pre_* fix_ref_* no_prefix_*
 
         bcftools index \${vcf_name}_out.bcf.gz
+
+        cat <<-END_VERSIONS > versions.yml
+        "${task.process}":
+            bcftools: \$(bcftools --version 2>&1 | head -n1 | sed 's/^.*bcftools //; s/ .*\$//')
+            bgzip: \$(echo \$(bgzip -h 2>&1) | head -n 1 | sed 's/^.*(htslib) //; s/ .*\$//')
+        END_VERSIONS
       """
 }
 
@@ -305,6 +342,7 @@ process JOIN_STUDIES_MERGE{
     output:
       tuple val(samplename), path("*_out.vcf.gz"),path("*_out.vcf.gz.csi"), emit: merged_expected_genotypes
       path("*_out.vcf.gz",emit:study_merged_vcf)
+      path "versions.yml", emit: versions
     script:
 
         
@@ -336,6 +374,11 @@ process JOIN_STUDIES_MERGE{
         fi
      
         rm -r pre_* || echo 'nothing to remove'
+
+        cat <<-END_VERSIONS > versions.yml
+        "${task.process}":
+            bcftools: \$(bcftools --version 2>&1 | head -n1 | sed 's/^.*bcftools //; s/ .*\$//')
+        END_VERSIONS
       """
 }
 

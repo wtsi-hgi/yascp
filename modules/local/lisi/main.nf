@@ -47,6 +47,7 @@ process LISI{
         path("${outfile}-lisi.tsv.gz", emit: clusters)
         path("plots/*.pdf") optional true
         path("plots/*.png") optional true
+        path "versions.yml", emit: versions
 
     script:
         outdir = "${outdir_prev}"
@@ -71,6 +72,18 @@ process LISI{
         mkdir plots
         mv *pdf plots/ 2>/dev/null || true
         mv *png plots/ 2>/dev/null || true
+
+        cat <<-END_VERSIONS > versions.yml
+        "${task.process}":
+            python: \$(python --version | sed 's/Python //g')
+            harmonypy: \$(python -c "import harmonypy; print(harmonypy.__version__)")
+            argparse: \$(python -c "import argparse; print(argparse.__version__)")
+            distutils: \$(python -c "import distutils; print(distutils.__version__)")
+            os: \$(python -c "import os; print(os.__version__)")
+            pandas: \$(python -c "import pandas; print(pandas.__version__)")
+            csv: \$(python -c "import csv; print(csv.__version__)")
+            plotnine: \$(python -c "import plotnine; print(plotnine.__version__)")
+        END_VERSIONS
         """
 
 }

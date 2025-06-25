@@ -55,6 +55,7 @@ process DYNAMIC_DONOR_EXCLUSIVE_SNP_SELECTION{
     output:
       tuple val(samplename), path("cellsnp_panel_${samplename}.vcf.gz"),emit:cellsnp_pool_panel
       tuple val(samplename), path("set2_informative_sites_${samplename}.tsv"), path("set1_uninformative_sites_${samplename}.tsv"),path("variants_description.tsv"),emit:informative_uninformative_sites 
+      path "versions.yml", emit: versions
     script:       
       if (add_dynamic_sites_or_not_to_panel){
         cmd2 = "cat cellsnp_variants.tsv >> cellsnp_panel_${samplename}.vcf"
@@ -80,6 +81,12 @@ process DYNAMIC_DONOR_EXCLUSIVE_SNP_SELECTION{
         ln -s set2_informative_sites.tsv set2_informative_sites_${samplename}.tsv
         bgzip cellsnp_panel_${samplename}.vcf
         #rm -r dynamic_snps.vcf.gz
+
+        cat <<-END_VERSIONS > versions.yml
+        "${task.process}":
+            bcftools: \$(bcftools --version 2>&1 | head -n1 | sed 's/^.*bcftools //; s/ .*\$//')
+            bgzip: \$(echo \$(bgzip -h 2>&1) | head -n 1 | sed 's/^.*(htslib) //; s/ .*\$//')
+        END_VERSIONS
       """
 }
 
@@ -99,6 +106,7 @@ process ASSESS_CALL_RATE{
 
     output:
         tuple path("*_variants_description.tsv"), emit: variants_description
+        path "versions.yml", emit: versions
 
     script:       
       """
@@ -106,6 +114,11 @@ process ASSESS_CALL_RATE{
       bcftools query -f '%CHROM\t%POS\n' cellSNP.cells.vcf.gz > positions_called_on.tsv
       quantify_piled_up_sites.py -s ${samplename} -v ${variants_description} -s1 ${set1_uninformative_sites} -s2 ${set2_informative_sites} -p positions_called_on.tsv
       rm positions_called_on.tsv
+
+      cat <<-END_VERSIONS > versions.yml
+      "${task.process}":
+          bcftools: \$(bcftools --version 2>&1 | head -n1 | sed 's/^.*bcftools //; s/ .*\$//')
+      END_VERSIONS
       """    
 
 
@@ -136,6 +149,7 @@ process CELLSNP {
       tuple val(samplename), file("cellsnp_${samplename}"), emit: cellsnp_output_dir
       tuple val(samplename), path("cellsnp_${samplename}/cellSNP.cells.vcf.gz"), emit: cell_vcfs
       tuple val(samplename), path('region_vcf_no_MHC.vcf.gz'), path(bam_file), emit: for_bam_pileups
+      path "versions.yml", emit: versions
 
     script:
 
@@ -171,5 +185,11 @@ process CELLSNP {
         -R region_vcf_no_MHC.vcf.gz \\
         -p ${task.cpus} \\
         --minCOUNT ${params.cellsnp.min_count} ${MAF} --gzip ${genotype_file} ${umi_tag}
+
+      cat <<-END_VERSIONS > versions.yml
+      "${task.process}":
+          bcftools: \$(bcftools --version 2>&1 | head -n1 | sed 's/^.*bcftools //; s/ .*\$//')
+          cellsnp: \$(cellsnp-lite --v | awk '{print \$2}')
+      END_VERSIONS
     """
 }

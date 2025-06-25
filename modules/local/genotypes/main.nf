@@ -16,6 +16,7 @@ process MERGE_GENOTYPES_IN_ONE_VCF_IDX_PAN{
 
     output:
        tuple  val(pn1), path("${mode}.${panel}.vcf.gz"),path("${mode}.${panel}.vcf.gz.csi"),path(barcodes), emit: gt_pool
+       path "versions.yml", emit: versions
       //  path("${mode}.${panel}.vcf.gz"), emit: study_merged_vcf optional true
       // here we want to make it look like its a vireo output file
     script:
@@ -34,6 +35,11 @@ process MERGE_GENOTYPES_IN_ONE_VCF_IDX_PAN{
         bcftools view ${vireo_gt_vcf} | bcftools sort -T \$PWD -Oz -o ${mode}.${panel}.vcf.gz
         bcftools index ${mode}.${panel}.vcf.gz
       fi
+
+      cat <<-END_VERSIONS > versions.yml
+      "${task.process}":
+          bcftools: \$(bcftools --version 2>&1 | head -n1 | sed 's/^.*bcftools //; s/ .*\$//')
+      END_VERSIONS
     """
 
 }
@@ -78,6 +84,7 @@ process MERGE_GENOTYPES_IN_ONE_VCF_FREEBAYES{
       tuple  val(panel), path("${mode}.${panel}.vcf.gz"),path("${mode}.${panel}.vcf.gz.csi"), emit: gt_pool
       //  path("${mode}.${panel}.vcf.gz"), emit: study_merged_vcf optional true
       path("vireo_${panel}"), emit: vir_input
+      path "versions.yml", emit: versions
     script:
 
     """
@@ -97,6 +104,11 @@ process MERGE_GENOTYPES_IN_ONE_VCF_FREEBAYES{
       process_barcodes.sh
       mkdir vireo_${panel}
       cd vireo_${panel} && ln -s ../${mode}.${panel}.vcf.gz ./GT_donors.vireo.vcf.gz && mv ../donor_ids.tsv ./
+
+      cat <<-END_VERSIONS > versions.yml
+      "${task.process}":
+          bcftools: \$(bcftools --version 2>&1 | head -n1 | sed 's/^.*bcftools //; s/ .*\$//')
+      END_VERSIONS
     """
 
 }
@@ -119,6 +131,7 @@ process MERGE_GENOTYPES_IN_ONE_VCF{
 
     output:
        tuple path("${mode}_merged_vcf_file_all_pools.vcf.gz"),path("${mode}_merged_vcf_file_all_pools.vcf.gz.csi"), emit: merged_infered_genotypes
+       path "versions.yml", emit: versions
 
     script:
 
@@ -140,6 +153,11 @@ process MERGE_GENOTYPES_IN_ONE_VCF{
         bcftools index ${mode}_merged_vcf_file_all_pools.vcf.gz
         
       fi
+
+      cat <<-END_VERSIONS > versions.yml
+      "${task.process}":
+          bcftools: \$(bcftools --version 2>&1 | head -n1 | sed 's/^.*bcftools //; s/ .*\$//')
+      END_VERSIONS
     """
 
 }
@@ -161,6 +179,7 @@ process VIREO_ADD_SAMPLE_PREFIX{
 
     output:
       path("prefix_${vireo_fixed_vcf}"), emit: infered_vcf
+      path "versions.yml", emit: versions
 
     script:
       sorted_vcf = "${pool_id}_vireo_srt.vcf.gz"
@@ -168,6 +187,11 @@ process VIREO_ADD_SAMPLE_PREFIX{
     """
       bcftools query -l ${vireo_gt_vcf} | awk '\$0=""\$0" ${pool_id}_"\$0' > replacement_assignments.tsv
       bcftools reheader --samples replacement_assignments.tsv -o prefix_${vireo_fixed_vcf} ${vireo_gt_vcf}
+
+      cat <<-END_VERSIONS > versions.yml
+      "${task.process}":
+          bcftools: \$(bcftools --version 2>&1 | head -n1 | sed 's/^.*bcftools //; s/ .*\$//')
+      END_VERSIONS
     """
 }
 
@@ -192,6 +216,7 @@ process VIREO_GT_FIX_HEADER
   output:
     tuple val(pool_id), path("${vireo_fixed_vcf}"), path("${vireo_fixed_vcf}.tbi"), emit: gt_pool
     tuple val(pool_id), path("${vireo_fixed_vcf}"), emit: infered_vcf
+    path "versions.yml", emit: versions
 
   script:
   sorted_vcf = "${pool_id}_vireo_srt.vcf.gz"
@@ -224,6 +249,11 @@ process VIREO_GT_FIX_HEADER
     tabix -p vcf ${vireo_fixed_vcf}
 
 
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        bcftools: \$(bcftools --version 2>&1 | head -n1 | sed 's/^.*bcftools //; s/ .*\$//')
+        tabix: \$(echo \$(tabix -h 2>&1) | head -n 1 | sed 's/^.*(htslib) //; s/ .*\$//')
+    END_VERSIONS
   """
 }
 process REPLACE_GT_DONOR_ID2{
@@ -253,6 +283,7 @@ process REPLACE_GT_DONOR_ID2{
     tuple  val(samplename), path("GT_replace_GT_donors.vireo_${mode}.vcf.gz"), path("GT_replace_${samplename}.sample_summary_${mode}.txt"),path("GT_replace_${samplename}__exp.sample_summary_${mode}.txt"),path("GT_replace_donor_ids_${mode}.tsv"),path(vcf_file),path(donor_gt_csi), emit: all_required_data
     tuple val(samplename), path("GT_replace_donor_ids_${mode}.tsv"), emit: cell_assignments
     path("vireo_gt_rep_${samplename}"), emit: output_dir
+    path "versions.yml", emit: versions
   script:
 
     in=""
@@ -263,6 +294,11 @@ process REPLACE_GT_DONOR_ID2{
       bcftools view ${gt_donors} | bcftools reheader --samples replacement_assignments_${mode}.tsv -o GT_replace_GT_donors.vireo_${mode}.vcf.gz
       mkdir -p "vireo_gt_rep_${samplename}"
       ln -sf "\$(realpath "GT_replace_GT_donors.vireo_${mode}.vcf.gz")" "vireo_gt_rep_${samplename}/GT_replace_GT_donors.vireo_${mode}.vcf.gz"
+
+      cat <<-END_VERSIONS > versions.yml
+      "${task.process}":
+          bcftools: \$(bcftools --version 2>&1 | head -n1 | sed 's/^.*bcftools //; s/ .*\$//')
+      END_VERSIONS
     """
 }
 
@@ -324,6 +360,7 @@ process GT_MATCH_POOL_IBD
 
   output:
     tuple val(pool_id),path("*_${pool_id}.genome*"), emit:plink_ibd optional true
+    path "versions.yml", emit: versions
 
   script:
     """
@@ -332,6 +369,11 @@ process GT_MATCH_POOL_IBD
       #plink --bfile all2 --extract all2.prune.in --out pruned --export vcf
       plink --vcf ${vireo_gt_vcf} --genome unbounded --const-fid dummy --out ${mode2}_${mode}_${pool_id} || echo 'single individual pool, cant calculate IBD'
       #rm all*
+
+      cat <<-END_VERSIONS > versions.yml
+      "${task.process}":
+          plink: \$(echo \$(plink --version) | sed 's/^PLINK v//;s/64.*//')
+      END_VERSIONS
     """
 }
 
@@ -352,6 +394,7 @@ process GT_MATCH_POOL_AGAINST_PANEL
 
   output:
     tuple val(pool_panel_id), path("${gt_check_output_txt}"), emit:gtcheck_results
+    path "versions.yml", emit: versions
 
   script:
   pool_panel_id = "pool_${pool_id}_panel_${panel_id}"
@@ -359,6 +402,11 @@ process GT_MATCH_POOL_AGAINST_PANEL
   gt_check_output_txt = "${pool_id}_gtcheck_${panel_filnam}.txt"
   """
     bcftools gtcheck --no-HWE-prob -g ${ref_gt_vcf} ${vireo_gt_vcf} > ${gt_check_output_txt}
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        bcftools: \$(bcftools --version 2>&1 | head -n1 | sed 's/^.*bcftools //; s/ .*\$//')
+    END_VERSIONS
   """
 }
 
@@ -379,6 +427,7 @@ process PREPROCESS_GENOTYPES
 
   output:
     tuple val(pool_id), path("renamed_*.vcf.gz"), path("renamed_*.vcf.gz.csi")
+    path "versions.yml", emit: versions
 
   script:
 
@@ -399,6 +448,12 @@ process PREPROCESS_GENOTYPES
       ln -s "${ref_gt_vcf}" "renamed_\${renamed_vcf_basename}.vcf.gz"
       ln -s "${ref_gt_csi}" "renamed_\${renamed_vcf_basename}.vcf.gz.csi"
     fi
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        bcftools: \$(bcftools --version 2>&1 | head -n1 | sed 's/^.*bcftools //; s/ .*\$//')
+        bgzip: \$(echo \$(bgzip -h 2>&1) | head -n 1 | sed 's/^.*(htslib) //; s/ .*\$//')
+    END_VERSIONS
   """
 }
 

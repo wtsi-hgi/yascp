@@ -22,6 +22,7 @@ process DOUBLET_DETECTION {
         path("plots/*.pdf") optional true
         path("plots/*.png") optional true
         tuple val(experiment_id), path("${experiment_id}__DoubletDetection_results.txt"), emit: result
+        path "versions.yml", emit: versions
 
     script:
         
@@ -32,5 +33,19 @@ process DOUBLET_DETECTION {
         """
             DoubletDetection.py --tenxdata_dir ${gex_h5ad} --n_iterations 100
             ln -s DoubletDetection_results.txt ${experiment_id}__DoubletDetection_results.txt
+
+            cat <<-END_VERSIONS > versions.yml
+            "${task.process}":
+                python: \$(python --version | sed 's/Python //g')
+                doubletdetection: \$(python -c "import doubletdetection; print(doubletdetection.__version__)")
+                scanpy: \$(python -c "import scanpy; print(scanpy.__version__)")
+                numpy: \$(python -c "import numpy; print(numpy.__version__)")
+                tarfile: \$(python -c "import tarfile; print(tarfile.__version__)")
+                matplotlib: \$(python -c "import matplotlib; print(matplotlib.__version__)")
+                os: \$(python -c "import os; print(os.__version__)")
+                argparse: \$(python -c "import argparse; print(argparse.__version__)")
+                sys: \$(python -c "import sys; print(sys.__version__)")
+                pandas: \$(python -c "import pandas; print(pandas.__version__)")
+            END_VERSIONS
         """
 }

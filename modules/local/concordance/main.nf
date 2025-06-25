@@ -26,6 +26,7 @@ process CONCORDANCE_CALCLULATIONS {
         tuple val(pool_id), path('discordant_sites_in_other_donors_noA2G.tsv'), emit: concordances
         path("*--each_cells_comparison_with_other_donor.tsv"), emit: each_cells_comparison optional true
         tuple val(pool_id), path("${cell_vcf}"), path("${donor_table}"), path("sub_${pool_id}*.vcf.gz"),path("${cell_assignments}"),path("*.pkl"), emit: other_donor_input
+        path "versions.yml", emit: versions
     script:
 
         """
@@ -37,6 +38,10 @@ process CONCORDANCE_CALCLULATIONS {
             
             concordance_calculations.py --cpus $task.cpus --cell_vcf ${cell_vcf} --donor_assignments ${donor_table} --gt_match_vcf sub_${pool_id}_GT_Matched.vcf.gz --expected_vcf sub_${pool_id}_Expected.vcf.gz --cell_assignments ${cell_assignments} --outfile discordant_sites_in_other_donors_noA2G.tsv --informative_sites ${set2_informative_sites} --uninformative_sites ${set1_uninformative_sites} --remove_AG 
 
+            cat <<-END_VERSIONS > versions.yml
+            "${task.process}":
+                bcftools: \$(bcftools --version 2>&1 | head -n1 | sed 's/^.*bcftools //; s/ .*\$//')
+            END_VERSIONS
         """
 }
 

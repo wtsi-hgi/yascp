@@ -31,6 +31,7 @@ process AZIMUTH{
         path "*prediction_score_vln.pdf"
         path "*mapping_score_umap.pdf"
         path "*mapping_score_vln.pdf"
+        path "versions.yml", emit: versions
 
     script:
 
@@ -48,6 +49,19 @@ process AZIMUTH{
         echo ${mapping_file}
         echo ${params.remap_celltypes}
         ${com}
+
+        cat <<-END_VERSIONS > versions.yml
+        "${task.process}":
+            r-base: \$(R --version | sed -n '1p' | sed 's/R version //; s/ (.*//')
+            Azimuth: \$(Rscript -e "cat(as.character(packageVersion('Azimuth')))")
+            Seurat: \$(Rscript -e "cat(as.character(packageVersion('Seurat')))")
+            SeuratDisk: \$(Rscript -e "cat(as.character(packageVersion('SeuratDisk')))")
+            Matrix: \$(Rscript -e "cat(as.character(packageVersion('Matrix')))")
+            hdf5r: \$(Rscript -e "cat(as.character(packageVersion('hdf5r')))")
+            ggplot2: \$(Rscript -e "cat(as.character(packageVersion('ggplot2')))")
+            tools: \$(Rscript -e "cat(as.character(packageVersion('tools')))")
+        END_VERSIONS
+
     """
 }
 

@@ -27,6 +27,7 @@ process sccaf_assess_clustering {
     path("${outfile_roc_pdf}")
     path("${outfile_prc_pdf}")
     path("${outfile_acc_txt}")
+    path "versions.yml", emit: versions
 
   script:
     outdir = "${outdir_prev}/sccaf/clustering_assessment"
@@ -42,6 +43,19 @@ process sccaf_assess_clustering {
        --output-prefix ${outfil_prfx} \\
        ${file__anndata} \\
        ${file__external_clustering_tsv}
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        python: \$(python --version | sed 's/Python //g')
+        SCCAF: \$(python -c "import SCCAF; print(SCCAF.__version__)")
+        scanpy: \$(python -c "import scanpy; print(scanpy.__version__)")
+        sys: \$(python -c "import sys; print(sys.__version__)")
+        os: \$(python -c "import os; print(os.__version__)")
+        argparse: \$(python -c "import argparse; print(argparse.__version__)")
+        pathlib: \$(python -c "import pathlib; print(pathlib.__version__)")
+        pandas: \$(python -c "import pandas; print(pandas.__version__)")
+        matplotlib: \$(python -c "import matplotlib; print(matplotlib.__version__)")
+    END_VERSIONS
     """
 }
 
@@ -75,6 +89,7 @@ process sccaf_optimize_clustering {
       path("roc-curve.png")
       path("optim.png")
       path("rounds.txt")
+      path "versions.yml", emit: versions
 
   script:
     outdir = "${outdir_prev}/sccaf/clustering_optimization"
@@ -92,5 +107,18 @@ process sccaf_optimize_clustering {
             --min-accuracy ${min_accuracy} \\
             --produce-rounds-summary
         #      --optimisation-plots-output ${outdir_rel}
+
+        cat <<-END_VERSIONS > versions.yml
+        "${task.process}":
+            python: \$(python --version | sed 's/Python //g')
+            SCCAF: \$(python -c "import SCCAF; print(SCCAF.__version__)")
+            scanpy: \$(python -c "import scanpy; print(scanpy.__version__)")
+            sys: \$(python -c "import sys; print(sys.__version__)")
+            os: \$(python -c "import os; print(os.__version__)")
+            argparse: \$(python -c "import argparse; print(argparse.__version__)")
+            pathlib: \$(python -c "import pathlib; print(pathlib.__version__)")
+            pandas: \$(python -c "import pandas; print(pandas.__version__)")
+            matplotlib: \$(python -c "import matplotlib; print(matplotlib.__version__)")
+        END_VERSIONS
     """
 }

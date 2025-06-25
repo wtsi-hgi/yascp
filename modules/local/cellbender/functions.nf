@@ -346,6 +346,7 @@ process cellbender__remove_background {
       val(outdir),
       emit: out_paths
     )
+    path "versions.yml", emit: versions
 
   script:
 
@@ -398,6 +399,11 @@ process cellbender__remove_background {
     mkdir plots
     mv *pdf plots/ 2>/dev/null || true
     mv *png plots/ 2>/dev/null || true
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        cellbender: \$(cellbender --version)
+    END_VERSIONS
     """
 }
 

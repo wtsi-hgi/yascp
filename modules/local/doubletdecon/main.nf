@@ -26,6 +26,7 @@ process DOUBLET_DECON{
         path("plots/*.pdf") optional true
         path("plots/*.png") optional true
         tuple val(experiment_id), path("${experiment_id}__DoubletDecon_doublets_singlets.tsv"), emit: result  optional true
+        path "versions.yml", emit: versions
 
     script:
         
@@ -41,5 +42,19 @@ process DOUBLET_DECON{
             else
                 echo "File DoubletDecon_${experiment_id}/DoubletDecon_doublets_singlets.tsv does not exist. Skipping symlink creation."
             fi
+
+            cat <<-END_VERSIONS > versions.yml
+            "${task.process}":
+                r-base: \$(R --version | sed -n '1p' | sed 's/R version //; s/ (.*//')
+                DoubletDecon: \$(Rscript -e "cat(as.character(packageVersion('DoubletDecon')))")
+                argparse: \$(Rscript -e "cat(as.character(packageVersion('argparse')))")
+                tidyverse: \$(Rscript -e "cat(as.character(packageVersion('tidyverse')))")
+                Seurat: \$(Rscript -e "cat(as.character(packageVersion('Seurat')))")
+                ggplot2: \$(Rscript -e "cat(as.character(packageVersion('ggplot2')))")
+                ata.table: \$(Rscript -e "cat(as.character(packageVersion('ata.table')))")
+                viridis: \$(Rscript -e "cat(as.character(packageVersion('viridis')))")
+                SeuratDisk: \$(Rscript -e "cat(as.character(packageVersion('SeuratDisk')))")
+                future.apply: \$(Rscript -e "cat(as.character(packageVersion('future.apply')))")
+            END_VERSIONS
         """
 }
