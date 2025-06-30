@@ -36,7 +36,6 @@ workflow YASCP {
     take:
         mode
         input_channel
-        input_channel
         vcf_input
     main:
         if("${mode}"!='default'){

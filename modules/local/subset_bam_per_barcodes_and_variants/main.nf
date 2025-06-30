@@ -96,8 +96,10 @@ process SUBSET_BAM_PER_BARCODES{
 
         """ 
             samtools view --threads ${task.cpus} --tag-file CB:${barcodes} \
-                --cram -T ${genome}/genome.fa \
-                -o ${sample_donor}.cram ${bam}
+                --bam -T ${genome}/genome.fa \
+                -o ${sample_donor}.bam ${bam}
+
+            /software/sciops/external/cellranger/7.2.0/cellranger bamtofastq --nthreads=2 --relaxed ${sample_donor}.bam ${sample_donor}_fastq
         """
 
 }
