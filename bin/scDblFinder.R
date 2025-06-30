@@ -9,6 +9,7 @@ parser <- ArgumentParser()
 parser$add_argument("-o", "--out", required = TRUE, help="The output directory where results will be saved")
 parser$add_argument("-t", "--tenX_matrix", required = TRUE, type = "character", help = "Path to the 10x filtered matrix directory or h5 file.")
 parser$add_argument("-b", "--barcodes_filtered", required = FALSE, type = "character", help = "Path to a list of filtered barcodes to use for doublet detection.")
+parser$add_argument("--atac", action = "store_true", help = "Indicates whether input is scATAC-seq data.")
 
 # get command line options, if help option encountered print help and exit,
 # otherwise if options not found on command line then set defaults, 
@@ -86,7 +87,14 @@ doublet_ratio <- ncol(sce)/1000*0.008
 
 
 ### Calculate Singlets and Doublets ###
-sce <- try(scDblFinder(sce, dbr = doublet_ratio), silent = TRUE)
+if (args$atac) {
+    cat("Runing ATAC scDblFinder.\n")
+    sce <- try(scDblFinder(sce, dbr = doublet_ratio, aggregateFeatures = TRUE), silent = TRUE)
+}else{
+    cat("Runing GEX scDblFinder.\n")
+    sce <- try(scDblFinder(sce, dbr = doublet_ratio), silent = TRUE)
+}
+
 
 # Check if the scDblFinder function was successful
 if (inherits(sce, "try-error")) {

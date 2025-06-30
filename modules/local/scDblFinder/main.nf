@@ -29,7 +29,12 @@ process SC_DBLFINDER {
         outdir = "${params.outdir}/"
         outdir = "${outdir}scDblFinder"
         outfile = "${experiment_id}"
-
+        if (params.atac){
+            atac = '--atac'
+        }else{
+            atac = ""
+        }
+        
         """
 
             mkdir TMP_DIR
@@ -37,7 +42,7 @@ process SC_DBLFINDER {
             ln --physical ${file_10x_features} TMP_DIR
             ln --physical ${file_10x_matrix} TMP_DIR
             mkdir scDblFinder_${experiment_id}
-            scDblFinder.R --tenX_matrix ./TMP_DIR --barcodes_filtered ${file_10x_barcodes} -o scDblFinder_${experiment_id}
+            scDblFinder.R --tenX_matrix ./TMP_DIR --barcodes_filtered ${file_10x_barcodes} -o scDblFinder_${experiment_id} ${atac}
             ln -s scDblFinder_${experiment_id}/scDblFinder_doublets_singlets.tsv ${experiment_id}__scDblFinder_doublets_singlets.tsv 
         """
 }
