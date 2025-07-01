@@ -106,7 +106,7 @@ process PLOT_CONCORDANCES_ALL{
     tag "${pool_id}"
     label 'process_low'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "${params.scrna_deconvolution}"
+        container "${params.yascp_container}"
     } else {
         container "${params.yascp_container_docker}"
     }

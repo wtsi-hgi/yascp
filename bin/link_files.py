@@ -94,13 +94,18 @@ for i,row1 in Data.iterrows():
         os.system(f"ln -s {Metrics_file} '{outdir}/metrics_summary.csv'")
         # ANalysis folder
         analysis_folder = glob.glob(data_10x_format+'/analysis')[0]
-        os.symlink(analysis_folder, f"{outdir}/analysis")   
+        os.makedirs(f"{outdir}/analysis", exist_ok=True)
+        os.system(f"cp -as {analysis_folder}/* {outdir}/analysis")
         # filtered matrix
         sample_filtered_feature_bc_matrix = glob.glob(data_10x_format+'/*filtered_p*bc_matrix')[0]
-        os.symlink(f"{sample_filtered_feature_bc_matrix}", f"{outdir}/filtered_feature_bc_matrix")   
+        os.makedirs(f"{outdir}/filtered_feature_bc_matrix", exist_ok=True)
+        os.system(f"cp -as {sample_filtered_feature_bc_matrix}/* {outdir}/filtered_feature_bc_matrix")
+        
  
         raw_feature_bc_matrix =  glob.glob(data_10x_format+'/*raw_p*bc_matrix')[0]
-        os.symlink(raw_feature_bc_matrix, f"{outdir}/raw_feature_bc_matrix")       
+        os.makedirs(f"{outdir}/raw_feature_bc_matrix", exist_ok=True)
+        os.system(f"cp -as {raw_feature_bc_matrix}/* {outdir}/raw_feature_bc_matrix")     
+        os.system(f"ln -s {data_10x_format}/fragments.tsv.gz {outdir}/raw_feature_bc_matrix/fragments.tsv.gz")     
         # sample_alignments.bam
         possorted_genome_bam = glob.glob(data_10x_format+'/*.bam')[0]
         os.symlink(possorted_genome_bam, f"{outdir}/possorted_genome_bam.bam")

@@ -320,8 +320,6 @@ process JOIN_STUDIES_MERGE{
 
       """
         vcf_name=\$(python ${projectDir}/bin/random_id.py)
-       
-        
         fofn_input_subset.sh "${study_vcf_files}"
         if [ \$(cat fofn_vcfs.txt | wc -l) -gt 1 ]; then
             echo 'yes'
@@ -331,11 +329,9 @@ process JOIN_STUDIES_MERGE{
             ${cmd}
         else
           echo 'no'
-          bcftools view ${study_vcf_files} | bcftools sort -Oz -o ${mode}_${mode2}_\${vcf_name}_out.vcf.gz
+          bcftools sort ${study_vcf_files} -Oz -o ${mode}_${mode2}_\${vcf_name}_out.vcf.gz
           bcftools index ${mode}_${mode2}_\${vcf_name}_out.vcf.gz 
-          
         fi
-     
         rm -r pre_* || echo 'nothing to remove'
       """
 }

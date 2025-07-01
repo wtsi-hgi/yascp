@@ -297,7 +297,7 @@ workflow  main_deconvolution {
         matched_donors = GENOTYPE_MATCHER.out.matched_donors
 
         if (params.genotype_input.run_with_genotype_input) {
-            if (params.do_vireo_subsampling){
+            if (params.vireo.do_vireo_subsampling){
                 VIREO_SUBSAMPLING(vireo_extra_repeats)
                 VIREO_SUBSAMPLING.out.output_dir.concat(VIREO.out.output_dir_subsampling).set{tuple_1}
                 tuple_1.groupTuple(by:0).set{vspp0}

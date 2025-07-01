@@ -37,12 +37,12 @@ workflow DECONV_INPUTS{
 
 workflow prepare_inputs {
 	// this workflow processes the outputs from cellbender to perform the data preparation
-    take: channel_input_data_table
+    take: channel_input_data_table_pre
     main:
 
         log.info "... Prepearing inputs based on the 10x folder required for downstream analysis..."
 
-		YASCP_INPUTS(channel_input_data_table)
+		YASCP_INPUTS(channel_input_data_table_pre)
 		channel_input_data_table = YASCP_INPUTS.out.input_file_corectly_formatted
         
 
@@ -121,7 +121,7 @@ workflow prepare_inputs {
             pre_ch_experiment_filth5 = Channel.from("foo").map { foo -> tuple("foo1","foo2") }
         }
 
-        if (params.run_with_genotype_input) {
+        if (params.genotype_input.run_with_genotype_input) {
             log.info "You have selected params.vireo.run_with_genotype_input=true -> will run Vireo with genotype input. Input VCF and list of donors per experiment_id gathered from params.input_n_pooled_table)"
             if (params.genotype_input.subset_genotypes){
                 log.info("----We will subset genotypes to the donors listed in the donor_vcf_ids for use in the Deconvolution----")
