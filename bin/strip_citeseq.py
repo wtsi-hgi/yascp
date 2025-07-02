@@ -305,7 +305,7 @@ def main():
         cache=False, cache_compression=compression_opts,gex_only=False)
     all_feature_types = set(adata_cellranger_filtered.var['feature_types'])
     hashtags = set(options.hastag_labels.split(","))
-    hashtags = ['Hashtag_.*']
+    # hashtags = ['Hashtag_.*']
     escaped_hashtags = [re.escape(tag) for tag in hashtags]
     matches = set(adata_cellranger_filtered.var.index[adata_cellranger_filtered.var.index.str.contains('|'.join(escaped_hashtags), regex=True)])
     matches2 = set(adata_cellranger_filtered.var.index[adata_cellranger_filtered.var.index.str.contains('|'.join(hashtags), regex=True)])
