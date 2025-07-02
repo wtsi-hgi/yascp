@@ -96,52 +96,40 @@ workflow qc_and_integration {
                 params.reduced_dims.vars_to_regress.value
             )
 
-            if (params.citeseq){
-                log.info """---Integrating data using Seurat integration method----"""
-                NORMALISE_AND_PCA.out.sample_QCd_adata.flatten().map{sample -> tuple("${sample}".replaceFirst(/___sample_QCd_adata.h5ad/,"").replaceFirst(/.*\//,""),sample)}.set{alt_input}
-                channel_dsb2 = channel_dsb.combine(alt_input, by: 0)
-                DSB_PROCESS(channel_dsb2)
+            NORMALISE_AND_PCA.out.sample_QCd_adata.flatten().map{sample -> tuple("${sample}".replaceFirst(/___sample_QCd_adata.h5ad/,"").replaceFirst(/.*\//,""),sample)}.set{alt_input}
+            channel_dsb2 = channel_dsb.combine(alt_input, by: 0)
+            DSB_PROCESS(channel_dsb2)
 
+            if(params.totalVi.run_process){
+                TOTAL_VI_INTEGRATION(NORMALISE_AND_PCA.out.anndata,DSB_PROCESS.out.citeseq_rsd.collect(),NORMALISE_AND_PCA.out.outdir)
+            }
 
-                if(params.totalVi.run_process){
-                    TOTAL_VI_INTEGRATION(NORMALISE_AND_PCA.out.anndata,DSB_PROCESS.out.citeseq_rsd.collect(),NORMALISE_AND_PCA.out.outdir)
-                }
+            vireo_paths_map = vireo_paths.flatten().map{row->tuple("${row}".replaceFirst(/.*vireo_/,""), row)}
+            vireo_paths_map.combine(DSB_PROCESS.out.ch_for_norm, by: 0).set{norm_chanel}
+            norm_chanel.combine(matched_donors).set{inp4}
+            PREPROCESS_PROCESS(inp4,params.reduced_dims.vars_to_regress.value)
 
-
-                DSB_PROCESS.out.ch_for_norm.subscribe { println "1:: DSB_PROCESS.out.ch_for_norm: $it" }
-
-                vireo_paths_map = vireo_paths.flatten().map{row->tuple("${row}".replaceFirst(/.*vireo_/,""), row)}
-                vireo_paths_map.subscribe { println "1:: vireo_paths_map $it" }
-                DSB_PROCESS.out.ch_for_norm.subscribe { println "1:: vireo_paths_map $it" }
-                vireo_paths_map.combine(DSB_PROCESS.out.ch_for_norm, by: 0).set{norm_chanel}
-                norm_chanel.subscribe { println "1:: norm_chanel $it" }
-                norm_chanel.combine(matched_donors).set{inp4}
-                inp4.subscribe { println "1:: inp4 $it" }
-                PREPROCESS_PROCESS(inp4,params.reduced_dims.vars_to_regress.value)
-
-                if(params.seurat_integration.run_process){
-                    DSB_INTEGRATE(
-                        PREPROCESS_PROCESS.out.tmp_rsd.collect(),
-                        params.reduced_dims.vars_to_regress.value,
-                        params.reduced_dims.seurat_integration.k_anchor,
-                        params.reduced_dims.seurat_integration.dims,
-                        params.reduced_dims.seurat_integration.ndim_sct,
-                        params.reduced_dims.seurat_integration.ndim_citeBgRemoved,
-                        params.reduced_dims.seurat_integration.ndim_cite_integrated
-                        )
-
-                    MULTIMODAL_INTEGRATION(
-                        DSB_INTEGRATE.out.tmp_rds_file,
+            if(params.seurat_integration.run_process){
+                DSB_INTEGRATE(
+                    PREPROCESS_PROCESS.out.tmp_rsd.collect(),
+                    params.reduced_dims.vars_to_regress.value,
+                    params.reduced_dims.seurat_integration.k_anchor,
+                    params.reduced_dims.seurat_integration.dims,
+                    params.reduced_dims.seurat_integration.ndim_sct,
+                    params.reduced_dims.seurat_integration.ndim_citeBgRemoved,
+                    params.reduced_dims.seurat_integration.ndim_cite_integrated
                     )
 
-                    VDJ_INTEGRATION(
-                        chanel_cr_outs.collect(),
-                        MULTIMODAL_INTEGRATION.out.wnn_integrated_file
-                    )
-                }
-            }    
+                MULTIMODAL_INTEGRATION(
+                    DSB_INTEGRATE.out.tmp_rds_file,
+                )
 
-
+                VDJ_INTEGRATION(
+                    chanel_cr_outs.collect(),
+                    MULTIMODAL_INTEGRATION.out.wnn_integrated_file
+                )
+            }
+            
             andata = NORMALISE_AND_PCA.out.anndata
             outdir = NORMALISE_AND_PCA.out.outdir
 

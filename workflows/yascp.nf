@@ -211,18 +211,14 @@ workflow YASCP {
                 file__anndata_merged = Channel.from(params.file__anndata_merged)
                 assignments_all_pools = Channel.from("$projectDir/assets/fake_file.fq")
 
-                if (params.citeseq){
 
-                    vireo_paths = params.outdir
-                        ? Channel.fromPath("${params.outdir}/deconvolution/vireo_raw/*/vireo_*", checkIfExists:true, type: 'dir')
-                        : Channel.fromPath("${launchDir}/${params.outdir}/deconvolution/vireo_raw/*/vireo_*", type: 'dir')
+                vireo_paths = params.outdir
+                    ? Channel.fromPath("${params.outdir}/deconvolution/vireo_raw/*/vireo_*", checkIfExists:true, type: 'dir')
+                    : Channel.fromPath("${launchDir}/${params.outdir}/deconvolution/vireo_raw/*/vireo_*", type: 'dir')
 
-                    GENOTYPE_MATCHER(vireo_paths.collect())
-                    matched_donors = GENOTYPE_MATCHER.out.matched_donors
-                }else{
-                    vireo_paths = Channel.from("$projectDir/assets/fake_file.fq")
-                    matched_donors = Channel.from("$projectDir/assets/fake_file.fq")
-                }
+                GENOTYPE_MATCHER(vireo_paths.collect())
+                matched_donors = GENOTYPE_MATCHER.out.matched_donors
+
                 
                 if("${mode}"!='default'){
                     // Here we have rerun GT matching upstream - done for freeze1
