@@ -14,7 +14,9 @@ workflow ambient_RNA {
     main:
         log.info params.input_data_table
         log.info """---Running Cellbender pipeline ---"""
-
+        
+        // LOGIC TO capture CELLBENDER THAT HAS ALREADY BEEN PERFORMED AND ONLY PROCESS NEW SAMPLES
+        // NEEDED SINCE CELLBENDER IS A LONG PROCESS AND QUITE OFTEN THIS IS REDUNDANT IF 50/100 SAMPLES HAVE ALREADY PERFORMED THIS PROCESS.
         capture_cellbender_files(params.cellbender_location,"${params.outdir}/preprocessing",params.input_data_table)
         capture_cellbender_files.out.alt_input.flatten().map{sample -> tuple("${sample}".replaceFirst(/.*\/captured\//,"").replaceFirst(/\/.*/,""),sample)}.set{alt_input}
         capture_cellbender_files.out.cb_to_use_downstream.flatten().map{sample -> tuple("${sample}".replaceFirst(/.*\/cellbender\//,"").replaceFirst(/\/.*/,""),sample)}.set{cb_Filtered_pre2}

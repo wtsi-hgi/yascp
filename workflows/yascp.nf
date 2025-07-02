@@ -31,7 +31,6 @@ include { PREPROCESS_GENOME } from "$projectDir/modules/local/subset_bam_per_bar
 //  3) Celltype assignment  ../subworkflows/celltype.nf
 //  5) Data handover preparation  ../subworkflows/data_handover.nf
 
-
 workflow YASCP {
     take:
         mode
@@ -288,7 +287,6 @@ workflow YASCP {
         // ###################################
 
         if (!params.skip_handover){
-
             data_handover(out_ch,input_channel,
                             process_finish_check_channel,
                             ch_poolid_csv_donor_assignments,
