@@ -38,9 +38,7 @@ process SCRUBLET {
     input:
         tuple(
             val(experiment_id),
-            path(file_10x_barcodes),
-            path(file_10x_features),
-            path(file_10x_matrix)
+            path(file_10x)
         )
         val(expected_multiplet_rate)
         val(n_simulated_multiplet)
@@ -75,17 +73,14 @@ process SCRUBLET {
         """
 
         rm -fr plots
-        TMP_DIR=\$(mktemp -d -p \$(pwd))
-        ln --physical ${file_10x_barcodes} \$TMP_DIR
-        ln --physical ${file_10x_features} \$TMP_DIR
-        ln --physical ${file_10x_matrix} \$TMP_DIR
         run_scrublet.py \
-            --tenxdata_dir \$TMP_DIR \
+            --tenxdata_dir ${file_10x} \
             --expected_multiplet_rate ${expected_multiplet_rate} \
             --n_simulated_multiplet ${n_simulated_multiplet} \
             --multiplet_threshold_method ${multiplet_threshold_method} \
             ${cmd__scale_log10} \
             --output_file ${outfile}
+            
         echo -e "${experiment_id}\t${outdir}/${outfile}-scrublet.tsv.gz" > \
             ${outfile}-multiplet_calls_published.txt
         mkdir plots

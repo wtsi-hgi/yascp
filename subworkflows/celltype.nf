@@ -91,7 +91,7 @@ workflow celltype{
         
         //
         ch_experiment_filth5 = file__anndata_merged_post 
-        az_ch_experiment_filth5 = file__anndata_merged_post
+        // az_ch_experiment_filth5 = file__anndata_merged_post
 
 
         // Keras celltype assignemt
@@ -105,7 +105,7 @@ workflow celltype{
         
         // AZIMUTH
         if (params.celltype_assignment.run_azimuth){
-            AZIMUTH(az_ch_experiment_filth5,params.mapping_file,Channel.fromList( params.azimuth.celltype_refsets))
+            AZIMUTH(file__anndata_merged,params.mapping_file,Channel.fromList( params.azimuth.celltype_refsets))
             az_out = AZIMUTH.out.predicted_celltype_labels.collect()
         }else{
             az_out = Channel.from("$projectDir/assets/fake_file1.fq")
@@ -116,9 +116,9 @@ workflow celltype{
         if (params.celltype_assignment.run_celltypist){
             Channel.fromList(params.celltypist.models)
                 .set{ch_celltypist_models}
-            CELLTYPIST(az_ch_experiment_filth5.combine(ch_celltypist_models))
-            ct_out2 = CELLTYPIST.out.predicted_labels.collect()
-            ct_out = ct_out2.ifEmpty(Channel.from("$projectDir/assets/fake_file2.fq"))
+            CELLTYPIST(ch_experiment_filth5.combine(ch_celltypist_models))
+            ct_out = CELLTYPIST.out.predicted_labels
+                .ifEmpty { "$projectDir/assets/fake_file2.fq" }
         }else{
             ct_out = Channel.from("$projectDir/assets/fake_file2.fq")
         }

@@ -15,9 +15,7 @@ process SC_DBLFINDER {
     input:
         tuple(
             val(experiment_id),
-            path(file_10x_barcodes),
-            path(file_10x_features),
-            path(file_10x_matrix)
+            path(file_10x)
         )
     output:
         path("plots/*.pdf") optional true
@@ -36,13 +34,8 @@ process SC_DBLFINDER {
         }
         
         """
-
-            mkdir TMP_DIR
-            ln --physical ${file_10x_barcodes} TMP_DIR
-            ln --physical ${file_10x_features} TMP_DIR
-            ln --physical ${file_10x_matrix} TMP_DIR
             mkdir scDblFinder_${experiment_id}
-            scDblFinder.R --tenX_matrix ./TMP_DIR --barcodes_filtered ${file_10x_barcodes} -o scDblFinder_${experiment_id} ${atac}
+            scDblFinder.R --tenX_matrix ${file_10x} -o scDblFinder_${experiment_id} ${atac}
             ln -s scDblFinder_${experiment_id}/scDblFinder_doublets_singlets.tsv ${experiment_id}__scDblFinder_doublets_singlets.tsv 
         """
 }

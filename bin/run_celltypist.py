@@ -81,15 +81,10 @@ def run_celltypist(samplename, filtered_matrix_h5, celltypist_model,
     fixed_h5 = 'fixed_genome.h5'
     try:
         adata = sc.read_10x_h5(filtered_matrix_h5)
-        # adata2 = sc.read_h5ad("/lustre/scratch127/humgen/teams/hgi/mo11/tmp_projects127/yascp_tests/v1/work/b6/fe8b781bba642b8973e43d513eb8b3/AZ_Pool1_Pool1.h5ad")
-        
     except:
         try:
             # We are loading h5ad instad of h5
             adata = sc.read_h5ad(filtered_matrix_h5)
-            
-            # adata = sc.read_h5ad(filtered_matrix_h5)
-
         except:
             # h5 file may have amissing genome version
             import tables
@@ -142,10 +137,7 @@ def run_celltypist(samplename, filtered_matrix_h5, celltypist_model,
     # https://www.celltypist.org/tutorials
     # https://colab.research.google.com/github/Teichlab/celltypist/blob/main/notebook/celltypist_tutorial.ipynb#scrollTo=ultimate-pilot
     # Enabling `force_update = True` will overwrite existing (old) models.
-    logging.info(os.getcwd())
-    models.download_models(force_update = False)
-    
-    # Indeed, the `model` argument defaults to `Immune_All_Low.pkl`.
+
     logging.info("celltypist_model: " + celltypist_model)
     celltypist_model1 = os.path.splitext(os.path.basename(celltypist_model))[0]
     # print(os.listdir('/tmp/.celltypist/data/models'))
@@ -170,7 +162,6 @@ def run_celltypist(samplename, filtered_matrix_h5, celltypist_model,
     # which refines cell identities within local subclusters after an over-clustering approach
     # at the cost of increased runtime.
 
-
     logging.info("... predictions.predicted_labels:")
     logging.info(predictions.predicted_labels)
 
@@ -190,8 +181,6 @@ def run_celltypist(samplename, filtered_matrix_h5, celltypist_model,
     Data.to_csv(f'{output_dir}/{samplename}___{celltypist_model1}___predicted_labels.csv')
     ###predictions.to_table(folder = os.getcwd())
     logging.info("... predictions.to_plots")
-
-
     # Visualise the predicted cell types overlaid onto the UMAP.
     predictions.to_plots(folder = output_dir, prefix = samplename + '_')
     ###predictions.to_plots(folder = os.getcwd())
@@ -202,20 +191,6 @@ def run_celltypist(samplename, filtered_matrix_h5, celltypist_model,
             os.makedirs(folder_plot_probs)
         predictions.to_plots(folder = folder_plot_probs, prefix = samplename + '_prob_', plot_probability = True)
 
-    # Get an `AnnData` with predicted labels embedded into the cell metadata columns.
-    # logging.info("... running predictions.to_adata()")
-    # adata = predictions.to_adata()
-    # the new adata has additional prediction information in adata.obs (predicted_labels, over_clustering, and majority_voting).
-    # logging.info("... adata.obs:")
-    # logging.info(adata.obs)
-
-    # logging.info("... running sc.tl.umap(adata):")
-    # sc.tl.umap(adata)
-    # sc.pl.umap(adata, color = ['predicted_labels', 'majority_voting'],
-    #           save= '_' + samplename + '_celltypist.pdf', legend_loc = 'on data')
-
-    # logging.info("... write adata.obs to " + output_dir + "/" + samplename + "_celltypist.csv")
-    # adata.obs.to_csv(output_dir + "/" + samplename + "_celltypist.csv", index_label='cell_barcode')
     logging.info("... script run_celltypist() done.")
     
 if __name__ == '__main__':

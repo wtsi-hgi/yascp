@@ -73,9 +73,7 @@ workflow MULTIPLET {
             channel__file_paths_10x =  channel__file_paths_10x_pre
                 .map{row -> tuple(
                 row[0],
-                file("${row[1]}/barcodes.tsv.gz"),
-                file("${row[1]}/features.tsv.gz"),
-                file("${row[1]}/matrix.mtx.gz")
+                file("${row[1]}")
             )} 
         }
 

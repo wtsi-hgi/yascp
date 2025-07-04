@@ -127,10 +127,10 @@ workflow YASCP {
                 hastag_labels = HASTAG_DEMULTIPLEX.out.results
                 
                 if (params.doublets_and_celltypes_on_cellbender_corrected_counts && params.input == 'cellbender'){
-                    channel__file_paths_10x_gex = SPLIT_CITESEQ_GEX_FILTERED_NOCB.out.channel__file_paths_10x
+                    channel__file_paths_10x_gex = SPLIT_CITESEQ_GEX_FILTERED_NOCB.out.gex_data
                 }
                 else{
-                    channel__file_paths_10x_gex = SPLIT_CITESEQ_GEX_FILTERED.out.channel__file_paths_10x
+                    channel__file_paths_10x_gex = SPLIT_CITESEQ_GEX_FILTERED.out.gex_data
                 }
 
                 // ###################################

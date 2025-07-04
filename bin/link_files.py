@@ -100,8 +100,8 @@ for i,row1 in Data.iterrows():
         sample_filtered_feature_bc_matrix = glob.glob(data_10x_format+'/*filtered_p*bc_matrix')[0]
         os.makedirs(f"{outdir}/filtered_feature_bc_matrix", exist_ok=True)
         os.system(f"cp -as {sample_filtered_feature_bc_matrix}/* {outdir}/filtered_feature_bc_matrix")
+        os.system(f"ln -s {data_10x_format}/fragments.tsv.gz {outdir}/filtered_feature_bc_matrix/fragments.tsv.gz") 
         
- 
         raw_feature_bc_matrix =  glob.glob(data_10x_format+'/*raw_p*bc_matrix')[0]
         os.makedirs(f"{outdir}/raw_feature_bc_matrix", exist_ok=True)
         os.system(f"cp -as {raw_feature_bc_matrix}/* {outdir}/raw_feature_bc_matrix")     
