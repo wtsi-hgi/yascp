@@ -252,7 +252,7 @@ process VIREO_GT_FIX_HEADER
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         bcftools: \$(bcftools --version 2>&1 | head -n1 | sed 's/^.*bcftools //; s/ .*\$//')
-        tabix: \$(echo \$(tabix -h 2>&1) | head -n 1 | sed 's/^.*(htslib) //; s/ .*\$//')
+        tabix: \$(echo \$(tabix -h 2>&1) | head -n 1 | sed 's/^.*(htslib) //; s/ .*\$//; s/^Version://')
     END_VERSIONS
   """
 }
@@ -426,7 +426,7 @@ process PREPROCESS_GENOTYPES
     tuple val(pool_id), path(ref_gt_vcf), path(ref_gt_csi)
 
   output:
-    tuple val(pool_id), path("renamed_*.vcf.gz"), path("renamed_*.vcf.gz.csi")
+    tuple val(pool_id), path("renamed_*.vcf.gz"), path("renamed_*.vcf.gz.csi"), emit: vcf_tuple
     path "versions.yml", emit: versions
 
   script:
@@ -452,7 +452,7 @@ process PREPROCESS_GENOTYPES
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         bcftools: \$(bcftools --version 2>&1 | head -n1 | sed 's/^.*bcftools //; s/ .*\$//')
-        bgzip: \$(echo \$(bgzip -h 2>&1) | head -n 1 | sed 's/^.*(htslib) //; s/ .*\$//')
+        bgzip: \$(echo \$(bgzip -h 2>&1) | head -n 1 | sed 's/^.*(htslib) //; s/ .*\$//; s/^Version://')
     END_VERSIONS
   """
 }

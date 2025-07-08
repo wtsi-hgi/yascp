@@ -85,7 +85,7 @@ process DYNAMIC_DONOR_EXCLUSIVE_SNP_SELECTION{
         cat <<-END_VERSIONS > versions.yml
         "${task.process}":
             bcftools: \$(bcftools --version 2>&1 | head -n1 | sed 's/^.*bcftools //; s/ .*\$//')
-            bgzip: \$(echo \$(bgzip -h 2>&1) | head -n 1 | sed 's/^.*(htslib) //; s/ .*\$//')
+            bgzip: \$(echo \$(bgzip -h 2>&1) | head -n 1 | sed 's/^.*(htslib) //; s/ .*\$//; s/^Version://')
         END_VERSIONS
       """
 }
@@ -105,7 +105,7 @@ process ASSESS_CALL_RATE{
         tuple val(samplename),path(cellsnp), path(set2_informative_sites), path(set1_uninformative_sites),path(variants_description)
 
     output:
-        tuple path("*_variants_description.tsv"), emit: variants_description
+        path("*_variants_description.tsv"), emit: variants_description
         path "versions.yml", emit: versions
 
     script:       

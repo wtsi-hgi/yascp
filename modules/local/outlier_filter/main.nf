@@ -26,7 +26,7 @@ process MERGE_OUTLIER_FILES{
                 mode: "${params.copy_mode}",
                 overwrite: "true"
 
-    publishDir  path: "${outdir}/handover/merged_h5ad",
+    publishDir  path: "${params.outdir}/handover/merged_h5ad",
                 saveAs: {filename ->
                     if(filename.contains("outlier_filtered_adata.h5ad"))  {
                         filename = "4.outlier_filtered_adata.h5ad"

@@ -152,20 +152,6 @@ workflow.onComplete{
     log.info "Execution status: ${ workflow.success ? 'OK' : 'failed' }"
     if (workflow.success){
         println "Execution successful"
-        
-        Channel.empty()
-        .mix(DOUBLET_DECON.out.versions)
-        .mix(DOUBLET_DETECTION.out.versions)
-        .mix(SPLIT_BAM_BY_CELL_BARCODES.out.versions)
-        .collectFile(
-            name: 'software_versions.yml',
-            storeDir: "${params.outdir}/pipeline_info"
-        ) { versions_file ->
-            // Read and reformat each version file
-            def content = versions_file.text
-            return content
-        }
-
         if (params.remove_work_dir){
             println "lets remove ${params.tmpdir}"
             log.info "You have selected \"remove_work_dir = true\"; will therefore remove work dirs of all tasks"

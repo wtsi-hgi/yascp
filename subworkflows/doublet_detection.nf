@@ -56,6 +56,7 @@ workflow MULTIPLET {
         mode
     main:
         // Identify multiplets.
+        Channel.empty().set { ch_versions }
         log.info '---Identifying doublets and multiplets---'
         input_channel = Channel.of()
         if (mode=='yascp_full'){
@@ -87,6 +88,7 @@ workflow MULTIPLET {
                 params.filter_multiplets.scrublet.multiplet_threshold_method,
                 params.filter_multiplets.scrublet.scale_log10
             )
+            ch_versions = ch_versions.mix(SCRUBLET.out.versions)
             input_channel = input_channel.mix(SCRUBLET.out.result)
         }else{
             out = Channel.of()
@@ -95,6 +97,7 @@ workflow MULTIPLET {
 
         if (params.filter_multiplets.doubletDetection.run_process){
             DOUBLET_DETECTION(channel__file_paths_10x) //Done
+            ch_versions = ch_versions.mix(DOUBLET_DETECTION.out.versions)
             input_channel = input_channel.mix(DOUBLET_DETECTION.out.result)
         }else{
             out = Channel.of()
@@ -102,6 +105,7 @@ workflow MULTIPLET {
 
         if (params.filter_multiplets.doubletDecon.run_process){
             DOUBLET_DECON(gex_h5ad) //Done
+            ch_versions = ch_versions.mix(DOUBLET_DECON.out.versions)
             input_channel = input_channel.mix(DOUBLET_DECON.out.result)
         }else{
             out = Channel.of()
@@ -109,6 +113,7 @@ workflow MULTIPLET {
 
         if (params.filter_multiplets.scDblFinder.run_process){
             SC_DBLFINDER(channel__file_paths_10x)
+            ch_versions = ch_versions.mix(SC_DBLFINDER.out.versions)
             input_channel = input_channel.mix(SC_DBLFINDER.out.result)
         }else{
             out = Channel.of()
@@ -116,6 +121,7 @@ workflow MULTIPLET {
 
         if (params.filter_multiplets.scds.run_process){
             SCDS(channel__file_paths_10x)
+            ch_versions = ch_versions.mix(SCDS.out.versions)
             input_channel = input_channel.mix(SCDS.out.result)
         }else{
             out = Channel.of()
@@ -123,6 +129,7 @@ workflow MULTIPLET {
 
         if (params.filter_multiplets.doubletFinder.run_process){
             DOUBLET_FINDER(gex_h5ad,params.filter_multiplets.expected_multiplet_rate) //Done
+            ch_versions = ch_versions.mix(DOUBLET_FINDER.out.versions)
             input_channel = input_channel.mix(DOUBLET_FINDER.out.result)
             
         }else{
@@ -135,5 +142,6 @@ workflow MULTIPLET {
 
     emit:
         scrublet_paths = MERGE_DOUBLET_RESULTS.out.result
+        doublet_versions = ch_versions
 }
 

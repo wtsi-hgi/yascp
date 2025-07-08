@@ -65,7 +65,7 @@ process PREPROCESS_GENOME{
     input:
         path(genome)
     output:
-        path('preprocessed_genome')
+        path('preprocessed_genome'), emit: preprocessed_genome
         path "versions.yml", emit: versions
     script:
         """

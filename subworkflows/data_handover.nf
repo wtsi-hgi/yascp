@@ -43,7 +43,6 @@ workflow data_handover{
               ch_poolid_csv_donor_assignment_gathered
               )
         }
-
         SUMMARY_STATISTICS_PLOTS(outdir,gh_out,params.input_data_table)
         TRANSFER(SUMMARY_STATISTICS_PLOTS.out.summary_plots,params.rsync_to_web_file,outdir)
 

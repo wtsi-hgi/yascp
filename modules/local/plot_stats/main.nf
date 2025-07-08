@@ -44,7 +44,7 @@ workflow PLOT_STATS {
         )
 
         plot_pcs(
-            outdir,
+            params.outdir,
             anndata,
             n_pcs,
             params.umap.colors_quantitative.value,

@@ -279,7 +279,7 @@ process JOIN_CHROMOSOMES{
         cat <<-END_VERSIONS > versions.yml
         "${task.process}":
             bcftools: \$(bcftools --version 2>&1 | head -n1 | sed 's/^.*bcftools //; s/ .*\$//')
-            bgzip: \$(echo \$(bgzip -h 2>&1) | head -n 1 | sed 's/^.*(htslib) //; s/ .*\$//')
+            bgzip: \$(echo \$(bgzip -h 2>&1) | head -n 1 | sed 's/^.*(htslib) //; s/ .*\$//; s/^Version://')
         END_VERSIONS
       """
 }
@@ -390,6 +390,7 @@ workflow SUBSET_WORKF{
     mode
     genome
   main:
+      Channel.empty().set { ch_versions }
       donors_in_pools.combine(ch_ref_vcf).unique().set{all_GT_pannels_and_pools}
       all_GT_pannels_and_pools.map { row -> tuple("${row[1]}:${row[2]}:${row[3]}:${row[4]}",row[0],row[1],row[2],row[3],row[4]) }.set { combined_pool_subset }
 
@@ -408,7 +409,7 @@ workflow SUBSET_WORKF{
         grouped_chrs_poolComps.map { row -> tuple( row[1].join('::'), "${row[0]}".split(':')[0],  "${row[0]}".split(':')[1],  "${row[0]}".split(':')[2],  "${row[0]}".split(':')[3] ) }.set { combined_pool_subset } // Here we have all the pools that contain the same donor compositions associated with each of the shards
         grouped_chrs_poolComps.map { row -> tuple( row[0], row[1]) }.set { pools_utilising_same_subset } // Here we have a mapping file of which pools should use which genotypes.
         SUBSET_GENOTYPE2(combined_pool_subset)
-
+        ch_versions = ch_versions.mix(SUBSET_GENOTYPE2.out.versions)
         SUBSET_GENOTYPE2.out.subset_vcf_file.unique().groupTuple().set{chromosome_vcfs_per_studypool}
 
       }
@@ -416,11 +417,13 @@ workflow SUBSET_WORKF{
       // Combining all the chromosomes per pool
       // Now we combine all the chromosomes together for all the unique pool compositions.
       JOIN_CHROMOSOMES(chromosome_vcfs_per_studypool,genome)
+      ch_versions = ch_versions.mix(JOIN_CHROMOSOMES.out.versions)
       JOIN_CHROMOSOMES.out.joined_chromosomes_per_studytrance.unique().groupTuple().set{study_vcfs_per_pool}
       // study_vcfs_per_pool.subscribe {println "study_vcfs_per_pool:= ${it}\n"}
 
       // Since user are capable in providing multiple different study vcfs these need to be merged together per unique pool composition to perform the internal IBD checks.
       JOIN_STUDIES_MERGE(study_vcfs_per_pool,'Study_Merge',mode)
+      ch_versions = ch_versions.mix(JOIN_STUDIES_MERGE.out.versions)
       JOIN_STUDIES_MERGE.out.merged_expected_genotypes.set{merged_expected_genotypes}
 
       // After merging studies per unique pool compositions we resolve the matches back to the each of the Pools so that the IBD and Vireo can use the correct genotypes as the inputs and publish these in the correct folder.
@@ -442,4 +445,5 @@ workflow SUBSET_WORKF{
     merged_expected_genotypes
     study_merged_vcf
     samplename_subsetvcf_ibd
+    subset_workf_versions = ch_versions
 }

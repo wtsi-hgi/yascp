@@ -76,9 +76,9 @@ workflow celltype{
         file__anndata_merged
         mode
     main:
-
         // Here we may want to not split it and just pass in an entire h5ad file for annotations.
         // We need a combined h5ad file with all donors to perform further data integrations
+        Channel.empty().set { ch_versions }
         if (mode=='yascp_full'){
             file__anndata_merged_post = CONVERT_MTX_TO_H5AD(file__anndata_merged).gex_h5ad
         }else{
@@ -97,6 +97,7 @@ workflow celltype{
         // Keras celltype assignemt
         if (params.celltype_assignment.run_keras){
             KERAS_CELLTYPE(ch_experiment_filth5,params.celltype_prediction.keras.keras_model,params.celltype_prediction.keras.keras_weights_df) 
+            ch_versions = ch_versions.mix(KERAS_CELLTYPE.out.versions)
             all_extra_fields3 = KERAS_CELLTYPE.out.predicted_celltype_labels.collect()
             all_extra_fields = all_extra_fields3.ifEmpty(Channel.from("$projectDir/assets/fake_file.fq"))
         }else{
@@ -106,6 +107,7 @@ workflow celltype{
         // AZIMUTH
         if (params.celltype_assignment.run_azimuth){
             AZIMUTH(az_ch_experiment_filth5,params.mapping_file,Channel.fromList( params.azimuth.celltype_refsets))
+            ch_versions = ch_versions.mix(AZIMUTH.out.versions)
             az_out = AZIMUTH.out.predicted_celltype_labels.collect()
         }else{
             az_out = Channel.from("$projectDir/assets/fake_file1.fq")
@@ -117,6 +119,7 @@ workflow celltype{
             Channel.fromList(params.celltypist.models)
                 .set{ch_celltypist_models}
             CELLTYPIST(az_ch_experiment_filth5.combine(ch_celltypist_models))
+            ch_versions = ch_versions.mix(CELLTYPIST.out.versions)
             ct_out2 = CELLTYPIST.out.predicted_labels.collect()
             ct_out = ct_out2.ifEmpty(Channel.from("$projectDir/assets/fake_file2.fq"))
         }else{
@@ -126,6 +129,7 @@ workflow celltype{
         // // SCPRED
         if (params.celltype_assignment.run_scpred){
             SCPRED(ch_experiment_filth5,params.scpred.reference)
+            ch_versions = ch_versions.mix(SCPRED.out.versions)
             sc_out2 = SCPRED.out.predicted_celltype_labels.collect()
             sc_out = sc_out2.ifEmpty(Channel.of())
         }else{
@@ -136,4 +140,6 @@ workflow celltype{
         celltype_assignments=CELLTYPE_FILE_MERGE.out.celltype_assignments
     emit:
         celltype_assignments
+        celltype_versions = ch_versions
+
 }
