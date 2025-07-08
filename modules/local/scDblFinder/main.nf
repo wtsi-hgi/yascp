@@ -9,6 +9,13 @@ process SC_DBLFINDER {
     }
     
     publishDir  path: "${params.outdir}/doublet_detection/scDblFinder",
+                saveAs: { filename ->
+                    if (filename.endsWith("scDblFinder_doublets_singlets.tsv")) {
+                        return null
+                    } else {
+                        return filename
+                    }
+                },
                 mode: "${params.copy_mode}",
                 overwrite: "true"
 
@@ -21,7 +28,7 @@ process SC_DBLFINDER {
         path("plots/*.pdf") optional true
         path("plots/*.png") optional true
         tuple val(experiment_id), path("${experiment_id}__scDblFinder_doublets_singlets.tsv"), emit: result optional true
-
+        path("scDblFinder_${experiment_id}")
     script:
         
         outdir = "${params.outdir}/"
@@ -34,6 +41,7 @@ process SC_DBLFINDER {
         }
         
         """
+            export TMPDIR=\$PWD
             mkdir scDblFinder_${experiment_id}
             scDblFinder.R --tenX_matrix ${file_10x} -o scDblFinder_${experiment_id} ${atac}
             ln -s scDblFinder_${experiment_id}/scDblFinder_doublets_singlets.tsv ${experiment_id}__scDblFinder_doublets_singlets.tsv 

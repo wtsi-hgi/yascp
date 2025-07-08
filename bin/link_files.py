@@ -101,11 +101,15 @@ for i,row1 in Data.iterrows():
         os.makedirs(f"{outdir}/filtered_feature_bc_matrix", exist_ok=True)
         os.system(f"cp -as {sample_filtered_feature_bc_matrix}/* {outdir}/filtered_feature_bc_matrix")
         os.system(f"ln -s {data_10x_format}/fragments.tsv.gz {outdir}/filtered_feature_bc_matrix/fragments.tsv.gz") 
+        os.system(f"ln -s {data_10x_format}/fragments.tsv.gz.tbi {outdir}/filtered_feature_bc_matrix/fragments.tsv.gz.tbi") 
+        os.system(f"ln -s {data_10x_format}/filtered_peak_bc_matrix.h5 {outdir}/filtered_feature_bc_matrix/filtered_peak_bc_matrix.h5") 
         
         raw_feature_bc_matrix =  glob.glob(data_10x_format+'/*raw_p*bc_matrix')[0]
         os.makedirs(f"{outdir}/raw_feature_bc_matrix", exist_ok=True)
         os.system(f"cp -as {raw_feature_bc_matrix}/* {outdir}/raw_feature_bc_matrix")     
         os.system(f"ln -s {data_10x_format}/fragments.tsv.gz {outdir}/raw_feature_bc_matrix/fragments.tsv.gz")     
+        os.system(f"ln -s {data_10x_format}/fragments.tsv.gz.tbi {outdir}/raw_feature_bc_matrix/fragments.tsv.gz.tbi")
+             
         # sample_alignments.bam
         possorted_genome_bam = glob.glob(data_10x_format+'/*.bam')[0]
         os.symlink(possorted_genome_bam, f"{outdir}/possorted_genome_bam.bam")

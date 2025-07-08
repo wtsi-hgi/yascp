@@ -1,5 +1,5 @@
 
-include { AZIMUTH; REMAP_AZIMUTH } from "$projectDir/modules/local/azimuth/main"
+include { AZIMUTH; REMAP_AZIMUTH; AZIMUTH_ATAC } from "$projectDir/modules/local/azimuth/main"
 include { CELLTYPIST } from "$projectDir/modules/local/celltypist/main"
 include { SPLIT_BATCH_H5AD } from "$projectDir/modules/local/split_batch_h5ad/main"
 include { KERAS_CELLTYPE } from "$projectDir/modules/local/keras_celltype/main"
@@ -105,8 +105,13 @@ workflow celltype{
         
         // AZIMUTH
         if (params.celltype_assignment.run_azimuth){
-            AZIMUTH(file__anndata_merged,params.mapping_file,Channel.fromList( params.azimuth.celltype_refsets))
-            az_out = AZIMUTH.out.predicted_celltype_labels.collect()
+            if (params.atac){
+                //AZIMUTH_ATAC(file__anndata_merged,params.mapping_file,Channel.fromList( params.azimuth.celltype_atac_refsets))
+                az_out = Channel.from("$projectDir/assets/fake_file1.fq")
+            }else{
+                AZIMUTH(file__anndata_merged,params.mapping_file,Channel.fromList( params.azimuth.celltype_refsets))
+                az_out = AZIMUTH.out.predicted_celltype_labels.collect()
+            }
         }else{
             az_out = Channel.from("$projectDir/assets/fake_file1.fq")
             az_out = az_out.ifEmpty(Channel.from("$projectDir/assets/fake_file1.fq"))

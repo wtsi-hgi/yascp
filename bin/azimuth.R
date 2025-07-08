@@ -489,7 +489,6 @@ if (!requireNamespace("glmGamPoi", quietly = TRUE)) {
 
 query_matrix <- Seurat::Read10X(inputfile.h5ad)
 query <- CreateSeuratObject(counts = query_matrix)
-query$nCount_RNA <- Matrix::colSums(query[["RNA"]]@counts)
 query$nCount_RNA <- Matrix::colSums(GetAssayData(query, assay = "RNA", layer = "counts"))
 
 # Load the reference
@@ -510,6 +509,8 @@ if (any(grepl(pattern = '^MT-', x = rownames(x = query)))) {
     assay = "RNA"
   )
 }
+
+
 
 # Preprocess with SCTransform
 query <- SCTransform(

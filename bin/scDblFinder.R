@@ -15,7 +15,7 @@ parser$add_argument("--atac", action = "store_true", help = "Indicates whether i
 # otherwise if options not found on command line then set defaults, 
 args <- parser$parse_args()
 
-
+suppressPackageStartupMessages(library(GenomicRanges))
 suppressMessages(suppressWarnings(library(scDblFinder)))
 suppressMessages(suppressWarnings(library(Seurat)))
 suppressMessages(suppressWarnings(library(SingleCellExperiment)))
@@ -78,6 +78,11 @@ doublet_ratio <- ncol(sce)/1000*0.008
 if (args$atac) {
     cat("Runing ATAC scDblFinder.\n")
     sce <- try(scDblFinder(sce, dbr = doublet_ratio, aggregateFeatures = TRUE), silent = TRUE)
+    toExclude <- GRanges(c("M","chrM","MT","X","Y","chrX","chrY"),IRanges(1L,width=10^8))
+    res <- amulet(paste0(args$tenX_matrix,"/","fragments.tsv.gz"), regionsToExclude=toExclude)
+    res <- tibble::rownames_to_column(res, "barcode")
+    write_delim(res, file = paste0(args$out,"/scDblFinder_Amulet_doublets_singlets.tsv"), delim = "\t")
+
 }else{
     cat("Runing GEX scDblFinder.\n")
     sce <- try(scDblFinder(sce, dbr = doublet_ratio), silent = TRUE)
