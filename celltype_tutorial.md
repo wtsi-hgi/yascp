@@ -7,7 +7,6 @@ params{
     celltype_assignment{
         run_celltype_assignment=true
         run_keras=true
-        run_celltype_assignment=false
         run_azimuth=true
         run_celltypist=false
     }
