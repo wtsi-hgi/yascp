@@ -106,7 +106,9 @@ workflow celltype{
         // AZIMUTH
         if (params.celltype_assignment.run_azimuth){
             if (params.atac){
-                //AZIMUTH_ATAC(file__anndata_merged,params.mapping_file,Channel.fromList( params.azimuth.celltype_atac_refsets))
+                // Comented out here because its failing with a missing index file issue caused by software versions - 
+                // fixed it by installing a previous version of Seurat and Signac https://github.com/satijalab/azimuth/issues/211. But the container has to be updated to work.
+                // AZIMUTH_ATAC(file__anndata_merged,params.mapping_file,Channel.fromList( params.azimuth.celltype_atac_refsets))
                 az_out = Channel.from("$projectDir/assets/fake_file1.fq")
             }else{
                 AZIMUTH(file__anndata_merged,params.mapping_file,Channel.fromList( params.azimuth.celltype_refsets))
