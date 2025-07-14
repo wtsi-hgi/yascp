@@ -11,8 +11,6 @@ process CELLTYPIST {
         container "${params.yascp_container_docker}"
     }
 
-    when: 
-      params.celltypist.run
 
     input: 
       tuple val(sample), path(filtered_matrix_h5), val(celltypist_model)

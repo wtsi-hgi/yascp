@@ -511,6 +511,8 @@ if (any(grepl(pattern = '^MT-', x = rownames(x = query)))) {
 }
 
 
+query$log_umi <- log1p(Matrix::colSums(GetAssayData(query, assay = "RNA", slot = "counts")))
+
 
 # Preprocess with SCTransform
 query <- SCTransform(

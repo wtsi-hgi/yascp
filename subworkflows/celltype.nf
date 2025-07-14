@@ -112,7 +112,8 @@ workflow celltype{
                 az_out = Channel.from("$projectDir/assets/fake_file1.fq")
             }else{
                 AZIMUTH(file__anndata_merged,params.mapping_file,Channel.fromList( params.azimuth.celltype_refsets))
-                az_out = AZIMUTH.out.predicted_celltype_labels.collect()
+                az_out = AZIMUTH.out.predicted_celltype_labels
+                    .ifEmpty { "$projectDir/assets/fake_file1.fq" }
             }
         }else{
             az_out = Channel.from("$projectDir/assets/fake_file1.fq")
