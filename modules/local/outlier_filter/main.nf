@@ -4,8 +4,6 @@ def random_hex(n) {
 
 process MERGE_OUTLIER_FILES{
     // Takes annData object, plots predicted outlier cells
-    // ------------------------------------------------------------------------
-    //cache false        // cache results from run
     tag "${samplename}"
 
     label 'process_medium'
@@ -14,18 +12,6 @@ process MERGE_OUTLIER_FILES{
     } else {
         container "${params.yascp_container_docker}"
     }
-
-    publishDir  path: "${params.outdir}/handover/merged_h5ad/",
-                saveAs: {filename ->
-                    if (filename.contains("___sample_QCd_adata.h5ad")) {
-                        null
-                    } else{
-                        filename
-                    }
-                },
-                mode: "${params.copy_mode}",
-                overwrite: "true"
-
     publishDir  path: "${outdir}/handover/merged_h5ad",
                 saveAs: {filename ->
                     if(filename.contains("outlier_filtered_adata.h5ad"))  {
@@ -51,8 +37,7 @@ process MERGE_OUTLIER_FILES{
 
 process OUTLIER_FILTER {
     // Takes annData object, plots predicted outlier cells
-    // ------------------------------------------------------------------------
-    //cache false        // cache results from run
+
     tag "${samplename}"
 
     label 'process_medium'

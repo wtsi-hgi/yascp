@@ -12,7 +12,7 @@ include {data_handover} from "$projectDir/subworkflows/data_handover"
 include { prepare_inputs } from "$projectDir/subworkflows/prepare_inputs"
 include { DECONV_INPUTS } from "$projectDir/subworkflows/prepare_inputs"
 include { CREATE_ARTIFICIAL_BAM_CHANNEL } from "$projectDir/modules/local/create_artificial_bam_channel/main"
-include {MERGE_SAMPLES} from "$projectDir/modules/local/merge_samples/main"
+include {MERGE_SAMPLES; HASTAG_FILE_MERGE} from "$projectDir/modules/local/merge_samples/main"
 include {dummy_filtered_channel} from "$projectDir/modules/local/merge_samples/functions"
 include {MULTIPLET} from "$projectDir/subworkflows/doublet_detection"
 include { SPLIT_CITESEQ_GEX; SPLIT_CITESEQ_GEX as SPLIT_CITESEQ_GEX_FILTERED;SPLIT_CITESEQ_GEX as SPLIT_CITESEQ_GEX_FILTERED_NOCB;SPLIT_CITESEQ_GEX as SPLIT_CITESEQ_GEX_NOCB; SPLIT_CITESEQ_GEX as PREPOCESS_FILES; HASTAG_DEMULTIPLEX } from '../modules/local/citeseq/main'
@@ -116,8 +116,10 @@ workflow YASCP {
                     .set { filtered_multiplexing_capture_channel }
 
                 HASTAG_DEMULTIPLEX(filtered_multiplexing_capture_channel)
-                Channel.empty().set { empty_hastag_labels }
-                hastag_labels = HASTAG_DEMULTIPLEX.out.results.mix(empty_hastag_labels)
+                HASTAG_FILE_MERGE(HASTAG_DEMULTIPLEX.out.results)
+                hastag_labels = HASTAG_FILE_MERGE.out.results
+                    .ifEmpty { "$projectDir/assets/fake_file1.fq" }
+                
 
                 if (params.doublets_and_celltypes_on_cellbender_corrected_counts && params.input == 'cellbender'){
                     channel__file_paths_10x_gex = SPLIT_CITESEQ_GEX_FILTERED_NOCB.out.gex_data

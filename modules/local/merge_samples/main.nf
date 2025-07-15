@@ -6,6 +6,34 @@ params.metadata_key_column = [
 ]
 params.anndata_compression_opts = 9
 
+process HASTAG_FILE_MERGE{
+    tag "${samplename}"    
+    label 'process_low'
+
+    if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
+        container "${params.yascp_container}"
+    } else {
+       container "${params.yascp_container_docker}"
+    }
+    output:
+        path("All_hastag_Assignments.tsv",emit:results)
+
+    input:
+        path(hastag_files)
+
+    script:
+        def merged_files_outpath = workflow.workDir.toString()
+        file(merged_files_outpath).mkdirs()
+        def hastag_files_path = "${merged_files_outpath}/hastag_files.tsv"
+        new File(hastag_files_path).text = hastag_files.join("\n")
+
+        """
+            generate_combined_hastag_anotation_file.py --all_hastag_files ${hastag_files_path}
+        """
+
+}
+
+
 workflow MERGE_SAMPLES{
     take:
         channel__file_paths_10x
@@ -35,7 +63,8 @@ workflow MERGE_SAMPLES{
                 params.file_cellmetadata,
                 params.metadata_key_column.value,
                 input_merge,
-                celltype_file
+                celltype_file,
+                hastag_labels
         )
         
         file__anndata_merged = merge_samples_from_h5ad.out.anndata

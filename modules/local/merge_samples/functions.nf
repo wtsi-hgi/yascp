@@ -2,6 +2,8 @@ def random_hex(n) {
     Long.toUnsignedString(new Random().nextLong(), n).toUpperCase()
 }
 
+
+
 process dummy_filtered_channel{
     label 'process_low' 
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
@@ -52,19 +54,20 @@ process merge_samples_from_h5ad {
         val(metadata_key)
         file(file_h5ad)
         path(celltype)
+        path(hastag_labels)
 
-    // NOTE: use path here and not file see:
-    //       https://github.com/nextflow-io/nextflow/issues/1414
     output:
         path("1.pre_QC_adata.h5ad", emit: anndata)
-        // path(
-        //     "pre_QC_adata-cell_filtered_per_experiment.tsv.gz",
-        //     emit: cells_filtered
-        // )
         path("plots/*.png") optional true
         path("plots/*.pdf") optional true
 
     script:
+
+        if ("$hastag_labels".contains('fake_file')){
+            hastag = ""
+        }else{
+            hastag = "--hastag ${hastag_labels}"
+        }
 
         if (params.extra_metadata!=''){
             extra_metadata = "--extra_metadata ${params.extra_metadata}"
@@ -73,8 +76,6 @@ process merge_samples_from_h5ad {
         }
 
         if (params.extra_sample_metadata!='' && params.add_donor_metadata){
-            // If same columns defined in the h5ad, these will be overwritten
-            // If same columns in extra donor metadata as in extra sample metadata, sample metadata will be overwritten
             extra_sample_metadata = "add_extra_sample_metadata.py --vireo ${file_metadata} --extra_sample_metadata ${params.extra_sample_metadata} --metadata_key ${metadata_key}"
         }else{
             extra_sample_metadata = "ln -s ${file_metadata} Vireo_metadata.csv"
@@ -88,7 +89,7 @@ process merge_samples_from_h5ad {
         }
         files__h5ad = file_h5ad.join(',')
         """
-        echo "publish_directory: ${celltype}"
+        echo "${hastag}"
         rm -fr plots
         nf_helper__prep_h5addata_file.py \
             --h5ad_list ${files__h5ad} \
@@ -101,7 +102,7 @@ process merge_samples_from_h5ad {
             --metadata_key ${metadata_key} \
             --number_cpu ${task.cpus} \
             --output_file 1.pre_QC_adata \
-            --anndata_compression_opts ${params.anndata_compression_opts} --celltype ${celltype} \
+            --anndata_compression_opts ${params.anndata_compression_opts} --celltype ${celltype} ${hastag} \
             ${cmd__params} \
             ${cmd__cellmetadata} ${extra_metadata}
         mkdir plots
