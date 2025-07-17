@@ -305,7 +305,7 @@ def main():
         cache=False, cache_compression=compression_opts,gex_only=False)
     all_feature_types = set(adata_cellranger_filtered.var['feature_types'])
     hashtags = set(options.hastag_labels.split(","))
-    hashtags = ['Hashtag_.*']
+    # hashtags = ['Hashtag_.*']
     escaped_hashtags = [re.escape(tag) for tag in hashtags]
     matches = set(adata_cellranger_filtered.var.index[adata_cellranger_filtered.var.index.str.contains('|'.join(escaped_hashtags), regex=True)])
     matches2 = set(adata_cellranger_filtered.var.index[adata_cellranger_filtered.var.index.str.contains('|'.join(hashtags), regex=True)])
@@ -314,6 +314,8 @@ def main():
         multiplexing_capure = adata_cellranger_filtered[:,list(combo)]
         multiplexing_capure = pd.DataFrame(multiplexing_capure.X.toarray(), index=multiplexing_capure.obs_names, columns=multiplexing_capure.var_names)
         multiplexing_capure.to_csv(f'{options.outname}__Multiplexing_Capture.tsv',sep='\t')
+    else:
+        multiplexing_capure=pd.DataFrame()
         
     for modality1 in set(adata_cellranger_filtered.var.feature_types):
         # {'Gene Expression', 'Multiplexing Capture', 'Antibody Capture'}

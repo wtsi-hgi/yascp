@@ -17,10 +17,10 @@ process GATHER_DATA{
       path(input_data_table)
 
     output:
-      path("${subdir}", emit:outfiles_dataset)
-      path("${subdir}_summary", emit:outfiles_dataset2)
-      path("Donor_Quantification/*/*.tsv", emit: barcodes_files)
-      val(outdir, emit: outdir_dataset)
+      path("${subdir}", emit:outfiles_dataset) optional true
+      path("${subdir}_summary", emit:outfiles_dataset2) optional true
+      path("Donor_Quantification/*/*.tsv", emit: barcodes_files) optional true
+      val(outdir, emit: outdir_dataset) optional true
 
     script:
       outdir = "${outdir_prev}/handover"

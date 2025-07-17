@@ -288,7 +288,7 @@ workflow YASCP {
         // ###################################
         // ###################################
 
-        if (!params.skip_handover){
+        if (!params.skip_handover || ! params.skip_qc){
 
             data_handover(out_ch,input_channel,
                             process_finish_check_channel,

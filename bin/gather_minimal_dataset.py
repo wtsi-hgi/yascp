@@ -1111,7 +1111,14 @@ if __name__ == '__main__':
     a1 = glob.glob(f'{args.results_dir}/*/*/*outlier_filtered_adata.h5ad')
     a2 =glob.glob(f'{args.results_dir}/*/*outlier_filtered_adata.h5ad')
     a3 =glob.glob(f'{args.results_dir}/*outlier_filtered_adata.h5ad')
-    all_inter = list(set(a3).union(set(a2)).union(set(a1)))[0]
+    
+
+    all_found = list(set(a1 + a2 + a3))
+
+    if not all_found:
+        print("No 'outlier_filtered_adata.h5ad' files found - probably did not perform qc and integration. Exiting gracefully.")
+        sys.exit(0)
+    all_inter = all_found[0]
     adqc = anndata.read_h5ad(all_inter, backed='r')
     
     if 'log1p_cp10k' not in adqc.layers:
