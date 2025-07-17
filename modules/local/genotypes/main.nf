@@ -28,11 +28,11 @@ process MERGE_GENOTYPES_IN_ONE_VCF_IDX_PAN{
 
       if [ \$(cat fofn_vcfs.txt | wc -l) -gt 1 ]; then
           echo 'yes'
-          bcftools concat -f fofn_vcfs.txt -Ou | bcftools sort -T \$PWD -Oz -o ${mode}.${panel}.vcf.gz
+          bcftools concat -f fofn_vcfs.txt -Ou | bcftools sort -Oz -o ${mode}.${panel}.vcf.gz
           bcftools index ${mode}.${panel}.vcf.gz
       else
         echo 'no'
-        bcftools view ${vireo_gt_vcf} | bcftools sort -T \$PWD -Oz -o ${mode}.${panel}.vcf.gz
+        bcftools view ${vireo_gt_vcf} | bcftools sort -Oz -o ${mode}.${panel}.vcf.gz
         bcftools index ${mode}.${panel}.vcf.gz
       fi
 
@@ -93,11 +93,11 @@ process MERGE_GENOTYPES_IN_ONE_VCF_FREEBAYES{
 
       if [ \$(cat fofn_vcfs.txt | wc -l) -gt 1 ]; then
           echo 'yes'
-          bcftools merge --force-samples -file-list ${vireo_gt_vcf}  -Ou | bcftools sort -T \$PWD -Oz -o ${mode}.${panel}.vcf.gz
+          bcftools merge --force-samples -file-list ${vireo_gt_vcf}  -Ou | bcftools sort -Oz -o ${mode}.${panel}.vcf.gz
           bcftools index ${mode}.${panel}.vcf.gz
       else
         echo 'no'
-        bcftools view ${vireo_gt_vcf} | bcftools sort -T \$PWD -Oz -o ${mode}.${panel}.vcf.gz
+        bcftools sort ${vireo_gt_vcf} -Oz -o ${mode}.${panel}.vcf.gz
         bcftools index ${mode}.${panel}.vcf.gz
       fi
 
@@ -145,11 +145,11 @@ process MERGE_GENOTYPES_IN_ONE_VCF{
 
       if [ \$(cat fofn_vcfs.txt | wc -l) -gt 1 ]; then
           echo 'yes'
-          bcftools merge --force-samples -i MAF:join -file-list ${vireo_gt_vcf} -Ou | bcftools sort -T \$PWD -Oz -o ${mode}_merged_vcf_file_all_pools.vcf.gz
+          bcftools merge --force-samples -i MAF:join -file-list ${vireo_gt_vcf} -Ou | bcftools sort -Oz -o ${mode}_merged_vcf_file_all_pools.vcf.gz
           bcftools index ${mode}_merged_vcf_file_all_pools.vcf.gz
       else
         echo 'no'
-        bcftools view ${vireo_gt_vcf} | bcftools sort -T \$PWD -Oz -o ${mode}_merged_vcf_file_all_pools.vcf.gz
+        bcftools sort ${vireo_gt_vcf} -Oz -o ${mode}_merged_vcf_file_all_pools.vcf.gz
         bcftools index ${mode}_merged_vcf_file_all_pools.vcf.gz
         
       fi

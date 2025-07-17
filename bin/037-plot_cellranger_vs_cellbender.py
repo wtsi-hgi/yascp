@@ -271,8 +271,8 @@ def plot_cellranger_vs_cellbender(samplename, raw_cellranger_mtx, filtered_cellr
     adata_cellranger_raw_common = adata_cellranger_raw_common[adata_cellbender_common.columns]
     #adata_cellranger_raw_common.to_csv('adata_cellranger_raw_common.csv', index=True)
 
-    logging.info(adata_cellranger_raw_common['gene_symbol']== adata_cellbender_common['gene_symbol'])
-    logging.info(adata_cellranger_raw_common['ensembl_id']== adata_cellbender_common['ensembl_id'])
+    # logging.info(adata_cellranger_raw_common['gene_symbol']== adata_cellbender_common['gene_symbol'])
+    # logging.info(adata_cellranger_raw_common['ensembl_id']== adata_cellbender_common['ensembl_id'])
 
 
     adata_filtered_cellbender_diff = adata_cellbender_common.copy()

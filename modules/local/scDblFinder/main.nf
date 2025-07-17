@@ -9,36 +9,42 @@ process SC_DBLFINDER {
     }
     
     publishDir  path: "${params.outdir}/doublet_detection/scDblFinder",
+                saveAs: { filename ->
+                    if (filename.endsWith("scDblFinder_doublets_singlets.tsv")) {
+                        return null
+                    } else {
+                        return filename
+                    }
+                },
                 mode: "${params.copy_mode}",
                 overwrite: "true"
 
     input:
         tuple(
             val(experiment_id),
-            path(file_10x_barcodes),
-            path(file_10x_features),
-            path(file_10x_matrix)
+            path(file_10x)
         )
     output:
         path("plots/*.pdf") optional true
         path("plots/*.png") optional true
         tuple val(experiment_id), path("${experiment_id}__scDblFinder_doublets_singlets.tsv"), emit: result optional true
         path "versions.yml", emit: versions
-
+        path("scDblFinder_${experiment_id}")
     script:
         
         outdir = "${params.outdir}/"
         outdir = "${outdir}scDblFinder"
         outfile = "${experiment_id}"
-
+        if (params.atac){
+            atac = '--atac'
+        }else{
+            atac = ""
+        }
+        
         """
-
-            mkdir TMP_DIR
-            ln --physical ${file_10x_barcodes} TMP_DIR
-            ln --physical ${file_10x_features} TMP_DIR
-            ln --physical ${file_10x_matrix} TMP_DIR
+            export TMPDIR=\$PWD
             mkdir scDblFinder_${experiment_id}
-            scDblFinder.R --tenX_matrix ./TMP_DIR --barcodes_filtered ${file_10x_barcodes} -o scDblFinder_${experiment_id}
+            scDblFinder.R --tenX_matrix ${file_10x} -o scDblFinder_${experiment_id} ${atac}
             ln -s scDblFinder_${experiment_id}/scDblFinder_doublets_singlets.tsv ${experiment_id}__scDblFinder_doublets_singlets.tsv 
 
             cat <<-END_VERSIONS > versions.yml

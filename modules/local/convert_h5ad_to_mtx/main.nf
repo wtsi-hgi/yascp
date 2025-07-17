@@ -40,22 +40,13 @@ process CONVERT_MTX_TO_H5AD {
     }
 
     input:
-        tuple val(name), path(mtx1),path(mtx2),path(mtx3)
+        tuple val(name), path(mtx1)
     output:
         tuple val(name), path("${name}.h5ad"), emit: gex_h5ad
 
     script:
         """
-
-       mkdir -p work_dir
-
-        # Link the MTX folders to the working directory
-        # Extract the base names of the MTX files
-
-        # Link the MTX files to the working directory with the same name
-        cd work_dir && ln -s ../${mtx1} && ln -s ../${mtx2} && ln -s ../${mtx3} && cd ..
-
         # Run the Python script to convert MTX to H5AD
-        h5ad_from_tenxmatrix.py work_dir ${name}.h5ad
+        h5ad_from_tenxmatrix.py ${mtx1} ${name}.h5ad
         """
 }

@@ -31,7 +31,7 @@ process SOUPORCELL {
 
     script:
 
-      if (params.run_with_genotype_input){
+      if (params.genotype_input.run_with_genotype_input){
         known_genotypes = "--known_genotypes ${genotypes}"
         known_genotypes_sample_names ="--known_genotypes_sample_names ${donors}"
       }else{

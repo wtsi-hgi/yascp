@@ -60,6 +60,7 @@ workflow  main_deconvolution {
         vcf_candidate_snps = STAGE_FILE(params.cellsnp.vcf_candidate_snps)
 
         if (params.genotype_input.run_with_genotype_input) {
+            log.info """---Running with genotype input ---"""
             // We have to produce a single vcf file for each individual pool.
             // Therefore we create 2 channels:
             // 1) All the expected vcf ids listed in the donor table
@@ -83,7 +84,9 @@ workflow  main_deconvolution {
             DYNAMIC_DONOR_EXCLUSIVE_SNP_SELECTION(params.add_snps_to_pile_up_based_on_genotypes_provided,merged_expected_genotypes2)
             ch_versions = ch_versions.mix(DYNAMIC_DONOR_EXCLUSIVE_SNP_SELECTION.out.versions)
             cellsnp_panels = DYNAMIC_DONOR_EXCLUSIVE_SNP_SELECTION.out.cellsnp_pool_panel
-            
+            // cellsnp_panels.subscribe { println "cellsnp_panels: $it" }
+            // donors_in_pools.subscribe { println "donors_in_pools: $it" }
+            // merged_expected_genotypes.subscribe { println "merged_expected_genotypes: $it" }
             informative_uninformative_sites = DYNAMIC_DONOR_EXCLUSIVE_SNP_SELECTION.out.informative_uninformative_sites
 
         }else{
@@ -98,11 +101,15 @@ workflow  main_deconvolution {
             // Here we provide sites to pile up the snps within the pool. 
             // As a starting point instead of the default cellsnp panel users are encouraged to:
             if (params.provide_within_pool_donor_specific_sites_for_pilup){
+                log.info """---Running with provide_within_pool_donor_specific_sites_for_pilup ---"""
                 cellsnp_with_npooled_pre = cellsnp_with_npooled.join(cellsnp_panels, remainder: true)
+                // cellsnp_panels.subscribe { println "cellsnp_panels: $it" }
             }else{
+                log.info """---Running WITHOUT provide_within_pool_donor_specific_sites_for_pilup ---"""
                 cellsnp_with_npooled_pre = cellsnp_with_npooled.combine(vcf_candidate_snps)
             }
             cellsnp_with_npooled_pre2 = cellsnp_with_npooled_pre.combine(vcf_candidate_snps)
+            
             cellsnp_with_npooled2 = cellsnp_with_npooled_pre2.map { experiment, bam, bai, barcodes, nrPool, panel, default_cellsnp ->
                                                                     [
                                                                         experiment,
@@ -114,6 +121,7 @@ workflow  main_deconvolution {
                                                                     ]
                                                                 }
         }else{
+            log.info """---Running without genotype input ---"""
             cellsnp_with_npooled2 = cellsnp_with_npooled.combine(vcf_candidate_snps)
         }
 
@@ -132,7 +140,7 @@ workflow  main_deconvolution {
         capture_cellsnp_files.out.cellsnp_loc.splitCsv(header: false, sep: ' ')
             .map{row->tuple(row[0])}
             .set{cellsnp_cap_ids} 
-
+        // cellsnp_with_npooled.subscribe { println "cellsnp_with_npooled: $it" }
         CELLSNP(cellsnp_with_npooled)
         ch_versions = ch_versions.mix(CELLSNP.out.versions)
         if (params.genotype_input.run_with_genotype_input) {
@@ -212,7 +220,7 @@ workflow  main_deconvolution {
 
         Channel.of(1..params.vireo.subsample_times).set{itterations}
         full_vcf2.combine(itterations).set{vireo_extra_repeats}
-
+        // full_vcf3.subscribe { println "1:: vireo_paths_map $it" }
         VIREO(full_vcf3)
         ch_versions = ch_versions.mix(VIREO.out.versions)
         VIREO.out.summary.mix(vireo_out_sample_summary_tsv_cap).set{summary_files}
@@ -301,7 +309,7 @@ workflow  main_deconvolution {
         matched_donors = GENOTYPE_MATCHER.out.matched_donors
 
         if (params.genotype_input.run_with_genotype_input) {
-            if (params.do_vireo_subsampling){
+            if (params.vireo.do_vireo_subsampling){
                 VIREO_SUBSAMPLING(vireo_extra_repeats)
                 ch_versions = ch_versions.mix(VIREO_SUBSAMPLING.out.versions)
                 VIREO_SUBSAMPLING.out.output_dir.concat(VIREO.out.output_dir_subsampling).set{tuple_1}

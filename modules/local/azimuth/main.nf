@@ -43,11 +43,15 @@ process AZIMUTH{
         }else{
             com=""
         }
-    
+
+        if (params.atac){
+            atac = '--atac'
+        }else{
+            atac = ""
+        }    
+
     """ 
         azimuth.R ./${file_h5ad_batch} ${refset.refset} ${refset.annotation_labels} ${samplename}
-        echo ${mapping_file}
-        echo ${params.remap_celltypes}
         ${com}
 
         cat <<-END_VERSIONS > versions.yml
@@ -62,6 +66,33 @@ process AZIMUTH{
             tools: \$(Rscript -e "cat(as.character(packageVersion('tools')))")
         END_VERSIONS
 
+    """
+}
+
+
+process AZIMUTH_ATAC{
+    tag "${samplename}"    
+    label 'process_medium'
+   
+    if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
+        container "${params.yascp_container}"        
+    } else {
+        container "${params.yascp_container_docker}"
+    }
+
+    publishDir  path: "${params.outdir}/celltype_assignemt/azimuth/${refset.name}",
+            saveAs: {filename -> "${outfil_prfx}_" + filename},
+            mode: "${params.copy_mode}",
+            overwrite: "true"
+    input:
+        tuple val(samplename),path(file_h5ad_batch)
+        each path(mapping_file)
+        each refset
+
+    script: 
+
+    """ 
+        azimuth_atac.R ./${file_h5ad_batch} ${refset.refset} ${refset.annotation_labels} ${samplename}
     """
 }
 

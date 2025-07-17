@@ -305,7 +305,7 @@ def main():
         cache=False, cache_compression=compression_opts,gex_only=False)
     all_feature_types = set(adata_cellranger_filtered.var['feature_types'])
     hashtags = set(options.hastag_labels.split(","))
-    hashtags = ['Hashtag_.*']
+
     escaped_hashtags = [re.escape(tag) for tag in hashtags]
     matches = set(adata_cellranger_filtered.var.index[adata_cellranger_filtered.var.index.str.contains('|'.join(escaped_hashtags), regex=True)])
     matches2 = set(adata_cellranger_filtered.var.index[adata_cellranger_filtered.var.index.str.contains('|'.join(hashtags), regex=True)])
@@ -314,16 +314,16 @@ def main():
         multiplexing_capure = adata_cellranger_filtered[:,list(combo)]
         multiplexing_capure = pd.DataFrame(multiplexing_capure.X.toarray(), index=multiplexing_capure.obs_names, columns=multiplexing_capure.var_names)
         multiplexing_capure.to_csv(f'{options.outname}__Multiplexing_Capture.tsv',sep='\t')
+    else:
+        multiplexing_capure=pd.DataFrame()
         
     for modality1 in set(adata_cellranger_filtered.var.feature_types):
         # {'Gene Expression', 'Multiplexing Capture', 'Antibody Capture'}
+        # modality1='Antibody Capture'
         print(f'---- Spliting {modality1}-----')
         modality = modality1.replace(" ",'_')
         adata_antibody = adata_cellranger_filtered[:,adata_cellranger_filtered.var.query(f'feature_types=="{modality1}"').index]
-        # zero_count_cells = adata_antibody.obs_names[np.where(adata_antibody.X.sum(axis=1) == 0)[0]]
-        # adata2 = adata_antibody[adata_antibody.obs_names.difference(zero_count_cells, sort=False)]
-        # if(adata2.shape[0]>0):
-        #     # Here we have actually captured some of the reads in the antibody dataset.
+        adata_antibody = adata_antibody[:, ~adata_antibody.var_names.isin(combo)]
 
         if (modality=='Gene_Expression' or modality=='Peaks'):
             adata_antibody.write(
@@ -350,11 +350,6 @@ def main():
                 )
             else:
                 os.system(f"ln -s {options.raw_data} {options.outname}__{modality}")
-    
-    # adata_gex = adata_cellranger_filtered[:,adata_cellranger_filtered.var.query('feature_types=="Gene Expression"').index]
-    # adata_cellbender = anndata_from_h5('/lustre/scratch123/hgi/teams/hgi/mo11/tmp_projects/ania/analysis_trego/work/5d/6a30871e864ed7bc03e949ef846a1d/cellbender_FPR_0.1_filtered.h5',
-    #                                         analyzed_barcodes_only=True)
-
     
     
 if __name__ == '__main__':

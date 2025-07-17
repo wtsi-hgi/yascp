@@ -487,15 +487,10 @@ if (!requireNamespace("glmGamPoi", quietly = TRUE)) {
   }
 }
 
-# copy input file and convert to h5seurat
-Convert(inputfile.h5ad, dest="h5seurat", overwrite = TRUE)
-inputfile.h5seurat <- paste0(file_path_sans_ext(inputfile.h5ad), ".h5seurat")
-cat("inputfile.h5seurat = ", inputfile.h5seurat, "\n")
-cat("Loading file", inputfile.h5seurat, "\n")
+query_matrix <- Seurat::Read10X(inputfile.h5ad)
+query <- CreateSeuratObject(counts = query_matrix)
+query$nCount_RNA <- Matrix::colSums(GetAssayData(query, assay = "RNA", layer = "counts"))
 
-query <- LoadH5Seurat(inputfile.h5seurat, meta.data = FALSE, misc = FALSE)
-# Download the Azimuth reference and extract the archive
-saveRDS(query, file = "query.rds")
 # Load the reference
 # Change the file path based on where the reference is located on your system.
 ## reference <- LoadReference(path = "https://seurat.nygenome.org/azimuth/references/v1.0.0/human_pbmc")
@@ -514,6 +509,10 @@ if (any(grepl(pattern = '^MT-', x = rownames(x = query)))) {
     assay = "RNA"
   )
 }
+
+
+query$log_umi <- log1p(Matrix::colSums(GetAssayData(query, assay = "RNA", slot = "counts")))
+
 
 # Preprocess with SCTransform
 query <- SCTransform(

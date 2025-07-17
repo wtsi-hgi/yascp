@@ -2,18 +2,12 @@ def random_hex(n) {
     Long.toUnsignedString(new Random().nextLong(), n).toUpperCase()
 }
 
-if (binding.hasVariable("echo_mode") == false) {
-    echo_mode = true
-}
-
 process SUBSET_PCS{
    
     // Takes PCs (rows = cell barcodes) and subsets down to a specified number.
     // ------------------------------------------------------------------------
     //cache false        // cache results from run
     scratch false      // use tmp directory
-    echo echo_mode          // echo output from script
-
     label 'process_low'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "${params.yascp_container}"

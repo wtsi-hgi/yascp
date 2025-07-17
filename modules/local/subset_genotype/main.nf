@@ -199,6 +199,7 @@ process SUBSET_GENOTYPE2 {
 
     input:
       tuple val(samplename), val(sample_subset_file),val(cohort),path(donor_vcf),path(donor_vcf_csi)
+      each path(gp_map)
 
 
     output:
@@ -206,10 +207,10 @@ process SUBSET_GENOTYPE2 {
       path('*_mapping.tsv'), emit: mapping optional true
       path "versions.yml", emit: versions
     script:
-      if (params.genotype_phenotype_mapping_file!=''){
-        g_p_map = " -b ${params.genotype_phenotype_mapping_file}"
+      if (params.genotype_phenotype_mapping_file==''){
+         g_p_map = " "
       }else{
-        g_p_map = " "
+        g_p_map = " -b ${gp_map}"
       }
 
     """
@@ -223,12 +224,14 @@ process SUBSET_GENOTYPE2 {
         else
           echo 'no'
         fi
+
         rm samples.tsv sample_file.tsv
 
         cat <<-END_VERSIONS > versions.yml
         "${task.process}":
             bcftools: \$(bcftools --version 2>&1 | head -n1 | sed 's/^.*bcftools //; s/ .*\$//')
         END_VERSIONS
+
     """
 }
 
@@ -357,22 +360,18 @@ process JOIN_STUDIES_MERGE{
 
       """
         vcf_name=\$(python ${projectDir}/bin/random_id.py)
-       
-        
         fofn_input_subset.sh "${study_vcf_files}"
         if [ \$(cat fofn_vcfs.txt | wc -l) -gt 1 ]; then
             echo 'yes'
             ${cmd__run}
-            bcftools merge -file-list ${study_vcf_files} -Ou | bcftools sort -T \$PWD -Oz -o pre_${mode}_${mode2}_\${vcf_name}__vcf.vcf.gz
+            bcftools merge -file-list ${study_vcf_files} -Ou | bcftools sort -Oz -o pre_${mode}_${mode2}_\${vcf_name}__vcf.vcf.gz
             bcftools index pre_${mode}_${mode2}_\${vcf_name}__vcf.vcf.gz
             ${cmd}
         else
           echo 'no'
-          bcftools view ${study_vcf_files} | bcftools sort -T \$PWD -Oz -o ${mode}_${mode2}_\${vcf_name}_out.vcf.gz
+          bcftools sort ${study_vcf_files} -Oz -o ${mode}_${mode2}_\${vcf_name}_out.vcf.gz
           bcftools index ${mode}_${mode2}_\${vcf_name}_out.vcf.gz 
-          
         fi
-     
         rm -r pre_* || echo 'nothing to remove'
 
         cat <<-END_VERSIONS > versions.yml
@@ -408,7 +407,16 @@ workflow SUBSET_WORKF{
         // In case where we do not have any info re what is expected but we have run it in genotype avare mode, we do not perform the IBD calculations.
         grouped_chrs_poolComps.map { row -> tuple( row[1].join('::'), "${row[0]}".split(':')[0],  "${row[0]}".split(':')[1],  "${row[0]}".split(':')[2],  "${row[0]}".split(':')[3] ) }.set { combined_pool_subset } // Here we have all the pools that contain the same donor compositions associated with each of the shards
         grouped_chrs_poolComps.map { row -> tuple( row[0], row[1]) }.set { pools_utilising_same_subset } // Here we have a mapping file of which pools should use which genotypes.
-        SUBSET_GENOTYPE2(combined_pool_subset)
+
+        
+        if (params.genotype_phenotype_mapping_file==''){
+          g_p_map  = Channel.from("$projectDir/assets/fake_file2.fq")
+        }else{
+          g_p_map = Channel.from(params.genotype_phenotype_mapping_file)
+        }
+
+        // combined_pool_subset.subscribe {println "combined_pool_subset:= ${it}\n"}
+        SUBSET_GENOTYPE2(combined_pool_subset,g_p_map)
         ch_versions = ch_versions.mix(SUBSET_GENOTYPE2.out.versions)
         SUBSET_GENOTYPE2.out.subset_vcf_file.unique().groupTuple().set{chromosome_vcfs_per_studypool}
 

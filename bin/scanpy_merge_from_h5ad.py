@@ -485,7 +485,7 @@ def scanpy_merge(
     cellmetadata_filepaths=None,
     anndata_compression_opts=4,
     extra_metadata=None,
-    celltype=None
+    celltype=None, hastag=None
 ):
     """Merge h5ad data.
 
@@ -637,16 +637,21 @@ def scanpy_merge(
         except:
             obs_df['merge_key'] = obs_df.index + '-' + idx1
         celltype['merge_key'] = celltype.index
+        hastag['merge_key'] = hastag.index
         try:
             del celltype['Donor']
+            del hastag['Donor']
         except:
             _=''
         try:
             del celltype['Exp']
+            del hastag['Exp']
         except:
             _=''
             
         merged_df = obs_df.merge(celltype, on='merge_key', how='left')
+        merged_df = merged_df.merge(hastag, on='merge_key', how='left')
+        
         merged_df = merged_df.set_index(obs_df.index)
         adata.obs = merged_df
         
@@ -837,6 +842,14 @@ def main():
     )
 
     parser.add_argument(
+        '-ht', '--hastag',
+        action='store',
+        dest='hastag',
+        default=None,
+        help='Provide hastag file to be merged with the input'
+    )
+
+    parser.add_argument(
         '-pyml', '--params_yaml',
         action='store',
         dest='pyml',
@@ -907,6 +920,11 @@ def main():
     except:
         celltype = pd.DataFrame()
 
+    if options.hastag:
+        hastag = pd.read_csv(options.hastag, sep='\t',index_col=0)
+    else:
+        hastag = pd.DataFrame()
+    
     # Delete the metadata columns that we do not want.
     if options.mcd != '':
         for i in options.mcd.split(','):
@@ -937,7 +955,7 @@ def main():
         cellmetadata_filepaths=cellmetadata_filepaths,
         anndata_compression_opts=options.anndata_compression_opts,
         extra_metadata= extra_metadata,
-        celltype = celltype
+        celltype = celltype, hastag=hastag
     )
 
 

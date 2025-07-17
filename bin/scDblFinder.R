@@ -9,12 +9,13 @@ parser <- ArgumentParser()
 parser$add_argument("-o", "--out", required = TRUE, help="The output directory where results will be saved")
 parser$add_argument("-t", "--tenX_matrix", required = TRUE, type = "character", help = "Path to the 10x filtered matrix directory or h5 file.")
 parser$add_argument("-b", "--barcodes_filtered", required = FALSE, type = "character", help = "Path to a list of filtered barcodes to use for doublet detection.")
+parser$add_argument("--atac", action = "store_true", help = "Indicates whether input is scATAC-seq data.")
 
 # get command line options, if help option encountered print help and exit,
 # otherwise if options not found on command line then set defaults, 
 args <- parser$parse_args()
 
-
+suppressPackageStartupMessages(library(GenomicRanges))
 suppressMessages(suppressWarnings(library(scDblFinder)))
 suppressMessages(suppressWarnings(library(Seurat)))
 suppressMessages(suppressWarnings(library(SingleCellExperiment)))
@@ -23,18 +24,6 @@ suppressMessages(suppressWarnings(library(tidyverse)))
 
 
 counts <- Seurat::Read10X(args$tenX_matrix)
-## Read in data
-# if (file.exists(args$tenX_matrix)){
-#     message(paste0("Using the following counts: ", args$tenX_matrix))
-#     if (endsWith(args$tenX_matrix, ".h5")){
-#         counts <- Read10X_h5(args$tenX_matrix)
-#     } else {
-#         counts <- Seurat::Read10X(args$tenX_matrix)
-#     }
-# } else {
-#     message(paste0("Cannot find the counts matrix ", args$tenX_matrix, ".\n\nExiting"))
-#     q()
-# }
 print('Data read')
 
 if (!is.null(args$barcodes_filtered)){
@@ -86,7 +75,19 @@ doublet_ratio <- ncol(sce)/1000*0.008
 
 
 ### Calculate Singlets and Doublets ###
-sce <- try(scDblFinder(sce, dbr = doublet_ratio), silent = TRUE)
+if (args$atac) {
+    cat("Runing ATAC scDblFinder.\n")
+    sce <- try(scDblFinder(sce, dbr = doublet_ratio, aggregateFeatures = TRUE), silent = TRUE)
+    toExclude <- GRanges(c("M","chrM","MT","X","Y","chrX","chrY"),IRanges(1L,width=10^8))
+    res <- amulet(paste0(args$tenX_matrix,"/","fragments.tsv.gz"), regionsToExclude=toExclude)
+    res <- tibble::rownames_to_column(res, "barcode")
+    write_delim(res, file = paste0(args$out,"/scDblFinder_Amulet_doublets_singlets.tsv"), delim = "\t")
+
+}else{
+    cat("Runing GEX scDblFinder.\n")
+    sce <- try(scDblFinder(sce, dbr = doublet_ratio), silent = TRUE)
+}
+
 
 # Check if the scDblFinder function was successful
 if (inherits(sce, "try-error")) {
