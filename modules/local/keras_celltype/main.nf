@@ -32,6 +32,7 @@ process KERAS_CELLTYPE {
             path("*predictions.h5ad"), 
             emit: to_merge)
         path('*_celltypes.tsv', emit:predicted_celltype_labels)
+        path "versions.yml", emit: versions
     
     script:
         """
@@ -44,5 +45,20 @@ process KERAS_CELLTYPE {
             --filter_top_cell_probabilities \"${params.celltype_prediction.keras.filter_top_cell_probabilities}\" \\
             ${params.celltype_prediction.keras.save_all_probabilities} \\
             --output_file \"${experiment_id}___cellbender_fpr${params.cellbender_resolution_to_use}-scrublet-ti_freeze003_prediction\" 
+
+            cat <<-END_VERSIONS > versions.yml
+            "${task.process}":
+                python: \$(python --version | sed 's/Python //g')
+                keras: \$(python -c "import keras; print(keras.__version__)")
+                scanpy: \$(python -c "import scanpy; print(scanpy.__version__)")
+                argparse: \$(python -c "import argparse; print(argparse.__version__)")
+                warnings: \$(python -c "import warnings; print(warnings.__version__)")
+                numpy: \$(python -c "import numpy; print(numpy.__version__)")
+                scipy: \$(python -c "import scipy; print(scipy.__version__)")
+                pandas: \$(python -c "import pandas; print(pandas.__version__)")
+                sklearn: \$(python -c "import sklearn; print(sklearn.__version__)")
+                plotnine: \$(python -c "import plotnine; print(plotnine.__version__)")
+                matplotlib: \$(python -c "import matplotlib; print(matplotlib.__version__)")
+            END_VERSIONS
         """
 }

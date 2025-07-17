@@ -13,6 +13,7 @@ process SUBSET_BAM_PER_BARCODES_AND_VARIANTS {
 
     output:
         tuple val(sample), val("${donor}") ,path("${sample}_filtered.bam"),path("${sample}_filtered.bam.csi"), path(barcodes), emit: freebayes_input
+        path "versions.yml", emit: versions
 
     when:
         "${donor}"!='doublet'
@@ -42,6 +43,11 @@ process SUBSET_BAM_PER_BARCODES_AND_VARIANTS {
             #    //samtools index -c ${sample}_filtered.bam
             filter_bam_file_for_popscle_dsc_pileup.sh tmp_filtered2.bam ${barcodes} srt_${vcf} ${sample}_filtered.bam
 
+            cat <<-END_VERSIONS > versions.yml
+            "${task.process}":
+                samtools: \$(echo \$(samtools --version 2>&1) | sed 's/^.*samtools //; s/Using.*\$//')
+                bcftools: \$(bcftools --version 2>&1 | head -n1 | sed 's/^.*bcftools //; s/ .*\$//')
+            END_VERSIONS
         """
 
 }
@@ -59,12 +65,18 @@ process PREPROCESS_GENOME{
     input:
         path(genome)
     output:
-        path('preprocessed_genome')
+        path('preprocessed_genome'), emit: preprocessed_genome
+        path "versions.yml", emit: versions
     script:
         """
             mkdir preprocessed_genome
             cat ${genome}/*.fa | awk '{gsub(/chr/,""); print}' > preprocessed_genome/genome.fa
             samtools faidx preprocessed_genome/genome.fa
+
+            cat <<-END_VERSIONS > versions.yml
+            "${task.process}":
+                samtools: \$(echo \$(samtools --version 2>&1) | sed 's/^.*samtools //; s/Using.*\$//')
+            END_VERSIONS
         """
 
 }
@@ -91,6 +103,7 @@ process SUBSET_BAM_PER_BARCODES{
 
     output:
         tuple val(sample),path("${sample_donor}.cram"), emit: cram_files
+        path "versions.yml", emit: versions
 
     script:
 
@@ -100,6 +113,12 @@ process SUBSET_BAM_PER_BARCODES{
                 -o ${sample_donor}.bam ${bam}
 
             /software/sciops/external/cellranger/7.2.0/cellranger bamtofastq --nthreads=2 --relaxed ${sample_donor}.bam ${sample_donor}_fastq
+
+            cat <<-END_VERSIONS > versions.yml
+            "${task.process}":
+                samtools: \$(echo \$(samtools --version 2>&1) | sed 's/^.*samtools //; s/Using.*\$//')
+            END_VERSIONS
+
         """
 
 }

@@ -12,7 +12,9 @@ process MERGE_OUTLIER_FILES{
     } else {
         container "${params.yascp_container_docker}"
     }
+
     publishDir  path: "${outdir}/handover/merged_h5ad",
+
                 saveAs: {filename ->
                     if(filename.contains("outlier_filtered_adata.h5ad"))  {
                         filename = "4.outlier_filtered_adata.h5ad"

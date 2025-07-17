@@ -29,6 +29,7 @@ workflow qc_and_integration {
         chanel_cr_outs
     main:
         log.info "--- Running QC metrics --- "
+        Channel.empty().set { ch_versions }
         // if(params.extra_metadata!=''){
         //     log.info '''--- Adding extra metadata to h5ad---'''
         //     ADD_EXTRA_METADATA_TO_H5AD(file__anndata_merged,params.extra_metadata)
@@ -197,6 +198,7 @@ workflow qc_and_integration {
                 n_pcs,
                 Channel.fromList( params.harmony.variables_and_thetas.value)
             )
+            ch_versions = ch_versions.mix(HARMONY.out.versions)
 
             UMAP_HARMONY(
                 HARMONY.out.outdir,
@@ -274,6 +276,7 @@ workflow qc_and_integration {
                 n_pcs,
                 params.bbknn.batch_variable.value
             )
+            ch_versions = ch_versions.mix(BBKNN.out.versions)
 
             UMAP_BBKNN(
                 BBKNN.out.outdir,
@@ -339,6 +342,7 @@ workflow qc_and_integration {
                 PCA.out.param_details,
                 n_pcs
             )
+            ch_versions = ch_versions.mix(DONT_INTEGRATE.out.versions)
 
             UMAP(
                 DONT_INTEGRATE.out.outdir,
@@ -395,6 +399,7 @@ workflow qc_and_integration {
                 params.lisi.variables.value,
                 lisi_input_second.collect()
             )
+            ch_versions = ch_versions.mix(LISI.out.versions)
             
             LI3 = LISI.out.outdir.collect()
         }else{
@@ -406,5 +411,6 @@ workflow qc_and_integration {
     emit:
         LI
         file__anndata_merged
+        qc_versions = ch_versions
         
 }

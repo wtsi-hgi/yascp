@@ -28,6 +28,7 @@ process SC_DBLFINDER {
         path("plots/*.pdf") optional true
         path("plots/*.png") optional true
         tuple val(experiment_id), path("${experiment_id}__scDblFinder_doublets_singlets.tsv"), emit: result optional true
+        path "versions.yml", emit: versions
         path("scDblFinder_${experiment_id}")
     script:
         
@@ -45,5 +46,15 @@ process SC_DBLFINDER {
             mkdir scDblFinder_${experiment_id}
             scDblFinder.R --tenX_matrix ${file_10x} -o scDblFinder_${experiment_id} ${atac}
             ln -s scDblFinder_${experiment_id}/scDblFinder_doublets_singlets.tsv ${experiment_id}__scDblFinder_doublets_singlets.tsv 
+
+            cat <<-END_VERSIONS > versions.yml
+            "${task.process}":
+                r-base: \$(R --version | sed -n '1p' | sed 's/R version //; s/ (.*//')
+                scDblFinder: \$(Rscript -e "cat(as.character(packageVersion('scDblFinder')))")
+                argparse: \$(Rscript -e "cat(as.character(packageVersion('argparse')))")
+                Seurat: \$(Rscript -e "cat(as.character(packageVersion('Seurat')))")
+                SingleCellExperiment: \$(Rscript -e "cat(as.character(packageVersion('SingleCellExperiment')))")
+                tidyverse: \$(Rscript -e "cat(as.character(packageVersion('tidyverse')))")
+            END_VERSIONS
         """
 }

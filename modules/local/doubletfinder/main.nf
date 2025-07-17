@@ -23,6 +23,7 @@ process DOUBLET_FINDER {
         path("plots/*.pdf") optional true
         path("plots/*.png") optional true
         tuple val(experiment_id), path("${experiment_id}__DoubletFinder_doublets_singlets.tsv"), emit: result optional true
+        path "versions.yml", emit: versions
 
     script:
         
@@ -37,5 +38,20 @@ process DOUBLET_FINDER {
             else
                 echo "File DoubletFinder_${experiment_id}/DoubletFinder_doublets_singlets.tsv does not exist. Skipping symlink creation."
             fi
+
+        cat <<-END_VERSIONS > versions.yml
+        "${task.process}":
+            r-base: \$(R --version | sed -n '1p' | sed 's/R version //; s/ (.*//')
+            DoubletFinder: \$(Rscript -e "cat(as.character(packageVersion('DoubletFinder')))")
+            Seurat: \$(Rscript -e "cat(as.character(packageVersion('Seurat')))")
+            argparse: \$(Rscript -e "cat(as.character(packageVersion('argparse')))")
+            ggplot2: \$(Rscript -e "cat(as.character(packageVersion('ggplot2')))")
+            dplyr: \$(Rscript -e "cat(as.character(packageVersion('dplyr')))")
+            tidyr: \$(Rscript -e "cat(as.character(packageVersion('tidyr')))")
+            tidyverse: \$(Rscript -e "cat(as.character(packageVersion('tidyverse')))")
+            viridis: \$(Rscript -e "cat(as.character(packageVersion('viridis')))")
+            SeuratDisk: \$(Rscript -e "cat(as.character(packageVersion('SeuratDisk')))")
+            future.apply: \$(Rscript -e "cat(as.character(packageVersion('future.apply')))")
+        END_VERSIONS
         """
 }

@@ -17,7 +17,7 @@ workflow CELLBENDER {
         channel__metadata
         
     main:
-  
+        Channel.empty().set { ch_versions }
         ch_experimentid_paths10x_raw.map{row -> tuple(
             row[0],
             file("${row[1]}/barcodes.tsv.gz"),
@@ -108,7 +108,7 @@ workflow CELLBENDER {
             filteredChan,
             params.cellbender_rb.fpr.value
         )
-
+        ch_versions = ch_versions.mix(cellbender__remove_background.out.versions)
 
         cellbender__preprocess_output(
             cellbender__remove_background.out.cleanup_input,
@@ -139,6 +139,7 @@ workflow CELLBENDER {
             cellbender_path
             cellbender_downstream
             cellbender_path_raw
+            cellbender_versions = ch_versions
 
             
 }

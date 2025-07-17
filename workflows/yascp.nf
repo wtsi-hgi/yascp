@@ -19,6 +19,7 @@ include { SPLIT_CITESEQ_GEX; SPLIT_CITESEQ_GEX as SPLIT_CITESEQ_GEX_FILTERED;SPL
 include { GENOTYPE_MATCHER } from "$projectDir/modules/local/vireo/main"
 include { RETRIEVE_RECOURSES } from "$projectDir/modules/local/retrieve_recourses/retrieve_recourses"
 include { PREPROCESS_GENOME } from "$projectDir/modules/local/subset_bam_per_barcodes_and_variants/main"
+include { softwareVersionsToYAML} from "$projectDir/subworkflows/utils"
 /*
 ========================================================================================
     RUN MAIN WORKFLOW
@@ -37,6 +38,7 @@ workflow YASCP {
         input_channel
         vcf_input
     main:
+        Channel.empty().set { ch_versions }
         if("${mode}"!='default'){
             // here we have rerun something upstream - done for freeze1
             assignments_all_pools = mode
@@ -50,9 +52,11 @@ workflow YASCP {
             }else{
                 genome1 = "${params.reference_assembly_fasta_dir}"
             }
+
             genome = PREPROCESS_GENOME(genome1)
             chanel_cr_outs = prepare_inputs.out.chanel_cr_outs
             channel_dsb = prepare_inputs.out.channel_dsb
+            ch_versions = ch_versions.mix(PREPROCESS_GENOME.out.versions)
         }
 
         vireo_paths = Channel.from("$projectDir/assets/fake_file.fq")
@@ -84,7 +88,8 @@ workflow YASCP {
                     // Here we either run ambient RNA removal with citeseq counts or without.
                     ambient_RNA( ch_experimentid_paths10x_raw,
                         prepare_inputs.out.ch_experimentid_paths10x_filtered,prepare_inputs.out.channel__metadata)
-
+                    ch_versions = ch_versions.mix(ambient_RNA.out.cellbender_versions)
+                    
                     // Now we convert the CB processed files to h5ad files and split the modalities if they were left in
                     SPLIT_CITESEQ_GEX_FILTERED_NOCB(ambient_RNA.out.cellbender_path,'filterd_after_cb')
                     SPLIT_CITESEQ_GEX_NOCB( ambient_RNA.out.cellbender_path_raw,'raw_after_cb')
@@ -137,6 +142,7 @@ workflow YASCP {
                 if (params.filter_multiplets.run_process){
                     MULTIPLET(channel__file_paths_10x_gex,'yascp_full')
                     doublet_paths = MULTIPLET.out.scrublet_paths
+                    ch_versions = ch_versions.mix(MULTIPLET.out.doublet_versions)
                 }else{
                     doublet_paths = Channel.from("$projectDir/assets/fake_file.fq")
                 }
@@ -144,6 +150,7 @@ workflow YASCP {
                 if (params.celltype_assignment.run_celltype_assignment){
                     celltype(channel__file_paths_10x_gex,'yascp_full')
                     celltype_assignments=celltype.out.celltype_assignments
+                    ch_versions = ch_versions.mix(celltype.out.celltype_versions)
                 }else{
                     celltype_assignments = Channel.from("$projectDir/assets/fake_file.fq")
                 }
@@ -166,6 +173,7 @@ workflow YASCP {
                         doublet_paths,
                         vcf_input,
                         genome)
+                    ch_versions = ch_versions.mix(main_deconvolution.out.deconvolution_versions)
                     vireo_paths = main_deconvolution.out.vireo_paths2
                     matched_donors = main_deconvolution.out.matched_donors
                     ch_poolid_csv_donor_assignments = main_deconvolution.out.ch_poolid_csv_donor_assignments
@@ -239,6 +247,7 @@ workflow YASCP {
                     gt_outlier_input = Channel.from("$projectDir/assets/fake_file.fq")
                 }
                 qc_and_integration(file__anndata_merged,file__cells_filtered,gt_outlier_input,channel_dsb,vireo_paths,assignments_all_pools,matched_donors,chanel_cr_outs) //This runs the Clusterring and qc assessments of the datasets.
+                ch_versions = ch_versions.mix(qc_and_integration.out.qc_versions)
                 process_finish_check_channel = qc_and_integration.out.LI
                 file__anndata_merged = qc_and_integration.out.file__anndata_merged
             }else{
@@ -266,8 +275,15 @@ workflow YASCP {
                             ch_poolid_csv_donor_assignments,
                             bam_split_channel,genome) 
         }
-                        
-                        
+
+/*
+========================================================================================
+   versions
+========================================================================================
+*/
+        version_yaml = Channel.empty()
+        version_yaml = softwareVersionsToYAML(ch_versions)
+            .collectFile(storeDir: "${params.outdir}", name: 'yascp_software_versions.yml', sort: true, newLine: true)
 }
 
 /*

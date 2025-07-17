@@ -284,6 +284,7 @@ process cluster_validate_resolution_sklearn {
         )
         path("plots/*.png") optional true
         path("plots/*.pdf") optional true
+        path "versions.yml", emit: versions
 
     script:
         
@@ -325,6 +326,22 @@ process cluster_validate_resolution_sklearn {
         mkdir plots
         mv *pdf plots/ 2>/dev/null || true
         mv *png plots/ 2>/dev/null || true
+
+        cat <<-END_VERSIONS > versions.yml
+        "${task.process}":
+            python: \$(python --version | sed 's/Python //g')
+            scanpy: \$(python -c "import scanpy; print(scanpy.__version__)")
+            sklearn: \$(python -c "import sklearn; print(sklearn.__version__)")
+            argparse: \$(python -c "import argparse; print(argparse.__version__)")
+            numpy: \$(python -c "import numpy; print(numpy.__version__)")
+            scipy: \$(python -c "import scipy; print(scipy.__version__)")
+            pandas: \$(python -c "import pandas; print(pandas.__version__)")
+            matplotlib: \$(python -c "import matplotlib; print(matplotlib.__version__)")
+            csv: \$(python -c "import csv; print(csv.__version__)")
+            joblib: \$(python -c "import joblib; print(joblib.__version__)")
+            dask_jobqueue: \$(python -c "import dask_jobqueue; print(dask_jobqueue.__version__)")
+            dask: \$(python -c "import dask; print(dask.__version__)")
+        END_VERSIONS
         """
         // --number_cells ${number_cells_downsample} \
         // --train_size_fraction ${train_size_fraction} \
@@ -401,6 +418,7 @@ process cluster_validate_resolution_keras {
         )
         path("plots/*.png") optional true
         path("plots/*.pdf") optional true
+        path "versions.yml", emit: versions
 
     script:
         outdir = "${outdir_prev}/validate_resolution"
@@ -435,6 +453,24 @@ process cluster_validate_resolution_keras {
         mkdir plots
         mv *pdf plots/ 2>/dev/null || true
         mv *png plots/ 2>/dev/null || true
+
+        cat <<-END_VERSIONS > versions.yml
+        "${task.process}":
+            python: \$(python --version | sed 's/Python //g')
+            scanpy: \$(python -c "import scanpy; print(scanpy.__version__)")
+            keras: \$(python -c "import keras; print(keras.__version__)")
+            argparse: \$(python -c "import argparse; print(argparse.__version__)")
+            numpy: \$(python -c "import numpy; print(numpy.__version__)")
+            scipy: \$(python -c "import scipy; print(scipy.__version__)")
+            pandas: \$(python -c "import pandas; print(pandas.__version__)")
+            csv: \$(python -c "import csv; print(csv.__version__)")
+            distutils: \$(python -c "import distutils; print(distutils.__version__)")
+            scikeras: \$(python -c "import scikeras; print(scikeras.__version__)")
+            matplotlib: \$(python -c "import matplotlib; print(matplotlib.__version__)")
+            plotnine: \$(python -c "import plotnine; print(plotnine.__version__)")
+            sklearn: \$(python -c "import sklearn; print(sklearn.__version__)")
+            tensorflow: \$(python -c "import tensorflow; print(tensorflow.__version__)")
+        END_VERSIONS
         """
 }
 
@@ -750,6 +786,7 @@ process prep_cellxgene {
             "${outfile}-cellxgene.h5ad",
             emit: cluster_markers
         )
+        path "versions.yml", emit: versions
 
     script:
         outdir = "${outdir_prev}"
@@ -762,6 +799,16 @@ process prep_cellxgene {
             --h5_anndata ${file__anndata} \
             --drop_extra_info \
             --output_file ${outfile}-cellxgene
+
+        cat <<-END_VERSIONS > versions.yml
+        "${task.process}":
+            python: \$(python --version | sed 's/Python //g')
+            argparse: \$(python -c "import argparse; print(argparse.__version__)")
+            numpy: \$(python -c "import numpy; print(numpy.__version__)")
+            scipy: \$(python -c "import scipy; print(scipy.__version__)")
+            scanpy: \$(python -c "import scanpy; print(scanpy.__version__)")
+            warnings: \$(python -c "import warnings; print(warnings.__version__)")
+        END_VERSIONS
         """
 }
 
