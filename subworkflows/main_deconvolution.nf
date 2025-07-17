@@ -232,9 +232,7 @@ workflow  main_deconvolution {
         vireo_paths_0.concat(REPLACE_GT_DONOR_ID2.out.output_dir).set{vireo_paths}
 
         VIREO_GT_FIX_HEADER(REPLACE_GT_DONOR_ID2.out.infered_vcf,genome)
-        ch_versions = ch_versions.mix(VIREO_GT_FIX_HEADER.out.versions)
         VIREO_ADD_SAMPLE_PREFIX(VIREO_GT_FIX_HEADER.out.infered_vcf)
-        ch_versions = ch_versions.mix(VIREO_ADD_SAMPLE_PREFIX.out.versions)
         
         vireo_out_sample_donor_vcf = VIREO_GT_FIX_HEADER.out.infered_vcf
         vireo_out_sample_summary_tsv = REPLACE_GT_DONOR_ID2.out.sample_summary_tsv

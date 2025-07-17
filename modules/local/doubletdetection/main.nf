@@ -42,9 +42,7 @@ process DOUBLET_DETECTION {
                 numpy: \$(python -c "import numpy; print(numpy.__version__)")
                 tarfile: \$(python -c "import tarfile; print(tarfile.__version__)")
                 matplotlib: \$(python -c "import matplotlib; print(matplotlib.__version__)")
-                os: \$(python -c "import os; print(os.__version__)")
                 argparse: \$(python -c "import argparse; print(argparse.__version__)")
-                sys: \$(python -c "import sys; print(sys.__version__)")
                 pandas: \$(python -c "import pandas; print(pandas.__version__)")
             END_VERSIONS
         """

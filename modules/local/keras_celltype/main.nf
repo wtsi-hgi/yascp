@@ -52,8 +52,6 @@ process KERAS_CELLTYPE {
                 keras: \$(python -c "import keras; print(keras.__version__)")
                 scanpy: \$(python -c "import scanpy; print(scanpy.__version__)")
                 argparse: \$(python -c "import argparse; print(argparse.__version__)")
-                os: \$(python -c "import os; print(os.__version__)")
-                random: \$(python -c "import random; print(random.__version__)")
                 warnings: \$(python -c "import warnings; print(warnings.__version__)")
                 numpy: \$(python -c "import numpy; print(numpy.__version__)")
                 scipy: \$(python -c "import scipy; print(scipy.__version__)")

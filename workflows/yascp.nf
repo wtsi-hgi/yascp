@@ -97,7 +97,8 @@ workflow YASCP {
                     // Here we either run ambient RNA removal with citeseq counts or without.
                     ambient_RNA( ch_experimentid_paths10x_raw,
                         prepare_inputs.out.ch_experimentid_paths10x_filtered,prepare_inputs.out.channel__metadata)
-
+                    ch_versions = ch_versions.mix(ambient_RNA.out.cellbender_versions)
+                    
                     // Now we convert the CB processed files to h5ad files and split the modalities if they were left in
                     SPLIT_CITESEQ_GEX_FILTERED_NOCB(ambient_RNA.out.cellbender_path,'filterd_after_cb')
                     SPLIT_CITESEQ_GEX_NOCB( ambient_RNA.out.cellbender_path_raw,'raw_after_cb')

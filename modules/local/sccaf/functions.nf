@@ -49,10 +49,7 @@ process sccaf_assess_clustering {
         python: \$(python --version | sed 's/Python //g')
         SCCAF: \$(python -c "import SCCAF; print(SCCAF.__version__)")
         scanpy: \$(python -c "import scanpy; print(scanpy.__version__)")
-        sys: \$(python -c "import sys; print(sys.__version__)")
-        os: \$(python -c "import os; print(os.__version__)")
         argparse: \$(python -c "import argparse; print(argparse.__version__)")
-        pathlib: \$(python -c "import pathlib; print(pathlib.__version__)")
         pandas: \$(python -c "import pandas; print(pandas.__version__)")
         matplotlib: \$(python -c "import matplotlib; print(matplotlib.__version__)")
     END_VERSIONS
@@ -113,10 +110,7 @@ process sccaf_optimize_clustering {
             python: \$(python --version | sed 's/Python //g')
             SCCAF: \$(python -c "import SCCAF; print(SCCAF.__version__)")
             scanpy: \$(python -c "import scanpy; print(scanpy.__version__)")
-            sys: \$(python -c "import sys; print(sys.__version__)")
-            os: \$(python -c "import os; print(os.__version__)")
             argparse: \$(python -c "import argparse; print(argparse.__version__)")
-            pathlib: \$(python -c "import pathlib; print(pathlib.__version__)")
             pandas: \$(python -c "import pandas; print(pandas.__version__)")
             matplotlib: \$(python -c "import matplotlib; print(matplotlib.__version__)")
         END_VERSIONS

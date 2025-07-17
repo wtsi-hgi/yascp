@@ -101,8 +101,6 @@ process HARMONY{
                 harmonypy: \$(python -c "import harmonypy; print(harmonypy.__version__)")
                 argparse: \$(python -c "import argparse; print(argparse.__version__)")
                 distutils: \$(python -c "import distutils; print(distutils.__version__)")
-                os: \$(python -c "import os; print(os.__version__)")
-                random: \$(python -c "import random; print(random.__version__)")
                 numpy: \$(python -c "import numpy; print(numpy.__version__)")
                 pandas: \$(python -c "import pandas; print(pandas.__version__)")
                 csv: \$(python -c "import csv; print(csv.__version__)")

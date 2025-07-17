@@ -179,7 +179,6 @@ process VIREO_ADD_SAMPLE_PREFIX{
 
     output:
       path("prefix_${vireo_fixed_vcf}"), emit: infered_vcf
-      path "versions.yml", emit: versions
 
     script:
       sorted_vcf = "${pool_id}_vireo_srt.vcf.gz"
@@ -187,11 +186,6 @@ process VIREO_ADD_SAMPLE_PREFIX{
     """
       bcftools query -l ${vireo_gt_vcf} | awk '\$0=""\$0" ${pool_id}_"\$0' > replacement_assignments.tsv
       bcftools reheader --samples replacement_assignments.tsv -o prefix_${vireo_fixed_vcf} ${vireo_gt_vcf}
-
-      cat <<-END_VERSIONS > versions.yml
-      "${task.process}":
-          bcftools: \$(bcftools --version 2>&1 | head -n1 | sed 's/^.*bcftools //; s/ .*\$//')
-      END_VERSIONS
     """
 }
 
@@ -216,7 +210,6 @@ process VIREO_GT_FIX_HEADER
   output:
     tuple val(pool_id), path("${vireo_fixed_vcf}"), path("${vireo_fixed_vcf}.tbi"), emit: gt_pool
     tuple val(pool_id), path("${vireo_fixed_vcf}"), emit: infered_vcf
-    path "versions.yml", emit: versions
 
   script:
   sorted_vcf = "${pool_id}_vireo_srt.vcf.gz"
@@ -247,13 +240,6 @@ process VIREO_GT_FIX_HEADER
     tabix -p vcf pre_${vireo_fixed_vcf}
     bcftools +fixref pre_${vireo_fixed_vcf} -Oz -o ${vireo_fixed_vcf} -- -d -f ${genome}/genome.fa -m flip-all
     tabix -p vcf ${vireo_fixed_vcf}
-
-
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        bcftools: \$(bcftools --version 2>&1 | head -n1 | sed 's/^.*bcftools //; s/ .*\$//')
-        tabix: \$(echo \$(tabix -h 2>&1) | head -n 1 | sed 's/^.*(htslib) //; s/ .*\$//; s/^Version://')
-    END_VERSIONS
   """
 }
 process REPLACE_GT_DONOR_ID2{
@@ -452,7 +438,7 @@ process PREPROCESS_GENOTYPES
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         bcftools: \$(bcftools --version 2>&1 | head -n1 | sed 's/^.*bcftools //; s/ .*\$//')
-        bgzip: \$(echo \$(bgzip -h 2>&1) | head -n 1 | sed 's/^.*(htslib) //; s/ .*\$//; s/^Version://')
+        bgzip: \$(echo \$(bgzip -h 2>&1) | head -n 1 | sed 's/^Version: //; s/Usage:.*//')
     END_VERSIONS
   """
 }

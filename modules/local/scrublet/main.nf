@@ -98,12 +98,10 @@ process SCRUBLET {
         cat <<-END_VERSIONS > versions.yml
         "${task.process}":
             python: \$(python --version | sed 's/Python //g')
-            scrublet: \$(python -c "import scrublet; print(scrublet.__version__)")
+            scrublet: \$(pip show scrublet | grep '^Version:' | cut -d':' -f2)
             scanpy: \$(python -c "import scanpy; print(scanpy.__version__)")
             argparse: \$(python -c "import argparse; print(argparse.__version__)")
-            os: \$(python -c "import os; print(os.__version__)")
             csv: \$(python -c "import csv; print(csv.__version__)")
-            random: \$(python -c "import random; print(random.__version__)")
             numpy: \$(python -c "import numpy; print(numpy.__version__)")
             pandas: \$(python -c "import pandas; print(pandas.__version__)")
             matplotlib: \$(python -c "import matplotlib; print(matplotlib.__version__)")

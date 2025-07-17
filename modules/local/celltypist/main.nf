@@ -55,15 +55,10 @@ process CELLTYPIST {
             scanpy: \$(python -c "import scanpy; print(scanpy.__version__)")
             logging: \$(python -c "import logging; print(logging.__version__)")
             click: \$(python -c "import click; print(click.__version__)")
-            sys: \$(python -c "import sys; print(sys.__version__)")
             argparse: \$(python -c "import argparse; print(argparse.__version__)")
             csv: \$(python -c "import csv; print(csv.__version__)")
-            random: \$(python -c "import random; print(random.__version__)")
             numpy: \$(python -c "import numpy; print(numpy.__version__)")
             pandas: \$(python -c "import pandas; print(pandas.__version__)")
-            os: \$(python -c "import os; print(os.__version__)")
-            pathlib: \$(python -c "import pathlib; print(pathlib.__version__)")
-            shutil: \$(python -c "import shutil; print(shutil.__version__)")
         END_VERSIONS
       """
 }

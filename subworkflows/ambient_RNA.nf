@@ -12,6 +12,7 @@ workflow ambient_RNA {
         channel__metadata
         
     main:
+        Channel.empty().set { ch_versions }
         log.info params.input_data_table
         log.info """---Running Cellbender pipeline ---"""
 
@@ -25,6 +26,7 @@ workflow ambient_RNA {
         post_ch_experimentid_paths10x_raw.filter{ it[1] != null }.filter{ it[2] != null }.map{row -> tuple(row[0],row[2])}.set{alt_input3}
 
         CELLBENDER(ch_experimentid_paths10x_raw_2,ch_experimentid_paths10x_filtered_2,channel__metadata)
+        ch_versions = ch_versions.mix(CELLBENDER.out.cellbender_versions)
 
         cb_Filtered_pre = CELLBENDER.out.cellbender_downstream
         // If we rerun this with a provided cb path this will not emit anything. 
@@ -37,4 +39,5 @@ workflow ambient_RNA {
     emit:
         cellbender_path
         cellbender_path_raw
+        cellbender_versions = ch_versions
 }

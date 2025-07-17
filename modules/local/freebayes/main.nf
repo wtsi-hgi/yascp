@@ -56,7 +56,7 @@ process FREEBAYES {
         "${task.process}":
             freebayes: \$(echo \$(freebayes --version 2>&1) | sed 's/version:\s*v//g' )
             bcftools: \$(bcftools --version 2>&1 | head -n1 | sed 's/^.*bcftools //; s/ .*\$//')
-            bgzip: \$(echo \$(bgzip -h 2>&1) | head -n 1 | sed 's/^.*(htslib) //; s/ .*\$//; s/^Version://')
+            bgzip: \$(echo \$(bgzip -h 2>&1) | head -n 1 | sed 's/^Version: //; s/Usage:.*//')
         END_VERSIONS
         """
 

@@ -402,7 +402,7 @@ process cellbender__remove_background {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        cellbender: \$(cellbender --version)
+        cellbender: \$(pip show cellbender | grep '^Version:' | cut -d':' -f2)
     END_VERSIONS
     """
 }

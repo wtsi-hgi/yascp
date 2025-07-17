@@ -51,7 +51,7 @@ process DOUBLET_DECON{
                 tidyverse: \$(Rscript -e "cat(as.character(packageVersion('tidyverse')))")
                 Seurat: \$(Rscript -e "cat(as.character(packageVersion('Seurat')))")
                 ggplot2: \$(Rscript -e "cat(as.character(packageVersion('ggplot2')))")
-                ata.table: \$(Rscript -e "cat(as.character(packageVersion('ata.table')))")
+                data.table: \$(Rscript -e "cat(as.character(packageVersion('data.table')))")
                 viridis: \$(Rscript -e "cat(as.character(packageVersion('viridis')))")
                 SeuratDisk: \$(Rscript -e "cat(as.character(packageVersion('SeuratDisk')))")
                 future.apply: \$(Rscript -e "cat(as.character(packageVersion('future.apply')))")

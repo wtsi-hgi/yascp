@@ -85,7 +85,7 @@ process DYNAMIC_DONOR_EXCLUSIVE_SNP_SELECTION{
         cat <<-END_VERSIONS > versions.yml
         "${task.process}":
             bcftools: \$(bcftools --version 2>&1 | head -n1 | sed 's/^.*bcftools //; s/ .*\$//')
-            bgzip: \$(echo \$(bgzip -h 2>&1) | head -n 1 | sed 's/^.*(htslib) //; s/ .*\$//; s/^Version://')
+            bgzip: \$(echo \$(bgzip -h 2>&1) | head -n 1 | sed 's/^Version: //; s/Usage:.*//')
         END_VERSIONS
       """
 }
