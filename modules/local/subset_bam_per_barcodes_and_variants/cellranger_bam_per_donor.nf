@@ -69,6 +69,7 @@ process SPLIT_BAM_BY_CELL_BARCODES
 
     output:
       path("${oufnprfx}_possorted_bam.cram", emit: possorted_cram_files)
+      path "versions.yml", emit: versions
 
     when:
       params.split_bam
@@ -86,6 +87,11 @@ process SPLIT_BAM_BY_CELL_BARCODES
         -o ${oufnprfx}_possorted_bam.cram ${cellranger_possorted_bam}
 
       #sha256sum -b ${oufnprfx}_possorted_bam.cram 1> ${oufnprfx}_possorted_bam.cram.sha256sum
+
+      cat <<-END_VERSIONS > versions.yml
+      "${task.process}":
+          samtools: \$(echo \$(samtools --version 2>&1) | sed 's/^.*samtools //; s/Using.*\$//')
+      END_VERSIONS
     """
 }
 

@@ -57,6 +57,7 @@ process SCRUBLET {
         path("plots/*.pdf") optional true
         path("plots/*.png") optional true
         tuple val(experiment_id), path("${experiment_id}-scrublet.tsv"), emit: result
+        path "versions.yml", emit: versions
 
     script:
         
@@ -89,5 +90,20 @@ process SCRUBLET {
 
         zcat ${experiment_id}-scrublet.tsv.gz | awk -F' ' '{print \$1"\\t"\$3"\\t"\$2}' > ${experiment_id}-scrublet.tsv
 
+        cat <<-END_VERSIONS > versions.yml
+        "${task.process}":
+            python: \$(python --version | sed 's/Python //g')
+            scrublet: \$(pip show scrublet | grep '^Version:' | cut -d':' -f2)
+            scanpy: \$(python -c "import scanpy; print(scanpy.__version__)")
+            argparse: \$(python -c "import argparse; print(argparse.__version__)")
+            csv: \$(python -c "import csv; print(csv.__version__)")
+            numpy: \$(python -c "import numpy; print(numpy.__version__)")
+            pandas: \$(python -c "import pandas; print(pandas.__version__)")
+            matplotlib: \$(python -c "import matplotlib; print(matplotlib.__version__)")
+            seaborn: \$(python -c "import seaborn; print(seaborn.__version__)")
+            plotnine: \$(python -c "import plotnine; print(plotnine.__version__)")
+            skimage: \$(python -c "import skimage; print(skimage.__version__)")
+            distutils: \$(python -c "import distutils; print(distutils.__version__)")
+        END_VERSIONS
         """
 }

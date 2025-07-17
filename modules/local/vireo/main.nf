@@ -13,6 +13,7 @@ process REMOVE_DUPLICATED_DONORS_FROM_GT{
 
   output:
      tuple val(samplename),path("dubs_removed__${subset_genotype}"),path("dubs_removed__${subset_genotype}.csi"),emit:merged_expected_genotypes
+     path "versions.yml", emit: versions
     script:
   """
     echo ${bridge_file} > output_vireo.csv
@@ -24,6 +25,11 @@ process REMOVE_DUPLICATED_DONORS_FROM_GT{
     bcftools view -S t.tsv ${subset_genotype} -Oz -o dubs_removed__${subset_genotype}
     bcftools index dubs_removed__${subset_genotype}
     rm t.tsv
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        bcftools: \$(bcftools --version 2>&1 | head -n1 | sed 's/^.*bcftools //; s/ .*\$//')
+    END_VERSIONS
   """
 }
 
@@ -59,6 +65,7 @@ process VIREO_SUBSAMPLING {
       path("vireo_${samplename}___${itteration}/${samplename}__exp.sample_summary.txt"), emit: sample__exp_summary_tsv
       tuple  val(samplename), path("vireo_${samplename}___${itteration}/GT_donors.vireo.vcf.gz"), path("vireo_${samplename}___${itteration}/${samplename}.sample_summary.txt"),path("vireo_${samplename}___${itteration}/${samplename}__exp.sample_summary.txt"),path("vireo_${samplename}___${itteration}/donor_ids.tsv"),path(vcf_file),path(donor_gt_csi), emit: all_required_data
       tuple val(samplename), path("sub_${samplename}_Expected.vcf.gz"), emit: exp_sub_gt optional true
+      path "versions.yml", emit: versions
     script:
       vcf_file = ""
       if (params.genotype_input.vireo_with_gt){
@@ -83,6 +90,10 @@ process VIREO_SUBSAMPLING {
             # Update the coordinates matrix
             cellsnp_update.R ${cell_data} ./subset_${params.vireo.rate} ./subset_${params.vireo.rate}/cellSNP.base.vcf.gz
 
+            cat <<-END_VERSIONS > versions.yml
+            "${task.process}":
+                bcftools: \$(bcftools --version 2>&1 | head -n1 | sed 's/^.*bcftools //; s/ .*\$//')
+            END_VERSIONS
         """
 
       }else{
@@ -128,6 +139,11 @@ process VIREO_SUBSAMPLING {
           sed s\"/^/${samplename}__/\"g > vireo_${samplename}___${itteration}/${samplename}__exp.sample_summary.txt
         ${com2}
         mv subset_${params.vireo.rate} vireo_${samplename}___${itteration}
+
+        cat <<-END_VERSIONS > versions.yml
+        "${task.process}":
+            vireo: \$(vireo | sed '1!d ; s/Welcome to vireoSNP //; s/!//')
+        END_VERSIONS
     """
 }
 
@@ -190,6 +206,7 @@ process VIREO {
       tuple val(samplename), path("vireo_${samplename}/summary.tsv"), emit: summary
       tuple  val(samplename), path("vireo_${samplename}/GT_donors.vireo.vcf.gz"), path("vireo_${samplename}/donor_ids.tsv"),path(vcf_file),path(donor_gt_csi), emit: all_required_data
       tuple val(samplename), path("sub_${samplename}_Expected.vcf.gz"), emit: exp_sub_gt optional true
+      path "versions.yml", emit: versions
     script:
       vcf_file = ""
       if (donors_gt_vcf.empty){
@@ -218,6 +235,11 @@ process VIREO {
       # to then have Nextflow concat summary.tsv of all samples into a single file:
       gzip vireo_${samplename}/GT_donors.vireo.vcf || echo 'vireo_${samplename}/GT_donors.vireo.vcf already gzip'
       ${com2}
+
+      cat <<-END_VERSIONS > versions.yml
+      "${task.process}":
+          vireo: \$(vireo | sed '1!d ; s/Welcome to vireoSNP //; s/!//')
+      END_VERSIONS
     """
 }
 

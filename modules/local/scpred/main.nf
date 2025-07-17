@@ -21,6 +21,7 @@ process SCPRED{
         params.celltype_assignment.run_scpred
     output:
         path("${outfil_prfx}___scpred_prediction.tsv"), emit:predicted_celltype_labels
+        path "versions.yml", emit: versions
 
     script:
 
@@ -29,5 +30,16 @@ process SCPRED{
         """
             scpred_map_hiers.R --file ./${file_h5ad_batch} --reference ${reference}
             ln -s scpred_prediction.tsv ${outfil_prfx}___scpred_prediction.tsv
+
+        cat <<-END_VERSIONS > versions.yml
+        "${task.process}":
+            r-base: \$(R --version | sed -n '1p' | sed 's/R version //; s/ (.*//')
+            Seurat: \$(Rscript -e "cat(as.character(packageVersion('Seurat')))")
+            HierscPred: \$(Rscript -e "cat(as.character(packageVersion('HierscPred')))")
+            optparse: \$(Rscript -e "cat(as.character(packageVersion('optparse')))")
+            future.apply: \$(Rscript -e "cat(as.character(packageVersion('future.apply')))")
+            progressr: \$(Rscript -e "cat(as.character(packageVersion('progressr')))")
+            SeuratDisk: \$(Rscript -e "cat(as.character(packageVersion('SeuratDisk')))")
+        END_VERSIONS
         """
 }

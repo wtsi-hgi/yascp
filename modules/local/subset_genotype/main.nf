@@ -51,11 +51,17 @@ process FETCH_DONOR_IDS_FROM_VCF {
 
   output:
     tuple val(study_label), path(vcf_donor_list_file), emit: study_vcf_donor_list
+    path "versions.yml", emit: versions
 
   script:
   vcf_donor_list_file = "${study_label}.vcf_donor_list.txt"
   """
   bcftools query -l ${study_vcf} > ${vcf_donor_list_file}
+
+  cat <<-END_VERSIONS > versions.yml
+  "${task.process}":
+      bcftools: \$(bcftools --version 2>&1 | head -n1 | sed 's/^.*bcftools //; s/ .*\$//')
+  END_VERSIONS
   """
 }
 
@@ -101,12 +107,18 @@ process SELECT_DONOR_GENOTYPES_FROM_VCF {
 
   output:
     tuple val(study_label), val(pool_id), path(pool_study_bcfgz), emit: study_pool_bcfgz
+    path "versions.yml", emit: versions
 
   script:
   pool_study_bcfgz = "${pool_id}.${study_vcf}.bcf.gz"
   """
     awk 'NR>1 && \$2 !~/^N\$/ {print \$1}' ${donor_table} > donors.lst
     bcftools view -S donors.lst -Ob -o ${pool_study_bcfgz} ${study_vcf}
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        bcftools: \$(bcftools --version 2>&1 | head -n1 | sed 's/^.*bcftools //; s/ .*\$//')
+    END_VERSIONS
   """
 }
 
@@ -124,12 +136,18 @@ process CONCAT_STUDY_VCFS {
 
   output:
     tuple val(study_label), val(pool_id), path(pool_study_bcfgz), emit: study_pool_bcfgz
+    path "versions.yml", emit: versions
 
   script:
   pool_study_bcfgz = "${pool_id}.${study_label}.bcf.gz"
   """
     cat "${study_vcf_files}" > ./fofn_vcfs.txt
     bcftools concat --threads ${task.threads} -f ./fofn_vcfs.txt -Ob -o ${pool_study_bcfgz}
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        bcftools: \$(bcftools --version 2>&1 | head -n1 | sed 's/^.*bcftools //; s/ .*\$//')
+    END_VERSIONS
   """
 }
 
@@ -151,6 +169,7 @@ process SUBSET_GENOTYPE {
 
     output:
     tuple val(samplename), path("${samplename}.subset.vcf.gz"),path("${samplename}.subset.vcf.gz.csi"), emit: samplename_subsetvcf
+    path "versions.yml", emit: versions
     
     script:
     """
@@ -159,6 +178,11 @@ process SUBSET_GENOTYPE {
         bcftools view ${donor_vcf} -s ${sample_subset_file} -Oz -o ${samplename}.subset.vcf.gz
         bcftools index ${samplename}.subset.vcf.gz
         rm ${donor_vcf}.tbi || echo 'not typical VCF'
+
+        cat <<-END_VERSIONS > versions.yml
+        "${task.process}":
+            bcftools: \$(bcftools --version 2>&1 | head -n1 | sed 's/^.*bcftools //; s/ .*\$//')
+        END_VERSIONS
     """
 }
 
@@ -181,6 +205,7 @@ process SUBSET_GENOTYPE2 {
     output:
       tuple val("${cohort}___${samplename}"), path("${donor_vcf}_subset.vcf.gz"),path("${donor_vcf}_subset.vcf.gz.csi"), emit: subset_vcf_file optional true
       path('*_mapping.tsv'), emit: mapping optional true
+      path "versions.yml", emit: versions
     script:
       if (params.genotype_phenotype_mapping_file==''){
          g_p_map = " "
@@ -199,7 +224,14 @@ process SUBSET_GENOTYPE2 {
         else
           echo 'no'
         fi
-        #rm samples.tsv sample_file.tsv
+
+        rm samples.tsv sample_file.tsv
+
+        cat <<-END_VERSIONS > versions.yml
+        "${task.process}":
+            bcftools: \$(bcftools --version 2>&1 | head -n1 | sed 's/^.*bcftools //; s/ .*\$//')
+        END_VERSIONS
+
     """
 }
 
@@ -222,6 +254,7 @@ process JOIN_CHROMOSOMES{
 
     output:
       tuple val(s2), path("*_out.bcf.gz"),path("*_out.bcf.gz.csi"), emit: joined_chromosomes_per_studytrance
+      path "versions.yml", emit: versions
 
     script:
       s1 = samplename.split('___')[0]
@@ -245,6 +278,12 @@ process JOIN_CHROMOSOMES{
         rm -r pre_* fix_ref_* no_prefix_*
 
         bcftools index \${vcf_name}_out.bcf.gz
+
+        cat <<-END_VERSIONS > versions.yml
+        "${task.process}":
+            bcftools: \$(bcftools --version 2>&1 | head -n1 | sed 's/^.*bcftools //; s/ .*\$//')
+            bgzip: \$(echo \$(bgzip -h 2>&1) | head -n 1 | sed 's/^Version: //; s/Usage:.*//')
+        END_VERSIONS
       """
 }
 
@@ -306,6 +345,7 @@ process JOIN_STUDIES_MERGE{
     output:
       tuple val(samplename), path("*_out.vcf.gz"),path("*_out.vcf.gz.csi"), emit: merged_expected_genotypes
       path("*_out.vcf.gz",emit:study_merged_vcf)
+      path "versions.yml", emit: versions
     script:
 
         
@@ -333,6 +373,11 @@ process JOIN_STUDIES_MERGE{
           bcftools index ${mode}_${mode2}_\${vcf_name}_out.vcf.gz 
         fi
         rm -r pre_* || echo 'nothing to remove'
+
+        cat <<-END_VERSIONS > versions.yml
+        "${task.process}":
+            bcftools: \$(bcftools --version 2>&1 | head -n1 | sed 's/^.*bcftools //; s/ .*\$//')
+        END_VERSIONS
       """
 }
 
@@ -344,6 +389,7 @@ workflow SUBSET_WORKF{
     mode
     genome
   main:
+      Channel.empty().set { ch_versions }
       donors_in_pools.combine(ch_ref_vcf).unique().set{all_GT_pannels_and_pools}
       all_GT_pannels_and_pools.map { row -> tuple("${row[1]}:${row[2]}:${row[3]}:${row[4]}",row[0],row[1],row[2],row[3],row[4]) }.set { combined_pool_subset }
 
@@ -361,6 +407,7 @@ workflow SUBSET_WORKF{
         // In case where we do not have any info re what is expected but we have run it in genotype avare mode, we do not perform the IBD calculations.
         grouped_chrs_poolComps.map { row -> tuple( row[1].join('::'), "${row[0]}".split(':')[0],  "${row[0]}".split(':')[1],  "${row[0]}".split(':')[2],  "${row[0]}".split(':')[3] ) }.set { combined_pool_subset } // Here we have all the pools that contain the same donor compositions associated with each of the shards
         grouped_chrs_poolComps.map { row -> tuple( row[0], row[1]) }.set { pools_utilising_same_subset } // Here we have a mapping file of which pools should use which genotypes.
+
         
         if (params.genotype_phenotype_mapping_file==''){
           g_p_map  = Channel.from("$projectDir/assets/fake_file2.fq")
@@ -370,7 +417,7 @@ workflow SUBSET_WORKF{
 
         // combined_pool_subset.subscribe {println "combined_pool_subset:= ${it}\n"}
         SUBSET_GENOTYPE2(combined_pool_subset,g_p_map)
-
+        ch_versions = ch_versions.mix(SUBSET_GENOTYPE2.out.versions)
         SUBSET_GENOTYPE2.out.subset_vcf_file.unique().groupTuple().set{chromosome_vcfs_per_studypool}
 
       }
@@ -378,11 +425,13 @@ workflow SUBSET_WORKF{
       // Combining all the chromosomes per pool
       // Now we combine all the chromosomes together for all the unique pool compositions.
       JOIN_CHROMOSOMES(chromosome_vcfs_per_studypool,genome)
+      ch_versions = ch_versions.mix(JOIN_CHROMOSOMES.out.versions)
       JOIN_CHROMOSOMES.out.joined_chromosomes_per_studytrance.unique().groupTuple().set{study_vcfs_per_pool}
       // study_vcfs_per_pool.subscribe {println "study_vcfs_per_pool:= ${it}\n"}
 
       // Since user are capable in providing multiple different study vcfs these need to be merged together per unique pool composition to perform the internal IBD checks.
       JOIN_STUDIES_MERGE(study_vcfs_per_pool,'Study_Merge',mode)
+      ch_versions = ch_versions.mix(JOIN_STUDIES_MERGE.out.versions)
       JOIN_STUDIES_MERGE.out.merged_expected_genotypes.set{merged_expected_genotypes}
 
       // After merging studies per unique pool compositions we resolve the matches back to the each of the Pools so that the IBD and Vireo can use the correct genotypes as the inputs and publish these in the correct folder.
@@ -404,4 +453,5 @@ workflow SUBSET_WORKF{
     merged_expected_genotypes
     study_merged_vcf
     samplename_subsetvcf_ibd
+    subset_workf_versions = ch_versions
 }

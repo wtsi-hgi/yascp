@@ -56,6 +56,7 @@ workflow  main_deconvolution {
 
     main:
 		log.info "#### running DECONVOLUTION workflow #####"
+        Channel.empty().set { ch_versions }
         vcf_candidate_snps = STAGE_FILE(params.cellsnp.vcf_candidate_snps)
 
         if (params.genotype_input.run_with_genotype_input) {
@@ -71,13 +72,17 @@ workflow  main_deconvolution {
                 .set { donors_in_pools }
             
             // This will subsequently result in a joint vcf file per cohort per donors listed for each of the pools that can be used in VIREO and/or GT matching algorythm.
-            ch_ref_vcf = PREPROCESS_GENOTYPES(ch_ref_vcf2)
+            PREPROCESS_GENOTYPES(ch_ref_vcf2)
+            ch_ref_vcf = PREPROCESS_GENOTYPES.out.vcf_tuple
+            ch_versions = ch_versions.mix(PREPROCESS_GENOTYPES.out.versions)
             SUBSET_WORKF(ch_ref_vcf,donors_in_pools,'AllExpectedGT',genome)
+            ch_versions = ch_versions.mix(SUBSET_WORKF.out.subset_workf_versions)
             merged_expected_genotypes = SUBSET_WORKF.out.merged_expected_genotypes
             merged_expected_genotypes2 = merged_expected_genotypes.combine(vcf_candidate_snps)
             GT_MATCH_POOL_IBD(SUBSET_WORKF.out.samplename_subsetvcf_ibd,'Withing_expected','Expected')
-
+            ch_versions = ch_versions.mix(GT_MATCH_POOL_IBD.out.versions)
             DYNAMIC_DONOR_EXCLUSIVE_SNP_SELECTION(params.add_snps_to_pile_up_based_on_genotypes_provided,merged_expected_genotypes2)
+            ch_versions = ch_versions.mix(DYNAMIC_DONOR_EXCLUSIVE_SNP_SELECTION.out.versions)
             cellsnp_panels = DYNAMIC_DONOR_EXCLUSIVE_SNP_SELECTION.out.cellsnp_pool_panel
             // cellsnp_panels.subscribe { println "cellsnp_panels: $it" }
             // donors_in_pools.subscribe { println "donors_in_pools: $it" }
@@ -137,6 +142,7 @@ workflow  main_deconvolution {
             .set{cellsnp_cap_ids} 
         // cellsnp_with_npooled.subscribe { println "cellsnp_with_npooled: $it" }
         CELLSNP(cellsnp_with_npooled)
+        ch_versions = ch_versions.mix(CELLSNP.out.versions)
         if (params.genotype_input.run_with_genotype_input) {
             // Here we assess how many informative sites has been called on. 
             CELLSNP.out.cell_vcfs.combine(DYNAMIC_DONOR_EXCLUSIVE_SNP_SELECTION.out.informative_uninformative_sites, by: 0).set{assess_call_rate_input}
@@ -166,6 +172,7 @@ workflow  main_deconvolution {
 
             if (params.genotype_phenotype_mapping_file!=''){
                 REMOVE_DUPLICATED_DONORS_FROM_GT(merged_expected_genotypes,params.genotype_phenotype_mapping_file,params.input_data_table)
+                ch_versions = ch_versions.mix(REMOVE_DUPLICATED_DONORS_FROM_GT.out.versions)
                 merged_expected_genotypes2= REMOVE_DUPLICATED_DONORS_FROM_GT.out.merged_expected_genotypes
             }else{
                 merged_expected_genotypes2 = merged_expected_genotypes
@@ -215,6 +222,7 @@ workflow  main_deconvolution {
         full_vcf2.combine(itterations).set{vireo_extra_repeats}
         // full_vcf3.subscribe { println "1:: vireo_paths_map $it" }
         VIREO(full_vcf3)
+        ch_versions = ch_versions.mix(VIREO.out.versions)
         VIREO.out.summary.mix(vireo_out_sample_summary_tsv_cap).set{summary_files}
         POSTPROCESS_SUMMARY(summary_files)
         
@@ -266,6 +274,7 @@ workflow  main_deconvolution {
         if (params.bam_pileup_per_donor){
             bam_subset_chanel = SPLIT_DONOR_H5AD.out.sample_donor_level_barcodes.transpose().combine(for_bam_pileups_3, by: 0)
             SUBSET_BAM_PER_BARCODES_AND_VARIANTS(bam_subset_chanel)  // This process subsets the ba
+            ch_versions = ch_versions.mix(SUBSET_BAM_PER_BARCODES_AND_VARIANTS.out.versions)
 
             chromosomes =  Channel.of(1,2,3,4,5,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21)
             freebayes_pre = SUBSET_BAM_PER_BARCODES_AND_VARIANTS.out.freebayes_input
@@ -273,13 +282,16 @@ workflow  main_deconvolution {
             freebayes_in = freebayes_pre.combine(chromosomes)
 
             FREEBAYES(freebayes_in,genome)
+            ch_versions = ch_versions.mix(FREEBAYES.out.versions)
             vireo_out_sample_donor_vcf = FREEBAYES.out.freebayes_vcf
 
             FREEBAYES.out.gt_pool.groupTuple(by:0).set{fbb1}
             fbb1.map{row->tuple(row[0], row[1], row[2], row[3][0])}.set{fbb1}
             MERGE_GENOTYPES_IN_ONE_VCF_IDX_PAN(fbb1,'freebayes')
+            ch_versions = ch_versions.mix(MERGE_GENOTYPES_IN_ONE_VCF_IDX_PAN.out.versions)
             MERGE_GENOTYPES_IN_ONE_VCF_IDX_PAN.out.gt_pool.groupTuple(by:0).set{fbb2}
             MERGE_GENOTYPES_IN_ONE_VCF_FREEBAYES(fbb2,'freebayes')
+            ch_versions = ch_versions.mix(MERGE_GENOTYPES_IN_ONE_VCF_FREEBAYES.out.versions)
             gt_math_pool_against_panel_input2 = MERGE_GENOTYPES_IN_ONE_VCF_FREEBAYES.out.gt_pool.combine(ch_ref_vcf)
             vir_inp =  MERGE_GENOTYPES_IN_ONE_VCF_FREEBAYES.out.vir_input
 
@@ -299,6 +311,7 @@ workflow  main_deconvolution {
         if (params.genotype_input.run_with_genotype_input) {
             if (params.vireo.do_vireo_subsampling){
                 VIREO_SUBSAMPLING(vireo_extra_repeats)
+                ch_versions = ch_versions.mix(VIREO_SUBSAMPLING.out.versions)
                 VIREO_SUBSAMPLING.out.output_dir.concat(VIREO.out.output_dir_subsampling).set{tuple_1}
                 tuple_1.groupTuple(by:0).set{vspp0}
                 VIREO_SUBSAMPLING_PROCESSING(vspp0)
@@ -357,4 +370,5 @@ workflow  main_deconvolution {
         assignments_all_pools
         vireo_paths2
         matched_donors
+        deconvolution_versions = ch_versions
 }

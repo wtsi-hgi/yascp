@@ -71,6 +71,7 @@ process HARMONY{
             "reduced_dims-${param_details}.tsv.gz",
             emit: reduced_dims_params
         )
+        path "versions.yml", emit: versions
 
 
     script:
@@ -93,6 +94,17 @@ process HARMONY{
                 --out_file ${runid}-reduced_dims
             cp ${runid}-reduced_dims.tsv.gz \
             reduced_dims-${param_details}.tsv.gz
+
+            cat <<-END_VERSIONS > versions.yml
+            "${task.process}":
+                python: \$(python --version | sed 's/Python //g')
+                harmonypy: \$(python -c "import harmonypy; print(harmonypy.__version__)")
+                argparse: \$(python -c "import argparse; print(argparse.__version__)")
+                distutils: \$(python -c "import distutils; print(distutils.__version__)")
+                numpy: \$(python -c "import numpy; print(numpy.__version__)")
+                pandas: \$(python -c "import pandas; print(pandas.__version__)")
+                csv: \$(python -c "import csv; print(csv.__version__)")
+            END_VERSIONS
         """
         // NOTE: below code for harmony in R
         // 0045-harmony_process_pcs.R \
