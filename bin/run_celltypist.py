@@ -140,7 +140,9 @@ def run_celltypist(samplename, filtered_matrix_h5, celltypist_model,
 
     logging.info("celltypist_model: " + celltypist_model)
     celltypist_model1 = os.path.splitext(os.path.basename(celltypist_model))[0]
-    # print(os.listdir('/tmp/.celltypist/data/models'))
+    if not os.path.isfile(celltypist_model):
+        p1 =  '/'.join(__file__.split('/')[:-1])
+        celltypist_model=f"{p1}/../assets/celltypist/{celltypist_model.split('/')[-1]}"
     model = models.Model.load(model = celltypist_model ) # model = 'Immune_All_Low.pkl')
     model.description
 

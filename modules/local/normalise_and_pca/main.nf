@@ -20,9 +20,9 @@ process PCA {
     publishDir  path: "${params.outdir}/handover/merged_h5ad/",
             saveAs: {filename ->
                     if (filename.contains("adata-normalized_pca-counts.h5ad")) {
-                        filename = '5.adata-normalized_pca-counts.h5ad'
+                        filename = '4.adata-normalized_pca-counts.h5ad'
                     }else if (filename.contains("adata-normalized_pca-counts.h5ad")) {
-                        filename = '5.adata-normalized_pca-counts.h5ad'
+                        filename = '4.adata-normalized_pca-counts.h5ad'
                     }  else {
                         null
                     }

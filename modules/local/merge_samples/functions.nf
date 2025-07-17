@@ -39,7 +39,13 @@ process merge_samples_from_h5ad {
     label 'process_medium_memory'
 
     publishDir  path: "${params.outdir}/handover/merged_h5ad",
-                saveAs: {filename -> filename.replaceAll("-", "pre_QC_")},
+                saveAs: {filename ->
+                    if (filename.contains("pre_QC_adata")) {
+                        filename = '1.annotated_deconvoluted_pre_QC_adata.h5ad'
+                    }else{
+                        filename
+                    }
+                },
                 mode: "${params.copy_mode}",
                 overwrite: "true"
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
@@ -55,6 +61,7 @@ process merge_samples_from_h5ad {
         file(file_h5ad)
         path(celltype)
         path(hastag_labels)
+        path(doublet_labels)
 
     output:
         path("1.pre_QC_adata.h5ad", emit: anndata)
@@ -67,6 +74,12 @@ process merge_samples_from_h5ad {
             hastag = ""
         }else{
             hastag = "--hastag ${hastag_labels}"
+        }
+
+        if ("$doublet_labels".contains('fake_file')){
+            doublet = ""
+        }else{
+            doublet = "--hastag ${doublet_labels}"
         }
 
         if (params.extra_metadata!=''){
@@ -102,7 +115,7 @@ process merge_samples_from_h5ad {
             --metadata_key ${metadata_key} \
             --number_cpu ${task.cpus} \
             --output_file 1.pre_QC_adata \
-            --anndata_compression_opts ${params.anndata_compression_opts} --celltype ${celltype} ${hastag} \
+            --anndata_compression_opts ${params.anndata_compression_opts} --celltype ${celltype} ${hastag} ${doublet} \
             ${cmd__params} \
             ${cmd__cellmetadata} ${extra_metadata}
         mkdir plots

@@ -29,13 +29,6 @@ workflow qc_and_integration {
         chanel_cr_outs
     main:
         log.info "--- Running QC metrics --- "
-        // if(params.extra_metadata!=''){
-        //     log.info '''--- Adding extra metadata to h5ad---'''
-        //     ADD_EXTRA_METADATA_TO_H5AD(file__anndata_merged,params.extra_metadata)
-        //     file__anndata_merged = ADD_EXTRA_METADATA_TO_H5AD.out.file__anndata
-        // }else{
-        //     log.info '''--- No extra metadata to add to h5ad ---'''
-        // }
 
         if (params.cell_hard_filters){
             if(params.sample_qc.cell_filters.experiment.value != '' | params.sample_qc.cell_filters.all_samples.value != '' | params.sample_qc.downsample_cells_fraction.value != '' | params.sample_qc.downsample_cells_n.value != '' | params.sample_qc.downsample_feature_counts.value != ''){
@@ -45,7 +38,6 @@ workflow qc_and_integration {
             }
         }
 
-        
         //FILTERING OUTLIER CELLS
         if (params.filter_outliers) {
             log.info """---Running automatic outlier cell filtering.----"""
@@ -61,11 +53,9 @@ workflow qc_and_integration {
                 params.sample_qc.cell_filters.filter_outliers.methods_thresholds
             )
             OUTLIER_FILTER.out.cells_filtered.collect().set{test2}
-
             MERGE_OUTLIER_FILES(file__anndata_merged,test2 )
             file__anndata_merged = MERGE_OUTLIER_FILES.out.anndata
-            // file__cells_filtered = OUTLIER_FILTER.out.cells_filtered
-                
+
         }
         
         
@@ -184,9 +174,6 @@ workflow qc_and_integration {
         }
 
 
-
-
-        // "Correct" PCs using Harmony or BBKNN
         if (params.harmony.run_process) {
             HARMONY(
                 PCA.out.outdir,

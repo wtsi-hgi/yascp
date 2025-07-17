@@ -70,19 +70,28 @@ def main():
     )
 
 
+    parser.add_argument(
+        '-op', '--option',
+        action='store',
+        dest='option',
+        required=True,
+        help='prefix'
+    )
+
+
     options = parser.parse_args()
     
     Data_All=pd.DataFrame()
     # Read hastag files from a TSV file using pandas
     hastag_df = pd.read_csv(options.all_hastag_files, header=None, names=['file_path'])
     hastag_files = hastag_df['file_path'].tolist()
-    Data_All = combine_reports(hastag_files,'hastag:')
+    Data_All = combine_reports(hastag_files,f'{options.option}:')
     Donor_Exp = Data_All.index.map(lambda x: '-'.join(x.split('-')[2:]))
     Donor = Donor_Exp.str.split('__').str[-1]
     Exp = Donor_Exp.str.split('__').str[0]
     Data_All['Donor'] =Donor
     Data_All['Exp'] =Exp
-    Data_All.to_csv('All_hastag_Assignments.tsv',sep='\t')
+    Data_All.to_csv(f'{options.option}__All_Assignments.tsv',sep='\t')
 
 
 if __name__ == '__main__':

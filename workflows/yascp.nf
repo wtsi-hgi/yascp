@@ -12,7 +12,7 @@ include {data_handover} from "$projectDir/subworkflows/data_handover"
 include { prepare_inputs } from "$projectDir/subworkflows/prepare_inputs"
 include { DECONV_INPUTS } from "$projectDir/subworkflows/prepare_inputs"
 include { CREATE_ARTIFICIAL_BAM_CHANNEL } from "$projectDir/modules/local/create_artificial_bam_channel/main"
-include {MERGE_SAMPLES; HASTAG_FILE_MERGE} from "$projectDir/modules/local/merge_samples/main"
+include {MERGE_SAMPLES; HASTAG_FILE_MERGE; HASTAG_FILE_MERGE as DOUBLET_FILE_MERGE} from "$projectDir/modules/local/merge_samples/main"
 include {dummy_filtered_channel} from "$projectDir/modules/local/merge_samples/functions"
 include {MULTIPLET} from "$projectDir/subworkflows/doublet_detection"
 include { SPLIT_CITESEQ_GEX; SPLIT_CITESEQ_GEX as SPLIT_CITESEQ_GEX_FILTERED;SPLIT_CITESEQ_GEX as SPLIT_CITESEQ_GEX_FILTERED_NOCB;SPLIT_CITESEQ_GEX as SPLIT_CITESEQ_GEX_NOCB; SPLIT_CITESEQ_GEX as PREPOCESS_FILES; HASTAG_DEMULTIPLEX } from '../modules/local/citeseq/main'
@@ -116,7 +116,7 @@ workflow YASCP {
                     .set { filtered_multiplexing_capture_channel }
 
                 HASTAG_DEMULTIPLEX(filtered_multiplexing_capture_channel)
-                HASTAG_FILE_MERGE(HASTAG_DEMULTIPLEX.out.results)
+                HASTAG_FILE_MERGE(HASTAG_DEMULTIPLEX.out.results,'hastag')
                 hastag_labels = HASTAG_FILE_MERGE.out.results
                     .ifEmpty { "$projectDir/assets/fake_file1.fq" }
                 
@@ -140,6 +140,10 @@ workflow YASCP {
                 }else{
                     doublet_paths = Channel.from("$projectDir/assets/fake_file.fq")
                 }
+
+                DOUBLET_FILE_MERGE(MULTIPLET.out.result_sf,'doublet')
+                doublet_labels = DOUBLET_FILE_MERGE.out.results
+                    .ifEmpty { "$projectDir/assets/fake_file1.fq" }
 
                 if (params.celltype_assignment.run_celltype_assignment){
                     celltype(channel__file_paths_10x_gex,'yascp_full')
@@ -172,11 +176,11 @@ workflow YASCP {
                     bam_split_channel = main_deconvolution.out.sample_possorted_bam_vireo_donor_ids
                     assignments_all_pools = main_deconvolution.out.assignments_all_pools
                     
-                    MERGE_SAMPLES(main_deconvolution.out.out_h5ad,main_deconvolution.out.vireo_out_sample__exp_summary_tsv,celltype_assignments,hastag_labels,'h5ad')
+                    MERGE_SAMPLES(main_deconvolution.out.out_h5ad,main_deconvolution.out.vireo_out_sample__exp_summary_tsv,celltype_assignments,hastag_labels,doublet_labels,'h5ad')
                 }else{
                     log.info '--- Skipping Deconvolution ---'
                     channel__metadata = prepare_inputs.out.channel__metadata
-                    MERGE_SAMPLES(channel__file_paths_10x,channel__metadata,celltype_assignments,hastag_labels,'barcodes')
+                    MERGE_SAMPLES(channel__file_paths_10x,channel__metadata,celltype_assignments,hastag_labels,doublet_labels,'barcodes')
                     assignments_all_pools = Channel.from("$projectDir/assets/fake_file.fq")
                     vireo_paths = Channel.from("$projectDir/assets/fake_file.fq")
                     matched_donors = Channel.from("$projectDir/assets/fake_file.fq")
@@ -260,7 +264,7 @@ workflow YASCP {
         // ###################################
         // ###################################
 
-        if (!params.skip_handover){
+        if (!params.skip_handover || !params.skip_qc ){
             data_handover(out_ch,input_channel,
                             process_finish_check_channel,
                             ch_poolid_csv_donor_assignments,

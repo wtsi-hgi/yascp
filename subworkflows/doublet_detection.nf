@@ -38,6 +38,7 @@ process MERGE_DOUBLET_RESULTS{
     output:
         path("*.png") optional true
         tuple val(experiment_id), path("${experiment_id}__doublet_results_combined.tsv"), emit: result
+        path("${experiment_id}__doublet_results_combined.tsv"), emit: result_sf
 
     script:
         
@@ -133,5 +134,6 @@ workflow MULTIPLET {
 
     emit:
         scrublet_paths = MERGE_DOUBLET_RESULTS.out.result
+        result_sf = MERGE_DOUBLET_RESULTS.out.result_sf
 }
 

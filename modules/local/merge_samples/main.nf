@@ -16,19 +16,20 @@ process HASTAG_FILE_MERGE{
        container "${params.yascp_container_docker}"
     }
     output:
-        path("All_hastag_Assignments.tsv",emit:results)
+        path("*__All_Assignments.tsv",emit:results)
 
     input:
         path(hastag_files)
+        val(option)
 
     script:
         def merged_files_outpath = workflow.workDir.toString()
         file(merged_files_outpath).mkdirs()
-        def hastag_files_path = "${merged_files_outpath}/hastag_files.tsv"
+        def hastag_files_path = "${merged_files_outpath}/${option}_files.tsv"
         new File(hastag_files_path).text = hastag_files.join("\n")
 
         """
-            generate_combined_hastag_anotation_file.py --all_hastag_files ${hastag_files_path}
+            generate_combined_hastag_anotation_file.py --all_hastag_files ${hastag_files_path} --option ${option}
         """
 
 }
@@ -40,6 +41,7 @@ workflow MERGE_SAMPLES{
         file_metadata
         celltype_file
         hastag_labels
+        doublet_labels
         mode
     main:
         log.info """---Merging samples in a single h5ad file---"""
@@ -64,7 +66,8 @@ workflow MERGE_SAMPLES{
                 params.metadata_key_column.value,
                 input_merge,
                 celltype_file,
-                hastag_labels
+                hastag_labels,
+                doublet_labels
         )
         
         file__anndata_merged = merge_samples_from_h5ad.out.anndata

@@ -12,16 +12,15 @@ process MERGE_OUTLIER_FILES{
     } else {
         container "${params.yascp_container_docker}"
     }
-    publishDir  path: "${outdir}/handover/merged_h5ad",
+    publishDir  path: "${params.outdir}/handover/merged_h5ad/",
                 saveAs: {filename ->
-                    if(filename.contains("outlier_filtered_adata.h5ad"))  {
-                        filename = "4.outlier_filtered_adata.h5ad"
-                    }else{
-                        null
+                    if (filename.contains("outlier_filtered_adata")) {
+                        filename = '3.outlier_filtered_adata.h5ad'
                     }
                 },
                 mode: "${params.copy_mode}",
                 overwrite: "true"
+
     input:
         path(file__anndata)
         path(file__anndata_files_filtered)
@@ -47,18 +46,6 @@ process OUTLIER_FILTER {
         container "${params.yascp_container_docker}"
     }
 
-
-    publishDir  path: "${outdir}/handover/merged_h5ad/",
-
-                saveAs: {filename ->
-                    if(filename.contains("outlier_filtered_adata.h5ad"))  {
-                        filename = "4.outlier_filtered_adata.h5ad"
-                    }else{
-                        null
-                    }
-                },
-                mode: "${params.copy_mode}",
-                overwrite: "true"
 
     input:
         val(outdir_prev)

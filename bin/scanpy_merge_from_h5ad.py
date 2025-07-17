@@ -16,9 +16,6 @@ import numpy as np
 import pandas as pd
 import scanpy as sc
 
-
-
-
 # Set seed for reproducibility
 seed_value = 0
 y_n_print=False
@@ -485,7 +482,7 @@ def scanpy_merge(
     cellmetadata_filepaths=None,
     anndata_compression_opts=4,
     extra_metadata=None,
-    celltype=None, hastag=None
+    celltype=None, hastag=None, doublet=None
 ):
     """Merge h5ad data.
 
@@ -638,19 +635,23 @@ def scanpy_merge(
             obs_df['merge_key'] = obs_df.index + '-' + idx1
         celltype['merge_key'] = celltype.index
         hastag['merge_key'] = hastag.index
+        doublet['merge_key'] = doublet.index
         try:
             del celltype['Donor']
             del hastag['Donor']
+            del doublet['Donor']
         except:
             _=''
         try:
             del celltype['Exp']
             del hastag['Exp']
+            del doublet['Exp']
         except:
             _=''
             
         merged_df = obs_df.merge(celltype, on='merge_key', how='left')
         merged_df = merged_df.merge(hastag, on='merge_key', how='left')
+        merged_df = merged_df.merge(doublet, on='merge_key', how='left')
         
         merged_df = merged_df.set_index(obs_df.index)
         adata.obs = merged_df
@@ -850,6 +851,14 @@ def main():
     )
 
     parser.add_argument(
+        '-dt', '--doublet',
+        action='store',
+        dest='doublet',
+        default=None,
+        help='Provide doublet file to be merged with the input'
+    )
+
+    parser.add_argument(
         '-pyml', '--params_yaml',
         action='store',
         dest='pyml',
@@ -925,6 +934,11 @@ def main():
     else:
         hastag = pd.DataFrame()
     
+    if options.doublet:
+        doublet = pd.read_csv(options.doublet, sep='\t',index_col=0)
+    else:
+        doublet = pd.DataFrame()
+    
     # Delete the metadata columns that we do not want.
     if options.mcd != '':
         for i in options.mcd.split(','):
@@ -955,7 +969,7 @@ def main():
         cellmetadata_filepaths=cellmetadata_filepaths,
         anndata_compression_opts=options.anndata_compression_opts,
         extra_metadata= extra_metadata,
-        celltype = celltype, hastag=hastag
+        celltype = celltype, hastag=hastag, doublet=doublet
     )
 
 
