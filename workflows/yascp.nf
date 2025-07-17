@@ -309,7 +309,7 @@ workflow YASCP {
 */
         version_yaml = Channel.empty()
         version_yaml = softwareVersionsToYAML(ch_versions)
-            .collectFile(storeDir: "${params.outdir}/pipeline_info_soft", name: 'yascp_software_versions.yml', sort: true, newLine: true)
+            .collectFile(storeDir: "${params.outdir}", name: 'yascp_software_versions.yml', sort: true, newLine: true)
 }
 
 /*
