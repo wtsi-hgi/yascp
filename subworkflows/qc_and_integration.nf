@@ -40,7 +40,7 @@ workflow qc_and_integration {
         }
 
         //FILTERING OUTLIER CELLS
-        if (params.filter_outliers) {
+        if (params.sample_qc.cell_filters.run_process) {
             log.info """---Running automatic outlier cell filtering.----"""
             OUTLIER_FILTER(
                 params.outdir,

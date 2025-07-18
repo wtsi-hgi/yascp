@@ -4,7 +4,6 @@ params {
         run_process=true
     }
     replace_genotype_ids=false
-    write_h5=true
     cluster_validate_resolution_keras = true
     filter_outliers = false
     extra_sample_metadata =""
@@ -32,8 +31,6 @@ params {
     }
 
     mads_categories ='pct_counts_gene_group__mito_transcript,pct_counts_gene_group__mito_protein,pct_counts_gene_group__ribo_protein,pct_counts_gene_group__ribo_rna,total_counts,n_genes_by_counts,log10_ngenes_by_count'
-    // hard_filters_file       = "${projectDir}/../sample_qc.yml"
-    // hard_filters_drop = false //#This indicates whether we want to drop the cells that fail hard filters of just flag them
 
     cluster{
         description = """Parameters for clustering. All pairwise combinations of

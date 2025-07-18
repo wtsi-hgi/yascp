@@ -143,12 +143,14 @@ workflow YASCP {
                 if (params.filter_multiplets.run_process){
                     MULTIPLET(channel__file_paths_10x_gex,'yascp_full')
                     doublet_paths = MULTIPLET.out.scrublet_paths
+                    sf_mult = MULTIPLET.out.result_sf
                     ch_versions = ch_versions.mix(MULTIPLET.out.doublet_versions)
                 }else{
+                    sf_mult = Channel.of()
                     doublet_paths = Channel.from("$projectDir/assets/fake_file.fq")
                 }
 
-                DOUBLET_FILE_MERGE(MULTIPLET.out.result_sf,'doublet')
+                DOUBLET_FILE_MERGE(sf_mult,'doublet')
                 doublet_labels = DOUBLET_FILE_MERGE.out.results
                     .ifEmpty { "$projectDir/assets/fake_file1.fq" }
 

@@ -352,7 +352,7 @@ workflow  main_deconvolution {
         vireo_out_sample__exp_summary_tsv = collect_file8(SPLIT_DONOR_H5AD.out.donor_n_cells.collect(),"vireo_exp__donor_n_cells.tsv",0,0,header_seed)
 
         if (params.genotype_input.run_with_genotype_input & params.genotype_input.posterior_assignment) {
-            if (params.extra_sample_metadata!='' & params.add_donor_metadata){
+            if (params.extra_sample_metadata!=''){
                 // Here we have sample level metadata but we have chosen to keep the donor ids.
                 // in this scenario we enhance the donor level vireo metadata file to add the donor metadata to the h5ads and eventually to the donor and teanche report
                 ENHANCE_VIREO_METADATA_WITH_DONOR(params.extra_sample_metadata,vireo_out_sample__exp_summary_tsv,REPLACE_GT_DONOR_ID.out.assignments.collect())

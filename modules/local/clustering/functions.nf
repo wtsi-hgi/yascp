@@ -362,20 +362,17 @@ process cluster_validate_resolution_keras {
     }
 
     publishDir  path: "${outdir}",
-                saveAs: {filename ->
-                    if (filename.endsWith("clustered.h5ad")) {
-                        null
-                    } else if(filename.endsWith("metadata.tsv.gz")) {
-                        null
-                    } else if(filename.endsWith("pcs.tsv.gz")) {
-                        null
-                    } else if(filename.endsWith("reduced_dims.tsv.gz")) {
-                        null
-                    } else if(filename.endsWith("clustered.tsv.gz")) {
-                        null
-                    } else {
-                        filename.split("___")[1]
+                saveAs: { filename ->
+                    if (filename.endsWith("clustered.h5ad") ||
+                        filename.endsWith("metadata.tsv.gz") ||
+                        filename.endsWith("pcs.tsv.gz") ||
+                        filename.endsWith("reduced_dims.tsv.gz") ||
+                        filename.endsWith("clustered.tsv.gz")) {
+                        return null
                     }
+
+                    def parts = filename.split("___")
+                    return (parts.length > 1) ? parts[1] : filename
                 },
                 mode: "${params.copy_mode}",
                 overwrite: "true"
@@ -436,9 +433,7 @@ process cluster_validate_resolution_keras {
         //     cmd__train_cells = "--train_size_cells ${train_size_cells}"
         // }
         outfile = "${outfile}-train_size_cells=${train_size_cells}"
-        // Job info
 
-        tf_memory = "${params.mem1*task.attempt/1000}"
         """
         vcf_name=\$(python ${projectDir}/bin/random_id.py)
         rm -fr plots
@@ -448,7 +443,6 @@ process cluster_validate_resolution_keras {
             --number_epoch 25 \
             --batch_size 32 \
             --train_size_cells ${train_size_cells} \
-            --memory_limit ${tf_memory} \
             --output_file \${vcf_name}___${outfile}
         mkdir plots
         mv *pdf plots/ 2>/dev/null || true

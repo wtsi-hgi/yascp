@@ -88,7 +88,7 @@ process merge_samples_from_h5ad {
             extra_metadata = ""
         }
 
-        if (params.extra_sample_metadata!='' && params.add_donor_metadata){
+        if (params.extra_sample_metadata!=''){
             extra_sample_metadata = "add_extra_sample_metadata.py --vireo ${file_metadata} --extra_sample_metadata ${params.extra_sample_metadata} --metadata_key ${metadata_key}"
         }else{
             extra_sample_metadata = "ln -s ${file_metadata} Vireo_metadata.csv"

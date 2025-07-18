@@ -17,9 +17,9 @@ process GATHER_DATA{
       path(input_data_table)
 
     output:
-      path("${subdir}", emit:outfiles_dataset)
-      path("${subdir}_summary", emit:outfiles_dataset2)
-      path("Donor_Quantification/*/*.tsv", emit: barcodes_files)
+      path("${subdir}", emit:outfiles_dataset) optional true
+      path("${subdir}_summary", emit:outfiles_dataset2) optional true
+      path("Donor_Quantification/*/*.tsv", emit: barcodes_files) optional true
       val(outdir, emit: outdir_dataset)
 
     script:
@@ -45,7 +45,7 @@ process GATHER_DATA{
           --input_table=${input_data_table} \
           --cellbender=${cellbender_input} \
           --resolution=${params.cellbender_resolution_to_use} \
-          --write_h5=${params.write_h5} \
+          --write_h5=False \
           --experiment_name=${params.RUN} ${extra_meta}
       """
 }

@@ -16,7 +16,7 @@ process SUBSET_PCS{
     }
 
 
-    publishDir  path: "${params.outdir}",
+    publishDir  path: "${outdir}",
                 saveAs: {filename ->
                     if (filename.endsWith("normalized_pca.h5ad")) {
                         null
