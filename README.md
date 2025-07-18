@@ -12,7 +12,15 @@ You can run pipeline blocks independently:
 
 <img width="100%" alt="Screenshot 2024-06-03 at 17 01 01" src="https://github.com/wtsi-hgi/yascp/assets/22347136/c724f731-42ab-4880-9666-eeb3384fd5e6">
 
-**YASCP** is a bioinformatics best-practice analysis pipeline designed for high-quality deconvolution, scRNA data quality control, doublet detection, cell type assignment, clustering, and integration of single-cell datasets. YASCP stands for "Yet Another Single Cell Pipeline." The sequence from Y to A in the acronym, referring to the alphabet, symbolizes the continuous journey of learning and discovery, with no Z to represent the ultimate knowledge that remains just out of reach, motivating us to keep exploring.
+**YASCP** (Yet Another Single Cell Pipeline) is a scalable and modular single-cell analysis pipeline designed for high-quality preprocessing, deconvolution, doublet detection, clustering, cell type assignment, and integration. The acronym moves from Y to A to symbolize the pursuit of knowledge — no Z implies there's always more to discover.
+
+YASCP supports:
+
+- 10x Cell Ranger output directories as primary inputs  
+- Hashtag multiplexing (HTO/CITE-seq)  
+- CITE-seq protein expression quantification  
+- scRNA-seq and scATAC-seq analysis modes  
+- Modular reuse of each step independently
 
 | experiment_id   | n_pooled | donor_vcf_ids    |  data_path_10x_format   |
 |-----------------|----------|------------------|-------------------------|
