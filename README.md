@@ -35,13 +35,13 @@ YASCP is built to support a wide range of experimental scenarios beyond standard
   Per-donor or per-hashtag QC thresholds can be applied dynamically using modular blocks.
 
 - **Optional or replaceable modules**  
-  All major steps (e.g., CellBender, deconvolution, cell typing, doublet detection) can be skipped. You can use filtered Cell Ranger outputs directly.
+  All major steps (e.g., CellBender, deconvolution, cell typing, doublet detection) can be skipped. You can use filtered CellRanger outputs directly.
 
 - **Antibody and hashtag splitting**  
   CITE-seq protein and hashtag features can be split and analyzed separately.
 
 - **Custom inputs at any stage**  
-  You can re-enter the pipeline with intermediate `.h5ad`/`.rds` objects and resume downstream analysis.
+  You can re-enter the pipeline with intermediate `.h5ad` objects and resume downstream analysis.
 
 - **Manual thresholds and logic injection**  
   Flexible logic and parameter overrides allow manual thresholding or customized QC/annotation rules per batch or condition.
