@@ -21,11 +21,31 @@ YASCP supports:
 - CITE-seq protein expression quantification  
 - scRNA-seq and scATAC-seq analysis modes  
 - Modular reuse of each step independently
+  
+It is designed to be flexible and **not hardcoded for any specific tissue or cell type** (e.g., PBMCs). You can configure individual modules — such as demultiplexing, doublet detection, or clustering — to fit your experimental setup, including custom thresholds or skipping modules that aren’t relevant.
 
-| experiment_id   | n_pooled | donor_vcf_ids    |  data_path_10x_format   |
-|-----------------|----------|------------------|-------------------------|
-| Pool1 |   1      | ""            | path/to/cellranger/10x_folder      |
-| Pool2|   2      | ""        | path/to/cellranger/10x_folder      |
+### Flexibility for Custom Designs
+
+YASCP is built to support a wide range of experimental scenarios beyond standard PBMC workflows, including stimulation conditions, CITE-seq, CRISPR screens, and multimodal assays. It supports both plug-and-play execution and custom integration points.
+
+- **Condition-aware and hashtag-aware workflows**  
+  You can split samples by hashtag or stimulation *before* QC, doublet detection, or annotation, either externally or by modifying the workflow schema.
+
+- **Custom QC and filtering per sample/tag**  
+  Per-donor or per-hashtag QC thresholds can be applied dynamically using modular blocks.
+
+- **Optional or replaceable modules**  
+  All major steps (e.g., CellBender, deconvolution, cell typing, doublet detection) can be skipped. You can use filtered Cell Ranger outputs directly.
+
+- **Antibody and hashtag splitting**  
+  CITE-seq protein and hashtag features can be split and analyzed separately.
+
+- **Custom inputs at any stage**  
+  You can re-enter the pipeline with intermediate `.h5ad`/`.rds` objects and resume downstream analysis.
+
+- **Manual thresholds and logic injection**  
+  Flexible logic and parameter overrides allow manual thresholding or customized QC/annotation rules per batch or condition.
+
 
 Results will demultiplex individuals, robustly assess the assignments
 ![Screenshot 2024-06-03 at 12 56 44](https://github.com/wtsi-hgi/yascp/assets/22347136/5129c789-fbe9-41e8-8d28-5d286896f14a)
