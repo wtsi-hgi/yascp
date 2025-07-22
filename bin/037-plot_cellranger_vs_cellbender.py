@@ -405,6 +405,9 @@ def anndata_from_h5(
             except Exception:
                 pass
 
+    if adata.obs_names.duplicated().any():
+        print("Warning: duplicated barcodes found — making obs_names unique.")
+        adata.obs_names_make_unique()
     return adata
 
 if __name__ == '__main__':

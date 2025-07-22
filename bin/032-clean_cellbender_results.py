@@ -122,7 +122,10 @@ def anndata_from_h5(file: str,analyzed_barcodes_only: bool = True) -> 'anndata.A
                 del adata.obs[col]
             except Exception:
                 pass
-
+            
+    if adata.obs_names.duplicated().any():
+        print("Warning: duplicated barcodes found — making obs_names unique.")
+        adata.obs_names_make_unique()
     return adata
 
 
