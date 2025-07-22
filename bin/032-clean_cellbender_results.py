@@ -171,115 +171,79 @@ def cellbender_to_tenxmatrix(adata,out_file='',out_dir='tenx_from_adata',verbose
     print("Proportion of ENSG pattern in gene_symbols column: {:.2f}".format(prop_in_gene_symbols))
     print("Proportion of ENSG pattern in index: {:.2f}".format(prop_in_index))
 
-    # Decide which one is which based on the proportions.
-    # For example, if more than 80% of the values in a column start with 'ENSG', we assume that column contains Ensembl IDs.
-    threshold = 0.8
+    # -----------------------------------------
+    # Determine gene_ids and gene_symbols
+    # -----------------------------------------
+    threshold = 0.5
+
+    if 'gene_symbols' in adata.var.columns:
+        gene_symbols_series = adata.var['gene_symbols'].astype(str)
+    else:
+        gene_symbols_series = pd.Index(adata.var_names).astype(str)
+
+    def looks_like_ensembl(x):
+        return isinstance(x, str) and x.startswith("ENSG")
+
+    prop_in_index = pd.Series(adata.var_names).map(looks_like_ensembl).mean()
+    prop_in_gene_symbols = gene_symbols_series.map(looks_like_ensembl).mean()
 
     if prop_in_gene_symbols >= threshold and prop_in_index < threshold:
-        # The gene_symbols column seems to be Ensembl IDs.
-        # So we can assume the index holds the actual gene symbols.
         print("Using index as gene symbols and gene_symbols column as Ensembl IDs.")
         adata.var['gene_ids'] = gene_symbols_series
-        # The index remains gene symbols (or is processed further if needed)
-        
+        # index stays as is (gene symbols)
+
     elif prop_in_index >= threshold and prop_in_gene_symbols < threshold:
-        # The index is mainly Ensembl IDs.
-        # Therefore, the gene_symbols column should be used for gene symbols.
         print("Using gene_symbols column as gene symbols and index as Ensembl IDs.")
-        adata.var['gene_ids'] = adata.var_names  # Preserve Ensembl IDs from the index
-        # Now update the var_names to use the gene symbols
-        adata.var_names = pd.Index(gene_symbols_series)
-        
+        adata.var['gene_ids'] = adata.var_names
+        adata.var_names = gene_symbols_series
+
     elif prop_in_index >= threshold and prop_in_gene_symbols >= threshold:
-        # Both columns have a high proportion of ENSG values.
-        # This might indicate that both are Ensembl IDs or that there is an error.
-        print("Warning: Both the index and gene_symbols appear to contain Ensembl IDs. A manual check may be needed.")
+        print("Warning: Both index and gene_symbols look like Ensembl IDs.")
+        adata.var['gene_ids'] = adata.var_names  # fallback
     else:
-        # Neither column is clearly Ensembl IDs
-        print("Warning: Neither the index nor gene_symbols contain a clear majority of Ensembl IDs. Please verify manually.")
+        print("Warning: Neither look clearly like Ensembl IDs.")
+        adata.var['gene_ids'] = adata.var_names  # fallback
 
-    # Optionally, if the gene_symbols column is now redundant or incorrect, you might remove it:
-    del adata.var['gene_symbols']
-
-    # Set up out_file
-    if out_file != '':
-        out_file = '{}-'.format(out_file)
-
-    # Get compression opts for pandas
-    compression_opts = 'gzip'
-    if LooseVersion(pd.__version__) > '1.0.0':
-        compression_opts = dict(method='gzip', compresslevel=9)
-
-    # First filter out any cells that have 0 total counts
-    if(filter_0_count_cells):
-        zero_count_cells = adata.obs_names[np.where(adata.X.sum(axis=1) == 0)[0]]
-        if verbose:
-            print("Filtering {}/{} cells with 0 counts.".format(
-                len(zero_count_cells),
-                adata.n_obs
-            ))
-        adata = adata[adata.obs_names.difference(zero_count_cells, sort=False)]
-
-    # Save the barcodes.
-    out_f = os.path.join(
-        out_dir,
-        '{}barcodes.tsv.gz'.format(out_file)
-    )
+    out_f = os.path.join(out_dir, f"{out_file}barcodes.tsv.gz")
     if verbose:
-        print('Writing {}'.format(out_f))
+        print(f'Writing {out_f}')
     pd.DataFrame(adata.obs.index).to_csv(
         out_f,
         sep='\t',
-        compression=compression_opts,
         index=False,
-        header=False
+        header=False,
+        compression='gzip'
     )
 
-    # Save the features.
-    # CellBender output: gene_symbols as index, enseble as `gene_ids`
-    # Type is stored in adata.var.type
-    out_f = os.path.join(
-        out_dir,
-        '{}features.tsv.gz'.format(out_file)
-    )
+    # -----------------------------------------
+    # Create features.tsv.gz content
+    # -----------------------------------------
+    out_f = os.path.join(out_dir, f"{out_file}features.tsv.gz")
     if verbose:
-        print('Writing {}'.format(out_f))
+        print(f'Writing {out_f}')
 
-    # Check if read in by gene_symbol or gene_id
-
-    if 'gene_symbols' in adata.var.columns:
-        gene_var = 'gene_symbols'
-    elif 'gene_ids' in adata.var.columns:
-        gene_var = 'gene_ids'
-    # elif 'id' in adata.var.columns:
-    #     gene_var = 'id'
-    # elif 'name' in adata.var.columns:
-    #     gene_var = 'name'
-    else:
-        raise Exception(
-            'Could not find "gene_symbols" or "gene_ids" in adata.var'
-        )
     try:
         df_features = pd.DataFrame(
             data=[
-                adata.var.loc[:, gene_var].values,
-                adata.var.index.values,
+                adata.var['gene_ids'].values,
+                adata.var_names.values,
                 adata.var.feature_type.values
             ]
         ).T
-    except:
+    except AttributeError:
         df_features = pd.DataFrame(
             data=[
-                adata.var.loc[:, gene_var].values,
-                adata.var.index.values,
+                adata.var['gene_ids'].values,
+                adata.var_names.values,
                 adata.var.feature_types.values
             ]
-        ).T        
+        ).T
+
 
     df_features.to_csv(
         out_f,
         sep='\t',
-        compression=compression_opts,
+        compression='gzip',
         index=False,
         header=False
     )

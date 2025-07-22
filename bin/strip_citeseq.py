@@ -2,7 +2,8 @@
 
 __date__ = '2023-03-13'
 __version__ = '0.0.2'
-
+import os
+os.environ["NUMBA_DISABLE_JIT"] = "1"
 import argparse
 import scanpy as sc
 from typing import Dict

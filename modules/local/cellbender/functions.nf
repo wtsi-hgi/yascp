@@ -108,7 +108,6 @@ process cellbender__preprocess_output{
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
       container "${params.yascp_container}"
       maxRetries = 1
-      // memory = 250.GB
       cpus = 1
     } else {
       container "${params.yascp_container_docker}"
@@ -191,9 +190,6 @@ process cellbender__preprocess_output{
     )
 
   script:
-    // 032-clean_cellbender_results.py --nf_outdir_tag results/nf-preprocessing/cellbender/Card_Val11650914/cellbender-epochs_250__learnrt_1Eneg7__zdim_100__zlayer_500__lowcount_10 --cb_outfile_tag cellbender --experiment_id Card_Val11650914 --fpr '0.01 0.05 0.1' --cb_params cellbender_params-epochs_250__learnrt_1Eneg7__zdim_100__zlayer_500__lowcount_10
-    // cp cellbender-filtered_10x_mtx-file_list.tsv AA868D1A8EB8249-cellbender-filtered_10x_mtx-file_list.tsv
-
     outfile = "cellbender"
     """
       export LD_PRELOAD=/opt/conda/envs/conda_cellbender/lib/libmkl_core.so:/opt/conda/envs/conda_cellbender/lib/libmkl_sequential.so
