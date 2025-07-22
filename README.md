@@ -80,47 +80,47 @@ The foundational ideas were inspired by earlier pipelines from Anderson lab but 
     ```
 ## 📦 Run on Your Own Data
 
-### 1. Prepare an `input.tsv` file
+  ### 1. Prepare an `input.tsv` file
 
-You can run YASCP in two ways depending on the structure of your input data.
+  You can run YASCP in two ways depending on the structure of your input data.
 
-#### 🧱 Option 1: Minimal (standard 10x format)
+  #### 🧱 Option 1: Minimal (standard 10x format)
 
-Use this format if you have 10x Genomics-style output folders (e.g., from Cell Ranger):
+  Use this format if you have 10x Genomics-style output folders (e.g., from Cell Ranger):
 
-| experiment_id | n_pooled | donor_vcf_ids        | data_path_10x_format        |
-|---------------|----------|-----------------------|-----------------------------|
-| SampleA       | 1        | ""                    | /data/project1/10x_output1/ |
-| SampleB       | 2        | D001,D002             | /data/project1/10x_output2/ |
+  | experiment_id | n_pooled | donor_vcf_ids        | data_path_10x_format        |
+  |---------------|----------|-----------------------|-----------------------------|
+  | SampleA       | 1        | ""                    | /data/project1/10x_output1/ |
+  | SampleB       | 2        | D001,D002             | /data/project1/10x_output2/ |
 
-> `donor_vcf_ids` should be comma-separated if multiple donors are pooled. Leave empty ("") if not applicable.
+  > `donor_vcf_ids` should be comma-separated if multiple donors are pooled. Leave empty ("") if not applicable.
 
----
+  ---
 
-#### ⚙️ Option 2: Custom paths (nonstandard structure or preprocessed inputs)
+  #### ⚙️ Option 2: Custom paths (nonstandard structure or preprocessed inputs)
 
-Use this format if you want to supply filtered/unfiltered MTX files or BAM/BAI directly:
+  Use this format if you want to supply filtered/unfiltered MTX files or BAM/BAI directly:
 
-| experiment_id | n_pooled | donor_vcf_ids  | data_path_10x_format | filtered_mtx             | filtered_barcodes         | filtered_features         | unfiltered_mtx           | unfiltered_barcodes       | unfiltered_features       | bam                     | bai                     |
-|---------------|----------|----------------|-----------------------|---------------------------|----------------------------|----------------------------|---------------------------|----------------------------|----------------------------|--------------------------|--------------------------|
-| SampleC       | 4        | D101,D102,D103 | ""                    | /data/SampleC/filtered.mtx.gz | /data/SampleC/filtered.barcodes.tsv.gz | /data/SampleC/filtered.features.tsv.gz | /data/SampleC/unfiltered.mtx.gz | /data/SampleC/unfiltered.barcodes.tsv.gz | /data/SampleC/unfiltered.features.tsv.gz | /data/SampleC/data.bam | /data/SampleC/data.bam.bai |
-| SampleD       | 3        | D201,D202,D203 | ""                    | ...                       | ...                        | ...                        | ...                       | ...                        | ...                        | ...                      | ...                      |
+  | experiment_id | n_pooled | donor_vcf_ids  | data_path_10x_format | filtered_mtx             | filtered_barcodes         | filtered_features         | unfiltered_mtx           | unfiltered_barcodes       | unfiltered_features       | bam                     | bai                     |
+  |---------------|----------|----------------|-----------------------|---------------------------|----------------------------|----------------------------|---------------------------|----------------------------|----------------------------|--------------------------|--------------------------|
+  | SampleC       | 4        | D101,D102,D103 | ""                    | /data/SampleC/filtered.mtx.gz | /data/SampleC/filtered.barcodes.tsv.gz | /data/SampleC/filtered.features.tsv.gz | /data/SampleC/unfiltered.mtx.gz | /data/SampleC/unfiltered.barcodes.tsv.gz | /data/SampleC/unfiltered.features.tsv.gz | /data/SampleC/data.bam | /data/SampleC/data.bam.bai |
+  | SampleD       | 3        | D201,D202,D203 | ""                    | ...                       | ...                        | ...                        | ...                       | ...                        | ...                        | ...                      | ...                      |
 
-- If `data_path_10x_format` is provided, it takes precedence.
-- If empty (`""`), the pipeline will fall back to the provided `filtered_*`, `unfiltered_*`, or `bam`/`bai` file paths.
-- You must provide either a valid 10x directory or a complete alternative set.
+  - If `data_path_10x_format` is provided, it takes precedence.
+  - If empty (`""`), the pipeline will fall back to the provided `filtered_*`, `unfiltered_*`, or `bam`/`bai` file paths.
+  - You must provide either a valid 10x directory or a complete alternative set.
 
----
+  ---
 
-### 2. Run the pipeline
+  ### 2. Run the pipeline
 
-```bash
-git clone https://github.com/wtsi-hgi/yascp.git
-cd yascp
+  ```bash
+  git clone https://github.com/wtsi-hgi/yascp.git
+  cd yascp
 
-nextflow run ./main.nf \
-  -profile <test,docker,singularity,institute> \
-  --input_data_table path/to/input.tsv
+  nextflow run ./main.nf \
+    -profile <test,docker,singularity,institute> \
+    --input_data_table path/to/input.tsv
 
 ## Pipeline summary
 Pipeline has a modular design ensuring that the bits and piecies can be run independently according to project needs. Overall pipeline is focussed arounf main steps:
