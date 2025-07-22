@@ -12,12 +12,40 @@ You can run pipeline blocks independently:
 
 <img width="100%" alt="Screenshot 2024-06-03 at 17 01 01" src="https://github.com/wtsi-hgi/yascp/assets/22347136/c724f731-42ab-4880-9666-eeb3384fd5e6">
 
-**YASCP** is a bioinformatics best-practice analysis pipeline designed for high-quality deconvolution, scRNA data quality control, doublet detection, cell type assignment, clustering, and integration of single-cell datasets. YASCP stands for "Yet Another Single Cell Pipeline." The sequence from Y to A in the acronym, referring to the alphabet, symbolizes the continuous journey of learning and discovery, with no Z to represent the ultimate knowledge that remains just out of reach, motivating us to keep exploring.
+**YASCP** (Yet Another Single Cell Pipeline) is a scalable and modular single-cell analysis pipeline designed for high-quality preprocessing, deconvolution, doublet detection, clustering, cell type assignment, and integration. The acronym moves from Y to A to symbolize the pursuit of knowledge — no Z implies there's always more to discover.
 
-| experiment_id   | n_pooled | donor_vcf_ids    |  data_path_10x_format   |
-|-----------------|----------|------------------|-------------------------|
-| Pool1 |   1      | ""            | path/to/cellranger/10x_folder      |
-| Pool2|   2      | ""        | path/to/cellranger/10x_folder      |
+YASCP supports:
+
+- 10x Cell Ranger output directories as primary inputs  
+- Hashtag multiplexing (HTO/CITE-seq)  
+- CITE-seq protein expression quantification  
+- scRNA-seq and scATAC-seq analysis modes  
+- Modular reuse of each step independently
+  
+It is designed to be flexible and **not hardcoded for any specific tissue or cell type** (e.g., PBMCs). You can configure individual modules — such as demultiplexing, doublet detection, or clustering — to fit your experimental setup, including custom thresholds or skipping modules that aren’t relevant.
+
+### Flexibility for Custom Designs
+
+YASCP is built to support a wide range of experimental scenarios beyond standard PBMC workflows, including stimulation conditions, CITE-seq, CRISPR screens, and multimodal assays. It supports both plug-and-play execution and custom integration points.
+
+- **Condition-aware and hashtag-aware workflows**  
+  You can split samples by hashtag or stimulation *before* QC, doublet detection, or annotation, either externally or by modifying the workflow schema.
+
+- **Custom QC and filtering per sample/tag**  
+  Per-donor or per-hashtag QC thresholds can be applied dynamically using modular blocks.
+
+- **Optional or replaceable modules**  
+  All major steps (e.g., CellBender, deconvolution, cell typing, doublet detection) can be skipped. You can use filtered CellRanger outputs directly.
+
+- **Antibody and hashtag splitting**  
+  CITE-seq protein and hashtag features can be split and analyzed separately.
+
+- **Custom inputs at any stage**  
+  You can re-enter the pipeline with intermediate `.h5ad` objects and resume downstream analysis.
+
+- **Manual thresholds and logic injection**  
+  Flexible logic and parameter overrides allow manual thresholding or customized QC/annotation rules per batch or condition.
+
 
 Results will demultiplex individuals, robustly assess the assignments
 ![Screenshot 2024-06-03 at 12 56 44](https://github.com/wtsi-hgi/yascp/assets/22347136/5129c789-fbe9-41e8-8d28-5d286896f14a)
@@ -26,7 +54,7 @@ Results will demultiplex individuals, robustly assess the assignments
 As well as assign celltypes, perform integrations, remove ambient RNA and produce publication ready plots
 ![Screenshot 2024-06-02 at 15 20 29](https://github.com/wtsi-hgi/yascp/assets/22347136/fe39d33a-97ec-44a1-9614-55f3585bde4d)
 
-Developed under the leadership of N.Soranzo and Human Genetics Informatics (HGI), this large-scale single-cell pipeline was originally crafted for the Cardinal project (profiling UKBB and ELGH participants) but is versatile enough for broad scRNA analysis applications. 
+Developed by M.Ozols under the leadership of N.Soranzo and Human Genetics Informatics (HGI), this large-scale single-cell pipeline was originally crafted for the Cardinal project (profiling UKBB and GH participants) but is versatile enough for broad scRNA analysis applications. 
 
 Input requires a tsv seperated file [(please read detailed documentation here)](https://github.com/wtsi-hgi/yascp/tree/yascp_docs) with paths and if running in an genotype  additional input is required to be provided in an input.nf file pointing to the vcf location. This pipeline is designed to be used any large scale single cell experiments.
 
