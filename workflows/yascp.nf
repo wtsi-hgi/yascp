@@ -75,7 +75,7 @@ workflow YASCP {
                 // CITESEQ and other data modality seperation
                 // Split citeseq if available
                 // If citeseq data is present in the 10x mtx then we strip it before the ambient rna correction.
-                SPLIT_CITESEQ_GEX_FILTERED(prepare_inputs.out.ch_experimentid_paths10x_filtered,'filterd')
+                SPLIT_CITESEQ_GEX_FILTERED(prepare_inputs.out.ch_experimentid_paths10x_filtered,'filtered')
                 SPLIT_CITESEQ_GEX( prepare_inputs.out.ch_experimentid_paths10x_raw,'raw')
 
                 // Either run ambient RNA removal with cellbender or use cellranger filtered reads (cellbender|cellranger)
@@ -92,7 +92,7 @@ workflow YASCP {
                     ch_versions = ch_versions.mix(ambient_RNA.out.cellbender_versions)
                     
                     // Now we convert the CB processed files to h5ad files and split the modalities if they were left in
-                    SPLIT_CITESEQ_GEX_FILTERED_NOCB(ambient_RNA.out.cellbender_path,'filterd_after_cb')
+                    SPLIT_CITESEQ_GEX_FILTERED_NOCB(ambient_RNA.out.cellbender_path,'filtered_after_cb')
                     SPLIT_CITESEQ_GEX_NOCB( ambient_RNA.out.cellbender_path_raw,'raw_after_cb')
                     
                     DECONV_INPUTS(ambient_RNA.out.cellbender_path,prepare_inputs)

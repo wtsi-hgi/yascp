@@ -8,7 +8,7 @@ process SCPRED{
         container "${params.yascp_container_docker}"
     }
 
-    publishDir  path: "${params.outdir}/celltype_assignemt/scpred/",
+    publishDir  path: "${params.outdir}/celltype_assignment/scpred/",
             saveAs: {filename -> "${outfil_prfx}_" + filename},
             mode: "${params.copy_mode}",
             overwrite: "true"

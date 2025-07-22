@@ -459,7 +459,7 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
         df_cellbender = df_cellbender.reset_index()
         df_cellbender = df_cellbender.drop_duplicates(subset=['experiment_id'])
         df_cellbender = df_cellbender.set_index('experiment_id')
-        df2 = glob.glob(f'{args.results_dir}/preprocessing/data_modalities_split/filterd_after_cb/{expid}/Gene_Expression-{expid}.h5ad')[0]
+        df2 = glob.glob(f'{args.results_dir}/preprocessing/data_modalities_split/filtered_after_cb/{expid}/Gene_Expression-{expid}.h5ad')[0]
         f=df_cellbender.loc[expid, 'data_path_10x_format']
         if (type(f) == str):
             f=[f]
@@ -543,7 +543,7 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
     #Cell-type assignments
     #############
 
-    azt_path = os.path.join(args.results_dir, "celltype_assignemt", "All_Celltype_Assignments.tsv")
+    azt_path = os.path.join(args.results_dir, "celltype_assignment", "All_Celltype_Assignments.tsv")
 
     if os.path.exists(azt_path) and os.path.getsize(azt_path) > 0:
         try:

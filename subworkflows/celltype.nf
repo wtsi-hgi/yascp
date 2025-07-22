@@ -9,7 +9,7 @@ include { CONVERT_MTX_TO_H5AD } from "$projectDir/modules/local/convert_h5ad_to_
 process CELLTYPE_FILE_MERGE{
     tag "${samplename}"    
     label 'process_high'
-    publishDir  path: "${params.outdir}/celltype_assignemt/",
+    publishDir  path: "${params.outdir}/celltype_assignment/",
             saveAs: {filename ->
                     if (filename.contains("adata.h5ad")) {
                         null

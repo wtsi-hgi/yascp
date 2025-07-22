@@ -272,7 +272,7 @@ def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res
                     
         
     folder1 = f'{directory}/celltype/celltypist'
-    folder2 = f'{directory}/celltype_assignemt/celltypist'
+    folder2 = f'{directory}/celltype_assignment/celltypist'
     folder1=choose_folder (folder1, folder2)
     if os.path.isdir(folder1):
         print('prepearing celltype folder')
@@ -293,7 +293,7 @@ def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res
                 copyfile(f'{folder1}/{model_type}/{donor}/{donor}_majority_voting.pdf', f'{name_dir}/Cell-type assignment/celltypist/{model_type}_{donor}_majority_voting.pdf')
 
     folder1 = f'{directory}/celltype/azimuth'
-    folder2 = f'{directory}/celltype_assignemt/azimuth'
+    folder2 = f'{directory}/celltype_assignment/azimuth'
     folder1=choose_folder (folder1, folder2)
     # folder1 = f'{directory}/plots'
     if os.path.isdir(folder1):
@@ -322,7 +322,7 @@ def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res
                 continue
             
     folder1 = f'{directory}/celltype/scpred'
-    folder2 = f'{directory}/celltype_assignemt/scpred'
+    folder2 = f'{directory}/celltype_assignment/scpred'
     folder1=choose_folder (folder1, folder2)
     if os.path.isdir(folder1):
         try:
@@ -357,7 +357,7 @@ def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res
     except:
         print('doesnt exist')    
     try:
-        copy(f'{directory}/celltype_assignemt/All_Celltype_Assignments.tsv', f'{name_dir}/Cell-type assignment/All_Celltype_Assignments.tsv')
+        copy(f'{directory}/celltype_assignment/All_Celltype_Assignments.tsv', f'{name_dir}/Cell-type assignment/All_Celltype_Assignments.tsv')
     except:
         print('doesnt exist')    
     
@@ -500,7 +500,7 @@ def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res
         except:
             print('dir exists')
     folder1 = f'{directory}/celltype'
-    folder2 = f'{directory}/celltype_assignemt'
+    folder2 = f'{directory}/celltype_assignment'
     folder1=choose_folder (folder1, folder2)
     if os.path.isdir(folder1):
         try:

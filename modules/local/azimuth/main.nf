@@ -8,7 +8,7 @@ process AZIMUTH{
         container "${params.yascp_container_docker}"
     }
 
-    publishDir  path: "${params.outdir}/celltype_assignemt/azimuth/${refset.name}",
+    publishDir  path: "${params.outdir}/celltype_assignment/azimuth/${refset.name}",
             saveAs: {filename -> "${outfil_prfx}_" + filename},
             mode: "${params.copy_mode}",
             overwrite: "true"
@@ -80,7 +80,7 @@ process AZIMUTH_ATAC{
         container "${params.yascp_container_docker}"
     }
 
-    publishDir  path: "${params.outdir}/celltype_assignemt/azimuth/${refset.name}",
+    publishDir  path: "${params.outdir}/celltype_assignment/azimuth/${refset.name}",
             saveAs: {filename -> "${outfil_prfx}_" + filename},
             mode: "${params.copy_mode}",
             overwrite: "true"
@@ -107,7 +107,7 @@ process REMAP_AZIMUTH{
         container "${params.yascp_container_docker}"
     }
 
-    publishDir  path: "${params.outdir}/celltype_assignemt/",
+    publishDir  path: "${params.outdir}/celltype_assignment/",
             mode: "${params.copy_mode}",
             overwrite: "true"
     stageInMode 'copy'  
