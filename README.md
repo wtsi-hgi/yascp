@@ -121,6 +121,7 @@ The foundational ideas were inspired by earlier pipelines from Anderson lab but 
   nextflow run ./main.nf \
     -profile <test,docker,singularity,institute> \
     --input_data_table path/to/input.tsv
+  ```
 
 ## Pipeline summary
 Pipeline has a modular design ensuring that the bits and piecies can be run independently according to project needs. Overall pipeline is focussed arounf main steps:
