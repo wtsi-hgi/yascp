@@ -12,21 +12,23 @@ You can run pipeline blocks independently:
 
 <img width="100%" alt="Screenshot 2024-06-03 at 17 01 01" src="https://github.com/wtsi-hgi/yascp/assets/22347136/c724f731-42ab-4880-9666-eeb3384fd5e6">
 
-**YASCP** (Yet Another Single Cell Pipeline) is a scalable and modular single-cell analysis pipeline designed for high-quality preprocessing, deconvolution, doublet detection, clustering, cell type assignment, and integration. The acronym moves from Y to A to symbolize the pursuit of knowledge — no Z implies there's always more to discover.
+**YASCP** (Yet Another Single Cell Pipeline) is a scalable and modular single-cell analysis pipeline designed for high-quality preprocessing, deconvolution, doublet detection, clustering, cell type assignment, and integration. The acronym moves from Y to A to symbolize the pursuit of knowledge — no Z implies there's always more to explore, refine, and improve.
 
 YASCP supports:
 
-- 10x Cell Ranger output directories as primary inputs  
+- 10x Genomics Cell Ranger-style output directories 
+- Raw BAM/BAI and MTX file inputs for nonstandard or intermediate-stage datasets 
 - Hashtag multiplexing (HTO/CITE-seq)  
 - CITE-seq protein expression quantification  
 - scRNA-seq and scATAC-seq analysis modes  
-- Modular reuse of each step independently
+- Modular execution: run the full pipeline or reuse individual steps independently
   
-It is designed to be flexible and **not hardcoded for any specific tissue or cell type** (e.g., PBMCs). You can configure individual modules — such as demultiplexing, doublet detection, or clustering — to fit your experimental setup, including custom thresholds or skipping modules that aren’t relevant.
+YASCP is not hardcoded for any specific tissue, platform, or cell type. Each module — from ambient RNA removal to clustering and annotation — can be configured independently, allowing you to tailor thresholds, skip irrelevant steps, or restart from any stage of the analysis.
 
 ### Flexibility for Custom Designs
 
-YASCP is built to support a wide range of experimental scenarios beyond standard PBMC workflows, including stimulation conditions, CITE-seq, CRISPR screens, and multimodal assays. It supports both plug-and-play execution and custom integration points.
+YASCP is designed to accommodate complex experimental scenarios such as stimulation conditions, CITE-seq profiling, and multimodal assays. While it does not perform CRISPR guide assignment or perturbation modeling directly, it can preprocess CRISPR-based single-cell data upstream of specialized tools — providing normalized, QC-filtered .h5ad or .rds files ready for downstream integration.
+Whether you’re analyzing a simple 10x run or building a customized, multi-step workflow, YASCP enables reproducible, flexible, and scalable analysis.
 
 - **Condition-aware and hashtag-aware workflows**  
   You can split samples by hashtag or stimulation *before* QC, doublet detection, or annotation, either externally or by modifying the workflow schema.
@@ -76,22 +78,50 @@ The foundational ideas were inspired by earlier pipelines from Anderson lab but 
     git clone https://github.com/wtsi-hgi/yascp.git
     nextflow run /path/to/colned/yascp -profile test,<docker/singularity,institute>
     ```
+## 📦 Run on Your Own Data
 
-## Run on your own data
+### 1. Prepare an `input.tsv` file
 
-1. Prepeare input.tsv file:
-   
-| experiment_id   | n_pooled | donor_vcf_ids    |  data_path_10x_format   |
-|-----------------|----------|------------------|-------------------------|
-| Pool1 |   1      | ""            | path/to/cellranger/10x_folder      |
-| Pool2|   2      | ""        | path/to/cellranger/10x_folder      |
+You can run YASCP in two ways depending on the structure of your input data.
 
-2. Run on your data
-    ```console
-    git clone https://github.com/wtsi-hgi/yascp.git
-    nextflow run /path/to/colned/yascp -profile test,<docker/singularity,institute> --input_data_table input.tsv
-    ```
-    
+#### 🧱 Option 1: Minimal (standard 10x format)
+
+Use this format if you have 10x Genomics-style output folders (e.g., from Cell Ranger):
+
+| experiment_id | n_pooled | donor_vcf_ids        | data_path_10x_format        |
+|---------------|----------|-----------------------|-----------------------------|
+| SampleA       | 1        | ""                    | /data/project1/10x_output1/ |
+| SampleB       | 2        | D001,D002             | /data/project1/10x_output2/ |
+
+> `donor_vcf_ids` should be comma-separated if multiple donors are pooled. Leave empty ("") if not applicable.
+
+---
+
+#### ⚙️ Option 2: Custom paths (nonstandard structure or preprocessed inputs)
+
+Use this format if you want to supply filtered/unfiltered MTX files or BAM/BAI directly:
+
+| experiment_id | n_pooled | donor_vcf_ids  | data_path_10x_format | filtered_mtx             | filtered_barcodes         | filtered_features         | unfiltered_mtx           | unfiltered_barcodes       | unfiltered_features       | bam                     | bai                     |
+|---------------|----------|----------------|-----------------------|---------------------------|----------------------------|----------------------------|---------------------------|----------------------------|----------------------------|--------------------------|--------------------------|
+| SampleC       | 4        | D101,D102,D103 | ""                    | /data/SampleC/filtered.mtx.gz | /data/SampleC/filtered.barcodes.tsv.gz | /data/SampleC/filtered.features.tsv.gz | /data/SampleC/unfiltered.mtx.gz | /data/SampleC/unfiltered.barcodes.tsv.gz | /data/SampleC/unfiltered.features.tsv.gz | /data/SampleC/data.bam | /data/SampleC/data.bam.bai |
+| SampleD       | 3        | D201,D202,D203 | ""                    | ...                       | ...                        | ...                        | ...                       | ...                        | ...                        | ...                      | ...                      |
+
+- If `data_path_10x_format` is provided, it takes precedence.
+- If empty (`""`), the pipeline will fall back to the provided `filtered_*`, `unfiltered_*`, or `bam`/`bai` file paths.
+- You must provide either a valid 10x directory or a complete alternative set.
+
+---
+
+### 2. Run the pipeline
+
+```bash
+git clone https://github.com/wtsi-hgi/yascp.git
+cd yascp
+
+nextflow run ./main.nf \
+  -profile <test,docker,singularity,institute> \
+  --input_data_table path/to/input.tsv
+
 ## Pipeline summary
 Pipeline has a modular design ensuring that the bits and piecies can be run independently according to project needs. Overall pipeline is focussed arounf main steps:
 1. Cellbender
