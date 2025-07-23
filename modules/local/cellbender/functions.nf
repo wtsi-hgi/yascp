@@ -346,22 +346,21 @@ process cellbender__remove_background {
 
   script:
 
-    if (params.utilise_gpu){
-      gpu_text_info = '--cuda'
-    }else{
-      gpu_text_info = "--cpu-threads ${task.cpus}"
-    }
-
     if (params.cellbender_v == '0.3.1'){
-      option1='--checkpoint-mins 100'
+        option1='--checkpoint-mins 100'
+        if (params.utilise_gpu){
+            gpu_text_info = '--cuda'
+        }else{
+            gpu_text_info = "--cpu-threads ${task.cpus}"
+        }
     }else{
-      option1=''
+        option1=''
+        if (params.utilise_gpu){
+            gpu_text_info = '--cuda'
+        }else{
+            gpu_text_info = ""
+        }
     }
-
-
-
-
-
 
     outdir = "${outdir_prev}/${experiment_id}"
     lr_string = "${learning_rate}".replaceAll("\\.", "pt")
@@ -375,24 +374,60 @@ process cellbender__remove_background {
     cb_params = "${cb_params}__lowcount_${low_count_threshold}"
     outdir = "${outdir}/${cb_params}".replaceAll("cellbender_params","cellbender")
     outfile = "cellbender"
-    
-    """
+  
+      """
     echo ${experiment_id}
-    # LD_PRELOAD to fix mkl/anaconda python error
-    # cf. https://stackoverflow.com/questions/36659453/intel-mkl-fatal-error-cannot-load-libmkl-avx2-so-or-libmkl-def-so
+
     export LD_PRELOAD=/opt/conda/envs/conda_cellbender/lib/libmkl_core.so:/opt/conda/envs/conda_cellbender/lib/libmkl_sequential.so
-    #// nvidia-smi
+
     rm -fr plots
-    mkdir txd_input
-    ln --physical ${file_10x_barcodes} txd_input/barcodes.tsv.gz
+    mkdir -p txd_input
+
+    # Check if input barcodes are already unique 16bp identifiers.
+    # If not, this script will generate deterministic 16-character encoded barcodes (CB00000000000000, etc.),
+    # write them to txd_input/barcodes_encoded.tsv.gz, and create a barcode mapping file
+    # at txd_input/barcode_mapping.tsv for downstream remapping of CellBender outputs.
+
+    encode_barcodes_if_needed.py
+
+    # Link features and matrix
     ln --physical ${file_10x_features} txd_input/features.tsv.gz
     ln --physical ${file_10x_matrix} txd_input/matrix.mtx.gz
+
+    # Conditionally link encoded or original barcodes
+    if [[ -f txd_input/barcodes_encoded.tsv.gz ]]; then
+        echo "Using encoded barcodes"
+        ln --symbolic barcodes_encoded.tsv.gz txd_input/barcodes.tsv.gz
+    else
+        echo "Using original barcodes"
+        ln --physical ${file_10x_barcodes} txd_input/barcodes.tsv.gz
+    fi
+
     export TMPDIR=\$PWD
-    cellbender remove-background --input txd_input ${gpu_text_info} ${option1} --output ${outfile} --expected-cells \$(cat ${expected_cells}) --total-droplets-included \$(cat ${total_droplets_include}) --model full --z-dim ${zdims} --z-layers ${zlayers} --low-count-threshold ${low_count_threshold} --epochs ${epochs} --learning-rate ${learning_rate} --fpr ${fpr}
-    # If outfile does not have h5 appended to it, move it.
+    cellbender remove-background \\
+      --input txd_input \\
+      ${gpu_text_info} ${option1} \\
+      --output ${outfile} \\
+      --expected-cells \$(cat ${expected_cells}) \\
+      --total-droplets-included \$(cat ${total_droplets_include}) \\
+      --model full \\
+      --z-dim ${zdims} \\
+      --z-layers ${zlayers} \\
+      --low-count-threshold ${low_count_threshold} \\
+      --epochs ${epochs} \\
+      --learning-rate ${learning_rate} \\
+      --fpr ${fpr}
+
+    # Rename output if needed
     [ -f ${outfile} ] && mv ${outfile} ${outfile}.h5
 
-    mkdir plots
+    # Remap h5 barcodes if mapping file exists
+    if [[ -f txd_input/barcode_mapping.tsv ]]; then
+        echo "Remapping .h5 barcodes"
+        resave_h5_with_mapped_barcodes.py
+    fi
+
+    mkdir -p plots
     mv *pdf plots/ 2>/dev/null || true
     mv *png plots/ 2>/dev/null || true
 
