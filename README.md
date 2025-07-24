@@ -78,13 +78,13 @@ The foundational ideas were inspired by earlier pipelines from Anderson lab but 
     git clone https://github.com/wtsi-hgi/yascp.git
     nextflow run /path/to/colned/yascp -profile test,<docker/singularity,institute>
     ```
-## 📦 Run on Your Own Data
+## Run on Your Own Data
 
   ### 1. Prepare an `input.tsv` file
 
   You can run YASCP in two ways depending on the structure of your input data.
 
-  #### 🧱 Option 1: Minimal (standard 10x format)
+  #### Option 1: Minimal (standard 10x format)
 
   Use this format if you have 10x Genomics-style output folders (e.g., from Cell Ranger):
 
@@ -97,7 +97,7 @@ The foundational ideas were inspired by earlier pipelines from Anderson lab but 
 
   ---
 
-  #### ⚙️ Option 2: Custom paths (nonstandard structure or preprocessed inputs)
+  #### Option 2: Custom paths (nonstandard structure or preprocessed inputs)
 
   Use this format if you want to supply filtered/unfiltered MTX files or BAM/BAI directly:
 
