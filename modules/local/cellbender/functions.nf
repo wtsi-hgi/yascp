@@ -532,19 +532,15 @@ process capture_cellbender_files{
     container "${params.yascp_container_docker}"
   }
 
-  // cache false
   input:
     path(cellbender_location) //cant use path here - needs a full path
     val(outdir)
     path(input_file)
   output:
     path("tmp1234/cellbender/*") optional true
-    path("captured/*/*FPR_${params.cellbender_resolution_to_use}*"),emit:alt_input optional true
-    path("cellbender/*/*/cellbender_FPR_${params.cellbender_resolution_to_use.replaceAll('pt', '.')}_filtered.h5"),emit:cb_to_use_downstream optional true
-    // cellbender/*/*/cellbender_FPR_0pt1_filtered.h5
-    // tuple(val(experiment_id),path("cellbender_FPR_${params.cellbender_rb_resolution_to_use.replaceAll('pt', '.')}_filtered.h5"),emit: cb_to_use_downstream)
+    path("captured/unfiltered/*/*FPR_${params.cellbender_resolution_to_use}*"),emit:alt_input_unfiltered optional true
+    path("captured/filtered/*/*FPR_${params.cellbender_resolution_to_use}*"),emit:alt_input_filtered optional true
 
-    
   script:
   """
   

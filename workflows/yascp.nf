@@ -90,8 +90,7 @@ workflow YASCP {
                     ambient_RNA( ch_experimentid_paths10x_raw,
                         prepare_inputs.out.ch_experimentid_paths10x_filtered,prepare_inputs.out.channel__metadata)
                     ch_versions = ch_versions.mix(ambient_RNA.out.cellbender_versions)
-                    
-                    ambient_RNA.out.cellbender_path.subscribe { println "ambient_RNA.out.cellbender_path: $it" }
+
                     // Now we convert the CB processed files to h5ad files and split the modalities if they were left in
                     SPLIT_CITESEQ_GEX_FILTERED_NOCB(ambient_RNA.out.cellbender_path,'filtered_after_cb')
                     SPLIT_CITESEQ_GEX_NOCB( ambient_RNA.out.cellbender_path_raw,'raw_after_cb')

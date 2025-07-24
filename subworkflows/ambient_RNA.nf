@@ -22,13 +22,17 @@ workflow ambient_RNA {
 
         capture_cellbender_files(params.cellbender_location,"${params.outdir}/preprocessing",params.input_data_table)
         
-        capture_cellbender_files.out.alt_input.flatten()
-            .map{ sample -> tuple("${sample}".replaceFirst(/.*\/captured\//,"").replaceFirst(/\/.*/,""), sample) }
+        capture_cellbender_files.out.alt_input_unfiltered.flatten()
+            .map{ sample -> tuple("${sample}".replaceFirst(/.*\/captured\/unfiltered\//,"").replaceFirst(/\/.*/,""), sample) }
             .set{ ch_previously_processed_raw_inputs }
-
-        capture_cellbender_files.out.cb_to_use_downstream.flatten()
-            .map{ sample -> tuple("${sample}".replaceFirst(/.*\/cellbender\//,"").replaceFirst(/\/.*/,""), sample) }
+        
+        capture_cellbender_files.out.alt_input_filtered.flatten()
+            .map{ sample -> tuple("${sample}".replaceFirst(/.*\/captured\/filtered\//,"").replaceFirst(/\/.*/,""), sample) }
             .set{ ch_previously_filtered_outputs }
+
+        // capture_cellbender_files.out.cb_to_use_downstream.flatten()
+        //     .map{ sample -> tuple("${sample}".replaceFirst(/.*\/cellbender\//,"").replaceFirst(/\/.*/,""), sample) }
+        //     .set{ ch_previously_filtered_outputs }
 
         ch_experimentid_paths10x_raw
             .join(ch_previously_processed_raw_inputs, by: [0], remainder: true)

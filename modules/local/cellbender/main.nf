@@ -79,7 +79,7 @@ workflow CELLBENDER {
         // cellbender__rb__get_input_cells.out.cb_input.subscribe { println "cellbender__rb__get_input_cells: $it" }
 
         cellbender__rb__get_input_cells.out.cb_input.join(channel__f, by: [0], remainder: true).set{post_ch_experimentid_paths10x_filtered}
-        post_ch_experimentid_paths10x_filtered.subscribe { println "post_ch_experimentid_paths10x_filtered: $it" }
+        // post_ch_experimentid_paths10x_filtered.subscribe { println "post_ch_experimentid_paths10x_filtered: $it" }
         post_ch_experimentid_paths10x_filtered.filter{ it[8] == null }.map{row -> tuple(row[0])}.set{not_defined}
 
         not_defined.map{row -> tuple(
@@ -94,14 +94,12 @@ workflow CELLBENDER {
         channel__combo =channel__g.concat(channel__f)
 
         cellbender__rb__get_input_cells.out.cb_input.join(channel__combo, by: [0], remainder: false).set{cellbender_ambient_rna_input}
-
-        cellbender_ambient_rna_input.subscribe { println "cellbender_ambient_rna_input: $it" }
         
         filteredChan = cellbender_ambient_rna_input
         .filter { tuple ->
             !params.cellbender_ignore_list.contains(tuple[0])
         }
-        filteredChan.subscribe { println "Filtered tuple: $it" }
+
 
         cellbender__remove_background(
             outdir,
@@ -132,7 +130,6 @@ workflow CELLBENDER {
         results_list = cellbender__preprocess_output.out.out_paths
         // prepeare the output channel for utilising in the deconvolution instead of barcode input.
         cellbender_path = cellbender__preprocess_output.out.alternative_input
-        cellbender_path.subscribe { println "cellbender_path: $it" }
         cellbender_path_raw = cellbender__preprocess_output.out.alternative_input_raw
         cellbender_downstream = cellbender__remove_background.out.cb_to_use_downstream
         emit:
