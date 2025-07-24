@@ -132,6 +132,7 @@ workflow CELLBENDER {
         results_list = cellbender__preprocess_output.out.out_paths
         // prepeare the output channel for utilising in the deconvolution instead of barcode input.
         cellbender_path = cellbender__preprocess_output.out.alternative_input
+        cellbender_path.subscribe { println "cellbender_path: $it" }
         cellbender_path_raw = cellbender__preprocess_output.out.alternative_input_raw
         cellbender_downstream = cellbender__remove_background.out.cb_to_use_downstream
         emit:

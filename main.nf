@@ -77,6 +77,15 @@ workflow JUST_CELLBENDER{
     MAIN ()
 }
 
+workflow JUST_DOUBLETS_ON_INPUT_TSV{
+    // here we are skipping everything downstram and are only performing cellbender opperations
+    params.do_deconvolution = false
+    params.celltype_assignment.run_celltype_assignment = false
+    params.skip_qc = true
+    params.skip_handover = true
+    params.skip_merge = true
+    MAIN ()
+}
 
 workflow JUST_DOUBLETS{
     file__anndata_merged = Channel.from(params.file__anndata_merged)

@@ -91,6 +91,7 @@ workflow YASCP {
                         prepare_inputs.out.ch_experimentid_paths10x_filtered,prepare_inputs.out.channel__metadata)
                     ch_versions = ch_versions.mix(ambient_RNA.out.cellbender_versions)
                     
+                    ambient_RNA.out.cellbender_path.subscribe { println "ambient_RNA.out.cellbender_path: $it" }
                     // Now we convert the CB processed files to h5ad files and split the modalities if they were left in
                     SPLIT_CITESEQ_GEX_FILTERED_NOCB(ambient_RNA.out.cellbender_path,'filtered_after_cb')
                     SPLIT_CITESEQ_GEX_NOCB( ambient_RNA.out.cellbender_path_raw,'raw_after_cb')
@@ -110,7 +111,7 @@ workflow YASCP {
                     ch_experiment_bam_bai_barcodes=prepare_inputs.out.ch_experiment_bam_bai_barcodes
                 }
                 else{
-                    log.info '--- input mode is not selected - please choose --- (existing_cellbender cellranger)'
+                    log.info '--- input mode is not selected - please choose --- (existing_cellbender cellranger)'X
                 }
 
                 // If we have multiplexing capture file then we proceed with hastag deconvolution
@@ -133,7 +134,7 @@ workflow YASCP {
                 else{
                     channel__file_paths_10x_gex = SPLIT_CITESEQ_GEX_FILTERED.out.gex_data
                 }
-
+                channel__file_paths_10x_gex.subscribe { println "channel__file_paths_10x_gex: $it" }
                 // ###################################
                 // ###################################
                 // Step: DOUBLET DETECTION
@@ -141,24 +142,28 @@ workflow YASCP {
                 // ###################################
                 // ###################################
                 if (params.filter_multiplets.run_process){
+                    log.info '---Running doublet assignment ----'
                     MULTIPLET(channel__file_paths_10x_gex,'yascp_full')
                     doublet_paths = MULTIPLET.out.scrublet_paths
                     sf_mult = MULTIPLET.out.result_sf
                     ch_versions = ch_versions.mix(MULTIPLET.out.doublet_versions)
                 }else{
+                    log.info '---Skipping celltype assignment ----'
                     sf_mult = Channel.of()
                     doublet_paths = Channel.from("$projectDir/assets/fake_file.fq")
                 }
 
                 DOUBLET_FILE_MERGE(sf_mult,'doublet')
                 doublet_labels = DOUBLET_FILE_MERGE.out.results
-                    .ifEmpty { "$projectDir/assets/fake_file1.fq" }
+                    .ifEmpty { "$projectDir/assets/fake_file2.fq" }
 
                 if (params.celltype_assignment.run_celltype_assignment){
+                    log.info '---Running celltype assignment ----'
                     celltype(channel__file_paths_10x_gex,'yascp_full')
                     celltype_assignments=celltype.out.celltype_assignments
                     ch_versions = ch_versions.mix(celltype.out.celltype_versions)
                 }else{
+                    log.info '---Skipping celltype assignment ----'
                     celltype_assignments = Channel.from("$projectDir/assets/fake_file.fq")
                 }
 
@@ -195,12 +200,13 @@ workflow YASCP {
                     log.info '--- Skipping Deconvolution ---'
                     channel__metadata = prepare_inputs.out.channel__metadata
                     MERGE_SAMPLES(channel__file_paths_10x,channel__metadata,celltype_assignments,hastag_labels,doublet_labels,'barcodes')
-                    assignments_all_pools = Channel.from("$projectDir/assets/fake_file.fq")
+                    assignments_all_pools = Channel.from("$projectDir/assets/fake_file1.fq")
                     vireo_paths = Channel.from("$projectDir/assets/fake_file.fq")
                     matched_donors = Channel.from("$projectDir/assets/fake_file.fq")
                 }
                 
                 if (!params.atac){
+                    log.info '---This is an ATAC dataset as you have specified in params.atac ----'
                     file__anndata_merged = MERGE_SAMPLES.out.file__anndata_merged
                     dummy_filtered_channel(file__anndata_merged,params.id_in)
                     file__cells_filtered = dummy_filtered_channel.out.anndata_metadata

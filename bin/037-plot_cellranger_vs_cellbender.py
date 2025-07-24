@@ -71,7 +71,7 @@ def plot_cellranger_vs_cellbender(samplename, raw_cellranger_mtx, filtered_cellr
 
     # read cellranger raw
     adata_cellranger_raw = sc.read_10x_mtx(
-        raw_cellranger_mtx, var_names='gene_symbols', make_unique=False,
+        raw_cellranger_mtx, var_names='gene_symbols', make_unique=True,
         cache=False, cache_compression=compression_opts)
     
     

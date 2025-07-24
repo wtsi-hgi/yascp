@@ -14,7 +14,11 @@ with gzip.open(input_path, 'rt') as f:
     barcodes = [line.strip() for line in f]
 
 # Check for 16bp + unique
-all_16bp = all(len(bc) == 16 for bc in barcodes)
+# Normalize barcodes (strip 10x-style "-1" suffix before checking length)
+normalized = [bc.replace("-1", "") if bc.endswith("-1") else bc for bc in barcodes]
+
+# Check for 16bp + unique
+all_16bp = all(len(bc) == 16 for bc in normalized)
 all_unique = len(set(barcodes)) == len(barcodes)
 
 if all_16bp and all_unique:
