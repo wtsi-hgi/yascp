@@ -545,6 +545,8 @@ anchors <- FindTransferAnchors(
   mapping.score.k = 100
 )
 
+
+
 # Transfer cell type labels and impute protein expression
 #
 # Transferred labels are in metadata columns named "predicted.*"
@@ -576,6 +578,36 @@ for (celltype_level in levels) {
           slot = 'data'
         )
       }
+
+      # Calculate the embeddings of the query data on the reference SPCA
+      query <- IntegrateEmbeddings(
+        anchorset = anchors,
+        reference = reference$map,
+        query = query,
+        reductions = "pcaproject",
+        reuse.weights.matrix = TRUE
+      )
+
+      # 3. Remove any cells with NA in integrated_dr
+      non_na_cells <- complete.cases(Embeddings(query[["integrated_dr"]]))
+      query <- subset(query, cells = colnames(query)[non_na_cells])
+
+      # ⚠️ Must re-run anchors with filtered query
+      anchors <- FindTransferAnchors(
+        reference = reference$map,
+        query = query,
+        k.filter = NA,
+        reference.neighbors = "refdr.annoy.neighbors",
+        reference.assay = "refAssay",
+        query.assay = "refAssay",
+        reference.reduction = "refDR",
+        normalization.method = "SCT",
+        features = intersect(rownames(reference$map), VariableFeatures(query)),
+        dims = 1:50,
+        n.trees = 20,
+        mapping.score.k = 100
+      )
+
       query <- TransferData(
         reference = reference$map,
         query = query,
@@ -586,14 +618,6 @@ for (celltype_level in levels) {
         store.weights = TRUE
       )
 
-      # Calculate the embeddings of the query data on the reference SPCA
-      query <- IntegrateEmbeddings(
-        anchorset = anchors,
-        reference = reference$map,
-        query = query,
-        reductions = "pcaproject",
-        reuse.weights.matrix = TRUE
-      )
 
       # Calculate the query neighbors in the reference
       # with respect to the integrated embeddings
