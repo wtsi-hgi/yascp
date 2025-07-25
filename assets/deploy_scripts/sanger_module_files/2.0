@@ -6,7 +6,7 @@ set version [file tail [module-info version [module-info name]]]
  
 proc ModulesHelp { } {
     global version
-    puts stderr "YASCP (Yet Another Single Cell (scRNA) Pieline: https://github.com/wtsi-hgi/yascp) is a nextflow pipeline that QCs the scRNA Cellranger data by removing ambient RNA, deconvoluting donors, assigning celltypes, analysing concordances vs expected genotypes. IMPROVEMENTS: 1) Software versions are consistent now across pipeline 2) Celltype assignment moved to beggining of pipeline"
+    puts stderr "YASCP (Yet Another Single Cell (scRNA) Pieline: https://github.com/wtsi-hgi/yascp) is a nextflow pipeline that QCs the scRNA Cellranger data by removing ambient RNA, deconvoluting donors, assigning celltypes, analysing concordances vs expected genotypes. IMPROVEMENTS: 1) Support goes beyond Cellranger, can provide bam, mtx matrix now - tested on PiPseq 2) Improvements in cellbender logic 3) Added versions file"
     puts stderr ""
     puts stderr "Yascp module has been set to run in multiple modes:"
     puts stderr "	*yascp -v or yascp -h :will describe the checkout tag used."
@@ -25,7 +25,7 @@ proc ModulesHelp { } {
 }
  
 
-module-whatis   "BETA - Yascp version $version is a single cell (scRNA) processing pipeline that takes care of donor deconvolution, ambient rna removal, celltype assignment, integration, clustering and cluster assesments and data qc: yascp (https://github.com/wtsi-hgi/yascp --beta (still being developed))"
+module-whatis   "Most Up to date Yascp version $version is a single cell (scRNA) processing pipeline that takes care of donor deconvolution, ambient rna removal, celltype assignment, integration, clustering and cluster assesments and data qc: yascp (https://github.com/wtsi-hgi/yascp --beta (still being developed))"
 
 prepend-path PATH "/software/hgi/envs/conda/team151/mo11/mo11/bin"
 set install /software/hgi/pipelines/yascp_versions/yascp_v2.0

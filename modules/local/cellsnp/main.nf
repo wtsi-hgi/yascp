@@ -157,7 +157,7 @@ process CELLSNP {
       if (n_pooled=='1'){
         MAF=" " //Since we are dealing with a single sample, we not expect to observe that much variability in alleles across cells, and thus, this filter may remove many variants.
       }else{
-        MAF=" --minMAF ${params.cellsnp.min_maf}"
+        MAF="${params.cellsnp.min_maf}"
       }
 
       if (params.atac){
@@ -184,7 +184,7 @@ process CELLSNP {
         -O cellsnp_${samplename} \\
         -R region_vcf_no_MHC.vcf.gz \\
         -p ${task.cpus} \\
-        --minCOUNT ${params.cellsnp.min_count} ${params.cellsnp.CellTag} ${MAF} --gzip ${genotype_file} ${umi_tag}
+        ${params.cellsnp.min_count} ${params.cellsnp.CellTag} ${params.cellsnp.minMAPQ} ${MAF} --gzip ${genotype_file} ${umi_tag}
 
       cat <<-END_VERSIONS > versions.yml
       "${task.process}":
