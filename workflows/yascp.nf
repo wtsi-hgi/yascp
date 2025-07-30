@@ -72,7 +72,6 @@ workflow YASCP {
                 // The input table should contain the folowing columns - experiment_id	n_pooled	donor_vcf_ids	data_path_10x_format
                 // prepearing the inputs from a standard 10x dataset folders.
 
-                log.info 'The preprocessing has been already performed, skipping directly to h5ad input'
                 // // Removing the background using cellbender which is then used in the deconvolution.
 
                 // CITESEQ and other data modality seperation
@@ -192,19 +191,19 @@ workflow YASCP {
                     }
                 }else{
                     channel__metadata = prepare_inputs.out.channel__metadata
-                    if (!params.skip_merge){
-                        MERGE_SAMPLES(channel__file_paths_10x,channel__metadata,celltype_assignments,'barcodes')
-                    }
+
+                    MERGE_SAMPLES(channel__file_paths_10x,channel__metadata,celltype_assignments,'barcodes')
+                    
                     assignments_all_pools = Channel.from("$projectDir/assets/fake_file.fq")
                     vireo_paths = Channel.from("$projectDir/assets/fake_file.fq")
                     matched_donors = Channel.from("$projectDir/assets/fake_file.fq")
                 }
                 
-                if (!params.skip_merge){
-                    file__anndata_merged = MERGE_SAMPLES.out.file__anndata_merged
-                    dummy_filtered_channel(file__anndata_merged,params.id_in)
-                    file__cells_filtered = dummy_filtered_channel.out.anndata_metadata
-                }
+                
+                file__anndata_merged = MERGE_SAMPLES.out.file__anndata_merged
+                dummy_filtered_channel(file__anndata_merged,params.id_in)
+                file__cells_filtered = dummy_filtered_channel.out.anndata_metadata
+                
             }else{
                 // This option skips all the deconvolution and and takes a preprocessed yascp h5ad file to run the downstream clustering and celltype annotation.
                 log.info '''----Skipping Preprocessing since we already have prepeared h5ad input file----'''

@@ -25,7 +25,7 @@ proc ModulesHelp { } {
 }
  
 
-module-whatis   "Yascp version $version is a single cell (scRNA) processing pipeline that takes care of donor deconvolution, ambient rna removal, celltype assignment, integration, clustering and cluster assesments and data qc: yascp (https://github.com/wtsi-hgi/yascp --beta (still being developed))"
+module-whatis   "Yascp Version: $version" 
 
 prepend-path PATH "/software/hgi/envs/conda/team151/mo11/mo11/bin"
 set install /software/hgi/pipelines/yascp_versions/yascp_v1.9
@@ -33,7 +33,6 @@ module load ISG/singularity/3.11.4
 module load HGI/common/nextflow/24.10.4
 module load HGI/common/baton
 module load ISG/experimental/irods/4.2.7
-module load HGI/softpack/users/bh18/bcftools/1.0
 
 prepend-path PATH "/software/hgi/containers/yascp/modules/full_yascp"
 prepend-path PATH "/software/hgi/pipelines/yascp_versions/yascp_v1.9/bin"
