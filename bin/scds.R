@@ -29,6 +29,7 @@ non_empty <- Matrix::colSums(counts) > 0
 message(paste("🔍 Non-empty barcodes detected:", sum(non_empty), "/", ncol(counts)))
 counts <- counts[, non_empty]
 
+
 ## Read in data
 # if (file.exists(args$tenX_matrix)){
 #     message(paste0("Using the following counts: ", args$tenX_matrix))
@@ -102,11 +103,31 @@ if (!is.null(args$barcodes_filtered)){
 if (is.list(counts)){
 	sce <- SingleCellExperiment(list(counts=counts[[grep("Gene", names(counts))]]))
 } else {
-	sce <- SingleCellExperiment(list(counts=counts))
+	sce <- SingleCellExperiment(list(counts = counts))
 }
 
 ## Annotate doublet using binary classification based doublet scoring:
-sce = bcds(sce, retRes = TRUE, estNdbl=TRUE)
+sce <- tryCatch(
+  {
+    bcds(sce, retRes = TRUE, estNdbl = TRUE)
+  },
+  error = function(e) {
+    message("bcds() failed: ", e$message)
+    message("Filtering low-complexity cells and retrying...")
+
+    # Filter counts matrix
+    cell_sums <- Matrix::colSums(counts)
+    cell_detected_genes <- Matrix::colSums(counts > 0)
+    keep_cells <- cell_sums >= 20
+    counts_filtered <- counts[, keep_cells, drop = FALSE]
+
+    # Rebuild SCE from filtered counts
+    sce <- SingleCellExperiment(list(counts = counts_filtered))
+
+    # Retry bcds
+    bcds(sce, retRes = TRUE, estNdbl = TRUE)
+  }
+)
 
 ## Annotate doublet using co-expression based doublet scoring:
 try({
