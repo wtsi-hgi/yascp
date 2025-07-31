@@ -236,6 +236,7 @@ process VIREO_GT_FIX_HEADER
     bcftools view -Oz -o ${sorted_vcf} -
 
     bcftools reheader -h header.txt ${sorted_vcf} | \
+    bcftools view | awk '{gsub(/^chr/, ""); gsub(/ID=chr/, "ID="); print}' | \
     bcftools view -Oz -o pre_${vireo_fixed_vcf}
     tabix -p vcf pre_${vireo_fixed_vcf}
     bcftools +fixref pre_${vireo_fixed_vcf} -Oz -o ${vireo_fixed_vcf} -- -d -f ${genome}/genome.fa -m flip-all
