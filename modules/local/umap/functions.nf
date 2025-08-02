@@ -263,7 +263,7 @@ process umap_calculate_and_plot {
         }
         drop_legend_n = "-1"
         if (cmd__colors_cat.contains("experiment_id")) {
-            drop_legend_n = "8"
+            drop_legend_n = "40"
         }
         cmd__tsv_pcs = "--tsv_pcs ${file__reduced_dims}"
         if (use_pcs_as_reduced_dims == "True") {

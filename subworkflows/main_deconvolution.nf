@@ -87,24 +87,17 @@ workflow  main_deconvolution {
             ch_versions = ch_versions.mix(GT_MATCH_POOL_IBD.out.versions)
 
             if (params.use_bam_derived_cellsnp_panel){
-                // Here should add an option to derive panel from actual bam files as different technologies has different coverages. 
+                // Here should add an option to derive panel from actual bam files as different technologies has different coverages and ceirtain panels may not work. 
                 mpileup(ch_experiment_bam_bai_barcodes,params.reference_assembly_fasta_dir)
                 mpileup_out_chanel = mpileup.out.pileup
-                // tuple val(sample_id), path("${sample_id}__piled_up_reads.vcf")
-                // mpileup_out_chanel_subset = subset_vcf(mpileup_out_chanel,params.subset_regions_bed)
-                // cellsnp_out = cellsnp(mpileup_out_chanel_subset)
-                // mpileup_out_chanel.subscribe { println "mpileup_out_chanel: $it" }
-                // merged_expected_genotypes.combine(mpileup_out_chanel, by: 0).set{merged_expected_genotypes2}
-                // // merged_expected_genotyp.subscribe { println "merged_expected_genotyp: $it" }
-                // merged_expected_genotypes2.subscribe { println "merged_expected_genotypes2: $it" }
+
             }
 
+
+            // This takes the subset genotypes expected in the pool and select informative SNPs between them and adds them to the panel. 
             DYNAMIC_DONOR_EXCLUSIVE_SNP_SELECTION(params.add_snps_to_pile_up_based_on_genotypes_provided,merged_expected_genotypes2)
-            // tuple val(samplename), path(vcf_file),path(csi),path(cellsnp_primary_file)
             ch_versions = ch_versions.mix(DYNAMIC_DONOR_EXCLUSIVE_SNP_SELECTION.out.versions)
             cellsnp_panels = DYNAMIC_DONOR_EXCLUSIVE_SNP_SELECTION.out.cellsnp_pool_panel
-
-
 
             // merged_expected_genotypes.subscribe { println "merged_expected_genotypes: $it" }
             informative_uninformative_sites = DYNAMIC_DONOR_EXCLUSIVE_SNP_SELECTION.out.informative_uninformative_sites
@@ -347,8 +340,6 @@ workflow  main_deconvolution {
                 subsampling_donor_swap = Channel.from("$projectDir/assets/fake_file.fq")
             }
 
-            
-
             VIREO_GT_FIX_HEADER.out.gt_pool
                 .combine(ch_ref_vcf)
                 .set { gt_math_pool_against_panel_input3 }
@@ -358,7 +349,7 @@ workflow  main_deconvolution {
             gt_matches = match_genotypes.out.donor_match_table.collect()
 
             ENHANCE_STATS_GT_MATCH(match_genotypes.out.donor_match_table_enhanced,params.input_data_table)
-            collect_file1(ENHANCE_STATS_GT_MATCH.out.assignments.collect(),"assignments_all_pools.tsv",params.outdir+'/deconvolution/vireo_processed',1,'')
+            collect_file1(ENHANCE_STATS_GT_MATCH.out.assignments.collect(),"assignments_all_pools.tsv",params.outdir+'/deconvolution/vireo/vireo_processed',1,'')
             collect_file10(ENHANCE_STATS_GT_MATCH.out.assignments.collect(),"assignments_all_pools.tsv",params.outdir+'/deconvolution/gtmatch',1,'')
             assignments_all_pools = collect_file1.out.output_collection
             gt_matches = Channel.from("$projectDir/assets/fake_file.fq")
