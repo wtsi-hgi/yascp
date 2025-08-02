@@ -73,11 +73,11 @@ process plot_pcs {
         outfile = "pca"
         cmd__colors_quant = ""
         if (colors_quantitative != "") {
-            cmd__colors_quant = "--colors_quantitative ${colors_quantitative}"
+            cmd__colors_quant = "--colors_quantitative '${colors_quantitative}'"
         }
         cmd__colors_cat = ""
         if (colors_categorical != "") {
-            cmd__colors_cat = "--colors_categorical ${colors_categorical}"
+            cmd__colors_cat = "--colors_categorical '${colors_categorical}'"
         }
 
         """

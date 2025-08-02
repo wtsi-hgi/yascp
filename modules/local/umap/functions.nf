@@ -102,8 +102,8 @@ process generate_final_UMAPS{
         umap_plot_final.py \
             --h5_anndata ${file__anndata} \
             --number_cpu 1 \
-            --colors_quantitative ${params.umap.colors_quantitative.value} \
-            --colors_categorical ${params.umap.colors_categorical.value} \
+            --colors_quantitative '${params.umap.colors_quantitative.value}' \
+            --colors_categorical '${params.umap.colors_categorical.value}' \
             --drop_legend_n 40 \
             --output_file UMAP
     """
@@ -198,11 +198,11 @@ process umap_plot_swarm {
         outfile = "umap"
         cmd__colors_quant = ""
         if (colors_quantitative != "") {
-            cmd__colors_quant = "--colors_quantitative ${colors_quantitative}"
+            cmd__colors_quant = "--colors_quantitative '${colors_quantitative}'"
         }
         cmd__colors_cat = ""
         if (colors_categorical != "") {
-            cmd__colors_cat = "--colors_categorical ${colors_categorical}"
+            cmd__colors_cat = "--colors_categorical '${colors_categorical}'"
         }
 
         """
@@ -255,11 +255,11 @@ process umap_calculate_and_plot {
         outfile = "umap"
         cmd__colors_quant = ""
         if (colors_quantitative != "") {
-            cmd__colors_quant = "--colors_quantitative ${colors_quantitative}"
+            cmd__colors_quant = "--colors_quantitative '${colors_quantitative}'"
         }
         cmd__colors_cat = ""
         if (colors_categorical != "") {
-            cmd__colors_cat = "--colors_categorical ${colors_categorical}"
+            cmd__colors_cat = "--colors_categorical '${colors_categorical}'"
         }
         drop_legend_n = "-1"
         if (cmd__colors_cat.contains("experiment_id")) {

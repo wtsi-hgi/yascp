@@ -245,7 +245,7 @@ process VIREO_GT_FIX_HEADER
 }
 process REPLACE_GT_DONOR_ID2{
     tag "${samplename}"
-    publishDir  path: "${params.outdir}/deconvolution/vireo_processed/${samplename}/",
+    publishDir  path: "${params.outdir}/deconvolution/vireo/vireo_processed/${samplename}/",
           pattern: "GT_replace_*",
           mode: "${params.copy_mode}",
           overwrite: "true"
