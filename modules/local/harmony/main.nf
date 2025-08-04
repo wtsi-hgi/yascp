@@ -85,7 +85,7 @@ process HARMONY{
         param_details = "${param_details}.thetas=${theta_str}"
 
         """
-            0045-harmony_process_pcs.py \
+            harmony_process_pcs.py \
                 --pca_file ${file__pcs} \
                 --metadata_file ${file__metadata} \
                 --metadata_columns ${variables_and_thetas.variable} \
@@ -107,7 +107,7 @@ process HARMONY{
             END_VERSIONS
         """
         // NOTE: below code for harmony in R
-        // 0045-harmony_process_pcs.R \
+        // harmony_process_pcs.R \
         //     --pca_file ${file__pcs} \
         //     --metadata_file ${file__metadata} \
         //     --metadata_columns ${variables_and_thetas.variable} \

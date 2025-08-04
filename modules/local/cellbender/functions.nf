@@ -200,7 +200,7 @@ process CELLBENDER__PREPROCESS_OUTPUT{
         [ ! -f \$out_file ] && mv \$i \$out_file
         echo \$out_file
       done
-      032-clean_cellbender_results.py --nf_outdir_tag ${outdir} --cb_outfile_tag ${outfile} --experiment_id ${experiment_id} --fpr '${fpr}' --cb_params ${cb_params}
+      clean_cellbender_results.py --nf_outdir_tag ${outdir} --cb_outfile_tag ${outfile} --experiment_id ${experiment_id} --fpr '${fpr}' --cb_params ${cb_params}
       cp ${outfile}-filtered_10x_mtx-file_list.tsv ${outfile}-filtered_10x_mtx-file_list.tsv || echo 'same file'
     """
 
@@ -498,7 +498,7 @@ process CELLBENDER__REMOVE_BACKGROUND__QC_PLOTS {
     for i in \$(cat files.txt); do
     echo \$i
     out_file=\$(echo \$i | sed s/".h5"//)
-    035-analyse_cellbender_results.py   --tenxdata_path txd_input   --h5_cellbender \$i   --output_file cellbender_results-\$out_file   --number_cpu ${task.cpus}
+    analyse_cellbender_results.py   --tenxdata_path txd_input   --h5_cellbender \$i   --output_file cellbender_results-\$out_file   --number_cpu ${task.cpus}
     done
     rm files.txt
     mkdir -p plots
@@ -604,7 +604,7 @@ process CELLBENDER__REMOVE_BACKGROUND__QC_PLOTS_2 {
   n_expected_cells=\$(cat $expectedcells)
   n_total_droplets_included=\$(cat $totaldropletsinclude)
 
-  037-plot_cellranger_vs_cellbender.py \\
+  plot_cellranger_vs_cellbender.py \\
     --samplename \"${experiment_id}\" \\
     --raw_cellranger_mtx \"${raw_cellranger_mtx}\" \\
     --filtered_cellranger_mtx \"${filtered_cellranger_mtx}\" \\
@@ -651,6 +651,6 @@ process CELLBENDER__GATHER_QC_INPUT {
     cb_results_tsvs = cb_results_tsvs.join(",")
 
     """
-        045-prepare_nf_qc_cluster_input.py --cb_results_tsvs ${cb_results_tsvs}
+        prepare_nf_qc_cluster_input.py --cb_results_tsvs ${cb_results_tsvs}
     """
 }

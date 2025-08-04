@@ -36,7 +36,7 @@ process DONT_INTEGRATE{
         outfile = "outfile_adata"
         """
         
-        0045-reduce_dims_file.py \
+        reduce_dims_file.py \
             --h5_anndata ${file__anndata} \
             --n_pcs ${n_pcs} \
             --output_file ${outfile}-dontIntegrate

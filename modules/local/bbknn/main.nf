@@ -78,7 +78,7 @@ process BBKNN{
         outfile = "outfile_adata"
         """
         
-        0045-bbknn.py \
+        bbknn.py \
             --h5_anndata ${file__anndata} \
             --batch_key ${batch_var} \
             --n_pcs ${n_pcs} \

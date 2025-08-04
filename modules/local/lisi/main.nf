@@ -62,7 +62,7 @@ process LISI{
 
         """
         rm -fr plots
-        0047-lisi.py \
+        lisi.py \
             --reduced_dims_tsv ${file__reduced_dims} \
             --reduced_dims_tsv_labels ${label__reduced_dims} \
             --metadata_tsv ${file__metadata} \

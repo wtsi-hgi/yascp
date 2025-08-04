@@ -30,7 +30,7 @@ process PLOT_FILTERED_CELLS {
 
         """
         echo "publish_directory: ${outdir}"
-        0026-plot_filtered_cells.py \
+        plot_filtered_cells.py \
             --tsv_file ${file__filtered_cells} \
             --output_file adata-cell_filtered_per_experiment
 
@@ -119,7 +119,7 @@ process PLOT_PREDICTED_SEX {
         outfile = "scatterplot-sex_sample_swap_check"
         """
         echo "publish_directory: ${outdir}"
-        0028-plot_predicted_sex.py \
+        plot_predicted_sex.py \
             --h5_anndata ${file__anndata} \
             --output_file ${outfile}
         """
@@ -174,7 +174,7 @@ process PLOT_QC {
                 --h5_anndata ${file__anndata} \
                 --output_file ${outfile} \
                 ${cmd__facet_columns}
-            0027-calculate_mads.py \
+            calculate_mads.py \
                 --h5_anndata ${file__anndata} \
                 --qc_key ${params.mads_categories} \
                 --output_file mads

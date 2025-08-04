@@ -170,7 +170,7 @@ process DSB_INTEGRATE{
         
         """
         echo 'running1'
-        2.integrate.R ${vars_to_regress} ${k_anchor} ${dims} ${ndim_sct} ${ndim_citeBgRemoved} ${ndim_cite_integrated}
+        integrate.R ${vars_to_regress} ${k_anchor} ${dims} ${ndim_sct} ${ndim_citeBgRemoved} ${ndim_cite_integrated}
         """
 
 }
@@ -197,7 +197,7 @@ process MULTIMODAL_INTEGRATION{
     script:
     """
     echo 'running1'
-    3.WNN_integrate_SCT_CITE.R ${tmp_rds_file}
+    WNN_integrate_SCT_CITE.R ${tmp_rds_file}
     """
 
 }
@@ -228,7 +228,7 @@ process VDJ_INTEGRATION{
     script:
     """
     echo 'running1'
-    4.add_vdj.R ${wnn_integrated_file}
+    add_vdj.R ${wnn_integrated_file}
     """
 
 }
@@ -267,7 +267,7 @@ process PREPROCESS_PROCESS {
             vars_to_regress='NONE'
         }
         """
-            2.process_donor_data_for_integration.R ${sample_name} ${vireo_path} ${matched_donors} ${rds_path} ${vars_to_regress}
+            process_donor_data_for_integration.R ${sample_name} ${vireo_path} ${matched_donors} ${rds_path} ${vars_to_regress}
         """
 }
 

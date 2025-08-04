@@ -72,7 +72,7 @@ process CLUSTER {
 
         """
         echo "publish_directory: ${outdir}"
-        0053-scanpy_cluster.py \
+        scanpy_cluster.py \
             --h5_anndata ${file__anndata} \
             --tsv_pcs ${file__reduced_dims} \
             --number_neighbors ${number_neighbors} \
@@ -122,7 +122,7 @@ process PLOT_PHENOTYPE_ACROSS_CLUSTERS {
         """
 
         rm -fr plots
-        0055-plot_anndataobs_across_clusters.py \
+        plot_anndataobs_across_clusters.py \
             --h5_anndata ${file__anndata} \
             --pheno_columns ${variables} \
             --output_file ${outfile}
@@ -207,7 +207,7 @@ process PLOT_KNOWN_MARKERS {
         // Only run this script if there is a value
         cmd__run = ""
         if (outfile != "NO_FILE") {
-            cmd__run = "0055-plot_known_markers.py"
+            cmd__run = "plot_known_markers.py"
             cmd__run = "${cmd__run} --h5_anndata ${file__anndata}"
             cmd__run = "${cmd__run} --markers_database ${marker_file}"
             cmd__run = "${cmd__run} --output_file ${outfile}"
@@ -316,7 +316,7 @@ process CLUSTER_VALIDATE_RESOLUTION_SKLEARN {
         outfile = "${outfile}-train_size_cells=${train_size_cells}"
         """
         rm -fr plots
-        0057-scanpy_cluster_validate_resolution-sklearn.py \
+        scanpy_cluster_validate_resolution-sklearn.py \
             --h5_anndata ${file__anndata} \
             --sparsity ${sparsity} \
             ${cmd__dask} \
@@ -437,7 +437,7 @@ process CLUSTER_VALIDATE_RESOLUTION_KERAS {
         """
         vcf_name=\$(python ${projectDir}/bin/random_id.py)
         rm -fr plots
-        0057-scanpy_cluster_validate_resolution-keras.py \
+        scanpy_cluster_validate_resolution-keras.py \
             --h5_anndata ${file__anndata} \
             --sparsity_l1 ${sparsity} \
             --number_epoch 25 \
@@ -528,14 +528,14 @@ process PLOT_RESOLUTION_VALIDATE {
         """
         echo "publish_directory: ${outdir}"
         rm -fr plots
-        0058-plot_resolution_boxplot.py \
+        plot_resolution_boxplot.py \
             --model_reports ${files__model_report} \
             --h_line 0.75 \
             --output_file ${outfile}-hline0pt8
-        0058-plot_resolution_boxplot.py \
+        plot_resolution_boxplot.py \
             --model_reports ${files__model_report} \
             --output_file ${outfile}
-        0058-plot_resolution_curve.py \
+        plot_resolution_curve.py \
              --y_prob_dfs ${files__y_prob_df} \
              --output_file ${outfile}
         mkdir plots
@@ -622,7 +622,7 @@ process CLUSTER_MARKERS {
 
         """
         rm -fr plots
-        0056-scanpy_cluster_markers.py \
+        scanpy_cluster_markers.py \
             --h5_anndata ${file__anndata} \
             --rank_genes_method ${method} \
             --number_cpu ${task.cpus} \
@@ -682,7 +682,7 @@ process CELLEX_CLUSTER_MARKERS {
 
         """
 
-        0060-cellex_cluster_markers.py \
+        cellex_cluster_markers.py \
             --h5_anndata ${file__anndata} \
             --output_file ${outfile} \
             --verbose False
