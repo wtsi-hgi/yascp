@@ -1,4 +1,4 @@
-process capture_cellsnp_files{
+process CAPTURE_CELLSNP_FILES{
 
   publishDir  path: "${params.outdir}/deconvolution/",
         saveAs: {filename ->

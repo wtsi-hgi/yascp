@@ -9,18 +9,18 @@ include { SUBSET_WORKF } from "$projectDir/modules/local/subset_genotype/main"
 include { CONCORDANCE_CALCLULATIONS; 
           COMBINE_FILES; 
           PLOT_CONCORDANCES_ALL } from "$projectDir/modules/local/concordance/main"
-include {collect_file as collect_file1;
-        collect_file as collect_file2;
-        collect_file as collect_file3;
-        collect_file as collect_file4;
-        collect_file as collect_file5;
-        collect_file as collect_file6;
-        collect_file as collect_file7;
-        collect_file as collect_file8;
-        collect_file as collect_file9} from "$projectDir/modules/local/collect_file/main"
+include {COLLECT_FILE as COLLECT_FILE1;
+        COLLECT_FILE as COLLECT_FILE2;
+        COLLECT_FILE as COLLECT_FILE3;
+        COLLECT_FILE as COLLECT_FILE4;
+        COLLECT_FILE as COLLECT_FILE5;
+        COLLECT_FILE as COLLECT_FILE6;
+        COLLECT_FILE as COLLECT_FILE7;
+        COLLECT_FILE as COLLECT_FILE8;
+        COLLECT_FILE as COLLECT_FILE9} from "$projectDir/modules/local/collect_file/main"
 
 
-workflow match_genotypes {
+workflow MATCH_GENOTYPES {
   take:
     vireo_out_sample_donor_vcf
     merged_expected_genotypes
@@ -94,8 +94,8 @@ workflow match_genotypes {
         ch_combine = subsampling_donor_swap.combine(CONCORDANCE_CALCLULATIONS.out.concordances, by: 0)
         COMBINE_FILES(ch_combine) //This step plots scatter plots for each of the pools individually.
         // Now we want to combined all the above files together and make one overall plot for all the tranches.
-        collect_file1(COMBINE_FILES.out.file_joined_df_for_plots.collect(),"joined_df_for_plots.tsv",params.outdir+'/deconvolution/concordances',1,'')
-        PLOT_CONCORDANCES_ALL(collect_file1.out.output_collection)
+        COLLECT_FILE1(COMBINE_FILES.out.file_joined_df_for_plots.collect(),"joined_df_for_plots.tsv",params.outdir+'/deconvolution/concordances',1,'')
+        PLOT_CONCORDANCES_ALL(COLLECT_FILE1.out.output_collection)
     }
 
   emit:

@@ -70,7 +70,7 @@ process CELLTYPE_FILE_MERGE{
 }
 
 
-workflow celltype{
+workflow CELLTYPE{
     
     take:
         file__anndata_merged

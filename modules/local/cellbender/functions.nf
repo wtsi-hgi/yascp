@@ -9,7 +9,7 @@ if (binding.hasVariable("echo_mode") == false) {
   echo_mode = true
 }
 
-process cellbender__rb__get_input_cells {
+process CELLBENDER__RB__GET_INPUT_CELLS {
 
   label 'process_low'
   
@@ -22,7 +22,7 @@ process cellbender__rb__get_input_cells {
     container "${params.yascp_container_docker}"
   }
 
-  // Calculates thresholds for input cells of cellbender__remove_background
+  // Calculates thresholds for input cells of CELLBENDER__REMOVE_BACKGROUND
   // ------------------------------------------------------------------------
  // use tmp directory
 
@@ -102,7 +102,7 @@ process cellbender__rb__get_input_cells {
 }
 
 
-process cellbender__preprocess_output{
+process CELLBENDER__PREPROCESS_OUTPUT{
     label 'process_low'
     tag "${experiment_id}_cb"
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
@@ -206,7 +206,7 @@ process cellbender__preprocess_output{
 
 }
 
-process cellbender__remove_background {
+process CELLBENDER__REMOVE_BACKGROUND {
   // Remove ambient RNA
   // ------------------------------------------------------------------------
   //cache false    // cache results from run
@@ -438,7 +438,7 @@ process cellbender__remove_background {
     """
 }
 
-process cellbender__remove_background__qc_plots {
+process CELLBENDER__REMOVE_BACKGROUND__QC_PLOTS {
   label 'process_low'
   if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
     container "${params.yascp_container}"
@@ -507,7 +507,7 @@ process cellbender__remove_background__qc_plots {
     """
 }
 
-process capture_cellbender_files{
+process CAPTURE_CELLBENDER_FILES{
 
   publishDir  path: "${outdir}/cellbender",
   saveAs: {filename ->
@@ -564,7 +564,7 @@ process capture_cellbender_files{
 
 }
 
-process cellbender__remove_background__qc_plots_2 {
+process CELLBENDER__REMOVE_BACKGROUND__QC_PLOTS_2 {
 
   label 'process_low'
   if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
@@ -617,7 +617,7 @@ process cellbender__remove_background__qc_plots_2 {
 }
 
 
-process cellbender__gather_qc_input {
+process CELLBENDER__GATHER_QC_INPUT {
 
 
   label 'process_low'

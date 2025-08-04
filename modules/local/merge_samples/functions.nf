@@ -4,7 +4,7 @@ def random_hex(n) {
 
 
 
-process dummy_filtered_channel{
+process DUMMY_FILTERED_CHANNEL{
     label 'process_low' 
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "${params.yascp_container}"
@@ -29,7 +29,7 @@ process dummy_filtered_channel{
 
 
 
-process merge_samples_from_h5ad {
+process MERGE_SAMPLES_FROM_H5AD {
     // Takes a list of h5ad files and merges them into one anndata object.
     // ------------------------------------------------------------------------
     //cache true        // cache results from run
@@ -124,7 +124,7 @@ process merge_samples_from_h5ad {
         """
 }
 
-process merge_samples {
+process MERGE_SAMPLES {
     // Takes a list of raw 10x files and merges them into one anndata object.
     // ------------------------------------------------------------------------
     //cache true        // cache results from run
@@ -205,7 +205,7 @@ process merge_samples {
 }
 
 
-process prep_merge_samples {
+process PREP_MERGE_SAMPLES {
     input:
         tuple(
             val(experiment_id),
@@ -224,7 +224,7 @@ process prep_merge_samples {
         """
 }
 
-process prep_merge_samples_from_h5ad {
+process PREP_MERGE_SAMPLES_FROM_H5AD {
     input:
         tuple(
             val(experiment_id),

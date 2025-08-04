@@ -8,7 +8,7 @@ if (binding.hasVariable("echo_mode") == false) {
 }
 
 
-process cluster {
+process CLUSTER {
     // Clusters results.
     // ------------------------------------------------------------------------
     //cache false        // cache results from run
@@ -83,7 +83,7 @@ process cluster {
         """
 }
 
-process plot_phenotype_across_clusters {
+process PLOT_PHENOTYPE_ACROSS_CLUSTERS {
     // Takes annData object, plots distribution of obs value across clusters
     // ------------------------------------------------------------------------
     //cache false        // cache results from run
@@ -132,7 +132,7 @@ process plot_phenotype_across_clusters {
         """
 }
 
-process serialize_known_markers {
+process SERIALIZE_KNOWN_MARKERS {
     // Serializes known markers for analysis
     // ------------------------------------------------------------------------
     scratch false      // use tmp directory
@@ -169,7 +169,7 @@ process serialize_known_markers {
         """
 }
 
-process plot_known_markers {
+process PLOT_KNOWN_MARKERS {
     // Plots markers from previous studies as dotplots
     // ------------------------------------------------------------------------
     //cache false        // cache results from run
@@ -221,7 +221,7 @@ process plot_known_markers {
         """
 }
 
-process cluster_validate_resolution_sklearn {
+process CLUSTER_VALIDATE_RESOLUTION_SKLEARN {
     // Validate the resolution for clusters.
     // ------------------------------------------------------------------------
     //cache false        // cache results from run
@@ -330,24 +330,24 @@ process cluster_validate_resolution_sklearn {
         cat <<-END_VERSIONS > versions.yml
         "${task.process}":
             python: \$(python --version | sed 's/Python //g')
-            scanpy: \$(python -c "import scanpy; print(scanpy.__version__)")
-            sklearn: \$(python -c "import sklearn; print(sklearn.__version__)")
-            argparse: \$(python -c "import argparse; print(argparse.__version__)")
-            numpy: \$(python -c "import numpy; print(numpy.__version__)")
-            scipy: \$(python -c "import scipy; print(scipy.__version__)")
-            pandas: \$(python -c "import pandas; print(pandas.__version__)")
-            matplotlib: \$(python -c "import matplotlib; print(matplotlib.__version__)")
-            csv: \$(python -c "import csv; print(csv.__version__)")
-            joblib: \$(python -c "import joblib; print(joblib.__version__)")
-            dask_jobqueue: \$(python -c "import dask_jobqueue; print(dask_jobqueue.__version__)")
-            dask: \$(python -c "import dask; print(dask.__version__)")
+            python library argparse: \$(python -c "import argparse; print(argparse.__version__)")
+            python library dask: \$(python -c "import dask; print(dask.__version__)")
+            python library dask_jobqueue: \$(python -c "import dask_jobqueue; print(dask_jobqueue.__version__)")
+            python library csv: \$(python -c "import csv; print(csv.__version__)")
+            python library joblib: \$(python -c "import joblib; print(joblib.__version__)")
+            python library matplotlib: \$(python -c "import matplotlib; print(matplotlib.__version__)")
+            python library numpy: \$(python -c "import numpy; print(numpy.__version__)")
+            python library pandas: \$(python -c "import pandas; print(pandas.__version__)")
+            python library scanpy: \$(python -c "import scanpy; print(scanpy.__version__)")
+            python library scipy: \$(python -c "import scipy; print(scipy.__version__)")
+            python library sklearn: \$(python -c "import sklearn; print(sklearn.__version__)")
         END_VERSIONS
         """
         // --number_cells ${number_cells_downsample} \
         // --train_size_fraction ${train_size_fraction} \
 }
 
-process cluster_validate_resolution_keras {
+process CLUSTER_VALIDATE_RESOLUTION_KERAS {
     // Validate the resolution for clusters.
     // ------------------------------------------------------------------------
     //cache false        // cache results from run
@@ -451,24 +451,24 @@ process cluster_validate_resolution_keras {
         cat <<-END_VERSIONS > versions.yml
         "${task.process}":
             python: \$(python --version | sed 's/Python //g')
-            scanpy: \$(python -c "import scanpy; print(scanpy.__version__)")
-            keras: \$(python -c "import keras; print(keras.__version__)")
-            argparse: \$(python -c "import argparse; print(argparse.__version__)")
-            numpy: \$(python -c "import numpy; print(numpy.__version__)")
-            scipy: \$(python -c "import scipy; print(scipy.__version__)")
-            pandas: \$(python -c "import pandas; print(pandas.__version__)")
-            csv: \$(python -c "import csv; print(csv.__version__)")
-            distutils: \$(python -c "import distutils; print(distutils.__version__)")
-            scikeras: \$(python -c "import scikeras; print(scikeras.__version__)")
-            matplotlib: \$(python -c "import matplotlib; print(matplotlib.__version__)")
-            plotnine: \$(python -c "import plotnine; print(plotnine.__version__)")
-            sklearn: \$(python -c "import sklearn; print(sklearn.__version__)")
-            tensorflow: \$(python -c "import tensorflow; print(tensorflow.__version__)")
+            python library argparse: \$(python -c "import argparse; print(argparse.__version__)")
+            python library csv: \$(python -c "import csv; print(csv.__version__)")
+            python library distutils: \$(python -c "import distutils; print(distutils.__version__)")
+            python library keras: \$(python -c "import keras; print(keras.__version__)")
+            python library matplotlib: \$(python -c "import matplotlib; print(matplotlib.__version__)")
+            python library numpy: \$(python -c "import numpy; print(numpy.__version__)")
+            python library pandas: \$(python -c "import pandas; print(pandas.__version__)")
+            python library plotnine: \$(python -c "import plotnine; print(plotnine.__version__)")
+            python library scanpy: \$(python -c "import scanpy; print(scanpy.__version__)")
+            python library scikeras: \$(python -c "import scikeras; print(scikeras.__version__)")
+            python library scipy: \$(python -c "import scipy; print(scipy.__version__)")
+            python library sklearn: \$(python -c "import sklearn; print(sklearn.__version__)")
+            python library tensorflow: \$(python -c "import tensorflow; print(tensorflow.__version__)")
         END_VERSIONS
         """
 }
 
-process plot_resolution_validate {
+process PLOT_RESOLUTION_VALIDATE {
     // Plot the AUC from validation models across resolutions
     // ------------------------------------------------------------------------
     //cache false        // cache results from run
@@ -544,7 +544,7 @@ process plot_resolution_validate {
         """
 }
 
-process cluster_markers {
+process CLUSTER_MARKERS {
     // Find markers for clusters.
     // ------------------------------------------------------------------------
     //cache false        // cache results from run
@@ -634,7 +634,7 @@ process cluster_markers {
         """
 }
 
-process cellex_cluster_markers {
+process CELLEX_CLUSTER_MARKERS {
     // Find markers for clusters using CELLEX.
     // ------------------------------------------------------------------------
     //cache false        // cache results from run
@@ -689,7 +689,7 @@ process cellex_cluster_markers {
         """
 }
 
-process merge_clusters {
+process MERGE_CLUSTERS {
     // Merges clusters.
     // ------------------------------------------------------------------------
     //cache false        // cache results from run
@@ -746,7 +746,7 @@ process merge_clusters {
         """
 }
 
-process prep_cellxgene {
+process PREP_CELLXGENE {
     // Preps adata file for cellxgene
     // ------------------------------------------------------------------------
     //cache false           // cache results from run
@@ -797,16 +797,16 @@ process prep_cellxgene {
         cat <<-END_VERSIONS > versions.yml
         "${task.process}":
             python: \$(python --version | sed 's/Python //g')
-            argparse: \$(python -c "import argparse; print(argparse.__version__)")
-            numpy: \$(python -c "import numpy; print(numpy.__version__)")
-            scipy: \$(python -c "import scipy; print(scipy.__version__)")
-            scanpy: \$(python -c "import scanpy; print(scanpy.__version__)")
-            warnings: \$(python -c "import warnings; print(warnings.__version__)")
+            python library argparse: \$(python -c "import argparse; print(argparse.__version__)")
+            python library numpy: \$(python -c "import numpy; print(numpy.__version__)")
+            python library scanpy: \$(python -c "import scanpy; print(scanpy.__version__)")
+            python library scipy: \$(python -c "import scipy; print(scipy.__version__)")
+            python library warnings: \$(python -c "import warnings; print(warnings.__version__)")
         END_VERSIONS
         """
 }
 
-process convert_seurat {
+process CONVERT_SEURAT {
     // Converts anndata h5 file to a Seurat data object.
     // TODO: automatically add reduced_dims to Seurat data object.
     // ------------------------------------------------------------------------

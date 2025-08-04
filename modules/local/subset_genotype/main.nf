@@ -3,14 +3,14 @@
 def random_hex(n) {
   Long.toUnsignedString(new Random().nextLong(), n).toUpperCase()
 }
-include {collect_file as collect_file1;
-        collect_file as collect_file2;
-        collect_file as collect_file3;
-        collect_file as collect_file4;
-        collect_file as collect_file5;
-        collect_file as collect_file6;
-        collect_file as collect_file7;
-        collect_file as collect_file8} from "$projectDir/modules/local/collect_file/main"
+include {COLLECT_FILE as COLLECT_FILE1;
+        COLLECT_FILE as COLLECT_FILE2;
+        COLLECT_FILE as COLLECT_FILE3;
+        COLLECT_FILE as COLLECT_FILE4;
+        COLLECT_FILE as COLLECT_FILE5;
+        COLLECT_FILE as COLLECT_FILE6;
+        COLLECT_FILE as COLLECT_FILE7;
+        COLLECT_FILE as COLLECT_FILE8} from "$projectDir/modules/local/collect_file/main"
 
 
 process VACUTAINER_TO_DONOR_ID {
@@ -439,7 +439,7 @@ workflow SUBSET_WORKF{
       pools_panels = RESOLVE_POOL_VCFS.out.pipeline_data
 
       if (mode=='AllExpectedGT'){
-        collect_file1(RESOLVE_POOL_VCFS.out.user_data.collect(),"Genotypes_all_pools.tsv",params.outdir+'/preprocessing/subset_genotypes',1,'')
+        COLLECT_FILE1(RESOLVE_POOL_VCFS.out.user_data.collect(),"Genotypes_all_pools.tsv",params.outdir+'/preprocessing/subset_genotypes',1,'')
       }
       pools_panels.splitCsv(header: true, sep: '\t').map { row -> tuple(row['Pool_id'], file(row.vcf), file(row.vcf_csi)) }
                 .set{merged_expected_genotypes}

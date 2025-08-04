@@ -76,12 +76,12 @@ process LISI{
         cat <<-END_VERSIONS > versions.yml
         "${task.process}":
             python: \$(python --version | sed 's/Python //g')
-            harmonypy: \$(python -c "import harmonypy; print(harmonypy.__version__)")
-            argparse: \$(python -c "import argparse; print(argparse.__version__)")
-            distutils: \$(python -c "import distutils; print(distutils.__version__)")
-            pandas: \$(python -c "import pandas; print(pandas.__version__)")
-            csv: \$(python -c "import csv; print(csv.__version__)")
-            plotnine: \$(python -c "import plotnine; print(plotnine.__version__)")
+            python library argparse: \$(python -c "import argparse; print(argparse.__version__)")
+            python library csv: \$(python -c "import csv; print(csv.__version__)")
+            python library distutils: \$(python -c "import distutils; print(distutils.__version__)")
+            python library harmonypy: \$(python -c "import harmonypy; print(harmonypy.__version__)")
+            python library pandas: \$(python -c "import pandas; print(pandas.__version__)")
+            python library plotnine: \$(python -c "import plotnine; print(plotnine.__version__)")
         END_VERSIONS
         """
 

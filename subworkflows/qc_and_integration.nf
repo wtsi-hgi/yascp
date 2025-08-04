@@ -17,7 +17,7 @@ include {DONT_INTEGRATE} from "$projectDir/modules/local/reduce_dims/main"
 include {TOTAL_VI_INTEGRATION} from "$projectDir/modules/local/totalVi/main"
 include { DSB_PROCESS; PREPROCESS_PROCESS; DSB_INTEGRATE; MULTIMODAL_INTEGRATION; VDJ_INTEGRATION } from '../modules/local/citeseq/main'
 
-workflow qc_and_integration {
+workflow QC_AND_INTEGRATION {
     take:
         file__anndata_merged
         file__cells_filtered

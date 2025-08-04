@@ -2,7 +2,7 @@ def random_hex(n) {
     Long.toUnsignedString(new Random().nextLong(), n).toUpperCase()
 }
 
-process plot_filtered_cells {
+process PLOT_FILTERED_CELLS {
     // Takes annData object, plots filtered cells
     // ------------------------------------------------------------------------
     //cache false        // cache results from run
@@ -39,7 +39,7 @@ process plot_filtered_cells {
 
 
 
-process plot_pcs {
+process PLOT_PCS {
     // Takes annData object with PCs and returns plots
     // ------------------------------------------------------------------------
     //cache false        // cache results from run
@@ -91,7 +91,7 @@ process plot_pcs {
 }
 
 
-process plot_predicted_sex {
+process PLOT_PREDICTED_SEX {
     // Takes annData object, plots the predicted sex fron gene expression
     // ------------------------------------------------------------------------
     //cache false        // cache results from run
@@ -125,7 +125,7 @@ process plot_predicted_sex {
         """
 }
 
-process plot_qc {
+process PLOT_QC {
     // Takes annData object, generates basic qc plots
     // ------------------------------------------------------------------------
     //cache false        // cache results from run
@@ -181,7 +181,7 @@ process plot_qc {
         """
 }
 
-process plot_distributions {
+process PLOT_DISTRIBUTIONS {
     // Takes annData object, generates basic qc plots
     // ------------------------------------------------------------------------
     //cache false        // cache results from run

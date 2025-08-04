@@ -1,4 +1,4 @@
-process metadata_posthoc
+process METADATA_POSTHOC
 {
 
   label 'process_tiny'
@@ -25,7 +25,7 @@ process metadata_posthoc
     """
 }
 
-process replace_donors_posthoc
+process REPLACE_DONORS_POSTHOC
 {
 
 
