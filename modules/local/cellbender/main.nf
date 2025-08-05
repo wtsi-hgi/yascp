@@ -3,8 +3,7 @@ include {
     CELLBENDER__RB__GET_INPUT_CELLS;
     CELLBENDER__REMOVE_BACKGROUND;
     CELLBENDER__REMOVE_BACKGROUND__QC_PLOTS;
-    CELLBENDER__REMOVE_BACKGROUND__QC_PLOTS_2;
-    CELLBENDER__GATHER_QC_INPUT;CELLBENDER__PREPROCESS_OUTPUT;
+    CELLBENDER__PREPROCESS_OUTPUT;
 } from "./functions.nf"
 
 // Set default parameters.
@@ -124,7 +123,7 @@ workflow CELLBENDER {
                     .split()))
             .set{input_channel_qc_plots_2}
             
-            CELLBENDER__REMOVE_BACKGROUND__QC_PLOTS_2(input_channel_qc_plots_2,outdir)
+            CELLBENDER__REMOVE_BACKGROUND__QC_PLOTS(input_channel_qc_plots_2,outdir)
             
 
         results_list = CELLBENDER__PREPROCESS_OUTPUT.out.out_paths

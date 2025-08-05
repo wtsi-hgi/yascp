@@ -6,7 +6,6 @@ include { CELLSNP;
           CAPTURE_CELLSNP_FILES;
           DYNAMIC_DONOR_EXCLUSIVE_SNP_SELECTION; 
           ASSESS_CALL_RATE } from "$projectDir/modules/local/cellsnp/main"
-include { SUBSET_GENOTYPE } from "$projectDir/modules/local/subset_genotype/main"
 include { VIREO;
           POSTPROCESS_SUMMARY;
           REMOVE_DUPLICATED_DONORS_FROM_GT;
@@ -17,7 +16,6 @@ include { VIREO;
 include { SUBSET_BAM_PER_BARCODES_AND_VARIANTS } from "$projectDir/modules/local/subset_bam_per_barcodes_and_variants/main"
 include { FREEBAYES } from "$projectDir/modules/local/freebayes/main"
 include { PREPROCESS_GENOTYPES } from "$projectDir/modules/local/genotypes/main"
-include { SOUPORCELL } from "$projectDir/modules/local/souporcell/main"
 include { SPLIT_DONOR_H5AD; PREP_ASSIGNMENTS_FILE } from "$projectDir/modules/local/split_donor_h5ad/main"
 include { PLOT_DONOR_CELLS } from "$projectDir/modules/local/plot_donor_cells/main"
 include { ENHANCE_VIREO_METADATA_WITH_DONOR } from "$projectDir/modules/local/genotypes/main"
@@ -28,7 +26,6 @@ include { REPLACE_GT_DONOR_ID2 } from "$projectDir/modules/local/genotypes/main"
 include { STAGE_FILE } from "$projectDir/modules/local/retrieve_recourses/retrieve_recourses"
 include { GT_MATCH_POOL_IBD } from "$projectDir/modules/local/genotypes/main"
 include {VIREO_GT_FIX_HEADER;
-         MERGE_GENOTYPES_IN_ONE_VCF;
          VIREO_ADD_SAMPLE_PREFIX; 
          MERGE_GENOTYPES_IN_ONE_VCF_IDX_PAN; 
          MERGE_GENOTYPES_IN_ONE_VCF_FREEBAYES} from "$projectDir/modules/local/genotypes/main"
@@ -37,11 +34,7 @@ include {COLLECT_FILE as COLLECT_FILE1;
         COLLECT_FILE as COLLECT_FILE3;
         COLLECT_FILE as COLLECT_FILE4;
         COLLECT_FILE as COLLECT_FILE5;
-        COLLECT_FILE as COLLECT_FILE6;
-        COLLECT_FILE as COLLECT_FILE7;
-        COLLECT_FILE as COLLECT_FILE8;
-        COLLECT_FILE as COLLECT_FILE9;
-        COLLECT_FILE as COLLECT_FILE10} from "$projectDir/modules/local/collect_file/main"
+        COLLECT_FILE as COLLECT_FILE6} from "$projectDir/modules/local/collect_file/main"
 
 workflow  MAIN_DECONVOLUTION {
 
@@ -147,7 +140,7 @@ workflow  MAIN_DECONVOLUTION {
             // Here we assess how many informative sites has been called on. 
             CELLSNP.out.cell_vcfs.combine(DYNAMIC_DONOR_EXCLUSIVE_SNP_SELECTION.out.informative_uninformative_sites, by: 0).set{assess_call_rate_input}
             ASSESS_CALL_RATE(assess_call_rate_input)
-            COLLECT_FILE9(ASSESS_CALL_RATE.out.variants_description.collect(),"all_variants_description.tsv",params.outdir+'/deconvolution/concordances',1,'')
+            COLLECT_FILE4(ASSESS_CALL_RATE.out.variants_description.collect(),"all_variants_description.tsv",params.outdir+'/deconvolution/concordances',1,'')
         }
         for_bam_pileups = CELLSNP.out.for_bam_pileups
         
@@ -331,9 +324,9 @@ workflow  MAIN_DECONVOLUTION {
             gt_matches = MATCH_GENOTYPES.out.donor_match_table.collect()
 
             ENHANCE_STATS_GT_MATCH(MATCH_GENOTYPES.out.donor_match_table_enhanced,params.input_data_table)
-            COLLECT_FILE1(ENHANCE_STATS_GT_MATCH.out.assignments.collect(),"assignments_all_pools.tsv",params.outdir+'/deconvolution/vireo_processed',1,'')
-            COLLECT_FILE10(ENHANCE_STATS_GT_MATCH.out.assignments.collect(),"assignments_all_pools.tsv",params.outdir+'/deconvolution/gtmatch',1,'')
-            assignments_all_pools = COLLECT_FILE1.out.output_collection
+            COLLECT_FILE5(ENHANCE_STATS_GT_MATCH.out.assignments.collect(),"assignments_all_pools.tsv",params.outdir+'/deconvolution/vireo_processed',1,'')
+            COLLECT_FILE6(ENHANCE_STATS_GT_MATCH.out.assignments.collect(),"assignments_all_pools.tsv",params.outdir+'/deconvolution/gtmatch',1,'')
+            assignments_all_pools = COLLECT_FILE5.out.output_collection
             gt_matches = Channel.from("$projectDir/assets/fake_file.fq")
             assignments_all_pools = Channel.from("$projectDir/assets/fake_file.fq")
         }else{
@@ -342,14 +335,14 @@ workflow  MAIN_DECONVOLUTION {
         }
 
         header_seed="experiment_id\th5ad_filepath"
-        out_h5ad = COLLECT_FILE5(SPLIT_DONOR_H5AD.out.exp__donors_h5ad_assigned_tsv.collect(),"exp__donors_h5ad_assigned.tsv",0,0,header_seed)
+        out_h5ad = COLLECT_FILE1(SPLIT_DONOR_H5AD.out.exp__donors_h5ad_assigned_tsv.collect(),"exp__donors_h5ad_assigned.tsv",0,0,header_seed)
 
         header_seed="experiment_id\tdonor\tn_cells"
-        ch_vireo_donor_n_cells_tsv = COLLECT_FILE7(REPLACE_GT_DONOR_ID2.out.sample_summary_tsv.collect(),"vireo_donor_n_cells.tsv",0,0,header_seed)
+        ch_vireo_donor_n_cells_tsv = COLLECT_FILE2(REPLACE_GT_DONOR_ID2.out.sample_summary_tsv.collect(),"vireo_donor_n_cells.tsv",0,0,header_seed)
 
         // paste experiment_id and donor ID columns with __ separator
         header_seed="experiment_id\tn_cells"
-        vireo_out_sample__exp_summary_tsv = COLLECT_FILE8(SPLIT_DONOR_H5AD.out.donor_n_cells.collect(),"vireo_exp__donor_n_cells.tsv",0,0,header_seed)
+        vireo_out_sample__exp_summary_tsv = COLLECT_FILE3(SPLIT_DONOR_H5AD.out.donor_n_cells.collect(),"vireo_exp__donor_n_cells.tsv",0,0,header_seed)
 
         if (params.genotype_input.run_with_genotype_input & params.genotype_input.posterior_assignment) {
             if (params.extra_sample_metadata!=''){

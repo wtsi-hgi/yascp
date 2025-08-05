@@ -3,21 +3,13 @@
 include { MATCH_GT_VIREO; 
           GT_MATCH_POOL_IBD } from "$projectDir/modules/local/genotypes/main"
 include { COMBINE_MATCHES_IN_EXPECTED_FORMAT } from "$projectDir/modules/local/genotypes/main"
-include { Relationships_Between_Infered_Expected; 
-          Relationships_Between_Infered_Expected as Relationships_Between_Infered_GT_Matched } from '../modules/local/infered_expected_relationship/main'
+include { RELATIONSHIPS_BETWEEN_INFERED_EXPECTED; 
+          RELATIONSHIPS_BETWEEN_INFERED_EXPECTED as RELATIONSHIPS_BETWEEN_INFERED_GT_MATCHED } from '../modules/local/infered_expected_relationship/main'
 include { SUBSET_WORKF } from "$projectDir/modules/local/subset_genotype/main"
 include { CONCORDANCE_CALCLULATIONS; 
           COMBINE_FILES; 
           PLOT_CONCORDANCES_ALL } from "$projectDir/modules/local/concordance/main"
-include {COLLECT_FILE as COLLECT_FILE1;
-        COLLECT_FILE as COLLECT_FILE2;
-        COLLECT_FILE as COLLECT_FILE3;
-        COLLECT_FILE as COLLECT_FILE4;
-        COLLECT_FILE as COLLECT_FILE5;
-        COLLECT_FILE as COLLECT_FILE6;
-        COLLECT_FILE as COLLECT_FILE7;
-        COLLECT_FILE as COLLECT_FILE8;
-        COLLECT_FILE as COLLECT_FILE9} from "$projectDir/modules/local/collect_file/main"
+include {COLLECT_FILE} from "$projectDir/modules/local/collect_file/main"
 
 
 workflow MATCH_GENOTYPES {
@@ -64,13 +56,13 @@ workflow MATCH_GENOTYPES {
     // Here we need to account for the fact that no GT is expected.
     // donors_in_pools.subscribe { println "donors_in_pools: $it" } //Needs an if statement which determines if pool has no donors expected.
     // Now based on these two files we will enhance the stats file with PiHat values and
-    Relationships_Between_Infered_Expected(donors_in_pools,merged_expected_genotypes,gt_pool,'InferedExpected',MATCH_GT_VIREO.out.donor_match_table_with_pool_id,idb_pool)
-    outfile_for_final_gt = Relationships_Between_Infered_Expected.out.donor_match_table
+    RELATIONSHIPS_BETWEEN_INFERED_EXPECTED(donors_in_pools,merged_expected_genotypes,gt_pool,'InferedExpected',MATCH_GT_VIREO.out.donor_match_table_with_pool_id,idb_pool)
+    outfile_for_final_gt = RELATIONSHIPS_BETWEEN_INFERED_EXPECTED.out.donor_match_table
     
-    Relationships_Between_Infered_GT_Matched(gt_matched_samples,merged_GT_Matched_genotypes,gt_pool,'InferedGTMatched', Relationships_Between_Infered_Expected.out.donor_match_table,idb_pool)
-    outfile_for_final_gt = Relationships_Between_Infered_GT_Matched.out.donor_match_table
-    Relationships_Between_Infered_Expected.out.done_validation.set{ou1}
-    Relationships_Between_Infered_GT_Matched.out.done_validation.set{ou2}
+    RELATIONSHIPS_BETWEEN_INFERED_GT_MATCHED(gt_matched_samples,merged_GT_Matched_genotypes,gt_pool,'InferedGTMatched', RELATIONSHIPS_BETWEEN_INFERED_EXPECTED.out.donor_match_table,idb_pool)
+    outfile_for_final_gt = RELATIONSHIPS_BETWEEN_INFERED_GT_MATCHED.out.donor_match_table
+    RELATIONSHIPS_BETWEEN_INFERED_EXPECTED.out.done_validation.set{ou1}
+    RELATIONSHIPS_BETWEEN_INFERED_GT_MATCHED.out.done_validation.set{ou2}
     ou1.mix(ou2).set{ou3}
 
     input3 = merged_GT_Matched_genotypes.join(merged_expected_genotypes, remainder: true)
@@ -94,8 +86,8 @@ workflow MATCH_GENOTYPES {
         ch_combine = subsampling_donor_swap.combine(CONCORDANCE_CALCLULATIONS.out.concordances, by: 0)
         COMBINE_FILES(ch_combine) //This step plots scatter plots for each of the pools individually.
         // Now we want to combined all the above files together and make one overall plot for all the tranches.
-        COLLECT_FILE1(COMBINE_FILES.out.file_joined_df_for_plots.collect(),"joined_df_for_plots.tsv",params.outdir+'/deconvolution/concordances',1,'')
-        PLOT_CONCORDANCES_ALL(COLLECT_FILE1.out.output_collection)
+        COLLECT_FILE(COMBINE_FILES.out.file_joined_df_for_plots.collect(),"joined_df_for_plots.tsv",params.outdir+'/deconvolution/concordances',1,'')
+        PLOT_CONCORDANCES_ALL(COLLECT_FILE.out.output_collection)
     }
 
   emit:

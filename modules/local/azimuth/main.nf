@@ -95,33 +95,3 @@ process AZIMUTH_ATAC{
         azimuth_atac.R ./${file_h5ad_batch} ${refset.refset} ${refset.annotation_labels} ${samplename}
     """
 }
-
-process REMAP_AZIMUTH{
-    // This process remaps Azimuth L2 to L1 and L0
-    tag "${samplename}"    
-    label 'process_low'
-   
-    if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "${params.yascp_container}"
-    } else {
-        container "${params.yascp_container_docker}"
-    }
-
-    publishDir  path: "${params.outdir}/celltype_assignment/",
-            mode: "${params.copy_mode}",
-            overwrite: "true"
-    stageInMode 'copy'  
-
-    input:
-        path(file)
-        path(mapping_file)
-
-    output:
-        path("remapped__${file}", emit:predicted_celltype_labels)
-
-    script:
-        """
-            remap_azimuth_l2.py -of remapped__${file} -m ${mapping_file} -az ${file}
-        """
-
-}

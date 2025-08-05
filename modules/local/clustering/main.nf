@@ -1,6 +1,6 @@
 
 include {
-    CLUSTER;PLOT_PHENOTYPE_ACROSS_CLUSTERS;SERIALIZE_KNOWN_MARKERS;PLOT_KNOWN_MARKERS; CLUSTER_VALIDATE_RESOLUTION_KERAS; PLOT_RESOLUTION_VALIDATE; CLUSTER_MARKERS; CELLEX_CLUSTER_MARKERS; PREP_CELLXGENE;CLUSTER_VALIDATE_RESOLUTION_SKLEARN
+    CLUSTER;PLOT_PHENOTYPE_ACROSS_CLUSTERS;SERIALIZE_KNOWN_MARKERS;PLOT_KNOWN_MARKERS; CLUSTER_VALIDATE_RESOLUTION_KERAS; PLOT_RESOLUTION_VALIDATE; CLUSTER_MARKERS; CELLEX_CLUSTER_MARKERS; PREP_CELLXGENE
 } from "./functions.nf"
 
 include {UMAP_CALCULATE_AND_PLOT} from "../umap/functions.nf"
@@ -58,19 +58,6 @@ workflow CLUSTERING {
             CLUSTER.out.anndata,
             SERIALIZE_KNOWN_MARKERS.out.marker_file
         )
-
-        // // Validate the resolution
-        // // Do not use CLUSTER_VALIDATE_RESOLUTION_SKLEARN process.
-        // CLUSTER_VALIDATE_RESOLUTION_SKLEARN(
-        //     CLUSTER.out.outdir,
-        //     CLUSTER.out.anndata,
-        //     CLUSTER.out.metadata,
-        //     CLUSTER.out.pcs,
-        //     CLUSTER.out.reduced_dims,
-        //     CLUSTER.out.clusters,
-        //     cluster_validate_resolution__sparsity,
-        //     cluster_validate_resolution__train_size_cells
-        // )
         
         if (params.cluster_validate_resolution_keras){
             CLUSTER_VALIDATE_RESOLUTION_KERAS( 

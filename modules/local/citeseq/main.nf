@@ -77,41 +77,6 @@ process SPLIT_CITESEQ_GEX {
 }
 
 
-process DSB {
-    label 'process_medium'
-    if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "${params.yascp_container}"
-    } else {
-        container "${params.yascp_container_docker}"
-    }
-
-    publishDir  path: "${params.outdir}/citeseq/DSB/${sample_name}", mode: "${params.copy_mode}",
-      overwrite: "true"
-
-    input:
-        tuple val(sample_name),path(cellbender_filtered), path(antibody_data), path(cellranger_raw)
-
-    output:
-        // tuple val(sample_name), path("${sample_name}__gex_data"), emit:gex_data
-        path("*.pdf"), emit: plots optional true
-        path("*.dsb_technical_stats.RDS"), emit: dsb_technical_stats optional true
-        path("*.dsb_protein_stats.RDS"), emit: dsb_protein_stats optional true
-        path("*_firstrun_dsb.h5Seurat"), emit: firstrun_dsb optional true
-        path(antibody_data), emit: antibody_data optional true
-        path(cellranger_raw), emit: cellranger_raw optional true
-
-    script:
-        """
-            echo ${sample_name}
-            echo ${cellbender_filtered}
-            echo ${antibody_data}
-            echo ${cellranger_raw}
-
-            dsb_process_extr.R ${cellbender_filtered} ${cellranger_raw} ${antibody_data} ${sample_name}
-            echo 'lets process data with DSB background removal' > output.tmp
-        """
-}
-
 process HASTAG_DEMULTIPLEX {
     label 'process_medium'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {

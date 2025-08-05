@@ -1,7 +1,7 @@
 
 // Load base.config by default for all pipelines - typically included in the nextflow config.
 include { CELLBENDER } from '../modules/local/cellbender/main'
-include { SPLIT_CITESEQ_GEX; DSB } from '../modules/local/citeseq/main'
+include { SPLIT_CITESEQ_GEX } from '../modules/local/citeseq/main'
 
 include {CAPTURE_CELLBENDER_FILES} from "$projectDir/modules/local/cellbender/functions"
 
