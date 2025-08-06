@@ -27,15 +27,15 @@ workflow RELATIONSHIPS_BETWEEN_INFERED_EXPECTED {
       // have to do this for each of the pools too. 
       JOIN_INFERED_EXPECTED_MERGE.out.merged_expected_genotypes.map { row -> tuple(row[0], row[1]) }
       .set { sample_name_vcf_no_csi }
-      
-      sample_name_vcf_no_csi.subscribe { println "sample_name_vcf_no_csi: $it" }
+
       
       GT_MATCH_INFERED_EXPECTED(sample_name_vcf_no_csi,'Expected_Infered',mode)
     
       GT_MATCH_INFERED_EXPECTED.out.plink_ibd.combine(donor_match_table, by: 0).set{ibd_genome_mix}
-      
       ibd_genome_mix.combine(donors_in_pools, by: 0).set{ibd_genome_expected_mix}
       ibd_genome_expected_mix.combine(idb_pool, by: 0).set{ibd_genome_expected_mix2}
+
+      
       ENHANCE_STATS_FILE(ibd_genome_expected_mix2,mode)
      
     emit:

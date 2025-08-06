@@ -33,7 +33,6 @@ module load ISG/singularity/3.11.4
 module load HGI/common/nextflow/24.10.4
 module load HGI/common/baton
 module load ISG/experimental/irods/4.2.7
-module load HGI/softpack/users/bh18/bcftools/1.0
 
 prepend-path PATH "/software/hgi/containers/yascp/modules/full_yascp"
 prepend-path PATH "/software/hgi/pipelines/yascp_versions/yascp_v2.0/bin"

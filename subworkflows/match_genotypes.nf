@@ -74,14 +74,16 @@ workflow MATCH_GENOTYPES {
       }
     }.set{input32}
 
-    input4 = input32.combine(cellsnp_cell_vcfs2, by: 0)
-    input5 = input4.combine(MATCH_GT_VIREO.out.donor_match_table_with_pool_id, by:0)
-    input6 = input5.combine(cell_assignments, by:0)
-    input7 = input6.combine(informative_uninformative_sites, by:0)
+
 
     if (params.concordance_calculations){
         log.info "-----running CONCORDANCE calculations----"
-        input7.subscribe { println "input7: $it" }
+
+        input4 = input32.combine(cellsnp_cell_vcfs2, by: 0)
+        input5 = input4.combine(MATCH_GT_VIREO.out.donor_match_table_with_pool_id, by:0)
+        input6 = input5.combine(cell_assignments, by:0)
+        input7 = input6.combine(informative_uninformative_sites, by:0)
+
         CONCORDANCE_CALCLULATIONS(input7)
         ch_combine = subsampling_donor_swap.combine(CONCORDANCE_CALCLULATIONS.out.concordances, by: 0)
         COMBINE_FILES(ch_combine) //This step plots scatter plots for each of the pools individually.

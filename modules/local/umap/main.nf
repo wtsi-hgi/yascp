@@ -74,7 +74,7 @@ workflow UMAP {
             // cluster.out.reduced_dims,
             colors_quantitative,
             colors_categorical,
-            '8'
+            '20'
         )
     emit:
         // Return merged input data file.
