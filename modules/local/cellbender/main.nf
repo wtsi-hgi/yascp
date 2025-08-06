@@ -29,25 +29,33 @@ workflow CELLBENDER {
             row[0]}.set{experiment_id_in}
 
         outdir =  outdir+'/cellbender'
-        
-        // here pass in the number of cells detected by cellranger/ 
-        if (params.cellbender_rb.estimate_params_umis.value.method_estimate_ncells=='expected'){
-            channel__metadata.splitCsv(header: true, sep: "\t", by: 1).map{row -> tuple(
-                row.experiment_id,
-                row.Estimated_Number_of_Cells,
-            )}.set{ncells_cellranger_pre}
-        }else{
-            channel__metadata.splitCsv(header: true, sep: "\t", by: 1).map{row -> tuple(
-                row.experiment_id,
-                '0',
-            )}.set{ncells_cellranger_pre}
-        }
 
-        ncells_cellranger_pre.join(ch_experimentid_paths10x_raw, remainder: false).set{post_ncells_cellranger} 
-        post_ncells_cellranger.map{row -> tuple(row[0], row[1])}.filter{ it[2] == null }.set{ncells_cellranger}
+        bc_in = Channel.fromList( params.cellbender_rb.per_sample_thresholds)
+        bc_in.map{row -> tuple(
+            row.name,
+            row.total_droplets_included == "" ? '0' : row.total_droplets_included ,
+            row.expected_cells == "" ? '0' : row.expected_cells,
+        )}.set{ncells_cellranger_pre}
+
+
+        ch_experimentid_paths10x_raw.join(ncells_cellranger_pre, by: [0], remainder: true).set{post_ncells_cellranger} 
+         
+
+        post_ncells_cellranger
+            .map { row ->
+                if (row[2] == null) {
+                    tuple(row[0], row[1], 0, 0)
+                } else {
+                    tuple(row[0], row[1], row[2], row[3])
+                }
+            }
+            .set { ncells_cellranger }
+        // ncells_cellranger.subscribe { println "ncells_cellranger: $it" }
+
         channel__file_paths_10x.combine(ncells_cellranger, by: 0).set{channel__file_paths_10x_with_ncells}
        
 
+        // channel__file_paths_10x_with_ncells.subscribe { println "channel__file_paths_10x_with_ncells: $it" }
 
         cellbender__rb__get_input_cells(
             outdir,
@@ -79,7 +87,6 @@ workflow CELLBENDER {
         // cellbender__rb__get_input_cells.out.cb_input.subscribe { println "cellbender__rb__get_input_cells: $it" }
 
         cellbender__rb__get_input_cells.out.cb_input.join(channel__f, by: [0], remainder: true).set{post_ch_experimentid_paths10x_filtered}
-        // post_ch_experimentid_paths10x_filtered.subscribe { println "post_ch_experimentid_paths10x_filtered: $it" }
         post_ch_experimentid_paths10x_filtered.filter{ it[8] == null }.map{row -> tuple(row[0])}.set{not_defined}
 
         not_defined.map{row -> tuple(
