@@ -23,7 +23,7 @@ include { MATCH_GENOTYPES } from './match_genotypes'
 include { ENHANCE_STATS_GT_MATCH } from "$projectDir/modules/local/genotypes/main"
 include { SUBSET_WORKF } from "$projectDir/modules/local/subset_genotype/main"
 include { REPLACE_GT_DONOR_ID2 } from "$projectDir/modules/local/genotypes/main"
-include { STAGE_FILE } from "$projectDir/modules/local/retrieve_recourses/retrieve_recourses"
+include { STAGE_FILE } from "$projectDir/modules/local/retrieve_resources/retrieve_resources"
 include { GT_MATCH_POOL_IBD } from "$projectDir/modules/local/genotypes/main"
 include {VIREO_GT_FIX_HEADER;
          VIREO_ADD_SAMPLE_PREFIX; 

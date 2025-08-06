@@ -9,7 +9,7 @@
 
 nextflow.enable.dsl = 2
 include { YASCP } from "$projectDir/workflows/yascp"
-include { RETRIEVE_RECOURSES; RETRIEVE_RECOURSES_TEST_DATASET } from "$projectDir/modules/local/retrieve_recourses/retrieve_recourses"
+include { RETRIEVE_RECOURSES; RETRIEVE_RECOURSES_TEST_DATASET } from "$projectDir/modules/local/retrieve_resources/retrieve_resources"
 include { RSYNC_RESULTS_REMOVE_WORK_DIR} from "$projectDir/modules/local/rsync_results_remove_work_dir/main"
 include { CELLTYPE} from "$projectDir/subworkflows/celltype"
 include { QC_AND_INTEGRATION } from "$projectDir/subworkflows/qc_and_integration"

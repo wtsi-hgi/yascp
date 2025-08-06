@@ -17,7 +17,7 @@ include {DUMMY_FILTERED_CHANNEL} from "$projectDir/modules/local/merge_samples/f
 include {MULTIPLET} from "$projectDir/subworkflows/doublet_detection"
 include { SPLIT_CITESEQ_GEX; SPLIT_CITESEQ_GEX as SPLIT_CITESEQ_GEX_FILTERED;SPLIT_CITESEQ_GEX as SPLIT_CITESEQ_GEX_FILTERED_NOCB;SPLIT_CITESEQ_GEX as SPLIT_CITESEQ_GEX_NOCB; SPLIT_CITESEQ_GEX as PREPOCESS_FILES; HASTAG_DEMULTIPLEX } from '../modules/local/citeseq/main'
 include { GENOTYPE_MATCHER } from "$projectDir/modules/local/vireo/main"
-include { RETRIEVE_RECOURSES } from "$projectDir/modules/local/retrieve_recourses/retrieve_recourses"
+include { RETRIEVE_RECOURSES } from "$projectDir/modules/local/retrieve_resources/retrieve_resources"
 include { PREPROCESS_GENOME } from "$projectDir/modules/local/subset_bam_per_barcodes_and_variants/main"
 include { softwareVersionsToYAML} from "$projectDir/subworkflows/utils"
 /*
