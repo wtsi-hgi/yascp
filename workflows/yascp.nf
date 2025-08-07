@@ -46,7 +46,7 @@ workflow YASCP {
         PREPARE_INPUTS(input_channel)
         if (!params.input_data_table.contains('fake_file')){
             log.info " ---- Genome used: ${params.reference_assembly_fasta_dir} ---"
-            input_channel = prepare_inputs.out.channel_input_data_table
+            input_channel = PREPARE_INPUTS.out.channel_input_data_table
             if (params.reference_assembly_fasta_dir=='https://yascp.cog.sanger.ac.uk/public/10x_reference_assembly'){
                 RETRIEVE_RECOURSES()  
                 genome1 = RETRIEVE_RECOURSES.out.reference_assembly
