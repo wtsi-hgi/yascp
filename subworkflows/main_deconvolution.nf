@@ -4,7 +4,7 @@ nextflow.enable.dsl=2
 
 include { CELLSNP;
           CAPTURE_CELLSNP_FILES;
-          DYNAMIC_DONOR_EXCLUSIVE_SNP_SELECTION; MPILEUP;SUBSET_VCF;
+          DYNAMIC_DONOR_EXCLUSIVE_SNP_SELECTION; MPILEUP;
           ASSESS_CALL_RATE } from "$projectDir/modules/local/cellsnp/main"
 include { VIREO;
           POSTPROCESS_SUMMARY;

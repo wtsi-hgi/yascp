@@ -123,32 +123,6 @@ process MPILEUP {
     """
 }
 
-process SUBSET_VCF {
-    label 'deconvolution'
-    publishDir "${params.outdir}/deconvolution/mpileup", mode: 'copy'
-
-    if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "${params.yascp_container}"
-
-    } else {
-        container "${params.yascp_container_docker}"
-    }
-
-    input:
-        tuple val(sample_id), path(sample_id__piled_up_reads)
-        path(subset_regions_bed)
-    output:
-        tuple val(sample_id), path("${sample_id}__piled_up_reads__subset.vcf.gz")
-    script:
-    """
-        bgzip -c ${sample_id__piled_up_reads} > ${sample_id}__tmp.vcf.gz
-        tabix -p vcf ${sample_id}__tmp.vcf.gz
-        bcftools view -R ${subset_regions_bed} ${sample_id}__tmp.vcf.gz -Oz -o ${sample_id}__piled_up_reads__subset.vcf.gz
-    """
-}
-
-
-
 process ASSESS_CALL_RATE{
 
     tag "${samplename}"
