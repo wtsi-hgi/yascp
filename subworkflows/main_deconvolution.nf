@@ -4,7 +4,7 @@ nextflow.enable.dsl=2
 
 include { CELLSNP;
           capture_cellsnp_files;
-          DYNAMIC_DONOR_EXCLUSIVE_SNP_SELECTION; mpileup;subset_vcf;
+          DYNAMIC_DONOR_EXCLUSIVE_SNP_SELECTION; MPILEUP;SUBSET_VCF;
           ASSESS_CALL_RATE } from "$projectDir/modules/local/cellsnp/main"
 include { SUBSET_GENOTYPE } from "$projectDir/modules/local/subset_genotype/main"
 include { VIREO;
@@ -88,8 +88,8 @@ workflow  main_deconvolution {
 
             if (params.use_bam_derived_cellsnp_panel){
                 // Here should add an option to derive panel from actual bam files as different technologies has different coverages and ceirtain panels may not work. 
-                mpileup(ch_experiment_bam_bai_barcodes,params.reference_assembly_fasta_dir)
-                mpileup_out_chanel = mpileup.out.pileup
+                MPILEUP(ch_experiment_bam_bai_barcodes,params.reference_assembly_fasta_dir)
+                mpileup_out_chanel = MPILEUP.out.pileup
 
             }
 

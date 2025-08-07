@@ -91,7 +91,7 @@ process DYNAMIC_DONOR_EXCLUSIVE_SNP_SELECTION{
 }
 
 
-process mpileup {
+process MPILEUP {
     label 'deduplication'
     publishDir "${params.outdir}/deconvolution/mpileup", mode: 'copy'
 
@@ -123,7 +123,7 @@ process mpileup {
     """
 }
 
-process subset_vcf {
+process SUBSET_VCF {
     label 'deconvolution'
     publishDir "${params.outdir}/deconvolution/mpileup", mode: 'copy'
 
