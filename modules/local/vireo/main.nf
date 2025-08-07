@@ -77,6 +77,7 @@ process VIREO_SUBSAMPLING {
         com2 = ""
         subset_processing="""
             bcftools view ${donors_gt_vcf} -R ${cell_data}/cellSNP.base.vcf.gz  -Oz -o pre_Overlapping.vcf.gz
+            bcftools index ${cell_data}/cellSNP.cells.vcf.gz
             bcftools view -G ${cell_data}/cellSNP.cells.vcf.gz -Oz -o pre_cellSNP.cells.vcf.gz 
             bcftools sort pre_cellSNP.cells.vcf.gz -Oz -o pre_cellSNP3.cells.vcf.gz
             bcftools index pre_cellSNP3.cells.vcf.gz

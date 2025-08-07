@@ -43,19 +43,17 @@ workflow CELLBENDER {
 
         post_ncells_cellranger
             .map { row ->
-                if (row[2] == null) {
-                    tuple(row[0], row[1], 0, 0)
-                } else {
-                    tuple(row[0], row[1], row[2], row[3])
-                }
+                def val2 = row[2] != null ? row[2] : 0
+                def val3 = row[3] != null ? row[3] : 0
+                tuple(row[0], row[1], val2, val3)
             }
             .set { ncells_cellranger }
-        // ncells_cellranger.subscribe { println "ncells_cellranger: $it" }
 
         channel__file_paths_10x.combine(ncells_cellranger, by: 0).set{channel__file_paths_10x_with_ncells}
        
 
-        // channel__file_paths_10x_with_ncells.subscribe { println "channel__file_paths_10x_with_ncells: $it" }
+        ncells_cellranger_pre.subscribe { println "ncells_cellranger_pre: $it" }
+        // ncells_cellranger.subscribe { println "ncells_cellranger: $it" }
 
         cellbender__rb__get_input_cells(
             outdir,

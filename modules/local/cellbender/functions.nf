@@ -36,7 +36,7 @@ process cellbender__rb__get_input_cells {
     val(experiment_id),
     path(file_10x_barcodes),
     path(file_10x_features),
-    path(file_10x_matrix),path(gex),val(expected_ncells),val(droplets_include)
+    path(file_10x_matrix),path(gex),val(droplets_include),val(expected_ncells)
     )
     val(estimate_params_umis)
     
