@@ -238,10 +238,31 @@ process CELLSNP {
       fi
 
       bcftools view ${region_vcf} -t ^6:28510120-33480577 -Oz -o region_vcf_no_MHC.vcf.gz
+
+      # 2) Build chr-rename map from the header (only if contigs start with 'chr')
+      bcftools view -h region_vcf_no_MHC.vcf.gz \
+        | awk -F'[=,]+' '/^##contig/{
+            id=\$3;
+            if(id ~ /^chr/){
+              new=id; sub(/^chr/, "", new);
+              if(new=="M") new="MT";
+              print id "\t" new
+            }
+          }' > chrmap.txt
+
+      # Apply rename if needed
+      if [ -s chrmap.txt ]; then
+        bcftools annotate --rename-chrs chrmap.txt -Oz -o region_vcf_no_MHC.nochr.vcf.gz region_vcf_no_MHC.vcf.gz
+        bcftools index -t region_vcf_no_MHC.nochr.vcf.gz
+        regions_vcf="region_vcf_no_MHC.nochr.vcf.gz"
+      else
+        regions_vcf="region_vcf_no_MHC.vcf.gz"
+      fi
+
       cellsnp-lite -s ${bam_file} \\
         -b bar_codes.txt \\
         -O cellsnp_${samplename} \\
-        -R region_vcf_no_MHC.vcf.gz \\
+        -R "\${regions_vcf}" \\
         -p ${task.cpus} \\
         ${params.cellsnp.min_count} --cellTAG ${params.cellsnp.cellTAG} ${params.cellsnp.minMAPQ} ${MAF} --gzip ${genotype_file} ${umi_tag}
 
