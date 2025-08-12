@@ -92,11 +92,6 @@ process VIREO_SUBSAMPLING {
             cp ${cell_data}/cellSNP.samples.tsv subset_${params.vireo.rate}/
             # Update the coordinates matrix
             cellsnp_update.R ${cell_data} ./subset_${params.vireo.rate} ./subset_${params.vireo.rate}/cellSNP.base.vcf.gz
-
-            cat <<-END_VERSIONS > versions.yml
-            "${task.process}":
-                bcftools: \$(bcftools --version 2>&1 | head -n1 | sed 's/^.*bcftools //; s/ .*\$//')
-            END_VERSIONS
         """
 
       }else{
