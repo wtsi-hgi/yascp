@@ -38,8 +38,8 @@ def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res
     elif (cellbender)=='cellbender':
         # here we have run the cellbender as par of pipeline. 
         # file_path = glob.glob(f'{results_dir}/nf-preprocessing/cellbender/qc_cluster_input_files/*{cb_res}*')[0]
-        file_path = glob.glob(f'{results_dir}/nf-preprocessing/cellbender/*/cellbender-epochs_*/*{cb_res}*10x_mtx*')
-        file_path2 = glob.glob(f'{results_dir}/nf-preprocessing/cellbender/*/*{cb_res}*10x_mtx*')
+        file_path = glob.glob(f'{results_dir}/preprocessing/cellbender/*/cellbender-epochs_*/*{cb_res}*10x_mtx*')
+        file_path2 = glob.glob(f'{results_dir}/preprocessing/cellbender/*/*{cb_res}*10x_mtx*')
         joined_file_paths = file_path+file_path2
         df_cellbender = pd.DataFrame(joined_file_paths,columns=['data_path_10x_format'])
         df_cellbender['experiment_id']=df_cellbender['data_path_10x_format'].str.split('/').str[3]
@@ -56,8 +56,8 @@ def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res
             print(folder)
             print("yes!!")
             # dir1 = f"{df_cellbender.loc[folder,'data_path_10x_format']}/.."
-            dir1 = '/'.join(df_cellbender.loc[folder,'data_path_10x_format'].split('/')[:-1])
-            dir = '/'.join(df_cellbender.loc[folder,'data_path_10x_format'].split('/')[:-2])
+            dir1 = '/'.join(df_cellbender.loc[folder,'data_path_10x_format'][0].split('/')[:-1])
+            dir = '/'.join(df_cellbender.loc[folder,'data_path_10x_format'][0].split('/')[:-2])
             print(dir1)
             if os.path.isdir(dir1):
                 print("yes22!!")
@@ -195,8 +195,8 @@ def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res
     
     try:
     #NOW COPY THE GT OUTPUTS 
-        folder1 = f'{directory}/deconvolution/vireo_gt_fix'
-        folder2 = f'{directory}/deconvolution/vireo_processed'
+        folder1 = f'{directory}/deconvolution/vireo/vireo_gt_fix'
+        folder2 = f'{directory}/deconvolution/vireo/vireo_processed'
         folder1=choose_folder (folder1, folder2)
         if os.path.isdir(folder1):
             copyfile(f'{folder1}/assignments_all_pools.tsv', f'{name_dir}/GT Match___1000/assignments_all_pools.tsv')
@@ -223,7 +223,7 @@ def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res
             os.mkdir(f'{name_dir}/Deconvolution/csv')
         except:
             print('dir exists')    
-        if os.path.exists(f'{directory}/deconvolution/vireo_raw'):
+        if os.path.exists(f'{directory}/deconvolution/vireo/vireo_raw'):
             try:
                 copyfile(f'{directory}/deconvolution/vireo_raw/correlations.png', f'{name_dir}/Deconvolution/correlations.png')
                 copyfile(f'{directory}/deconvolution/vireo_raw/matched_donors.txt', f'{name_dir}/Deconvolution/csv/matched_donors.tsv')
@@ -232,9 +232,9 @@ def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res
                 _='corelations not performed'
         else:
             try:
-                copyfile(f'{directory}/deconvolution/vireo/correlations.png', f'{name_dir}/Deconvolution/correlations.png')
-                copyfile(f'{directory}/deconvolution/vireo/matched_donors.txt', f'{name_dir}/Deconvolution/csv/matched_donors.tsv')
-                copyfile(f'{directory}/deconvolution/vireo/donor_corelations_matrix.tsv', f'{name_dir}/Deconvolution/csv/donor_corelations_matrix.tsv')
+                copyfile(f'{directory}/deconvolution/gtmatch/correlations.png', f'{name_dir}/Deconvolution/correlations.png')
+                copyfile(f'{directory}/deconvolution/gtmatch/matched_donors.txt', f'{name_dir}/Deconvolution/csv/matched_donors.tsv')
+                copyfile(f'{directory}/deconvolution/gtmatch/donor_corelations_matrix.tsv', f'{name_dir}/Deconvolution/csv/donor_corelations_matrix.tsv')
             except:
                 _='corelations not performed'
         

@@ -8,7 +8,7 @@ if (binding.hasVariable("echo_mode") == false) {
     echo_mode = true
 }
 
-process umap_calculate {
+process UMAP_CALCULATE {
     // UMAP from reduced_dims.
     // ------------------------------------------------------------------------
     //cache false        // cache results from run
@@ -78,7 +78,7 @@ process umap_calculate {
         //--calculate_densities \
 }
 
-process generate_final_UMAPS{
+process GENERATE_FINAL_UMAPS{
 
     label 'process_medium'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
@@ -102,15 +102,15 @@ process generate_final_UMAPS{
         umap_plot_final.py \
             --h5_anndata ${file__anndata} \
             --number_cpu 1 \
-            --colors_quantitative ${params.umap.colors_quantitative.value} \
-            --colors_categorical ${params.umap.colors_categorical.value} \
+            --colors_quantitative '${params.umap.colors_quantitative.value}' \
+            --colors_categorical '${params.umap.colors_categorical.value}' \
             --drop_legend_n 40 \
             --output_file UMAP
     """
 
 }
 
-process umap_gather {
+process UMAP_GATHER {
     // Merge UMAP from reduced_dims (reduce or gather).
     // ------------------------------------------------------------------------
     //cache false        // cache results from run
@@ -168,7 +168,7 @@ process umap_gather {
 }
 
 
-process umap_plot_swarm {
+process UMAP_PLOT_SWARM {
     // Plot UMAPs.
     // ------------------------------------------------------------------------
     //cache false        // cache results from run
@@ -198,11 +198,11 @@ process umap_plot_swarm {
         outfile = "umap"
         cmd__colors_quant = ""
         if (colors_quantitative != "") {
-            cmd__colors_quant = "--colors_quantitative ${colors_quantitative}"
+            cmd__colors_quant = "--colors_quantitative '${colors_quantitative}'"
         }
         cmd__colors_cat = ""
         if (colors_categorical != "") {
-            cmd__colors_cat = "--colors_categorical ${colors_categorical}"
+            cmd__colors_cat = "--colors_categorical '${colors_categorical}'"
         }
 
         """
@@ -218,7 +218,7 @@ process umap_plot_swarm {
 }
 
 
-process umap_calculate_and_plot {
+process UMAP_CALCULATE_AND_PLOT {
     // UMAP from reduced_dims.
     // ------------------------------------------------------------------------
     //tag { output_dir }
@@ -255,15 +255,15 @@ process umap_calculate_and_plot {
         outfile = "umap"
         cmd__colors_quant = ""
         if (colors_quantitative != "") {
-            cmd__colors_quant = "--colors_quantitative ${colors_quantitative}"
+            cmd__colors_quant = "--colors_quantitative '${colors_quantitative}'"
         }
         cmd__colors_cat = ""
         if (colors_categorical != "") {
-            cmd__colors_cat = "--colors_categorical ${colors_categorical}"
+            cmd__colors_cat = "--colors_categorical '${colors_categorical}'"
         }
         drop_legend_n = "-1"
         if (cmd__colors_cat.contains("experiment_id")) {
-            drop_legend_n = "8"
+            drop_legend_n = "40"
         }
         cmd__tsv_pcs = "--tsv_pcs ${file__reduced_dims}"
         if (use_pcs_as_reduced_dims == "True") {

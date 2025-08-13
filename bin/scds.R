@@ -29,6 +29,7 @@ non_empty <- Matrix::colSums(counts) > 0
 message(paste("🔍 Non-empty barcodes detected:", sum(non_empty), "/", ncol(counts)))
 counts <- counts[, non_empty]
 
+
 ## Read in data
 # if (file.exists(args$tenX_matrix)){
 #     message(paste0("Using the following counts: ", args$tenX_matrix))
@@ -57,7 +58,25 @@ if (!is.null(args$barcodes_filtered)){
             counts <- counts[[grep("Gene", names(counts))]][, colnames(counts[[grep("Gene", names(counts))]]) %in% filtered_barcodes$Barcodes]
         } else {
             barcodes_head <- head(colnames(counts))
-            counts <- counts[, colnames(counts) %in% filtered_barcodes$Barcodes]
+            # Clean barcode list
+            filtered_barcodes <- filtered_barcodes %>% filter(!is.na(Barcodes))
+
+            # Ensure barcode column is character
+            filtered_barcodes$Barcodes <- as.character(filtered_barcodes$Barcodes)
+
+            # Get matched columns
+            matching_barcodes <- intersect(colnames(counts), filtered_barcodes$Barcodes)
+
+            if (length(matching_barcodes) == 0) {
+                message("No matching barcodes found after filtering. Check barcode formatting.")
+                message("Here are the first few from the provided list:")
+                message(paste(head(filtered_barcodes$Barcodes), collapse = "\n"))
+                message("And from the matrix:")
+                message(paste(head(colnames(counts)), collapse = "\n"))
+                quit(save = "no", status = 1)
+            }
+
+            counts <- counts[, matching_barcodes]
         }
 
         ### Provide user informatin with the number of original barcodes, those in the filter list and those after filtering
@@ -84,11 +103,31 @@ if (!is.null(args$barcodes_filtered)){
 if (is.list(counts)){
 	sce <- SingleCellExperiment(list(counts=counts[[grep("Gene", names(counts))]]))
 } else {
-	sce <- SingleCellExperiment(list(counts=counts))
+	sce <- SingleCellExperiment(list(counts = counts))
 }
 
 ## Annotate doublet using binary classification based doublet scoring:
-sce = bcds(sce, retRes = TRUE, estNdbl=TRUE)
+sce <- tryCatch(
+  {
+    bcds(sce, retRes = TRUE, estNdbl = TRUE)
+  },
+  error = function(e) {
+    message("bcds() failed: ", e$message)
+    message("Filtering low-complexity cells and retrying...")
+
+    # Filter counts matrix
+    cell_sums <- Matrix::colSums(counts)
+    cell_detected_genes <- Matrix::colSums(counts > 0)
+    keep_cells <- cell_sums >= 20
+    counts_filtered <- counts[, keep_cells, drop = FALSE]
+
+    # Rebuild SCE from filtered counts
+    sce <- SingleCellExperiment(list(counts = counts_filtered))
+
+    # Retry bcds
+    bcds(sce, retRes = TRUE, estNdbl = TRUE)
+  }
+)
 
 ## Annotate doublet using co-expression based doublet scoring:
 try({

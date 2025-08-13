@@ -1,4 +1,4 @@
-process capture_cellsnp_files{
+process CAPTURE_CELLSNP_FILES{
 
   publishDir  path: "${params.outdir}/deconvolution/",
         saveAs: {filename ->
@@ -88,6 +88,39 @@ process DYNAMIC_DONOR_EXCLUSIVE_SNP_SELECTION{
             bgzip: \$(echo \$(bgzip -h 2>&1) | head -n 1 | sed 's/^Version: //; s/Usage:.*//')
         END_VERSIONS
       """
+}
+
+
+process MPILEUP {
+    label 'deduplication'
+    publishDir "${params.outdir}/deconvolution/mpileup", mode: 'copy'
+
+    if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
+        container "${params.yascp_container}"
+
+    } else {
+        container "${params.yascp_container_docker}"
+    }
+
+    input:
+        tuple val(sample_id), path(bam), path(bai_file), path(barcodes_tsv_gz)
+        path(ref_gen)
+    output:
+        tuple val(sample_id), path("${sample_id}__piled_up_reads.vcf"), emit: pileup
+        path("${sample_id}__barcodes.txt")
+    script:
+    """
+        # Extract cell barcodes from BAM
+        samtools view "${bam}" | grep -oP '${params.cellsnp.cellTAG}:Z:\\K[^\\t]+'  > "${sample_id}__barcodes.txt"
+
+        ref_fa=\$(find "\$(realpath ${ref_gen})" -maxdepth 1 -type f \\( -name "*.fa" -o -name "*.fasta" \\) | head -n 1)
+        
+        bcftools mpileup \
+        -f "\$ref_fa" \
+        -q 20 -Q 20 ${params.mpileup_extra_options} \
+        -Ou ${bam} | \
+        bcftools call -mv -V indels --ploidy 2 -Ov -o ${sample_id}__piled_up_reads.vcf
+    """
 }
 
 process ASSESS_CALL_RATE{
@@ -184,7 +217,7 @@ process CELLSNP {
         -O cellsnp_${samplename} \\
         -R region_vcf_no_MHC.vcf.gz \\
         -p ${task.cpus} \\
-        ${params.cellsnp.min_count} ${params.cellsnp.CellTag} ${params.cellsnp.minMAPQ} ${MAF} --gzip ${genotype_file} ${umi_tag}
+        ${params.cellsnp.min_count} --cellTAG ${params.cellsnp.cellTAG} ${params.cellsnp.minMAPQ} ${MAF} --gzip ${genotype_file} ${umi_tag}
 
       cat <<-END_VERSIONS > versions.yml
       "${task.process}":

@@ -113,56 +113,6 @@ process MERGE_GENOTYPES_IN_ONE_VCF_FREEBAYES{
 
 }
 
-process MERGE_GENOTYPES_IN_ONE_VCF{
-
-    label 'process_medium'
-    publishDir  path: "${params.outdir}/${mode}_genotypes/",
-          mode: "${params.copy_mode}",
-          overwrite: "true"
-    if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "${params.yascp_container}"
-    } else {
-        container "${params.yascp_container_docker}"
-    }
-
-    input:
-       path(vireo_gt_vcf)
-       val(mode)
-
-    output:
-       tuple path("${mode}_merged_vcf_file_all_pools.vcf.gz"),path("${mode}_merged_vcf_file_all_pools.vcf.gz.csi"), emit: merged_infered_genotypes
-       path "versions.yml", emit: versions
-
-    script:
-
-    """
-      fofn_input_subset.sh "${vireo_gt_vcf}"
-
-      for VARIABLE in ${vireo_gt_vcf}
-      do
-          bcftools index -f \$VARIABLE
-      done
-
-      if [ \$(cat fofn_vcfs.txt | wc -l) -gt 1 ]; then
-          echo 'yes'
-          bcftools merge --force-samples -i MAF:join -file-list ${vireo_gt_vcf} -Ou | bcftools sort -Oz -o ${mode}_merged_vcf_file_all_pools.vcf.gz
-          bcftools index ${mode}_merged_vcf_file_all_pools.vcf.gz
-      else
-        echo 'no'
-        bcftools sort ${vireo_gt_vcf} -Oz -o ${mode}_merged_vcf_file_all_pools.vcf.gz
-        bcftools index ${mode}_merged_vcf_file_all_pools.vcf.gz
-        
-      fi
-
-      cat <<-END_VERSIONS > versions.yml
-      "${task.process}":
-          bcftools: \$(bcftools --version 2>&1 | head -n1 | sed 's/^.*bcftools //; s/ .*\$//')
-      END_VERSIONS
-    """
-
-}
-
-
 process VIREO_ADD_SAMPLE_PREFIX{
 
     tag "${pool_id}"
@@ -236,15 +186,17 @@ process VIREO_GT_FIX_HEADER
     bcftools view -Oz -o ${sorted_vcf} -
 
     bcftools reheader -h header.txt ${sorted_vcf} | \
+    bcftools view | awk '{gsub(/^chr/, ""); gsub(/ID=chr/, "ID="); print}' | \
     bcftools view -Oz -o pre_${vireo_fixed_vcf}
     tabix -p vcf pre_${vireo_fixed_vcf}
     bcftools +fixref pre_${vireo_fixed_vcf} -Oz -o ${vireo_fixed_vcf} -- -d -f ${genome}/genome.fa -m flip-all
     tabix -p vcf ${vireo_fixed_vcf}
   """
 }
+
 process REPLACE_GT_DONOR_ID2{
     tag "${samplename}"
-    publishDir  path: "${params.outdir}/deconvolution/vireo_processed/${samplename}/",
+    publishDir  path: "${params.outdir}/deconvolution/vireo/vireo_processed/${samplename}/",
           pattern: "GT_replace_*",
           mode: "${params.copy_mode}",
           overwrite: "true"
@@ -350,12 +302,7 @@ process GT_MATCH_POOL_IBD
 
   script:
     """
-      #bcftools +prune -m 0.2 -w 50 ${vireo_gt_vcf} -Ov -o pruned_${vireo_gt_vcf}
-      #plink --vcf ${vireo_gt_vcf} --indep-pairwise 50 5 0.2 --out all2 --make-bed --double-id
-      #plink --bfile all2 --extract all2.prune.in --out pruned --export vcf
-      plink --vcf ${vireo_gt_vcf} --genome unbounded --const-fid dummy --out ${mode2}_${mode}_${pool_id} || echo 'single individual pool, cant calculate IBD'
-      #rm all*
-
+      plink --vcf ${vireo_gt_vcf} --genome unbounded --allow-extra-chr --const-fid dummy --out ${mode2}_${mode}_${pool_id} || echo 'single individual pool, cant calculate IBD'
       cat <<-END_VERSIONS > versions.yml
       "${task.process}":
           plink: \$(echo \$(plink --version) | sed 's/^PLINK v//;s/64.*//')
@@ -510,35 +457,6 @@ process ASSIGN_DONOR_OVERALL
   """
     gtcheck_assign_summary.py ${donor_assignment_file} ${params.genotype_input.ZSCORE_THRESH} ${params.genotype_input.ZSCORE_DIST_THRESH} ${gtcheck_assign_files}
   """
-}
-
-
-
-
-process REPLACE_GT_ASSIGNMENTS_WITH_PHENOTYPE{
-  label 'process_low'
-  publishDir  path: "${params.outdir}/deconvolution/gtmatch/",
-          pattern: "*_assignments.csv",
-          mode: "${params.copy_mode}",
-          overwrite: "true"
-
-  if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-      container "${params.yascp_container}"
-  } else {
-      container "${params.yascp_container_docker}"
-  }
-
-  input:
-    path(gt_match_results)
-
-  output:
-    path(gt_match_results, emit: donor_match_table)
-
-  script:
-    """
-      perform_replacement.py --genotype_phenotype_mapping ${params.genotype_phenotype_mapping_file} --assignemts ${gt_match_results}
-    """
-
 }
 
 process ENHANCE_STATS_FILE{
