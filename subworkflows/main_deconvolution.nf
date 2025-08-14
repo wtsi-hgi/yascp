@@ -4,7 +4,7 @@ nextflow.enable.dsl=2
 
 include { CELLSNP;
           capture_cellsnp_files;
-          DYNAMIC_DONOR_EXCLUSIVE_SNP_SELECTION; 
+          DYNAMIC_DONOR_EXCLUSIVE_SNP_SELECTION; mpileup;subset_vcf;
           ASSESS_CALL_RATE } from "$projectDir/modules/local/cellsnp/main"
 include { SUBSET_GENOTYPE } from "$projectDir/modules/local/subset_genotype/main"
 include { VIREO;
@@ -43,6 +43,8 @@ include {collect_file as collect_file1;
         collect_file as collect_file9;
         collect_file as collect_file10} from "$projectDir/modules/local/collect_file/main"
 
+
+
 workflow  main_deconvolution {
 
     take:
@@ -57,6 +59,8 @@ workflow  main_deconvolution {
     main:
 		log.info "#### running DECONVOLUTION workflow #####"
         Channel.empty().set { ch_versions }
+
+
         vcf_candidate_snps = STAGE_FILE(params.cellsnp.vcf_candidate_snps)
 
         if (params.genotype_input.run_with_genotype_input) {
@@ -81,11 +85,20 @@ workflow  main_deconvolution {
             merged_expected_genotypes2 = merged_expected_genotypes.combine(vcf_candidate_snps)
             GT_MATCH_POOL_IBD(SUBSET_WORKF.out.samplename_subsetvcf_ibd,'Withing_expected','Expected')
             ch_versions = ch_versions.mix(GT_MATCH_POOL_IBD.out.versions)
+
+            if (params.use_bam_derived_cellsnp_panel){
+                // Here should add an option to derive panel from actual bam files as different technologies has different coverages and ceirtain panels may not work. 
+                mpileup(ch_experiment_bam_bai_barcodes,params.reference_assembly_fasta_dir)
+                mpileup_out_chanel = mpileup.out.pileup
+
+            }
+
+
+            // This takes the subset genotypes expected in the pool and select informative SNPs between them and adds them to the panel. 
             DYNAMIC_DONOR_EXCLUSIVE_SNP_SELECTION(params.add_snps_to_pile_up_based_on_genotypes_provided,merged_expected_genotypes2)
             ch_versions = ch_versions.mix(DYNAMIC_DONOR_EXCLUSIVE_SNP_SELECTION.out.versions)
             cellsnp_panels = DYNAMIC_DONOR_EXCLUSIVE_SNP_SELECTION.out.cellsnp_pool_panel
-            // cellsnp_panels.subscribe { println "cellsnp_panels: $it" }
-            // donors_in_pools.subscribe { println "donors_in_pools: $it" }
+
             // merged_expected_genotypes.subscribe { println "merged_expected_genotypes: $it" }
             informative_uninformative_sites = DYNAMIC_DONOR_EXCLUSIVE_SNP_SELECTION.out.informative_uninformative_sites
 
@@ -103,12 +116,18 @@ workflow  main_deconvolution {
             if (params.provide_within_pool_donor_specific_sites_for_pilup){
                 log.info """---Running with provide_within_pool_donor_specific_sites_for_pilup ---"""
                 cellsnp_with_npooled_pre = cellsnp_with_npooled.join(cellsnp_panels, remainder: true)
-                // cellsnp_panels.subscribe { println "cellsnp_panels: $it" }
+                // 
             }else{
                 log.info """---Running WITHOUT provide_within_pool_donor_specific_sites_for_pilup ---"""
                 cellsnp_with_npooled_pre = cellsnp_with_npooled.combine(vcf_candidate_snps)
             }
+            
             cellsnp_with_npooled_pre2 = cellsnp_with_npooled_pre.combine(vcf_candidate_snps)
+            if (params.use_bam_derived_cellsnp_panel){
+                cellsnp_with_npooled_pre = cellsnp_with_npooled.combine(mpileup_out_chanel, by: 0)
+                cellsnp_with_npooled_pre2 = cellsnp_with_npooled_pre.combine(vcf_candidate_snps)
+                cellsnp_with_npooled_pre2.subscribe { println "cellsnp_with_npooled_pre2: $it" }
+            }
             
             cellsnp_with_npooled2 = cellsnp_with_npooled_pre2.map { experiment, bam, bai, barcodes, nrPool, panel, default_cellsnp ->
                                                                     [
@@ -120,6 +139,7 @@ workflow  main_deconvolution {
                                                                         panel == null ? default_cellsnp : panel
                                                                     ]
                                                                 }
+            cellsnp_with_npooled2.subscribe { println "cellsnp_with_npooled2: $it" }
         }else{
             log.info """---Running without genotype input ---"""
             cellsnp_with_npooled2 = cellsnp_with_npooled.combine(vcf_candidate_snps)
@@ -320,8 +340,6 @@ workflow  main_deconvolution {
                 subsampling_donor_swap = Channel.from("$projectDir/assets/fake_file.fq")
             }
 
-            
-
             VIREO_GT_FIX_HEADER.out.gt_pool
                 .combine(ch_ref_vcf)
                 .set { gt_math_pool_against_panel_input3 }
@@ -331,7 +349,7 @@ workflow  main_deconvolution {
             gt_matches = match_genotypes.out.donor_match_table.collect()
 
             ENHANCE_STATS_GT_MATCH(match_genotypes.out.donor_match_table_enhanced,params.input_data_table)
-            collect_file1(ENHANCE_STATS_GT_MATCH.out.assignments.collect(),"assignments_all_pools.tsv",params.outdir+'/deconvolution/vireo_processed',1,'')
+            collect_file1(ENHANCE_STATS_GT_MATCH.out.assignments.collect(),"assignments_all_pools.tsv",params.outdir+'/deconvolution/vireo/vireo_processed',1,'')
             collect_file10(ENHANCE_STATS_GT_MATCH.out.assignments.collect(),"assignments_all_pools.tsv",params.outdir+'/deconvolution/gtmatch',1,'')
             assignments_all_pools = collect_file1.out.output_collection
             gt_matches = Channel.from("$projectDir/assets/fake_file.fq")

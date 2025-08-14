@@ -40,7 +40,7 @@ process REMOVE_DUPLICATED_DONORS_FROM_GT{
 process VIREO_SUBSAMPLING {
     // This module is used to make sure that no cells that there are no cells assigned to the wrong donor.
     // We subsample the cellsnp files to the 80% of random SNPs and run vireo with this.
-    publishDir "${params.outdir}/deconvolution/vireo_sub/${samplename}/vireo_____${itteration}/",  mode: "${params.vireo.copy_mode}", overwrite: true
+    publishDir "${params.outdir}/deconvolution/vireo/vireo_subsampling_cellsnp/${samplename}/vireo_____${itteration}/",  mode: "${params.vireo.copy_mode}", overwrite: true
 	  // saveAs: {filename -> filename.replaceFirst("vireo_${samplename}/","") }
 
     tag "${samplename}"
@@ -77,6 +77,9 @@ process VIREO_SUBSAMPLING {
         com2 = ""
         subset_processing="""
             bcftools view ${donors_gt_vcf} -R ${cell_data}/cellSNP.base.vcf.gz  -Oz -o pre_Overlapping.vcf.gz
+            if [ ! -f "${cell_data}/cellSNP.cells.vcf.gz.csi" ] && [ ! -f "${cell_data}/cellSNP.cells.vcf.gz.tbi" ]; then
+                bcftools index -f "${cell_data}/cellSNP.cells.vcf.gz"
+            fi
             bcftools view -G ${cell_data}/cellSNP.cells.vcf.gz -Oz -o pre_cellSNP.cells.vcf.gz 
             bcftools sort pre_cellSNP.cells.vcf.gz -Oz -o pre_cellSNP3.cells.vcf.gz
             bcftools index pre_cellSNP3.cells.vcf.gz
@@ -89,11 +92,6 @@ process VIREO_SUBSAMPLING {
             cp ${cell_data}/cellSNP.samples.tsv subset_${params.vireo.rate}/
             # Update the coordinates matrix
             cellsnp_update.R ${cell_data} ./subset_${params.vireo.rate} ./subset_${params.vireo.rate}/cellSNP.base.vcf.gz
-
-            cat <<-END_VERSIONS > versions.yml
-            "${task.process}":
-                bcftools: \$(bcftools --version 2>&1 | head -n1 | sed 's/^.*bcftools //; s/ .*\$//')
-            END_VERSIONS
         """
 
       }else{
@@ -151,7 +149,7 @@ process VIREO_SUBSAMPLING {
 process GENOTYPE_MATCHER{
     tag "${samplename}"
     label 'process_low'
-    publishDir "${params.outdir}/deconvolution/vireo_raw/",  mode: "${params.vireo.copy_mode}", overwrite: true
+    publishDir "${params.outdir}/deconvolution/gtmatch/",  mode: "${params.vireo.copy_mode}", overwrite: true
 
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "${params.yascp_container}"
@@ -180,7 +178,7 @@ process GENOTYPE_MATCHER{
 process VIREO {
     tag "${samplename}"
     label 'medium_cpus'
-    publishDir "${params.outdir}/deconvolution/vireo_raw/${samplename}/",  mode: "${params.vireo.copy_mode}", overwrite: true,
+    publishDir "${params.outdir}/deconvolution/vireo/vireo_raw/${samplename}/",  mode: "${params.vireo.copy_mode}", overwrite: true,
 	  saveAs: {filename -> filename.replaceFirst("vireo_${samplename}/","") }
 
 

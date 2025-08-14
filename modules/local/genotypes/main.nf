@@ -236,6 +236,7 @@ process VIREO_GT_FIX_HEADER
     bcftools view -Oz -o ${sorted_vcf} -
 
     bcftools reheader -h header.txt ${sorted_vcf} | \
+    bcftools view | awk '{gsub(/^chr/, ""); gsub(/ID=chr/, "ID="); print}' | \
     bcftools view -Oz -o pre_${vireo_fixed_vcf}
     tabix -p vcf pre_${vireo_fixed_vcf}
     bcftools +fixref pre_${vireo_fixed_vcf} -Oz -o ${vireo_fixed_vcf} -- -d -f ${genome}/genome.fa -m flip-all
@@ -244,7 +245,7 @@ process VIREO_GT_FIX_HEADER
 }
 process REPLACE_GT_DONOR_ID2{
     tag "${samplename}"
-    publishDir  path: "${params.outdir}/deconvolution/vireo_processed/${samplename}/",
+    publishDir  path: "${params.outdir}/deconvolution/vireo/vireo_processed/${samplename}/",
           pattern: "GT_replace_*",
           mode: "${params.copy_mode}",
           overwrite: "true"
@@ -350,12 +351,7 @@ process GT_MATCH_POOL_IBD
 
   script:
     """
-      #bcftools +prune -m 0.2 -w 50 ${vireo_gt_vcf} -Ov -o pruned_${vireo_gt_vcf}
-      #plink --vcf ${vireo_gt_vcf} --indep-pairwise 50 5 0.2 --out all2 --make-bed --double-id
-      #plink --bfile all2 --extract all2.prune.in --out pruned --export vcf
-      plink --vcf ${vireo_gt_vcf} --genome unbounded --const-fid dummy --out ${mode2}_${mode}_${pool_id} || echo 'single individual pool, cant calculate IBD'
-      #rm all*
-
+      plink --vcf ${vireo_gt_vcf} --genome unbounded --allow-extra-chr --const-fid dummy --out ${mode2}_${mode}_${pool_id} || echo 'single individual pool, cant calculate IBD'
       cat <<-END_VERSIONS > versions.yml
       "${task.process}":
           plink: \$(echo \$(plink --version) | sed 's/^PLINK v//;s/64.*//')

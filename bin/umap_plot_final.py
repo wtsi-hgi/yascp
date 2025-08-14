@@ -296,15 +296,26 @@ def main():
             os.path.basename(options.h5.rstrip('h5ad').rstrip('.'))
         )
 
-    # Parse the color variables.
+    import re
+
     colors_quantitative = []
     if options.cq != '':
-        colors_quantitative = options.cq.split(',')
+        for pattern in options.cq.split(','):
+            regex = re.compile(pattern)
+            matches = [col for col in adata.obs.columns if regex.search(col)]
+            colors_quantitative.extend(matches)
 
     colors_categorical = []
     if options.cc != '':
-        colors_categorical = options.cc.split(',')
+        for pattern in options.cc.split(','):
+            regex = re.compile(pattern)
+            matches = [col for col in adata.obs.columns if regex.search(col)]
+            colors_categorical.extend(matches)
 
+    # Optional: remove duplicates
+    colors_quantitative = list(set(colors_quantitative))
+    colors_categorical = list(set(colors_categorical))
+    
     if len(colors_quantitative) == 0 and len(colors_categorical) == 0:
         raise Exception('Specify a color value.')
 

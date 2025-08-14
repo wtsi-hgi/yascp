@@ -40,7 +40,7 @@ workflow qc_and_integration {
         }
 
         //FILTERING OUTLIER CELLS
-        if (params.sample_qc.cell_filters.run_process) {
+        if (params.sample_qc.cell_filters.filter_outliers.run_process) {
             log.info """---Running automatic outlier cell filtering.----"""
             OUTLIER_FILTER(
                 params.outdir,
@@ -57,6 +57,8 @@ workflow qc_and_integration {
             MERGE_OUTLIER_FILES(file__anndata_merged,test2 )
             file__anndata_merged = MERGE_OUTLIER_FILES.out.anndata
 
+        }else{
+            log.info """---SKIPPING automatic outlier cell filtering.----"""
         }
         
         

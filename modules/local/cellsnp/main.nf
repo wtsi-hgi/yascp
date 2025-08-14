@@ -90,6 +90,65 @@ process DYNAMIC_DONOR_EXCLUSIVE_SNP_SELECTION{
       """
 }
 
+
+process mpileup {
+    label 'deduplication'
+    publishDir "${params.outdir}/deconvolution/mpileup", mode: 'copy'
+
+    if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
+        container "${params.yascp_container}"
+
+    } else {
+        container "${params.yascp_container_docker}"
+    }
+
+    input:
+        tuple val(sample_id), path(bam), path(bai_file), path(barcodes_tsv_gz)
+        path(ref_gen)
+    output:
+        tuple val(sample_id), path("${sample_id}__piled_up_reads.vcf"), emit: pileup
+        path("${sample_id}__barcodes.txt")
+    script:
+    """
+        # Extract cell barcodes from BAM
+        samtools view "${bam}" | grep -oP '${params.cellsnp.cellTAG}:Z:\\K[^\\t]+'  > "${sample_id}__barcodes.txt"
+
+        ref_fa=\$(find "\$(realpath ${ref_gen})" -maxdepth 1 -type f \\( -name "*.fa" -o -name "*.fasta" \\) | head -n 1)
+        
+        bcftools mpileup \
+        -f "\$ref_fa" \
+        -q 20 -Q 20 ${params.mpileup_extra_options} \
+        -Ou ${bam} | \
+        bcftools call -mv -V indels --ploidy 2 -Ov -o ${sample_id}__piled_up_reads.vcf
+    """
+}
+
+process subset_vcf {
+    label 'deconvolution'
+    publishDir "${params.outdir}/deconvolution/mpileup", mode: 'copy'
+
+    if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
+        container "${params.yascp_container}"
+
+    } else {
+        container "${params.yascp_container_docker}"
+    }
+
+    input:
+        tuple val(sample_id), path(sample_id__piled_up_reads)
+        path(subset_regions_bed)
+    output:
+        tuple val(sample_id), path("${sample_id}__piled_up_reads__subset.vcf.gz")
+    script:
+    """
+        bgzip -c ${sample_id__piled_up_reads} > ${sample_id}__tmp.vcf.gz
+        tabix -p vcf ${sample_id}__tmp.vcf.gz
+        bcftools view -R ${subset_regions_bed} ${sample_id}__tmp.vcf.gz -Oz -o ${sample_id}__piled_up_reads__subset.vcf.gz
+    """
+}
+
+
+
 process ASSESS_CALL_RATE{
 
     tag "${samplename}"
@@ -179,12 +238,33 @@ process CELLSNP {
       fi
 
       bcftools view ${region_vcf} -t ^6:28510120-33480577 -Oz -o region_vcf_no_MHC.vcf.gz
+
+      # 2) Build chr-rename map from the header (only if contigs start with 'chr')
+      bcftools view -h region_vcf_no_MHC.vcf.gz \
+        | awk -F'[=,]+' '/^##contig/{
+            id=\$3;
+            if(id ~ /^chr/){
+              new=id; sub(/^chr/, "", new);
+              if(new=="M") new="MT";
+              print id "\t" new
+            }
+          }' > chrmap.txt
+
+      # Apply rename if needed
+      if [ -s chrmap.txt ]; then
+        bcftools annotate --rename-chrs chrmap.txt -Oz -o region_vcf_no_MHC.nochr.vcf.gz region_vcf_no_MHC.vcf.gz
+        bcftools index -t region_vcf_no_MHC.nochr.vcf.gz
+        regions_vcf="region_vcf_no_MHC.nochr.vcf.gz"
+      else
+        regions_vcf="region_vcf_no_MHC.vcf.gz"
+      fi
+
       cellsnp-lite -s ${bam_file} \\
         -b bar_codes.txt \\
         -O cellsnp_${samplename} \\
-        -R region_vcf_no_MHC.vcf.gz \\
+        -R "\${regions_vcf}" \\
         -p ${task.cpus} \\
-        ${params.cellsnp.min_count} ${params.cellsnp.CellTag} ${params.cellsnp.minMAPQ} ${MAF} --gzip ${genotype_file} ${umi_tag}
+        ${params.cellsnp.min_count} --cellTAG ${params.cellsnp.cellTAG} ${params.cellsnp.minMAPQ} ${MAF} --gzip ${genotype_file} ${umi_tag}
 
       cat <<-END_VERSIONS > versions.yml
       "${task.process}":

@@ -128,6 +128,19 @@ COLUMNS_OUTPUT = \
 COLUMNS_OUTPUT_WITH_SCRUBLET = \
     {**COLUMNS_DATASET, **COLUMNS_CELLBENDER, **COLUMNS_DECONV, **COLUMNS_SCRUBLET, **COLUMNS_QC, **COLUMNS_AZIMUTH}
 
+def normalize_barcodes(index_series):
+    parts = index_series.str.split('-')
+    
+    def get_clean_barcode(parts):
+        if len(parts) >= 2 and 'donor' in parts[1]:
+            return parts[0]  # barcode is already annotated
+        elif len(parts) >= 2:
+            return parts[0] + '-' + parts[1]  # keep -1, -2, etc.
+        else:
+            return parts[0]  # fallback if weird case
+    
+    return parts.apply(get_clean_barcode)
+
 def get_df_from_mangled_index(df, expid):
     idx = df.index.str.split(pat='-{}__'.format(expid))
     try:
@@ -282,29 +295,44 @@ def load_scrublet_assignments(expid, datadir_scrublet):
     scb = pandas.read_table(filpath).set_index('cell_barcode', drop = True)
     return scb
 
-def fetch_cellbender_annotation(dirpath, expid,Resolution):
-    
+
+def fetch_cellbender_annotation(dirpath, expid, Resolution):
     try:
         h5_path = f"{args.results_dir}/{os.path.dirname(dirpath)}/cellbender_FPR_{Resolution}_filtered.h5"
+    except NameError:
+        # Fallback if `args` is not defined in the context
+        h5_path = glob.glob(f"{os.path.dirname(dirpath)}/cellbender*{Resolution}_filtered.h5")[0]
+
+    try:
         f = h5py.File(h5_path, 'r')
     except:
-        try:
-            h5_path = glob.glob(f"{os.path.dirname(dirpath)}/cellbender*{Resolution}_filtered.h5")[0]
-        except:
-            Resolution=Resolution.replace('pt','.')
-            h5_path = glob.glob(f"{os.path.dirname(dirpath)}/cellbender*{Resolution}_filtered.h5")[0]
+        Resolution = Resolution.replace('pt', '.')
+        h5_path = glob.glob(f"{os.path.dirname(dirpath)}/cellbender*{Resolution}_filtered.h5")[0]
         f = h5py.File(h5_path, 'r')
-    # ad = scanpy.read_10x_h5(h5_path, genome='background_removed')
-    # interesting data is in /matrix/barcodes and matrix/latent_cell_probability
-   
-    df = pandas.DataFrame({
-        "barcodes":f['/matrix/barcodes'],
-        "cellbender_latent_probability":f['/matrix/latent_cell_probability']
-        })
-    bc = df['barcodes'].transform(lambda a: a.decode("ascii"))
-    df["barcodes"] = bc
+
+    try:
+        try:
+            # Try CellBender outputs with /matrix group
+            barcodes = [b.decode("utf-8") for b in f['/matrix/barcodes'][:]]
+            probs = f['/matrix/latent_cell_probability'][:]
+        except KeyError:
+            # Try flat structure
+            barcodes = [b.decode("utf-8") for b in f['barcodes'][:]]
+            probs = f['latent_cell_probability'][:]
+    except Exception as e:
+        print(f"[ERROR] Unexpected CellBender structure in: {h5_path}")
+        print("Available keys in file:")
+        try:
+            def print_structure(name, obj):
+                print(name)
+            f.visititems(print_structure)
+        except Exception as ee:
+            print(f"[ERROR] Could not traverse file structure: {ee}")
+        f.close()
+        raise e
+
     f.close()
-    return df.set_index("barcodes", drop = True)
+    return pd.DataFrame({'cellbender_latent_probability': probs}, index=barcodes)
 
 def get_lane_and_runid_from_experiment_id(df, insert_pos = 0):
     x = df['experiment_id'].transform(lambda a: a.split('_lane_'))
@@ -820,9 +848,9 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
             tp1 = pd.DataFrame(all_QC_lane.obs)
             tp1 = tp1[tp1['donor_id']==row['donor_id']].index
             Deconvoluted_Donor_Data = adqc[tp1]
-            Donor_barcodes = Deconvoluted_Donor_Data.obs.index.str.split('-').str[:2]
-            Donor_barcodes = Donor_barcodes.str[0]+'-'+Donor_barcodes.str[1]
-            Deconvoluted_Donor_Data.obs.index = Donor_barcodes
+            bc = normalize_barcodes(Deconvoluted_Donor_Data.obs.index.to_series())
+            Deconvoluted_Donor_Data.obs.index = bc
+            Donor_barcodes = list(set(bc))
         else:
             path1 = re.sub('.*/results/', 'results/', path1)
             Deconvoluted_Donor_Data = anndata.read_h5ad(path1)

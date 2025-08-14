@@ -45,6 +45,7 @@ workflow YASCP {
         }
         prepare_inputs(input_channel)
         if (!params.input_data_table.contains('fake_file')){
+            log.info " ---- Genome used: ${params.reference_assembly_fasta_dir} ---"
             input_channel = prepare_inputs.out.channel_input_data_table
             if (params.reference_assembly_fasta_dir=='https://yascp.cog.sanger.ac.uk/public/10x_reference_assembly'){
                 RETRIEVE_RECOURSES()  
@@ -122,7 +123,7 @@ workflow YASCP {
                     .set { filtered_multiplexing_capture_channel }
 
                 HASTAG_DEMULTIPLEX(filtered_multiplexing_capture_channel)
-                HASTAG_FILE_MERGE(HASTAG_DEMULTIPLEX.out.results,'hastag')
+                HASTAG_FILE_MERGE(HASTAG_DEMULTIPLEX.out.results.collect(),'hastag')
                 hastag_labels = HASTAG_FILE_MERGE.out.results
                     .ifEmpty { "$projectDir/assets/fake_file1.fq" }
                 
@@ -133,8 +134,8 @@ workflow YASCP {
                 else{
                     channel__file_paths_10x_gex = SPLIT_CITESEQ_GEX_FILTERED.out.gex_data
                 }
-                channel__file_paths_10x_gex.subscribe { println "channel__file_paths_10x_gex: $it" }
-                // ###################################
+                // channel__file_paths_10x_gex.subscribe { println "channel__file_paths_10x_gex: $it" }
+                // // ###################################
                 // ###################################
                 // Step: DOUBLET DETECTION
                 // Curently contains only Scrublet, but we are also adding DoubletDetect
@@ -144,7 +145,8 @@ workflow YASCP {
                     log.info '---Running doublet assignment ----'
                     MULTIPLET(channel__file_paths_10x_gex,'yascp_full')
                     doublet_paths = MULTIPLET.out.scrublet_paths
-                    sf_mult = MULTIPLET.out.result_sf
+                    sf_mult_p = MULTIPLET.out.result_sf
+                    sf_mult=sf_mult_p.collect()
                     ch_versions = ch_versions.mix(MULTIPLET.out.doublet_versions)
                 }else{
                     log.info '---Skipping celltype assignment ----'
@@ -205,7 +207,6 @@ workflow YASCP {
                 }
                 
                 if (!params.atac){
-                    log.info '---This is an ATAC dataset as you have specified in params.atac ----'
                     file__anndata_merged = MERGE_SAMPLES.out.file__anndata_merged
                     dummy_filtered_channel(file__anndata_merged,params.id_in)
                     file__cells_filtered = dummy_filtered_channel.out.anndata_metadata
