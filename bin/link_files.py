@@ -32,7 +32,7 @@ for i,row1 in Data.iterrows():
     # make a directory
     data_10x_format = row1.data_path_10x_format.strip()
     
-    if data_10x_format in ['', None] or not os.path.isdir(data_10x_format):
+    if data_10x_format in ['', None] or not os.path.isdir(data_10x_format+'/'):
         print(f"[{row1.experiment_id}] Fallback mode using explicit paths")
 
         outdir = 'input__' + row1.experiment_id

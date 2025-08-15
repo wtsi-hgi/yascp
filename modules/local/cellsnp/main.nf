@@ -107,11 +107,11 @@ process mpileup {
         path(ref_gen)
     output:
         tuple val(sample_id), path("${sample_id}__piled_up_reads.vcf"), emit: pileup
-        path("${sample_id}__barcodes.txt")
+        // path("${sample_id}__barcodes.txt")
     script:
     """
         # Extract cell barcodes from BAM
-        samtools view "${bam}" | grep -oP '${params.cellsnp.cellTAG}:Z:\\K[^\\t]+'  > "${sample_id}__barcodes.txt"
+        #samtools view "${bam}" | grep -oP '${params.cellsnp.cellTAG}:Z:\\K[^\\t]+'  > "${sample_id}__barcodes.txt"
 
         ref_fa=\$(find "\$(realpath ${ref_gen})" -maxdepth 1 -type f \\( -name "*.fa" -o -name "*.fasta" \\) | head -n 1)
         
