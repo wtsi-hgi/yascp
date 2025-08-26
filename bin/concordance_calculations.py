@@ -505,7 +505,7 @@ class Concordances:
             #print(len(shared_uninformative))
             # print(len(shared_informative))
             if len(shared_uninformative) <= len(shared_informative):
-                informative_subset = set(random.sample(shared_informative, len(shared_uninformative)))
+                informative_subset = set(random.sample(list(shared_informative), len(shared_uninformative)))
             else:
                 informative_subset = set()#if there are more shared uninformative than shared informative we will not subset
             # print(informative_subset)
@@ -1108,8 +1108,9 @@ class Donor(Concordances):
         for cell1 in chunk_df:
             count+=1
             cell_vars = exclusive_cell_variants[cell1]
-            result1, other_donor_concordances = self.concordance_table_production(expected_vars_norm,cell_vars,cell1,donor_gt_match,donor_gt_match_cohort, vars_per_donor_gt, donor_cohorts, count,all_donor_data,donor_assignments_table)
-            donor_concordance_table,other_donor_concordance_table = self.append_results_cell_concordances(result1,donor_concordance_table,other_donor_concordances,other_donor_concordance_table)
+            if len(cell_vars)>0:
+                result1, other_donor_concordances = self.concordance_table_production(expected_vars_norm,cell_vars,cell1,donor_gt_match,donor_gt_match_cohort, vars_per_donor_gt, donor_cohorts, count,all_donor_data,donor_assignments_table)
+                donor_concordance_table,other_donor_concordance_table = self.append_results_cell_concordances(result1,donor_concordance_table,other_donor_concordances,other_donor_concordance_table)
         return [donor_concordance_table, other_donor_concordance_table]
     
     def analyse_donor(self,Cells_to_keep_pre,donor_gt_match,donor_gt_match_cohort,vars_per_donor_gt,donor_cohorts,all_donor_data,expected_vars_norm,donor_assignments_table,exclusive_cell_variants):
@@ -1120,7 +1121,21 @@ class Donor(Concordances):
         list_df = [Cells_to_keep_pre[i:i+n] for i in range(0,len(Cells_to_keep_pre),n)]
         i=0
         for chunk_df in list_df:
-            pool.apply_async(self.analyse_cells,args =([chunk_df,exclusive_cell_variants,expected_vars_norm,donor_gt_match,vars_per_donor_gt,donor_cohorts,all_donor_data,donor_assignments_table,donor_gt_match_cohort]),callback=self.combine_results)
+            if cpus>1:
+                pool.apply_async(self.analyse_cells,args =([chunk_df,exclusive_cell_variants,expected_vars_norm,donor_gt_match,vars_per_donor_gt,donor_cohorts,all_donor_data,donor_assignments_table,donor_gt_match_cohort]),callback=self.combine_results)
+            else:
+                result = self.analyse_cells(
+                    chunk_df,
+                    exclusive_cell_variants,
+                    expected_vars_norm,
+                    donor_gt_match,
+                    vars_per_donor_gt,
+                    donor_cohorts,
+                    all_donor_data,
+                    donor_assignments_table,
+                    donor_gt_match_cohort
+                )
+                self.combine_results(result)
             i+=1
         print('-- Done --') 
         pool.close()
