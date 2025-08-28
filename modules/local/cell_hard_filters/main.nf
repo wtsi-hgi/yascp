@@ -1,8 +1,6 @@
 process CELL_HARD_FILTERS{
     tag "${samplename}"
-    
-    label 'process_medium_single_CPU' 
-    label 'process_medium_memory'
+    label 'process_high'
 
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "${params.yascp_container}"
