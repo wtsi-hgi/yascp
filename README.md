@@ -4,9 +4,7 @@
 
 ## Introduction
 Usage [DOCUMENTATION](https://maxozo.github.io/yascp/)
-<p align="center">
-  <img src="https://github.com/wtsi-hgi/yascp/blob/main/assets/images/yascp_workflow.png" width="100%"/>
-</p>
+
 
 <p align="center">
   <img src="https://github.com/wtsi-hgi/yascp/blob/main/assets/illustrator_files/1x/Yascp_workflow-03.png" width="100%"/>
