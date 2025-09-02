@@ -6,7 +6,7 @@ set version [file tail [module-info version [module-info name]]]
  
 proc ModulesHelp { } {
     global version
-    puts stderr "YASCP (Yet Another Single Cell (scRNA) Pieline: https://github.com/wtsi-hgi/yascp) is a nextflow pipeline that QCs the scRNA Cellranger data by removing ambient RNA, deconvoluting donors, assigning celltypes, analysing concordances vs expected genotypes. IMPROVEMENTS: 1) Support goes beyond Cellranger, can provide bam, mtx matrix now - tested on PiPseq 2) Improvements in cellbender logic 3) Added versions file"
+    puts stderr "YASCP (Yet Another Single Cell (scRNA) Pieline: https://github.com/wtsi-hgi/yascp) is a nextflow pipeline that QCs the scRNA Cellranger data by removing ambient RNA, deconvoluting donors, assigning celltypes, analysing concordances vs expected genotypes. IMPROVEMENTS: 1) Better Cache for existing cellbender (there was a bug in v1.9) 2) Better ATAC compatibility (avoiding unnecessary processes in ATAC) 3) Derive CellSNP panel from bam file (usefull for datasets such as ATAC and Illumina PiPseq) 4) support beyond standard Cellranger input - users can now point to thier mtx and bam files 5) regex support for UMAP producitons 6) module move to local 7) cellbender handle for different type of data - Ilumina PiPse 8) improvements in result folder organisation"
     puts stderr ""
     puts stderr "Yascp module has been set to run in multiple modes:"
     puts stderr "	*yascp -v or yascp -h :will describe the checkout tag used."
