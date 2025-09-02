@@ -195,8 +195,10 @@ workflow YASCP {
                     ch_poolid_csv_donor_assignments = MAIN_DECONVOLUTION.out.ch_poolid_csv_donor_assignments
                     bam_split_channel = MAIN_DECONVOLUTION.out.sample_possorted_bam_vireo_donor_ids
                     assignments_all_pools = MAIN_DECONVOLUTION.out.assignments_all_pools
+                    if (!params.atac){
+                        MERGE_SAMPLES(MAIN_DECONVOLUTION.out.out_h5ad,MAIN_DECONVOLUTION.out.vireo_out_sample__exp_summary_tsv,celltype_assignments,hastag_labels,doublet_labels,'h5ad')
+                    }
                     
-                    MERGE_SAMPLES(MAIN_DECONVOLUTION.out.out_h5ad,MAIN_DECONVOLUTION.out.vireo_out_sample__exp_summary_tsv,celltype_assignments,hastag_labels,doublet_labels,'h5ad')
                 }else{
                     log.info '--- Skipping Deconvolution ---'
                     channel__metadata = PREPARE_INPUTS.out.channel__metadata
