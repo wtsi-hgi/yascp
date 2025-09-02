@@ -152,8 +152,7 @@ To understand how to prepeare your own data and how to interpret the results ple
 
 ## Credits
 
-Yascp was originally written by Matiss Ozols; Leland Taylor, Guillaume Noell, Hannes Ponstingl, Vladimir Ovchinnikov,  Vivek Iyer,  Henry Taylor, Tobi Alegbe, Monika Krzak, Alessandro Raveane, Carl Anderson, Anna Lorenc, Haerin Jang, Niek de Klein, Stephen Watt, Nicole Soranzo, Oliver Stegle.
-<!-- TODO nf-core: If applicable, make list of people who have also contributed -->
+Yascp was originally written by Matiss Ozols with major contributions from Leland Taylor, Guillaume Noell, Hannes Ponstingl, Vladimir Ovchinnikov,  Vivek Iyer,  Henry Taylor, Tobi Alegbe, Monika Krzak, Alessandro Raveane, Carl Anderson, Anna Lorenc, Haerin Jang, Niek de Klein, Stephen Watt, Nicole Soranzo, Oliver Stegle.
 
 The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool to run tasks across multiple compute infrastructures in a very portable manner. It uses Docker/Singularity containers making installation trivial and results highly reproducible. The [Nextflow DSL2](https://www.nextflow.io/docs/latest/dsl2.html) implementation of this pipeline uses one container per process which makes it much easier to maintain and update software dependencies. Where possible, these processes have been submitted to and installed from [nf-core/modules](https://github.com/nf-core/modules) in order to make them available to all nf-core pipelines, and to everyone within the Nextflow community!
 
