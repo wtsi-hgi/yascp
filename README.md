@@ -8,11 +8,16 @@ Usage [DOCUMENTATION](https://maxozo.github.io/yascp/)
   <img src="https://github.com/wtsi-hgi/yascp/blob/main/assets/images/yascp_workflow.png" width="100%"/>
 </p>
 
-You can run pipeline blocks independently:
+<p align="center">
+  <img src="https://github.com/wtsi-hgi/yascp/blob/main/assets/illustrator_files/1x/Yascp_workflow-03.png" width="100%"/>
+</p>
+
+As indicated above you can run pipeline blocks independently:
 
 <img width="100%" alt="Screenshot 2024-06-03 at 17 01 01" src="https://github.com/wtsi-hgi/yascp/assets/22347136/c724f731-42ab-4880-9666-eeb3384fd5e6">
 
 **YASCP** (Yet Another Single Cell Pipeline) is a scalable and modular single-cell analysis pipeline designed for high-quality preprocessing, deconvolution, doublet detection, clustering, cell type assignment, and integration. The acronym moves from Y to A to symbolize the pursuit of knowledge — no Z implies there's always more to explore, refine, and improve.
+
 
 YASCP supports:
 
@@ -62,9 +67,7 @@ Input requires a tsv seperated file [(please read detailed documentation here)](
 
 The foundational ideas were inspired by earlier pipelines from Anderson lab but has been expanded, specifically those for [deconvolution](https://github.com/wtsi-hgi/nf_scrna_deconvolution.git), [cellbender](https://github.com/wtsi-hgi/nf_cellbender), and [quality control and clustering](https://github.com/wtsi-hgi/nf_qc_cluster/tree/main). This ensures a robust integration of proven methodologies tailored to meet the demands of expansive single-cell data analysis.
 
-<p align="center">
-  <img src="https://github.com/wtsi-hgi/yascp/blob/main/assets/images/Yascp_workflow-03.jpg" width="100%"/>
-</p>
+
 <!-- TODO nf-core: Add full-sized test dataset and amend the paragraph below if applicable -->
 <!-- On release, automated continuous integration tests run the pipeline on a full-sized dataset on the AWS cloud infrastructure. This ensures that the pipeline runs on AWS, has sensible resource allocation defaults set to run on real-world datasets, and permits the persistent storage of results to benchmark between pipeline releases and other analysis sources. The results obtained from the full-sized test can be viewed on the [nf-core website](https://nf-co.re/yascp/results). -->
 
