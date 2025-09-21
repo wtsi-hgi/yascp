@@ -14,7 +14,7 @@ As indicated above you can run pipeline blocks independently:
 
 <img width="100%" alt="Screenshot 2024-06-03 at 17 01 01" src="https://github.com/wtsi-hgi/yascp/assets/22347136/c724f731-42ab-4880-9666-eeb3384fd5e6">
 
-**YASCP** (Yet Another Single Cell Pipeline) is a scalable and modular single-cell analysis pipeline designed for high-quality preprocessing, deconvolution, doublet detection, clustering, cell type assignment, and integration. The acronym moves from Y to A to symbolize the pursuit of knowledge — no Z implies there's always more to explore, refine, and improve.
+**YASCP** (Yielding Accurate Single-Cell Profiling) is a scalable and modular single-cell analysis pipeline designed for high-quality preprocessing, deconvolution, doublet detection, clustering, cell type assignment, and integration. The acronym moves from Y to A to symbolize the pursuit of knowledge — no Z implies there's always more to explore, refine, and improve.
 
 
 YASCP supports:
