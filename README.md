@@ -165,7 +165,8 @@ We wellcome all contributions. If you would like to contribute to this pipeline,
 
 
 If you use  YASCP for your analysis, please cite it using the following doi: [10.5281/zenodo.15600242 ](https://doi.org/10.5281/zenodo.15600242 )
-> Ozols, M. et al. YASCP: GitHub. https://github.com/wtsi-hgi/yascp [![DOI](https://zenodo.org/badge/423515781.svg)](https://doi.org/10.5281/zenodo.15600242)
+> Ozols, M. (2025). YASCP: Yielding Accurate Single-Cell Profiling (v2.0), GitHub. https://github.com/wtsi-hgi/yascp. Zenodo. https://doi.org/10.5281/zenodo.17036197
+> 
 We are also working on publishing this pipeline. 
 
 <!-- TODO nf-core: Add citation for pipeline after first release. Uncomment lines below and update Zenodo doi and badge at the top of this file. -->
