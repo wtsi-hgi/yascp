@@ -1,0 +1,3 @@
+experiment_id	n_pooled	donor_vcf_ids	data_path_10x_format
+Pool1	12	"684_685,690_691,693_694,683_684,691_692,682_683,688_689,692_693,687_688,689_690,686_687,685_686"	/lustre/scratch125/humgen/teams/hgi/ip13/1k1k/cellranger611_count_GRCh38-2020-A.pools/pool1/outs
+Pool2	17	""	/lustre/scratch125/humgen/teams/hgi/ip13/1k1k/cellranger611_count_GRCh38-2020-A.pools/pool2/outs
