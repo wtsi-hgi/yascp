@@ -1,0 +1,27 @@
+name: yascp-qc-env
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - debugpy
+  - pyyaml
+  - pandas
+  - scipy
+  - leidenalg
+  - louvain
+  - plotnine
+  - harmonypy
+  - scrublet
+  - bbknn
+  - kneed
+  - keras
+  - scikit-learn
+  - joblib
+  - plink2
+  - plink
+  - pip
+  - jax
+  - jaxlib
+  - r-base
+  - cellsnp-lite
+  - r-hdf5r
