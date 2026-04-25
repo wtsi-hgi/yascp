@@ -1,0 +1,41 @@
+#%Module1.0
+set version 1.6.1
+set program Yascp
+
+set version [file tail [module-info version [module-info name]]]
+ 
+proc ModulesHelp { } {
+    global version
+    puts stderr "YASCP (Yet Another Single Cell (scRNA) Pieline: https://github.com/wtsi-hgi/yascp) is a nextflow pipeline that QCs the scRNA Cellranger data by removing ambient RNA, deconvoluting donors, assigning celltypes, analysing concordances vs expected genotypes. IMPROVEMENTS: 1) Added support for running cellbender with different parameters. 2) Citeseq, VDJ data integrations using Surat integration, 3) You can now only run only the cellbender step 4) Have added additional 5 doublet detection methods 5) Can provide your own Azimuth and Celltypist references 6) You can now only run the doublet detection step"
+    puts stderr ""
+    puts stderr "Yascp module has been set to run in multiple modes:"
+    puts stderr "	*yascp -v or yascp -h :will describe the checkout tag used."
+    puts stderr "	*yascp celltypes -c inputs.nf - run just a celltype assignment based on the input h5ad files."
+    puts stderr "	*yascp doublets -c input.nf : Run just doublet assesments on your h5ad/matrix files."
+    puts stderr "	*yascp cluster -c inputs.nf - run just a celltype assignment based on the input h5ad files."
+    puts stderr "	*yascp cellbender -c inputs.nf - run just a celltype assignment based on the input h5ad files."
+    puts stderr " 	*yascp test :will run a OneK1k test dataset."
+    puts stderr " 	*yascp sample_input :will create a directory sample_input in your current working directory where you will sample input files."
+    puts stderr " 	*yascp fetch :(you need an input.tsv file (ap per this: https://github.com/wtsi-hgi/yascp/blob/main/sample_input/input.tsv) in project directory where you would like to fetch the cellranged data. This file should contain sanger_sample_id as a header and all the uniqie sanger sample ids in the folowin rows) will fetch the cellranger data and prepeare the basic yascp inputs."
+    puts stderr "  	*yascp clean -c inputs.nf: will rsync results and extract symlinks from the folder defined as an 'outdir' and then remove work directory to avoid running out of quota (this will remove nextflow catche and pipeline will need to be rerun from beggining if needed)"
+    puts stderr "	*yascp -c input.nf :will run your samples as defined in input file. If you are unsure how to fill in the info file please refear to this documentation: https://github.com/wtsi-hgi/yascp/blob/main/docs/usage.md"
+    puts stderr ""
+    puts stderr "For the data interpretation please folow this documentation: https://github.com/wtsi-hgi/yascp/tree/main/docs"
+    puts stderr ""
+}
+ 
+module-whatis   "Yascp Version: $version" 
+module-whatis   "Yascp version $version is a single cell (scRNA) processing pipeline that takes care of donor deconvolution, ambient rna removal, celltype assignment, integration, clustering and cluster assesments and data qc: yascp (https://github.com/wtsi-hgi/yascp)"
+
+ 
+set install /software/hgi/pipelines/yascp_versions/yascp_v1.6.1
+module load ISG/singularity/3.11.4
+module load HGI/common/nextflow/22.04.4
+module load HGI/common/baton
+module load ISG/experimental/irods/4.2.7
+module load HGI/softpack/users/bh18/bcftools/1.0
+prepend-path PATH "/software/hgi/envs/conda/team151/mo11/mo11/bin"
+prepend-path PATH "/software/hgi/containers/yascp/modules/full_yascp"
+prepend-path PATH "/software/hgi/pipelines/yascp_versions/yascp_v1.6.1/bin"
+
+prepend-path PATH "/software/hgi/pipelines/yascp_versions/yascp_v1.6.1/assets/deploy_scripts/module_exacutables"
