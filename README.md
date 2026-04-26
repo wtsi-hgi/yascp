@@ -3,16 +3,14 @@
 </p>
 
 ## Introduction
-Usage [DOCUMENTATION](https://maxozo.github.io/yascp/)
-
 
 <p align="center">
-  <img src="https://github.com/wtsi-hgi/yascp/blob/main/assets/illustrator_files/1x/Yascp_workflow-03.png" width="100%"/>
+  <img src="https://github.com/wtsi-hgi/yascp-clean/blob/main/assets/illustrator_files/1x/Yascp_workflow-03.png" width="100%"/>
 </p>
 
 As indicated above you can run pipeline blocks independently:
 
-<img width="100%" alt="Screenshot 2024-06-03 at 17 01 01" src="https://github.com/wtsi-hgi/yascp/assets/22347136/c724f731-42ab-4880-9666-eeb3384fd5e6">
+<img width="100%" alt="Screenshot 2024-06-03 at 17 01 01" src="https://github.com/wtsi-hgi/yascp-clean/assets/22347136/c724f731-42ab-4880-9666-eeb3384fd5e6">
 
 **YASCP** (Yielding Accurate Single-Cell Profiling) is a scalable and modular single-cell analysis pipeline designed for high-quality preprocessing, deconvolution, doublet detection, clustering, cell type assignment, and integration. The acronym moves from Y to A to symbolize the pursuit of knowledge — no Z implies there's always more to explore, refine, and improve.
 
@@ -53,15 +51,15 @@ Whether you’re analyzing a simple 10x run or building a customized, multi-step
 
 
 Results will demultiplex individuals, robustly assess the assignments
-![Screenshot 2024-06-03 at 12 56 44](https://github.com/wtsi-hgi/yascp/assets/22347136/5129c789-fbe9-41e8-8d28-5d286896f14a)
+![Screenshot 2024-06-03 at 12 56 44](https://github.com/wtsi-hgi/yascp-clean/assets/22347136/5129c789-fbe9-41e8-8d28-5d286896f14a)
 
 
 As well as assign celltypes, perform integrations, remove ambient RNA and produce publication ready plots
-![Screenshot 2024-06-02 at 15 20 29](https://github.com/wtsi-hgi/yascp/assets/22347136/fe39d33a-97ec-44a1-9614-55f3585bde4d)
+![Screenshot 2024-06-02 at 15 20 29](https://github.com/wtsi-hgi/yascp-clean/assets/22347136/fe39d33a-97ec-44a1-9614-55f3585bde4d)
 
 Developed by M.Ozols under the leadership of N.Soranzo and Human Genetics Informatics (HGI), this large-scale single-cell pipeline was originally crafted for the Cardinal project (profiling UKBB and GH participants) but is versatile enough for broad scRNA analysis applications. 
 
-Input requires a tsv seperated file [(please read detailed documentation here)](https://github.com/wtsi-hgi/yascp/tree/yascp_docs) with paths and if running in an genotype  additional input is required to be provided in an input.nf file pointing to the vcf location. This pipeline is designed to be used any large scale single cell experiments.
+Input requires a tsv seperated file [(please read detailed documentation here)](https://github.com/wtsi-hgi/yascp-clean/tree/yascp_docs) with paths and if running in an genotype  additional input is required to be provided in an input.nf file pointing to the vcf location. This pipeline is designed to be used any large scale single cell experiments.
 
 The foundational ideas were inspired by earlier pipelines from Anderson lab but has been expanded, specifically those for [deconvolution](https://github.com/wtsi-hgi/nf_scrna_deconvolution.git), [cellbender](https://github.com/wtsi-hgi/nf_cellbender), and [quality control and clustering](https://github.com/wtsi-hgi/nf_qc_cluster/tree/main). This ensures a robust integration of proven methodologies tailored to meet the demands of expansive single-cell data analysis.
 
@@ -76,7 +74,7 @@ The foundational ideas were inspired by earlier pipelines from Anderson lab but 
 3. Download/clone the pipeline and test it on a minimal dataset with a single command:
 
     ```console
-    git clone https://github.com/wtsi-hgi/yascp.git
+    git clone https://github.com/wtsi-hgi/yascp-clean.git
     nextflow run /path/to/colned/yascp -profile test,<docker/singularity,institute>
     ```
 ## Run on Your Own Data
@@ -116,7 +114,7 @@ The foundational ideas were inspired by earlier pipelines from Anderson lab but 
   ### 2. Run the pipeline
 
   ```bash
-  git clone https://github.com/wtsi-hgi/yascp.git
+  git clone https://github.com/wtsi-hgi/yascp-clean.git
   cd yascp
 
   nextflow run ./main.nf \
@@ -148,7 +146,7 @@ Pipeline has a modular design ensuring that the bits and piecies can be run inde
 
 ## Documentation: Prepearing your own data and interpreting the results
 
-To understand how to prepeare your own data and how to interpret the results please refear to [documents HERE](https://github.com/wtsi-hgi/yascp/tree/yascp_docs)
+To understand how to prepeare your own data and how to interpret the results please refear to [documents HERE](https://github.com/wtsi-hgi/yascp-clean/tree/yascp_docs)
 
 
 ## Credits
@@ -165,7 +163,7 @@ We wellcome all contributions. If you would like to contribute to this pipeline,
 
 
 If you use  YASCP for your analysis, please cite it using the following doi: [10.5281/zenodo.15600242 ](https://doi.org/10.5281/zenodo.15600242 )
-> Ozols, M. (2025). YASCP: Yielding Accurate Single-Cell Profiling (v2.0), GitHub. https://github.com/wtsi-hgi/yascp. Zenodo. https://doi.org/10.5281/zenodo.17036197
+> Ozols, M. (2025). YASCP: Yielding Accurate Single-Cell Profiling (v2.0), GitHub. https://github.com/wtsi-hgi/yascp-clean. Zenodo. https://doi.org/10.5281/zenodo.17036197
 > 
 We are also working on publishing this pipeline. 
 
