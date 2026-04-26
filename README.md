@@ -1,4 +1,3 @@
-![Screenshot 2024-04-11 at 11 20 29](https://github.com/wtsi-hgi/yascp-clean/assets/22347136/a0aab7d8-57ec-49cb-bceb-ed734b04a8de)
 
 ---
 tags:
