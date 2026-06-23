@@ -94,18 +94,19 @@ workflow QC_AND_INTEGRATION {
 
             NORMALISE_AND_PCA.out.sample_QCd_adata.flatten().map{sample -> tuple("${sample}".replaceFirst(/___sample_QCd_adata.h5ad/,"").replaceFirst(/.*\//,""),sample)}.set{alt_input}
             channel_dsb2 = channel_dsb.combine(alt_input, by: 0)
-            DSB_PROCESS(channel_dsb2)
-
+            //DSB_PROCESS(channel_dsb2)
+            //comented out for now, as it caused errors with few samples, and is not needed for the downstreem analysis.
             if(params.totalVi.run_process){
                 TOTAL_VI_INTEGRATION(NORMALISE_AND_PCA.out.anndata,DSB_PROCESS.out.citeseq_rsd.collect(),NORMALISE_AND_PCA.out.outdir)
                 ch_versions = ch_versions.mix(TOTAL_VI_INTEGRATION.out.versions)
             }
 
-            vireo_paths_map = vireo_paths.flatten().map{row->tuple("${row}".replaceFirst(/.*vireo_/,""), row)}
-            vireo_paths_map.combine(DSB_PROCESS.out.ch_for_norm, by: 0).set{norm_chanel}
-            norm_chanel.combine(matched_donors).set{inp4}
-            PREPROCESS_PROCESS(inp4,params.reduced_dims.vars_to_regress.value)
-            ch_versions = ch_versions.mix(PREPROCESS_PROCESS.out.versions)
+            //vireo_paths_map = vireo_paths.flatten().map{row->tuple("${row}".replaceFirst(/.*vireo_/,""), row)}
+            //vireo_paths_map.combine(DSB_PROCESS.out.ch_for_norm, by: 0).set{norm_chanel}
+            //norm_chanel.combine(matched_donors).set{inp4}
+            //PREPROCESS_PROCESS(inp4,params.reduced_dims.vars_to_regress.value)
+            //ch_versions = ch_versions.mix(PREPROCESS_PROCESS.out.versions)
+            //comented out for now, as it uses DSB_PROCESS output, and is not needed for the downstreem analysis.
 
             if(params.seurat_integration.run_process){
                 DSB_INTEGRATE(

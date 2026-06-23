@@ -133,8 +133,12 @@ def main():
     Data_All.to_csv('All_Celltype_Assignments.tsv',sep='\t')
     #count cells for each pool
     with open("cells_by_pool.counts.txt", "w") as f:
-        for pool in set(list(Azimuth_cells_by_pool.keys()) + list(celltypist_cells_by_pool.keys()) + list(All_alt_cells_by_pool.keys())):
-            f.write(pool+"\t"+str(Azimuth_cells_by_pool.get(pool, ''))+"\t"+str(celltypist_cells_by_pool.get(pool, ''))+"\t"+str(All_alt_cells_by_pool.get(pool, ''))+"\n")
+        if (options.all_alternitive):
+            for pool in set(list(Azimuth_cells_by_pool.keys()) + list(celltypist_cells_by_pool.keys()) + list(All_alt_cells_by_pool.keys())):
+                f.write(pool+"\t"+str(Azimuth_cells_by_pool.get(pool, ''))+"\t"+str(celltypist_cells_by_pool.get(pool, ''))+"\t"+str(All_alt_cells_by_pool.get(pool, ''))+"\n")
+        else:
+            for pool in set(list(Azimuth_cells_by_pool.keys()) + list(celltypist_cells_by_pool.keys())):
+                f.write(pool+"\t"+str(Azimuth_cells_by_pool.get(pool, ''))+"\t"+str(celltypist_cells_by_pool.get(pool, ''))+"\t\n")
     
 
     # adatas_df = pd.read_csv(options.andata, header=None, names=['file_path'])
