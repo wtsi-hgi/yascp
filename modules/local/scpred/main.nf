@@ -9,7 +9,7 @@ process SCPRED{
     }
 
     publishDir  path: "${params.outdir}/celltype_assignment/scpred/",
-            saveAs: {filename -> "${outfil_prfx}_" + filename},
+            saveAs: {filename -> filename == 'versions.yml' ? null : "${outfil_prfx}_" + filename},
             mode: "${params.copy_mode}",
             overwrite: "true"
     stageInMode 'copy'

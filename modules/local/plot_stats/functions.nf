@@ -15,6 +15,9 @@ process PLOT_FILTERED_CELLS {
     }
 
     publishDir  path: "${outdir}/clustering_and_integration/plots",
+                saveAs: { filename -> 
+                    filename == 'versions.yml' ? null : filename 
+                },
                 mode: "${params.copy_mode}",
                 overwrite: "true"
 
@@ -25,6 +28,7 @@ process PLOT_FILTERED_CELLS {
     output:
         path("*.png") optional true
         path("*.pdf") optional true
+        path "versions.yml", emit: versions
 
     script:
 
@@ -34,6 +38,13 @@ process PLOT_FILTERED_CELLS {
             --tsv_file ${file__filtered_cells} \
             --output_file adata-cell_filtered_per_experiment
 
+        cat <<-END_VERSIONS > versions.yml
+        "${task.process}":
+            python: \$(python --version | sed 's/Python //g')
+            python library argparse: \$(python -c "import argparse; print(argparse.__version__)")
+            python library pandas: \$(python -c "import pandas; print(pandas.__version__)")
+            python library plotnine: \$(python -c "import plotnine; print(plotnine.__version__)")
+        END_VERSIONS
         """
 }
 
@@ -53,6 +64,9 @@ process PLOT_PCS {
     }
 
     publishDir  path: "${outdir}/clustering_and_integration/plots",
+                saveAs: { filename -> 
+                    filename == 'versions.yml' ? null : filename 
+                },
                 mode: "${params.copy_mode}",
                 overwrite: "true"
 
@@ -67,6 +81,7 @@ process PLOT_PCS {
         val(outdir, emit: outdir)
         path("*.png"), emit: out_png
         path("*.pdf") optional true
+        path "versions.yml", emit: versions
 
     script:
         
@@ -87,6 +102,16 @@ process PLOT_PCS {
             ${cmd__colors_quant} \
             ${cmd__colors_cat} \
             --output_file ${outfile}
+
+        cat <<-END_VERSIONS > versions.yml
+        "${task.process}":
+            python: \$(python --version | sed 's/Python //g')
+            python library argparse: \$(python -c "import argparse; print(argparse.__version__)")
+            python library matplotlib: \$(python -c "import matplotlib; print(matplotlib.__version__)")
+            python library numpy: \$(python -c "import numpy; print(numpy.__version__)")
+            python library pandas: \$(python -c "import pandas; print(pandas.__version__)")
+            python library scanpy: \$(python -c "import scanpy; print(scanpy.__version__)")
+        END_VERSIONS
         """
 }
 
@@ -103,6 +128,9 @@ process PLOT_PREDICTED_SEX {
     }
 
     publishDir  path: "${outdir}/clustering_and_integration/plots",
+                saveAs: { filename -> 
+                    filename == 'versions.yml' ? null : filename 
+                },
                 mode: "${params.copy_mode}",
                 overwrite: "true"
 
@@ -113,6 +141,7 @@ process PLOT_PREDICTED_SEX {
     output:
         path("*.png") optional true
         path("*.pdf") optional true
+        path "versions.yml", emit: versions
 
     script:
 
@@ -122,6 +151,17 @@ process PLOT_PREDICTED_SEX {
         plot_predicted_sex.py \
             --h5_anndata ${file__anndata} \
             --output_file ${outfile}
+
+        cat <<-END_VERSIONS > versions.yml
+        "${task.process}":
+            python: \$(python --version | sed 's/Python //g')
+            python library argparse: \$(python -c "import argparse; print(argparse.__version__)")
+            python library matplotlib: \$(python -c "import matplotlib; print(matplotlib.__version__)")
+            python library numpy: \$(python -c "import numpy; print(numpy.__version__)")
+            python library pandas: \$(python -c "import pandas; print(pandas.__version__)")
+            python library plotnine: \$(python -c "import plotnine; print(plotnine.__version__)")
+            python library scanpy: \$(python -c "import scanpy; print(scanpy.__version__)")
+        END_VERSIONS
         """
 }
 
@@ -138,6 +178,9 @@ process PLOT_QC {
     }
 
     publishDir  path: "${outdir}/clustering_and_integration/plots",
+                saveAs: { filename -> 
+                    filename == 'versions.yml' ? null : filename 
+                },
                 mode: "${params.copy_mode}",
                 overwrite: "true"
 
@@ -150,6 +193,7 @@ process PLOT_QC {
         path("*.png")
         path("*.pdf") optional true
         path("*.tsv") optional true
+        path "versions.yml", emit: versions
 
     script:
 
@@ -178,6 +222,18 @@ process PLOT_QC {
                 --h5_anndata ${file__anndata} \
                 --qc_key ${params.mads_categories} \
                 --output_file mads
+
+        cat <<-END_VERSIONS > versions.yml
+        "${task.process}":
+            python: \$(python --version | sed 's/Python //g')
+            python library argparse: \$(python -c "import argparse; print(argparse.__version__)")
+            python library matplotlib: \$(python -c "import matplotlib; print(matplotlib.__version__)")
+            python library numpy: \$(python -c "import numpy; print(numpy.__version__)")
+            python library pandas: \$(python -c "import pandas; print(pandas.__version__)")
+            python library plotnine: \$(python -c "import plotnine; print(plotnine.__version__)")
+            python library scanpy: \$(python -c "import scanpy; print(scanpy.__version__)")
+            python library scipy: \$(python -c "import scipy; print(scipy.__version__)")
+        END_VERSIONS
         """
 }
 
@@ -194,6 +250,9 @@ process PLOT_DISTRIBUTIONS {
     }
 
     publishDir  path: "${outdir}/clustering_and_integration/plots",
+                saveAs: { filename -> 
+                    filename == 'versions.yml' ? null : filename 
+                },
                 mode: "${params.copy_mode}",
                 overwrite: "true"
 
@@ -208,6 +267,7 @@ process PLOT_DISTRIBUTIONS {
         path("*.png")
         path("*.pdf") optional true
         path("*.tsv") optional true
+        path "versions.yml", emit: versions
 
     script:
         outfile = "outfile"
@@ -231,5 +291,14 @@ process PLOT_DISTRIBUTIONS {
         echo "publish_directory: ${outdir}"
         ${cmd__anndataobs}
         ${cmd__anndataobs_ecdf}
+
+        cat <<-END_VERSIONS > versions.yml
+        "${task.process}":
+            python: \$(python --version | sed 's/Python //g')
+            python library argparse: \$(python -c "import argparse; print(argparse.__version__)")
+            python library numpy: \$(python -c "import numpy; print(numpy.__version__)")
+            python library plotnine: \$(python -c "import plotnine; print(plotnine.__version__)")
+            python library scanpy: \$(python -c "import scanpy; print(scanpy.__version__)")
+        END_VERSIONS
         """
 }

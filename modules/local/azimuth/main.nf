@@ -9,7 +9,7 @@ process AZIMUTH{
     }
 
     publishDir  path: "${params.outdir}/celltype_assignment/azimuth/${refset.name}",
-            saveAs: {filename -> "${outfil_prfx}_" + filename},
+            saveAs: {filename -> filename == 'versions.yml' ? null : "${outfil_prfx}_" + filename},
             mode: "${params.copy_mode}",
             overwrite: "true"
     stageInMode 'copy'
@@ -81,17 +81,34 @@ process AZIMUTH_ATAC{
     }
 
     publishDir  path: "${params.outdir}/celltype_assignment/azimuth/${refset.name}",
-            saveAs: {filename -> "${outfil_prfx}_" + filename},
+            saveAs: {filename -> filename == 'versions.yml' ? null : "${outfil_prfx}_" + filename},
             mode: "${params.copy_mode}",
             overwrite: "true"
     input:
         tuple val(samplename),path(file_h5ad_batch)
         each path(mapping_file)
         each refset
+    output:
+        path "versions.yml", emit: versions
 
     script: 
 
     """ 
         azimuth_atac.R ./${file_h5ad_batch} ${refset.refset} ${refset.annotation_labels} ${samplename}
+
+        cat <<-END_VERSIONS > versions.yml
+        "${task.process}":
+            r-base: \$(R --version | sed -n '1p' | sed 's/R version //; s/ (.*//')
+            r library Azimuth: \$(Rscript -e "cat(as.character(packageVersion('Azimuth')))")
+            r library GenomicRanges: \$(Rscript -e "cat(as.character(packageVersion('GenomicRanges')))")
+            r library ggplot2: \$(Rscript -e "cat(as.character(packageVersion('ggplot2')))")
+            r library hdf5r: \$(Rscript -e "cat(as.character(packageVersion('hdf5r')))")
+            r library Matrix: \$(Rscript -e "cat(as.character(packageVersion('Matrix')))")
+            r library Seurat: \$(Rscript -e "cat(as.character(packageVersion('Seurat')))")
+            r library SeuratDisk: \$(Rscript -e "cat(as.character(packageVersion('SeuratDisk')))")
+            r library Signac: \$(Rscript -e "cat(as.character(packageVersion('Signac')))")
+            r library tools: \$(Rscript -e "cat(as.character(packageVersion('tools')))")
+        END_VERSIONS
+
     """
 }

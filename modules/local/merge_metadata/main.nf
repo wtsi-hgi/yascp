@@ -28,10 +28,18 @@ process MERGE_METADATA{
     input:
         file(file_metadata)
     output:
-        path("full_metadata.tsv", emit: metadata)
+        path "full_metadata.tsv", emit: metadata
+        path "versions.yml", emit: versions
     script:
         files__metadata = file_metadata.join(',')
         """
             combine_metadata.py -d ${files__metadata}
+
+            cat <<-END_VERSIONS > versions.yml
+            "${task.process}":
+                python: \$(python --version | sed 's/Python //g')
+                python library argparse: \$(python -c "import argparse; print(argparse.__version__)")
+                python library pandas: \$(python -c "import pandas; print(pandas.__version__)")
+            END_VERSIONS
         """
 }

@@ -12,6 +12,8 @@ process SC_DBLFINDER {
                 saveAs: { filename ->
                     if (filename.endsWith("scDblFinder_doublets_singlets.tsv")) {
                         return null
+                    } else if(filename == 'versions.yml') {
+                        return null
                     } else {
                         return filename
                     }

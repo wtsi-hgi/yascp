@@ -2,6 +2,9 @@ process SUMMARY_STATISTICS_PLOTS {
         
     label 'process_low'
     publishDir  path: "${params.outdir}/handover",
+            saveAs: { filename -> 
+              filename == 'versions.yml' ? null : filename 
+            },
             mode: "${params.copy_mode}",
             overwrite: "true"
 
@@ -18,6 +21,8 @@ process SUMMARY_STATISTICS_PLOTS {
 
     output: 
         path('Summary_plots'), emit: summary_plots
+        path "versions.yml", emit: versions
+
     
     script:
       if ("${params.input}" == 'cellranger'){
@@ -36,6 +41,14 @@ process SUMMARY_STATISTICS_PLOTS {
                               --project_name ${params.project_name}
           cp ${params.extra_sample_metadata} Summary_plots/*/Summary || echo 'not available'
           cohort_report.py -d ${outdir_prev} 
+          
+          cat <<-END_VERSIONS > versions.yml
+          "${task.process}":
+            python: \$(python --version | sed 's/Python //g')
+            python library argparse: \$(python -c "import argparse; print(argparse.__version__)")
+            python library pandas: \$(python -c "import pandas; print(pandas.__version__)")
+          END_VERSIONS
+
       """
 }
 

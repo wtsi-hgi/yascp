@@ -9,6 +9,9 @@ process CONCORDANCE_CALCLULATIONS {
     }
 
     publishDir  path: "${params.outdir}/deconvolution/concordances/${pool_id}",
+                saveAs: { filename -> 
+                    filename == 'versions.yml' ? null : filename 
+                 },
                 mode: "${params.copy_mode}",
                 overwrite: "true"
 
@@ -41,6 +44,13 @@ process CONCORDANCE_CALCLULATIONS {
             cat <<-END_VERSIONS > versions.yml
             "${task.process}":
                 bcftools: \$(bcftools --version 2>&1 | head -n1 | sed 's/^.*bcftools //; s/ .*\$//')
+                python: \$(python --version | sed 's/Python //g')
+                python library argparse: \$(python -c "import argparse; print(argparse.__version__)")
+                python library logging: \$(python -c "import logging; print(logging.__version__)")
+                python library multiprocessing: \$(python -c "import multiprocessing; print(multiprocessing.__version__)")
+                python library numpy: \$(python -c "import numpy; print(numpy.__version__)")
+                python library pandas: \$(python -c "import pandas; print(pandas.__version__)")
+                python library pickle: \$(python -c "import pickle; print(pickle.__version__)")
             END_VERSIONS
         """
 }
@@ -56,6 +66,9 @@ process COMBINE_FILES{
     }
 
     publishDir  path: "${params.outdir}/deconvolution/concordances/${pool_id}",
+                saveAs: { filename -> 
+                    filename == 'versions.yml' ? null : filename 
+                },
                 mode: "${params.copy_mode}",
                 overwrite: "true"
 
@@ -69,11 +82,21 @@ process COMBINE_FILES{
         path("*.png") optional true
         tuple val(pool_id), path("*joined_df_for_plots.tsv"), emit: joined_df_for_plots optional true
         path("*joined_df_for_plots.tsv"), emit: file_joined_df_for_plots optional true
+        path "versions.yml", emit: versions
 
     script:
 
         """
            combine_concordance.py -cc ${concordance_table} -sq ${subsampling_table} -name ${pool_id} --run ${params.RUN}
+
+            cat <<-END_VERSIONS > versions.yml
+            "${task.process}":
+                python: \$(python --version | sed 's/Python //g')
+                python library argparse: \$(python -c "import argparse; print(argparse.__version__)")
+                python library matplotlib: \$(python -c "import matplotlib; print(matplotlib.__version__)")
+                python library pandas: \$(python -c "import pandas; print(pandas.__version__)")
+                python library seaborn: \$(python -c "import seaborn; print(seaborn.__version__)")
+            END_VERSIONS
         """
 
 }
@@ -90,11 +113,15 @@ process PLOT_CONCORDANCES_ALL{
     }
 
     publishDir  path: "${params.outdir}/deconvolution/concordances",
+                saveAs: { filename -> 
+                    filename == 'versions.yml' ? null : filename 
+                },
                 mode: "${params.copy_mode}",
                 overwrite: "true"
 
     output:
         path("*.png")
+        path "versions.yml", emit: versions
 
     input:
         path(input_file_all)
@@ -103,6 +130,15 @@ process PLOT_CONCORDANCES_ALL{
 
         """
             combined_concordance_plots.py -cc ${input_file_all} -name all
+            cat <<-END_VERSIONS > versions.yml
+            "${task.process}":
+                python: \$(python --version | sed 's/Python //g')
+                python library argparse: \$(python -c "import argparse; print(argparse.__version__)")
+                python library matplotlib: \$(python -c "import matplotlib; print(matplotlib.__version__)")
+                python library pandas: \$(python -c "import pandas; print(pandas.__version__)")
+                python library seaborn: \$(python -c "import seaborn; print(seaborn.__version__)")
+            END_VERSIONS
+
         """
 
 

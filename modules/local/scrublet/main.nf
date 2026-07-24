@@ -28,6 +28,9 @@ process SCRUBLET {
                     else if (filename.endsWith(".gz")){
                         null
                     }
+                    else if(filename == 'versions.yml') {
+                        null
+                    } 
                     else {
                         filename.replaceAll("-", "")
                     }

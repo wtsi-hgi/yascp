@@ -39,10 +39,11 @@ workflow PREPARE_INPUTS {
 	// this workflow processes the outputs from cellbender to perform the data preparation
     take: channel_input_data_table_pre
     main:
-
+        Channel.empty().set { ch_versions }
         log.info "... Prepearing inputs based on the 10x folder required for downstream analysis..."
 
 		YASCP_INPUTS(channel_input_data_table_pre)
+        ch_versions = ch_versions.mix(YASCP_INPUTS.out.versions)
 		channel_input_data_table = YASCP_INPUTS.out.input_file_corectly_formatted
         
 
@@ -97,7 +98,9 @@ workflow PREPARE_INPUTS {
             .map{row -> tuple(row.experiment_id, file(row.data_path_10x_format+'/raw_feature_bc_matrix'),file(row.data_path_10x_format+'/filtered_feature_bc_matrix'))}
 
         PREP_COLLECTMETADATA(channel__metadata)
-        channel__metadata=MERGE_METADATA(PREP_COLLECTMETADATA.out.metadata.collect())
+        MERGE_METADATA(PREP_COLLECTMETADATA.out.metadata.collect())
+        ch_versions = ch_versions.mix(MERGE_METADATA.out.versions)
+        channel__metadata=MERGE_METADATA.out.metadata
 
         channel_input_data_table
             .splitCsv(header: true, sep: params.input_tables_column_delimiter)
@@ -170,5 +173,5 @@ workflow PREPARE_INPUTS {
         channel_input_data_table
         channel_dsb
         chanel_cr_outs
-
+        versions = ch_versions
 }

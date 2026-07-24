@@ -94,6 +94,9 @@ process SUBSET_BAM_PER_BARCODES{
     }
 
     publishDir  path: "${params.outdir}/handover/Donor_Quantification/${sample}",
+                saveAs: { filename -> 
+                    filename == 'versions.yml' ? null : filename 
+                },
                 mode: "${params.copy_mode}",
                 overwrite: "true"
 

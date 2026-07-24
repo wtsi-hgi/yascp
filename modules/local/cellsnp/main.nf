@@ -5,7 +5,9 @@ process CAPTURE_CELLSNP_FILES{
         File file = new File(filename)
         if (filename == "output_cellsnp.csv" || filename == "existing_cellsnp_do_not_save") {
           null
-        }else {
+        } else if(filename == 'versions.yml') {
+          null
+        } else {
           filename
         } 
         }
@@ -47,7 +49,8 @@ process DYNAMIC_DONOR_EXCLUSIVE_SNP_SELECTION{
     } else {
         container "${params.yascp_container_docker}"
     }
-    publishDir "${params.outdir}/deconvolution/cellsnp/cellsnp_${samplename}", mode: "${params.copy_mode}", pattern: "cellsnp_${samplename}", overwrite: true
+    publishDir "${params.outdir}/deconvolution/cellsnp/cellsnp_${samplename}",
+      mode: "${params.copy_mode}", pattern: "cellsnp_${samplename}", overwrite: true
     
     input: 
         val(add_dynamic_sites_or_not_to_panel)
@@ -93,7 +96,11 @@ process DYNAMIC_DONOR_EXCLUSIVE_SNP_SELECTION{
 
 process MPILEUP {
     label 'deduplication'
-    publishDir "${params.outdir}/deconvolution/mpileup", mode: 'copy'
+    publishDir "${params.outdir}/deconvolution/mpileup",
+      saveAs: { filename -> 
+        filename == 'versions.yml' ? null : filename 
+      }, 
+      mode: 'copy'
 
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "${params.yascp_container}"
@@ -107,7 +114,8 @@ process MPILEUP {
         path(ref_gen)
     output:
         tuple val(sample_id), path("${sample_id}__piled_up_reads.vcf"), emit: pileup
-        // path("${sample_id}__barcodes.txt")
+        //path("${sample_id}__barcodes.txt")
+        path "versions.yml", emit: versions
     script:
     """
         # Extract cell barcodes from BAM
@@ -120,6 +128,13 @@ process MPILEUP {
         -q 20 -Q 20 ${params.mpileup_extra_options} \
         -Ou ${bam} | \
         bcftools call -mv -V indels --ploidy 2 -Ov -o ${sample_id}__piled_up_reads.vcf
+
+        cat <<-END_VERSIONS > versions.yml
+        "${task.process}":
+            bcftools: \$(bcftools --version 2>&1 | head -n1 | sed 's/^.*bcftools //; s/ .*\$//')
+            samtools: \$(echo \$(samtools --version 2>&1) | sed 's/^.*samtools //; s/Using.*\$//')
+        END_VERSIONS
+
     """
 }
 
@@ -144,13 +159,16 @@ process ASSESS_CALL_RATE{
     script:       
       """
       echo ${samplename}
-      bcftools query -f '%CHROM\t%POS\n' cellSNP.cells.vcf.gz > positions_called_on.tsv
+        bcftools query -f '%CHROM\\t%POS\\n' cellSNP.cells.vcf.gz > positions_called_on.tsv
       quantify_piled_up_sites.py -s ${samplename} -v ${variants_description} -s1 ${set1_uninformative_sites} -s2 ${set2_informative_sites} -p positions_called_on.tsv
       rm positions_called_on.tsv
 
-      cat <<-END_VERSIONS > versions.yml
+        cat<<-END_VERSIONS > versions.yml
       "${task.process}":
           bcftools: \$(bcftools --version 2>&1 | head -n1 | sed 's/^.*bcftools //; s/ .*\$//')
+          python: \$(python --version | sed 's/Python //g')
+          python library argparse: \$(python -c "import argparse; print(argparse.__version__)")
+          python library pandas: \$(python -c "import pandas; print(pandas.__version__)")
       END_VERSIONS
       """    
 
@@ -165,7 +183,8 @@ process CELLSNP {
     
     label 'many_cores_small_mem'
     
-    publishDir "${params.outdir}/deconvolution/cellsnp/", mode: "${params.copy_mode}", pattern: "cellsnp_${samplename}", overwrite: true
+    publishDir "${params.outdir}/deconvolution/cellsnp/",
+      mode: "${params.copy_mode}", pattern: "cellsnp_${samplename}", overwrite: true
 
     
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
@@ -182,6 +201,7 @@ process CELLSNP {
       tuple val(samplename), file("cellsnp_${samplename}"), emit: cellsnp_output_dir
       tuple val(samplename), path("cellsnp_${samplename}/cellSNP.cells.vcf.gz"), emit: cell_vcfs
       tuple val(samplename), path('region_vcf_no_MHC.vcf.gz'), path(bam_file), emit: for_bam_pileups
+      tuple val(samplename), path("${samplename}_cellSNP.counts.txt"), emit:output_check
       path "versions.yml", emit: versions
 
     script:
@@ -240,6 +260,7 @@ process CELLSNP {
         -p ${task.cpus} \\
         ${params.cellsnp.min_count} --cellTAG ${params.cellsnp.cellTAG} ${params.cellsnp.minMAPQ} ${MAF} --gzip ${genotype_file} ${umi_tag}
 
+      wc -l cellsnp_${samplename}/cellSNP.samples.tsv > ${samplename}_cellSNP.counts.txt
       cat <<-END_VERSIONS > versions.yml
       "${task.process}":
           bcftools: \$(bcftools --version 2>&1 | head -n1 | sed 's/^.*bcftools //; s/ .*\$//')

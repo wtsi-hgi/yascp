@@ -39,6 +39,8 @@ process BBKNN{
                         null
                     } else if(filename.endsWith("${param_details}.tsv.gz")) {
                         null
+                    } else if(filename == 'versions.yml') {
+                        null
                     } else {
                         filename.replaceAll("-", "")
                     }
@@ -78,7 +80,7 @@ process BBKNN{
         outfile = "outfile_adata"
         """
         
-        bbknn.py \
+        run_bbknn.py \
             --h5_anndata ${file__anndata} \
             --batch_key ${batch_var} \
             --n_pcs ${n_pcs} \

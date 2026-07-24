@@ -21,6 +21,8 @@ process PREP_ASSIGNMENTS_FILE{
 
     output:
       tuple val(sample), path("cell_belongings.tsv"), emit: cell_assignments
+      path "versions.yml", emit: versions, optional: true
+
     
     script:
       if ("${donor_ids_tsv}" == 'None'){
@@ -28,12 +30,23 @@ process PREP_ASSIGNMENTS_FILE{
           echo ${donor_ids_tsv}
           echo 'preping file in the right format for concordances.'
           rename_cols.py --scrublet ${ filtered_matrix_h5}
+
+          cat <<-END_VERSIONS > versions.yml
+          "${task.process}":
+            python: \$(python --version | sed 's/Python //g')
+            python library argparse: \$(python -c "import argparse; print(argparse.__version__)")
+            python library click: \$(python -c "import click; print(click.__version__)")
+            python library pandas: \$(python -c "import pandas; print(pandas.__version__)")
+            python library scanpy: \$(python -c "import scanpy; print(scanpy.__version__)")
+          END_VERSIONS
         """
+
       }else{
         """
           echo 'using vireo assignemts'
           echo ${donor_ids_tsv}
           ln -s ${donor_ids_tsv} cell_belongings.tsv
+
         """
       }
 
@@ -46,7 +59,7 @@ process SPLIT_DONOR_H5AD {
     
     label 'process_low'
     publishDir "${params.outdir}/deconvolution/split_donor_h5ad/${sample}/", mode: "${params.copy_mode}", overwrite: true,
-	  saveAs: {filename -> filename.replaceFirst("outputs/","") }
+	  saveAs: {filename -> filename == 'versions.yml' ? null : filename.replaceFirst("outputs/","") }
     
 
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
@@ -75,6 +88,7 @@ process SPLIT_DONOR_H5AD {
       path("${sample}__donors.h5ad.assigned.tsv"), emit: exp__donors_h5ad_assigned_tsv 
       path("${sample}.h5ad.tsv"), emit: h5ad_tsv
       path("${sample}_exp__donor_n_cells.tsv"), emit: donor_n_cells
+      path "versions.yml", emit: versions
      
     
     script:
@@ -116,5 +130,20 @@ process SPLIT_DONOR_H5AD {
 
     cat ${sample}__donors.h5ad.tsv | grep -v unassigned | grep -v doublet > ${sample}__donors.h5ad.assigned.tsv
     mv exp__donor_n_cells.tsv ${sample}_exp__donor_n_cells.tsv
+    
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        python: \$(python --version | sed 's/Python //g')
+        python library argparse: \$(python -c "import argparse; print(argparse.__version__)")
+        python library click: \$(python -c "import click; print(click.__version__)")
+        python library csv: \$(python -c "import csv; print(csv.__version__)")
+        python library matplotlib: \$(python -c "import matplotlib; print(matplotlib.__version__)")
+        python library numpy: \$(python -c "import numpy; print(numpy.__version__)")
+        python library logging: \$(python -c "import logging; print(logging.__version__)")
+        python library pandas: \$(python -c "import pandas; print(pandas.__version__)")
+        python library plotnine: \$(python -c "import plotnine; print(plotnine.__version__)")
+        python library scanpy: \$(python -c "import scanpy; print(scanpy.__version__)")
+        python library seaborn: \$(python -c "import seaborn; print(seaborn.__version__)")
+    END_VERSIONS
     """
 }

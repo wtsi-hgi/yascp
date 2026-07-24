@@ -2,6 +2,9 @@ process KERAS_CELLTYPE {
 
     tag { "${experiment_id}" }
     publishDir  path: "${params.outdir}/celltype_assignment/keras_celltype/${experiment_id}/",
+        saveAs: { filename -> 
+            filename == 'versions.yml' ? null : filename 
+        },
         mode: "${params.copy_mode}",
         overwrite: "true"
 

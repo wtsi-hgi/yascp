@@ -46,6 +46,7 @@ process UMAP_CALCULATE {
             emit: outdir_anndata
         )
         path("*${outfile_pattern}.h5ad",emit:adata_out)
+        path "versions.yml", emit: versions
 
     script:
         runid = random_hex(16)
@@ -74,6 +75,15 @@ process UMAP_CALCULATE {
                 --umap_spread ${umap_spread} \
                 --number_cpu ${task.cpus} \
                 --output_file ${outfile}
+
+            cat <<-END_VERSIONS > versions.yml
+            "${task.process}":
+                python: \$(python --version | sed 's/Python //g')
+                python library argparse: \$(python -c "import argparse; print(argparse.__version__)")
+                python library numpy: \$(python -c "import numpy; print(numpy.__version__)")
+                python library pandas: \$(python -c "import pandas; print(pandas.__version__)")
+                python library scanpy: \$(python -c "import scanpy; print(scanpy.__version__)")
+            END_VERSIONS
         """
         //--calculate_densities \
 }
@@ -88,6 +98,9 @@ process GENERATE_FINAL_UMAPS{
     }
 
   publishDir  path: "${outdir}",
+            saveAs: { filename -> 
+                filename == 'versions.yml' ? null : filename 
+            },
               mode: "${params.copy_mode}",
               overwrite: "true"
   input:
@@ -95,6 +108,7 @@ process GENERATE_FINAL_UMAPS{
     val(outdir_prev)
   output:
     path("umap-*")
+    path "versions.yml", emit: versions
   
   script:
     outdir = "${outdir_prev}/handover/UMAPs"
@@ -106,6 +120,15 @@ process GENERATE_FINAL_UMAPS{
             --colors_categorical '${params.umap.colors_categorical.value}' \
             --drop_legend_n 40 \
             --output_file UMAP
+        
+        cat <<-END_VERSIONS > versions.yml
+        "${task.process}":
+            python: \$(python --version | sed 's/Python //g')
+            python library argparse: \$(python -c "import argparse; print(argparse.__version__)")
+            python library matplotlib: \$(python -c "import matplotlib; print(matplotlib.__version__)")
+            python library numpy: \$(python -c "import numpy; print(numpy.__version__)")
+            python library scanpy: \$(python -c "import scanpy; print(scanpy.__version__)")
+        END_VERSIONS
     """
 
 }
@@ -128,6 +151,8 @@ process UMAP_GATHER {
                     } else if(filename.endsWith("pcs.tsv.gz")) {
                         null
                     } else if(filename.endsWith("reduced_dims.tsv.gz")) {
+                        null
+                    } else if(filename == 'versions.yml') {
                         null
                     } else {
                         filename.replaceAll("-", "")
@@ -153,6 +178,7 @@ process UMAP_GATHER {
         path(original__file__metadata, emit: metadata)
         path(original__file__pcs, emit: pcs)
         path(original__file__reduced_dims, emit: reduced_dims)
+        path "versions.yml", emit: versions
 
     script:
         
@@ -164,6 +190,14 @@ process UMAP_GATHER {
                 --h5_root ${original__file__anndata} \
                 --output_file ${outfile} \
                 --h5_anndata_list ${files__anndata}
+
+            cat <<-END_VERSIONS > versions.yml
+            "${task.process}":
+                python: \$(python --version | sed 's/Python //g')
+                python library argparse: \$(python -c "import argparse; print(argparse.__version__)")
+                python library numpy: \$(python -c "import numpy; print(numpy.__version__)")
+                python library scanpy: \$(python -c "import scanpy; print(scanpy.__version__)")
+            END_VERSIONS
         """
 }
 
@@ -180,6 +214,9 @@ process UMAP_PLOT_SWARM {
         container "${params.yascp_container_docker}"
     }
     publishDir  path: "${outdir}/plots",
+                saveAs: { filename -> 
+                    filename == 'versions.yml' ? null : filename 
+                },
                 mode: "${params.copy_mode}",
                 overwrite: "true"
 
@@ -193,6 +230,7 @@ process UMAP_PLOT_SWARM {
     output:
         path("*.png")
         path("*.pdf") optional true
+        path "versions.yml", emit: versions
     script:
 
         outfile = "umap"
@@ -214,6 +252,14 @@ process UMAP_PLOT_SWARM {
                 --drop_legend_n ${drop_legend_n} \
                 --output_file ${outfile}
 
+            cat <<-END_VERSIONS > versions.yml
+            "${task.process}":
+                python: \$(python --version | sed 's/Python //g')
+                python library argparse: \$(python -c "import argparse; print(argparse.__version__)")
+                python library matplotlib: \$(python -c "import matplotlib; print(matplotlib.__version__)")
+                python library numpy: \$(python -c "import numpy; print(numpy.__version__)")
+                python library scanpy: \$(python -c "import scanpy; print(scanpy.__version__)")
+            END_VERSIONS
         """
 }
 
@@ -231,6 +277,9 @@ process UMAP_CALCULATE_AND_PLOT {
         container "${params.yascp_container_docker}"
     }
     publishDir  path: "${outdir}/plots",
+                saveAs: { filename -> 
+                    filename == 'versions.yml' ? null : filename 
+                },
                 mode: "${params.copy_mode}",
                 overwrite: "true"
 
@@ -250,6 +299,7 @@ process UMAP_CALCULATE_AND_PLOT {
     output:
         path("*.png"), emit: dummy_output
         path("*.pdf") optional true
+        path "versions.yml", emit: versions
 
     script:
         outfile = "umap"
@@ -285,5 +335,14 @@ process UMAP_CALCULATE_AND_PLOT {
             --drop_legend_n ${drop_legend_n} \
             --output_file ${outfile}
 
+        cat <<-END_VERSIONS > versions.yml
+        "${task.process}":
+            python: \$(python --version | sed 's/Python //g')
+            python library argparse: \$(python -c "import argparse; print(argparse.__version__)")
+            python library matplotlib: \$(python -c "import matplotlib; print(matplotlib.__version__)")
+            python library numpy: \$(python -c "import numpy; print(numpy.__version__)")
+            python library pandas: \$(python -c "import pandas; print(pandas.__version__)")
+            python library scanpy: \$(python -c "import scanpy; print(scanpy.__version__)")
+        END_VERSIONS
         """
 }

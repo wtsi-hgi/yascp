@@ -14,6 +14,7 @@ import scanpy
 
 def combine_reports(all_alternitive,mode):
     all_indexes_full=set({})
+    cells_by_pool={}
     for d1 in all_alternitive:
         pool = d1.split('__')[0]
         if d1 in ('fake_file.fq', 'fake_file1.fq', 'fake_file2.fq'):
@@ -24,6 +25,7 @@ def combine_reports(all_alternitive,mode):
             if(len(Dataset.columns)==0):
                 Dataset = pd.read_csv(d1,sep=',',index_col=0)
             Dataset.index = Dataset.index +'-'+pool
+            cells_by_pool[pool]=len(Dataset.index)
         Dataset=Dataset.add_prefix(mode)
         
         all_indexes = set(Dataset.index)
@@ -45,7 +47,7 @@ def combine_reports(all_alternitive,mode):
             except:
                 Data_All_alt[col1]=''
             Data_All_alt.loc[Dataset.index,col1] = Dataset[col1]
-    return Data_All_alt
+    return Data_All_alt, cells_by_pool
 
 def main():
     """Run CLI."""
@@ -103,7 +105,7 @@ def main():
     # Read azimuth files from a TSV file using pandas
     azimuth_df = pd.read_csv(options.all_azimuth_files, header=None, names=['file_path'])
     azimuth_files = azimuth_df['file_path'].tolist()
-    Data_All_Azimuth = combine_reports(azimuth_files,'Azimuth:')
+    Data_All_Azimuth, Azimuth_cells_by_pool = combine_reports(azimuth_files,'Azimuth:')
     
     # Read celltypist files from a TSV file using pandas
     celltypist_df = pd.read_csv(options.all_celltypist_files, header=None, names=['file_path'])
@@ -111,12 +113,12 @@ def main():
 
     celltypist_files2 = pd.DataFrame(celltypist_files,columns=['col1'])
     celltypist_files3 =list(celltypist_files2[~celltypist_files2['col1'].str.contains('input')]['col1'])
-    Data_All_celltypist = combine_reports(celltypist_files3,'Celltypist:')
+    Data_All_celltypist, celltypist_cells_by_pool = combine_reports(celltypist_files3,'Celltypist:')
     
     if (options.all_alternitive):
         all_alternitive_df = pd.read_csv(options.all_alternitive, header=None, names=['file_path'])
         all_alternitive = all_alternitive_df['file_path'].tolist()
-        Data_All_alt = combine_reports(all_alternitive,'')
+        Data_All_alt, All_alt_cells_by_pool = combine_reports(all_alternitive,'')
     else:
         Data_All_alt=pd.DataFrame()
 
@@ -129,6 +131,11 @@ def main():
     Data_All['Donor'] =Donor
     Data_All['Exp'] =Exp
     Data_All.to_csv('All_Celltype_Assignments.tsv',sep='\t')
+    #count cells for each pool
+    with open("cells_by_pool.counts.txt", "w") as f:
+        for pool in set(list(Azimuth_cells_by_pool.keys()) + list(celltypist_cells_by_pool.keys()) + list(All_alt_cells_by_pool.keys())):
+            f.write(pool+"\t"+str(Azimuth_cells_by_pool.get(pool, ''))+"\t"+str(celltypist_cells_by_pool.get(pool, ''))+"\t"+str(All_alt_cells_by_pool.get(pool, ''))+"\n")
+    
 
     # adatas_df = pd.read_csv(options.andata, header=None, names=['file_path'])
     # adatas = adatas_df['file_path'].tolist()

@@ -39,6 +39,8 @@ process MERGE_DOUBLET_RESULTS{
         path("*.png") optional true
         tuple val(experiment_id), path("${experiment_id}__doublet_results_combined.tsv"), emit: result
         path("${experiment_id}__doublet_results_combined.tsv"), emit: result_sf
+        path "versions.yml", emit: versions
+        tuple val(experiment_id), path("${experiment_id}_doublet.counts.txt"), emit:output_check
 
     script:
         
@@ -48,6 +50,15 @@ process MERGE_DOUBLET_RESULTS{
             ln -s all_doublet_results_combined.tsv ${experiment_id}__doublet_results_combined.tsv
             doublet_plots.py
             mv droplet_type_distribution.png ${experiment_id}__droplet_type_distribution.png
+            tail -n+2 ${experiment_id}__doublet_results_combined.tsv | wc -l > ${experiment_id}_doublet.counts.txt
+        
+            cat <<-END_VERSIONS > versions.yml
+            "${task.process}":
+                python: \$(python --version | sed 's/Python //g')
+                python library argparse: \$(python -c "import argparse; print(argparse.__version__)")
+                python library matplotlib: \$(python -c "import matplotlib; print(matplotlib.__version__)")
+                python library pandas: \$(python -c "import pandas; print(pandas.__version__)")
+            END_VERSIONS
         """
 }
 
@@ -65,6 +76,7 @@ workflow MULTIPLET {
         }else{
             log.info '---Splitting the assignment for each batch---'
             SPLIT_BATCH_H5AD(channel__file_paths_10x,params.doublet_celltype_split_column)
+            ch_versions = ch_versions.mix(SPLIT_BATCH_H5AD.out.versions)
             SPLIT_BATCH_H5AD.out.sample_file
                 .splitCsv(header: true, sep: "\t", by: 1)
                 .map{row -> tuple(row.experiment_id, file(row.h5ad_filepath))}.set{gex_h5ad}      
@@ -137,11 +149,13 @@ workflow MULTIPLET {
 
         input_channel2 = input_channel.groupTuple()
         MERGE_DOUBLET_RESULTS(input_channel2) 
+        ch_versions = ch_versions.mix(MERGE_DOUBLET_RESULTS.out.versions) 
 
 
     emit:
         scrublet_paths = MERGE_DOUBLET_RESULTS.out.result
         result_sf = MERGE_DOUBLET_RESULTS.out.result_sf
-        doublet_versions = ch_versions
+        versions = ch_versions
+        output_validation = MERGE_DOUBLET_RESULTS.out.output_check
 }
 

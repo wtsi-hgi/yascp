@@ -31,6 +31,8 @@ process CLUSTER {
                         null
                     } else if(filename.endsWith("reduced_dims.tsv.gz")) {
                         null
+                    } else if(filename == 'versions.yml') {
+                        null
                     } else {
                         filename.replaceAll("-", "")
                     }
@@ -59,6 +61,7 @@ process CLUSTER {
         val(outdir_prev, emit: outdir__reduced_dims)
         path("*.pdf") optional true
         path("*.png") optional true
+        path "versions.yml", emit: versions
         
     script:
         
@@ -80,6 +83,19 @@ process CLUSTER {
             --resolution ${resolution} \
             --number_cpu ${task.cpus} \
             --output_file ${outfile}-clustered
+        
+        cat <<-END_VERSIONS > versions.yml
+        "${task.process}":
+            python: \$(python --version | sed 's/Python //g')
+            python library argparse: \$(python -c "import argparse; print(argparse.__version__)")
+            python library csv: \$(python -c "import csv; print(csv.__version__)")
+            python library distutils: \$(python -c "import distutils; print(distutils.__version__)")
+            python library numpy: \$(python -c "import numpy; print(numpy.__version__)")
+            python library pandas: \$(python -c "import pandas; print(pandas.__version__)")
+            python library plotnine: \$(python -c "import plotnine; print(plotnine.__version__)")
+            python library scanpy: \$(python -c "import scanpy; print(scanpy.__version__)")
+        END_VERSIONS
+
         """
 }
 
@@ -97,7 +113,7 @@ process PLOT_PHENOTYPE_ACROSS_CLUSTERS {
     }
 
     publishDir  path: "${outdir}",
-                saveAs: {filename -> filename.replaceAll("-", "")},
+                saveAs: {filename -> filename == 'versions.yml' ? null : filename.replaceAll("-", "")},
                 mode: "${params.copy_mode}",
                 overwrite: "true"
 
@@ -110,6 +126,7 @@ process PLOT_PHENOTYPE_ACROSS_CLUSTERS {
         val(outdir, emit: outdir)
         path("plots/*.png")
         path("plots/*.pdf") optional true
+        path "versions.yml", emit: versions
 
     script:
         
@@ -129,6 +146,15 @@ process PLOT_PHENOTYPE_ACROSS_CLUSTERS {
         mkdir plots
         mv *pdf plots/ 2>/dev/null || true
         mv *png plots/ 2>/dev/null || true
+
+        cat <<-END_VERSIONS > versions.yml
+        "${task.process}":
+            python: \$(python --version | sed 's/Python //g')
+            python library argparse: \$(python -c "import argparse; print(argparse.__version__)")
+            python library plotnine: \$(python -c "import plotnine; print(plotnine.__version__)")
+            python library scanpy: \$(python -c "import scanpy; print(scanpy.__version__)")
+        END_VERSIONS
+
         """
 }
 
@@ -183,7 +209,7 @@ process PLOT_KNOWN_MARKERS {
     }
 
     publishDir  path: "${outdir}",
-                saveAs: {filename -> filename.replaceAll("-", "")},
+                saveAs: {filename -> filename == 'versions.yml' ? null : filename.replaceAll("-", "")},
                 mode: "${params.copy_mode}",
                 overwrite: "true"
 
@@ -196,6 +222,7 @@ process PLOT_KNOWN_MARKERS {
         val(outdir, emit: outdir)
         path("plots_known_markers/*.pdf") optional true
         path("plots_known_markers/*.png") optional true
+        path "versions.yml", emit: versions
 
     script:
         
@@ -218,6 +245,16 @@ process PLOT_KNOWN_MARKERS {
         mkdir plots_known_markers
         mv *pdf plots_known_markers/ 2>/dev/null || true
         mv *png plots_known_markers/ 2>/dev/null || true
+
+        cat <<-END_VERSIONS > versions.yml
+        "${task.process}":
+            python: \$(python --version | sed 's/Python //g')
+            python library argparse: \$(python -c "import argparse; print(argparse.__version__)")
+            python library numpy: \$(python -c "import numpy; print(numpy.__version__)")
+            python library pandas: \$(python -c "import pandas; print(pandas.__version__)")
+            python library scanpy: \$(python -c "import scanpy; print(scanpy.__version__)")
+        END_VERSIONS
+
         """
 }
 
@@ -241,7 +278,8 @@ process CLUSTER_VALIDATE_RESOLUTION_KERAS {
                         filename.endsWith("metadata.tsv.gz") ||
                         filename.endsWith("pcs.tsv.gz") ||
                         filename.endsWith("reduced_dims.tsv.gz") ||
-                        filename.endsWith("clustered.tsv.gz")) {
+                        filename.endsWith("clustered.tsv.gz") || 
+                        filename == 'versions.yml') {
                         return null
                     }
 
@@ -367,6 +405,8 @@ process PLOT_RESOLUTION_VALIDATE {
                         null
                     } else if(filename.endsWith("clustered.tsv.gz")) {
                         null
+                    } else if(filename == 'versions.yml') {
+                        null
                     } else {
                         filename.replaceAll("-", "")
                     }
@@ -393,6 +433,7 @@ process PLOT_RESOLUTION_VALIDATE {
         )
         path("plots/*.png") optional true
         path("plots/*.pdf") optional true
+        path "versions.yml", emit: versions
 
     script:
         outdir = "${outdir_prev}"
@@ -415,6 +456,20 @@ process PLOT_RESOLUTION_VALIDATE {
         mkdir plots
         mv *pdf plots/ 2>/dev/null || true
         mv *png plots/ 2>/dev/null || true
+
+        cat <<-END_VERSIONS > versions.yml
+        "${task.process}":
+            python: \$(python --version | sed 's/Python //g')
+            python library argparse: \$(python -c "import argparse; print(argparse.__version__)")
+            python library csv: \$(python -c "import csv; print(csv.__version__)")
+            python library distutils: \$(python -c "import distutils; print(distutils.__version__)")
+            python library matplotlib: \$(python -c "import matplotlib; print(matplotlib.__version__)")
+            python library numpy: \$(python -c "import numpy; print(numpy.__version__)")
+            python library pandas: \$(python -c "import pandas; print(pandas.__version__)")
+            python library plotnine: \$(python -c "import plotnine; print(plotnine.__version__)")
+            python library sklearn: \$(python -c "import sklearn; print(sklearn.__version__)")
+        END_VERSIONS
+
         """
 }
 
@@ -442,6 +497,8 @@ process CLUSTER_MARKERS {
                     } else if(filename.endsWith("reduced_dims.tsv.gz")) {
                         null
                     } else if(filename.endsWith("clustered.tsv.gz")) {
+                        null
+                    } else if(filename == 'versions.yml') {
                         null
                     } else {
                         filename.replaceAll("-", "")
@@ -475,6 +532,7 @@ process CLUSTER_MARKERS {
         ) optional true
         path("plots/*.pdf") optional true
         path("plots/*.png") optional true
+        path "versions.yml", emit: versions
 
     script:
         outdir = "${outdir_prev}/cluster_markers"
@@ -505,6 +563,19 @@ process CLUSTER_MARKERS {
         mkdir plots
         mv *pdf plots/ 2>/dev/null || true
         mv *png plots/ 2>/dev/null || true
+
+        cat <<-END_VERSIONS > versions.yml
+        "${task.process}":
+            python: \$(python --version | sed 's/Python //g')
+            python library argparse: \$(python -c "import argparse; print(argparse.__version__)")
+            python library csv: \$(python -c "import csv; print(csv.__version__)")
+            python library distutils: \$(python -c "import distutils; print(distutils.__version__)")
+            python library matplotlib: \$(python -c "import matplotlib; print(matplotlib.__version__)")
+            python library numpy: \$(python -c "import numpy; print(numpy.__version__)")
+            python library pandas: \$(python -c "import pandas; print(pandas.__version__)")
+            python library scanpy: \$(python -c "import scanpy; print(scanpy.__version__)")
+        END_VERSIONS
+
         """
 }
 
@@ -523,7 +594,7 @@ process CELLEX_CLUSTER_MARKERS {
     }
 
     publishDir  path: "${outdir}",
-                saveAs: {filename -> filename.replaceAll("-", "")},
+                saveAs: {filename -> filename == 'versions.yml' ? null : filename.replaceAll("-", "")},
                 mode: "${params.copy_mode}",
                 overwrite: "true"
 
@@ -538,6 +609,7 @@ process CELLEX_CLUSTER_MARKERS {
         path(
             "${outfile}-esmu*.tsv.gz"
         )
+        path "versions.yml", emit: versions
     when:
         params.cellex_cluster_markers
 
@@ -560,6 +632,18 @@ process CELLEX_CLUSTER_MARKERS {
             --h5_anndata ${file__anndata} \
             --output_file ${outfile} \
             --verbose False
+        
+        cat <<-END_VERSIONS > versions.yml
+        "${task.process}":
+            python: \$(python --version | sed 's/Python //g')
+            python library argparse: \$(python -c "import argparse; print(argparse.__version__)")
+            python library cellex: \$(python -c "import cellex; print(cellex.__version__)")
+            python library distutils: \$(python -c "import distutils; print(distutils.__version__)")
+            python library numpy: \$(python -c "import numpy; print(numpy.__version__)")
+            python library pandas: \$(python -c "import pandas; print(pandas.__version__)")
+            python library scanpy: \$(python -c "import scanpy; print(scanpy.__version__)")
+        END_VERSIONS
+
         """
 }
 
@@ -579,6 +663,8 @@ process PREP_CELLXGENE {
     publishDir  path: "${outdir}",
                 saveAs: {filename ->
                     if (filename.endsWith("clustered.h5ad")) {
+                        null
+                    } else if(filename == 'versions.yml') {
                         null
                     } else {
                         filename.replaceAll("-", "")
@@ -618,7 +704,6 @@ process PREP_CELLXGENE {
             python library numpy: \$(python -c "import numpy; print(numpy.__version__)")
             python library scanpy: \$(python -c "import scanpy; print(scanpy.__version__)")
             python library scipy: \$(python -c "import scipy; print(scipy.__version__)")
-            python library warnings: \$(python -c "import warnings; print(warnings.__version__)")
         END_VERSIONS
         """
 }
@@ -638,7 +723,7 @@ process CONVERT_SEURAT {
     }
 
     publishDir  path: "${outdir}",
-                saveAs: {filename -> filename.replaceAll("-", "")},
+                saveAs: {filename -> filename == 'versions.yml' ? null : filename.replaceAll("-", "")},
                 mode: "${params.copy_mode}",
                 overwrite: "true"
 

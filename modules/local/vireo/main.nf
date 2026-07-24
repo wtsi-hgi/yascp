@@ -29,6 +29,9 @@ process REMOVE_DUPLICATED_DONORS_FROM_GT{
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         bcftools: \$(bcftools --version 2>&1 | head -n1 | sed 's/^.*bcftools //; s/ .*\$//')
+        python: \$(python --version | sed 's/Python //g')
+        python library argparse: \$(python -c "import argparse; print(argparse.__version__)")
+        python library pandas: \$(python -c "import pandas; print(pandas.__version__)")
     END_VERSIONS
   """
 }
@@ -40,7 +43,11 @@ process REMOVE_DUPLICATED_DONORS_FROM_GT{
 process VIREO_SUBSAMPLING {
     // This module is used to make sure that no cells that there are no cells assigned to the wrong donor.
     // We subsample the cellsnp files to the 80% of random SNPs and run vireo with this.
-    publishDir "${params.outdir}/deconvolution/vireo/vireo_subsampling_cellsnp/${samplename}/vireo_____${itteration}/",  mode: "${params.vireo.copy_mode}", overwrite: true
+    publishDir "${params.outdir}/deconvolution/vireo/vireo_subsampling_cellsnp/${samplename}/vireo_____${itteration}/",
+      saveAs: { filename -> 
+        filename == 'versions.yml' ? null : filename 
+      }, 
+      mode: "${params.vireo.copy_mode}", overwrite: true
 	  // saveAs: {filename -> filename.replaceFirst("vireo_${samplename}/","") }
 
     tag "${samplename}"
@@ -93,7 +100,18 @@ process VIREO_SUBSAMPLING {
             # Update the coordinates matrix
             cellsnp_update.R ${cell_data} ./subset_${params.vireo.rate} ./subset_${params.vireo.rate}/cellSNP.base.vcf.gz
         """
-
+        versions_cmd="""
+            cat <<-END_VERSIONS > versions.yml
+            "${task.process}":
+                bcftools: \$(bcftools --version 2>&1 | head -n1 | sed 's/^.*bcftools //; s/ .*\$//')
+                python: \$(python --version | sed 's/Python //g')
+                python library argparse: \$(python -c "import argparse; print(argparse.__version__)")
+                python library pandas: \$(python -c "import pandas; print(pandas.__version__)")
+                r-base: \$(R --version | sed -n '1p' | sed 's/R version //; s/ (.*//')
+                r library Matrix: \$(Rscript -e "cat(as.character(packageVersion('Matrix')))")
+                vireo: \$(vireo | sed '1!d ; s/Welcome to vireoSNP //; s/!//')
+            END_VERSIONS
+        """
       }else{
          vcf = ""
          vcf_file = donors_gt_vcf
@@ -113,7 +131,17 @@ process VIREO_SUBSAMPLING {
             cp ${cell_data}/cellSNP.samples.tsv subset_${params.vireo.rate}/
             # Update the coordinates matrix
             cellsnp_update.R ${cell_data} ./subset_${params.vireo.rate} ./subset_${params.vireo.rate}/cellSNP.base.vcf.gz
-              
+          """
+          versions_cmd="""
+              cat <<-END_VERSIONS > versions.yml
+              "${task.process}":
+                  python: \$(python --version | sed 's/Python //g')
+                  python library argparse: \$(python -c "import argparse; print(argparse.__version__)")
+                  python library pandas: \$(python -c "import pandas; print(pandas.__version__)")
+                  r-base: \$(R --version | sed -n '1p' | sed 's/R version //; s/ (.*//')
+                  r library Matrix: \$(Rscript -e "cat(as.character(packageVersion('Matrix')))")
+                  vireo: \$(vireo | sed '1!d ; s/Welcome to vireoSNP //; s/!//')
+              END_VERSIONS
           """
 
       }
@@ -137,11 +165,7 @@ process VIREO_SUBSAMPLING {
           sed s\"/^/${samplename}__/\"g > vireo_${samplename}___${itteration}/${samplename}__exp.sample_summary.txt
         ${com2}
         mv subset_${params.vireo.rate} vireo_${samplename}___${itteration}
-
-        cat <<-END_VERSIONS > versions.yml
-        "${task.process}":
-            vireo: \$(vireo | sed '1!d ; s/Welcome to vireoSNP //; s/!//')
-        END_VERSIONS
+        ${versions_cmd}
     """
 }
 
@@ -149,7 +173,11 @@ process VIREO_SUBSAMPLING {
 process GENOTYPE_MATCHER{
     tag "${samplename}"
     label 'process_low'
-    publishDir "${params.outdir}/deconvolution/gtmatch/",  mode: "${params.vireo.copy_mode}", overwrite: true
+    publishDir "${params.outdir}/deconvolution/gtmatch/",
+      saveAs: { filename -> 
+        (filename == 'versions.yml' || filename == 'donors.counts.txt') ? null : filename 
+      }, 
+      mode: "${params.vireo.copy_mode}", overwrite: true
 
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "${params.yascp_container}"
@@ -164,6 +192,8 @@ process GENOTYPE_MATCHER{
       path("correlations.png"), emit: correlations
       path("matched_donors.txt"), emit: matched_donors
       path("donor_corelations_matrix.tsv"), emit: donor_corelations_matrix
+      tuple val("GENOTYPE_MATCHER"), path("donors.counts.txt"), emit:output_check
+      path "versions.yml", emit: versions
 
     script:
       """
@@ -171,6 +201,19 @@ process GENOTYPE_MATCHER{
         \$PWD \
         \$PWD \
         -m ${params.genotype_input.genotype_correlation_threshold}
+        tail -n+2 matched_donors.txt | cut -f2 | sort | uniq -c | sed 's/^ *//' > donors.counts.txt
+        
+        cat <<-END_VERSIONS > versions.yml
+        "${task.process}":
+            python: \$(python --version | sed 's/Python //g')
+            python library argparse: \$(python -c "import argparse; print(argparse.__version__)")
+            python library matplotlib: \$(python -c "import matplotlib; print(matplotlib.__version__)")
+            python library numpy: \$(python -c "import numpy; print(numpy.__version__)")
+            python library pandas: \$(python -c "import pandas; print(pandas.__version__)")
+            python library scipy: \$(python -c "import scipy; print(scipy.__version__)")
+            python library seaborn: \$(python -c "import seaborn; print(seaborn.__version__)")
+        END_VERSIONS
+
       """
 
 }
@@ -179,7 +222,7 @@ process VIREO {
     tag "${samplename}"
     label 'medium_cpus'
     publishDir "${params.outdir}/deconvolution/vireo/vireo_raw/${samplename}/",  mode: "${params.vireo.copy_mode}", overwrite: true,
-	  saveAs: {filename -> filename.replaceFirst("vireo_${samplename}/","") }
+	  saveAs: {filename -> filename == 'versions.yml' ? null : filename.replaceFirst("vireo_${samplename}/","") }
 
 
 
@@ -265,7 +308,7 @@ process POSTPROCESS_SUMMARY{
 process CAPTURE_VIREO{
   label 'process_tiny'
   publishDir "${params.outdir}/deconvolution/vireo_raw/",  mode: "${params.copy_mode}", overwrite: true,
-  saveAs: {filename -> filename.replaceFirst("vireo_/","") }
+  saveAs: {filename -> filename == 'versions.yml' ? null : filename.replaceFirst("vireo_/","") }
 
   input:
     path(vireo_location)
@@ -292,6 +335,9 @@ process VIREO_SUBSAMPLING_PROCESSING{
     tag "${samplename}"
     label 'medium_cpus'
     publishDir  path: "${params.outdir}/deconvolution/concordances/${samplename}",
+                saveAs: { filename -> 
+                  filename == 'versions.yml' ? null : filename 
+                },
                 mode: "${params.copy_mode}",
                 overwrite: "true"
 
@@ -306,6 +352,7 @@ process VIREO_SUBSAMPLING_PROCESSING{
 
     output:
       tuple val(samplename), path("${samplename}_subsampling_donor_swap_quantification.tsv"), emit: subsampling_donor_swap
+      path "versions.yml", emit: versions
 
     script:   
     """
@@ -314,6 +361,12 @@ process VIREO_SUBSAMPLING_PROCESSING{
       ln -s $projectDir/bin/fix_vireo_header.sh ./fix_vireo_header.sh
       gt_check_and_report_cell_swaps.py
       ln -s subsampling_donor_swap_quantification.tsv ${samplename}_subsampling_donor_swap_quantification.tsv
+
+      cat <<-END_VERSIONS > versions.yml
+      "${task.process}":
+          python: \$(python --version | sed 's/Python //g')
+          python library pandas: \$(python -c "import pandas; print(pandas.__version__)")
+      END_VERSIONS
     """
 
 }

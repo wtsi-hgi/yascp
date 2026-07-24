@@ -9,6 +9,9 @@ process DOUBLET_DECON{
     }
     
     publishDir  path: "${params.outdir}/doublet_detection/DoubletDecon",
+                saveAs: { filename -> 
+                    filename == 'versions.yml' ? null : filename 
+                },
                 mode: "${params.copy_mode}",
                 overwrite: "true"
     memory { 

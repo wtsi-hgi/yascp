@@ -17,6 +17,7 @@ process HASTAG_FILE_MERGE{
     }
     output:
         path("*__All_Assignments.tsv",emit:results)
+        path "versions.yml", emit: versions
 
     input:
         path(hastag_files)
@@ -30,6 +31,15 @@ process HASTAG_FILE_MERGE{
 
         """
             generate_combined_hastag_anotation_file.py --all_hastag_files ${hastag_files_path} --option ${option}
+
+            cat <<-END_VERSIONS > versions.yml
+            "${task.process}":
+                python: \$(python --version | sed 's/Python //g')
+                python library argparse: \$(python -c "import argparse; print(argparse.__version__)")
+                python library distutils: \$(python -c "import distutils; print(distutils.__version__)")
+                python library pandas: \$(python -c "import pandas; print(pandas.__version__)")
+                python library scanpy: \$(python -c "import scanpy; print(scanpy.__version__)")
+            END_VERSIONS
         """
 
 }
@@ -44,6 +54,7 @@ workflow MERGE_SAMPLES{
         doublet_labels
         mode
     main:
+        Channel.empty().set { ch_versions }
         log.info """---Merging samples in a single h5ad file---"""
 
         if (mode == 'h5ad'){
@@ -69,9 +80,11 @@ workflow MERGE_SAMPLES{
                 hastag_labels,
                 doublet_labels
         )
+        ch_versions = ch_versions.mix(MERGE_SAMPLES_FROM_H5AD.out.versions)
         
         file__anndata_merged = MERGE_SAMPLES_FROM_H5AD.out.anndata
 
     emit:
         file__anndata_merged
+        versions = ch_versions
 }

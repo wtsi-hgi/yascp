@@ -9,6 +9,9 @@ process DOUBLET_DETECTION {
     }
     
     publishDir  path: "${params.outdir}/doublet_detection/multiplet.method=doubletdetection",
+                saveAs: { filename -> 
+                    filename == 'versions.yml' ? null : filename 
+                },
                 mode: "${params.copy_mode}",
                 overwrite: "true"
 

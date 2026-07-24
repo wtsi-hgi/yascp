@@ -79,20 +79,28 @@ def h5ad_to_tenxmatrix(
         print('Writing {}'.format(out_f))
 
     # Check if read in by gene_symbol or gene_id
+    # Auto-detect ID orientation
+    gene_var = None
     if 'gene_ids' in adata.var.columns:
         gene_var = 'gene_ids'
     elif 'gene_symbols' in adata.var.columns:
         gene_var = 'gene_symbols'
     else:
-        raise Exception(
-            'Could not find "gene_symbols" or "gene_ids" in adata.var'
-        )
+        raise Exception('Could not find "gene_symbols" or "gene_ids" in adata.var')
+
+    # Heuristic: Ensembl IDs start with 'ENSG'
+    first_id = str(adata.var[gene_var].iloc[0])
+    if first_id.startswith("ENSG"):
+        # Ensembl IDs are in the chosen column -> write Ensembl first
+        first_col = adata.var[gene_var].values
+        second_col = adata.var.index.values
+    else:
+        # Ensembl IDs are in the index -> keep index first
+        first_col = adata.var.index.values
+        second_col = adata.var[gene_var].values
+
     df_features = pd.DataFrame(
-        data=[
-            adata.var.index.values,
-            adata.var.loc[:, gene_var].values,
-            ["Gene Expression"] * adata.n_vars
-        ]
+        data=[first_col, second_col, ["Gene Expression"] * adata.n_vars]
     ).T
 
     df_features.to_csv(

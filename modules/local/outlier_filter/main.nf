@@ -16,6 +16,8 @@ process MERGE_OUTLIER_FILES{
                 saveAs: {filename ->
                     if (filename.contains("outlier_filtered_adata")) {
                         filename = '3.outlier_filtered_adata.h5ad'
+                    } else if(filename == 'versions.yml') {
+                        null
                     }
                 },
                 mode: "${params.copy_mode}",
@@ -27,9 +29,21 @@ process MERGE_OUTLIER_FILES{
         
     output:
         path('4.outlier_filtered_adata.h5ad', emit: anndata)
+        path "versions.yml", emit: versions
     script:
         """
             merge_outliers.py -h5 ${file__anndata}
+            
+            cat <<-END_VERSIONS > versions.yml
+            "${task.process}":
+                python: \$(python --version | sed 's/Python //g')
+                python library argparse: \$(python -c "import argparse; print(argparse.__version__)")
+                python library distutils: \$(python -c "import distutils; print(distutils.__version__)")
+                python library numpy: \$(python -c "import numpy; print(numpy.__version__)")
+                python library pandas: \$(python -c "import pandas; print(pandas.__version__)")
+                python library scanpy: \$(python -c "import scanpy; print(scanpy.__version__)")
+            END_VERSIONS
+
         """    
     
 }
@@ -65,6 +79,7 @@ process OUTLIER_FILTER {
             emit: cells_filtered
         )
         path("plots/*")
+        path "versions.yml", emit: versions
 
 
 
@@ -99,5 +114,18 @@ process OUTLIER_FILTER {
             mv *pdf plots/ 2>/dev/null || true
             mv *png plots/ 2>/dev/null || true
             mv per_celltype_outliers* plots/ 2>/dev/null || true
+
+            cat <<-END_VERSIONS > versions.yml
+            "${task.process}":
+                python: \$(python --version | sed 's/Python //g')
+                python library argparse: \$(python -c "import argparse; print(argparse.__version__)")
+                python library distutils: \$(python -c "import distutils; print(distutils.__version__)")
+                python library numpy: \$(python -c "import numpy; print(numpy.__version__)")
+                python library matplotlib: \$(python -c "import matplotlib; print(matplotlib.__version__)")
+                python library pandas: \$(python -c "import pandas; print(pandas.__version__)")
+                python library scanpy: \$(python -c "import scanpy; print(scanpy.__version__)")
+                python library seaborn: \$(python -c "import seaborn; print(seaborn.__version__)")
+                python library sklearn: \$(python -c "import sklearn; print(sklearn.__version__)")
+            END_VERSIONS
         """
 }

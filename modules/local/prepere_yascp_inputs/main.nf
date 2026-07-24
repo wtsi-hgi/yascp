@@ -17,11 +17,20 @@ process YASCP_INPUTS {
 
     // the output for this is a correct format input files as per cb 6.1
     output:
-        path("input_file_corectly_formatted.tsv"), emit: input_file_corectly_formatted
+        path "input_file_corectly_formatted.tsv", emit: input_file_corectly_formatted
+        path "versions.yml", emit: versions
+
 
     script:
         
         """
         link_files.py --input_table ${input_file} \
+        
+        cat <<-END_VERSIONS > versions.yml
+        "${task.process}":
+            python: \$(python --version | sed 's/Python //g')
+            python library argparse: \$(python -c "import argparse; print(argparse.__version__)")
+            python library pandas: \$(python -c "import pandas; print(pandas.__version__)")
+        END_VERSIONS
         """
 }

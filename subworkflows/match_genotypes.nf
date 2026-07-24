@@ -25,12 +25,14 @@ workflow MATCH_GENOTYPES {
     subsampling_donor_swap
     informative_uninformative_sites
   main:
-
+    Channel.empty().set { ch_versions }
     MATCH_GT_VIREO(gt_math_pool_against_panel_input)
+    ch_versions = ch_versions.mix(MATCH_GT_VIREO.out.versions)
     // «««««««««
     // This channel creates an input that contains the GT matched results as per input
     // «««««««««
     COMBINE_MATCHES_IN_EXPECTED_FORMAT(MATCH_GT_VIREO.out.donor_match_table.collect())
+    ch_versions = ch_versions.mix(COMBINE_MATCHES_IN_EXPECTED_FORMAT.out.versions)
     COMBINE_MATCHES_IN_EXPECTED_FORMAT.out.all_Infered_Expected.splitCsv(header: true, sep: '\t').map { row -> tuple(row.experiment_id, row.donor_vcf_ids) }
     .set { gt_matched_samples }
     
@@ -46,20 +48,24 @@ workflow MATCH_GENOTYPES {
     // «««««««««
     // compare genotypes within a pool (identity by descent)
     GT_MATCH_POOL_IBD(vireo_out_sample_donor_vcf,'Withing_pool','InferedOnly')
+    ch_versions = ch_versions.mix(GT_MATCH_POOL_IBD.out.versions)
     GT_MATCH_POOL_IBD.out.plink_ibd.set{idb_pool}
     // compare genotypes with the expected/matched genotypes to estimate the relationship between matches.
     // #### Note: this code takes in the subset genotypes (either determines as an expected inputs or determined as final matches [dependant on flag] and also the final GT match results to later extract the PI_HAT value)
 
     SUBSET_WORKF(ch_ref_vcf,gt_matched_samples,'GTMatchedSubset',genome)
+    ch_versions = ch_versions.mix(SUBSET_WORKF.out.versions)
     merged_GT_Matched_genotypes = SUBSET_WORKF.out.merged_expected_genotypes
 
     // Here we need to account for the fact that no GT is expected.
     // donors_in_pools.subscribe { println "donors_in_pools: $it" } //Needs an if statement which determines if pool has no donors expected.
     // Now based on these two files we will enhance the stats file with PiHat values and
     RELATIONSHIPS_BETWEEN_INFERED_EXPECTED(donors_in_pools,merged_expected_genotypes,gt_pool,'InferedExpected',MATCH_GT_VIREO.out.donor_match_table_with_pool_id,idb_pool)
+    ch_versions = ch_versions.mix(RELATIONSHIPS_BETWEEN_INFERED_EXPECTED.out.versions)
     outfile_for_final_gt = RELATIONSHIPS_BETWEEN_INFERED_EXPECTED.out.donor_match_table
     
     RELATIONSHIPS_BETWEEN_INFERED_GT_MATCHED(gt_matched_samples,merged_GT_Matched_genotypes,gt_pool,'InferedGTMatched', RELATIONSHIPS_BETWEEN_INFERED_EXPECTED.out.donor_match_table,idb_pool)
+    ch_versions = ch_versions.mix(RELATIONSHIPS_BETWEEN_INFERED_GT_MATCHED.out.versions)
     outfile_for_final_gt = RELATIONSHIPS_BETWEEN_INFERED_GT_MATCHED.out.donor_match_table
     RELATIONSHIPS_BETWEEN_INFERED_EXPECTED.out.done_validation.set{ou1}
     RELATIONSHIPS_BETWEEN_INFERED_GT_MATCHED.out.done_validation.set{ou2}
@@ -85,11 +91,15 @@ workflow MATCH_GENOTYPES {
         input7 = input6.combine(informative_uninformative_sites, by:0)
 
         CONCORDANCE_CALCLULATIONS(input7)
+        ch_versions = ch_versions.mix(CONCORDANCE_CALCLULATIONS.out.versions)
         ch_combine = subsampling_donor_swap.combine(CONCORDANCE_CALCLULATIONS.out.concordances, by: 0)
         COMBINE_FILES(ch_combine) //This step plots scatter plots for each of the pools individually.
+        ch_versions = ch_versions.mix(COMBINE_FILES.out.versions)
         // Now we want to combined all the above files together and make one overall plot for all the tranches.
         COLLECT_FILE(COMBINE_FILES.out.file_joined_df_for_plots.collect(),"joined_df_for_plots.tsv",params.outdir+'/deconvolution/concordances',1,'')
+        ch_versions = ch_versions.mix(COLLECT_FILE.out.versions)
         PLOT_CONCORDANCES_ALL(COLLECT_FILE.out.output_collection)
+        ch_versions = ch_versions.mix(PLOT_CONCORDANCES_ALL.out.versions)
     }
 
   emit:
@@ -97,4 +107,5 @@ workflow MATCH_GENOTYPES {
     donor_match_table = MATCH_GT_VIREO.out.donor_match_table
     out_finish_val = ou3
     donor_match_table_enhanced = outfile_for_final_gt
+    versions = ch_versions
 }

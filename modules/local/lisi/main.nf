@@ -27,6 +27,8 @@ process LISI{
                         null
                     } else if(filename.endsWith("pcs.tsv.gz")) {
                         null
+                    } else if(filename == 'versions.yml') {
+                        null
                     } else {
                         filename.replaceAll("-", "")
                     }

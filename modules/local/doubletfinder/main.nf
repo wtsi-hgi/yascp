@@ -9,6 +9,9 @@ process DOUBLET_FINDER {
     }
     
     publishDir  path: "${params.outdir}/doublet_detection/DoubletFinder",
+                saveAs: { filename -> 
+                    filename == 'versions.yml' ? null : filename 
+                },
                 mode: "${params.copy_mode}",
                 overwrite: "true"
 

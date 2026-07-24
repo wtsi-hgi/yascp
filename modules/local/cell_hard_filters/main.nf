@@ -13,7 +13,9 @@ process CELL_HARD_FILTERS{
                 saveAs: {filename ->
                     if (filename.contains("hard_filters_")) {
                         filename = '2.hard_filters_annotated_h5ad.h5ad'
-                    }else{
+                    } else if(filename == 'versions.yml') {
+                        null
+                    } else {
                         filename
                     }
                 },
@@ -31,7 +33,7 @@ process CELL_HARD_FILTERS{
         params.sample_qc.cell_filters.experiment.value != '' | params.sample_qc.cell_filters.all_samples.value != '' | params.sample_qc.downsample_cells_fraction.value != '' | params.sample_qc.downsample_cells_n.value != '' | params.sample_qc.downsample_feature_counts.value != ''
     output:
         path("hard_filters_*.h5ad", emit: anndata)
-
+        path "versions.yml", emit: versions
     script:
 
 
@@ -79,6 +81,19 @@ process CELL_HARD_FILTERS{
             --h5addata_file ${file_paths_h5ad} \
             --anndata_compression_opts ${params.anndata_compression_opts} \
             --drop ${drop}
+
+        cat <<-END_VERSIONS > versions.yml
+        "${task.process}":
+            python: \$(python --version | sed 's/Python //g')
+            python library argparse: \$(python -c "import argparse; print(argparse.__version__)")
+            python library csv: \$(python -c "import csv; print(csv.__version__)")
+            python library distutils: \$(python -c "import distutils; print(distutils.__version__)")
+            python library numpy: \$(python -c "import numpy; print(numpy.__version__)")
+            python library pandas: \$(python -c "import pandas; print(pandas.__version__)")
+            python library scanpy: \$(python -c "import scanpy; print(scanpy.__version__)")
+            python library yaml: \$(python -c "import yaml; print(yaml.__version__)")
+        END_VERSIONS
+
         """
 
 }

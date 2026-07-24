@@ -114,7 +114,9 @@ process RESOLVE_POOL_VCFS{
               null
             } else if (filename.contains("Data_User___"))  {
                 null
-            }else{
+            }else if(filename == 'versions.yml') {
+                null
+            } else{
               filename
             }
           } else {
@@ -135,12 +137,19 @@ process RESOLVE_POOL_VCFS{
       path('Data_Pipeline___*'), emit: pipeline_data
       path('Genotype___*'), emit: genotype_folder
       path('Data_User___*'), emit: user_data
+      path "versions.yml", emit: versions
       // If more than one pool is using the same genotype it is pointless to emit it many times. Hence we produce a vcf pointer files which indicate which pool uses which genotype.
     script:
       vcf=vcf[0]
       """
         pool_panel.py --mode ${mode} --vcf ${vcf} --pool_ids ${samplename} --mode ${mode}
         
+        cat <<-END_VERSIONS > versions.yml
+        "${task.process}":
+            python: \$(python --version | sed 's/Python //g')
+            python library argparse: \$(python -c "import argparse; print(argparse.__version__)")
+            python library pandas: \$(python -c "import pandas; print(pandas.__version__)")
+        END_VERSIONS
       """
 }
 
@@ -182,12 +191,12 @@ process JOIN_STUDIES_MERGE{
         if [ \$(cat fofn_vcfs.txt | wc -l) -gt 1 ]; then
             echo 'yes'
             ${cmd__run}
-            bcftools merge -file-list ${study_vcf_files} -Ou | bcftools sort -Oz -o pre_${mode}_${mode2}_\${vcf_name}__vcf.vcf.gz
+            bcftools merge -file-list ${study_vcf_files} -Ou | bcftools sort -T ./bcftools_tmp_XXXXXX -Oz -o pre_${mode}_${mode2}_\${vcf_name}__vcf.vcf.gz
             bcftools index pre_${mode}_${mode2}_\${vcf_name}__vcf.vcf.gz
             ${cmd}
         else
           echo 'no'
-          bcftools sort ${study_vcf_files} -Oz -o ${mode}_${mode2}_\${vcf_name}_out.vcf.gz
+          bcftools sort ${study_vcf_files} -T ./bcftools_tmp_XXXXXX -Oz -o ${mode}_${mode2}_\${vcf_name}_out.vcf.gz
           bcftools index ${mode}_${mode2}_\${vcf_name}_out.vcf.gz 
         fi
         rm -r pre_* || echo 'nothing to remove'
@@ -254,10 +263,12 @@ workflow SUBSET_WORKF{
 
       // After merging studies per unique pool compositions we resolve the matches back to the each of the Pools so that the IBD and Vireo can use the correct genotypes as the inputs and publish these in the correct folder.
       RESOLVE_POOL_VCFS(JOIN_STUDIES_MERGE.out.merged_expected_genotypes,mode)
+      ch_versions = ch_versions.mix(RESOLVE_POOL_VCFS.out.versions)
       pools_panels = RESOLVE_POOL_VCFS.out.pipeline_data
 
       if (mode=='AllExpectedGT'){
         COLLECT_FILE(RESOLVE_POOL_VCFS.out.user_data.collect(),"Genotypes_all_pools.tsv",params.outdir+'/preprocessing/subset_genotypes',1,'')
+        ch_versions = ch_versions.mix(COLLECT_FILE.out.versions)
       }
       pools_panels.splitCsv(header: true, sep: '\t').map { row -> tuple(row['Pool_id'], file(row.vcf), file(row.vcf_csi)) }
                 .set{merged_expected_genotypes}
@@ -271,5 +282,5 @@ workflow SUBSET_WORKF{
     merged_expected_genotypes
     study_merged_vcf
     samplename_subsetvcf_ibd
-    subset_workf_versions = ch_versions
+    versions = ch_versions
 }

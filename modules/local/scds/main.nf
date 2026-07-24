@@ -9,6 +9,9 @@ process SCDS {
     }
     
     publishDir  path: "${params.outdir}/doublet_detection/SCDS",
+                saveAs: { filename -> 
+                    filename == 'versions.yml' ? null : filename 
+                },
                 mode: "${params.copy_mode}",
                 overwrite: "true"
 

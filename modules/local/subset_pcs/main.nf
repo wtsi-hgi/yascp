@@ -26,6 +26,8 @@ process SUBSET_PCS{
                         null
                     } else if(filename.endsWith("${param_details}.tsv.gz")) {
                         null
+                    } else if(filename == 'versions.yml') {
+                        null
                     } else {
                         filename.replaceAll("-", "")
                     }
@@ -53,6 +55,7 @@ process SUBSET_PCS{
             "reduced_dims-${param_details}.tsv.gz",
             emit: reduced_dims_params
         )
+        path "versions.yml", emit: versions
 
     script:
         
@@ -67,6 +70,15 @@ process SUBSET_PCS{
             --output_file reduced_dims
         cp reduced_dims.tsv.gz \
             reduced_dims-${param_details}.tsv.gz
+        
+        cat <<-END_VERSIONS > versions.yml
+        "${task.process}":
+            python: \$(python --version | sed 's/Python //g')
+            python library argparse: \$(python -c "import argparse; print(argparse.__version__)")
+            python library csv: \$(python -c "import csv; print(csv.__version__)")
+            python library distutils: \$(python -c "import distutils; print(distutils.__version__)")
+            python library pandas: \$(python -c "import pandas; print(pandas.__version__)")
+        END_VERSIONS
         """
 
 }

@@ -12,7 +12,9 @@ process COLLECT_FILE{
               saveAs: {filename ->
                   if ("${outpath}" == "0") {
                       null
-                  }else {
+                  } else if(filename == 'versions.yml') {
+                      null
+                  } else {
                       filename
                   }
               },
@@ -28,6 +30,7 @@ process COLLECT_FILE{
    
   output:
     path("${name}"),emit:output_collection
+    path "versions.yml", emit: versions
 
   
   script:
@@ -55,5 +58,12 @@ process COLLECT_FILE{
 
     """
         combine.py -d '${files}' -o ${name} ${seed_inset}
+        
+        cat <<-END_VERSIONS > versions.yml
+        "${task.process}":
+            python: \$(python --version | sed 's/Python //g')
+            python library argparse: \$(python -c "import argparse; print(argparse.__version__)")
+            python library pandas: \$(python -c "import pandas; print(pandas.__version__)")
+        END_VERSIONS
     """    
 }

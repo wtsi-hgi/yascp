@@ -43,6 +43,8 @@ process HARMONY{
                         null
                     } else if(filename.endsWith("${param_details}.tsv.gz")) {
                         null
+                    } else if(filename == 'versions.yml') {
+                        null
                     } else {
                         filename.replaceAll("${runid}-", "")
                     }

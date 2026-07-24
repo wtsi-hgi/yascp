@@ -23,7 +23,7 @@ process ESTIMATE_PCA_ELBOW {
     }
 
     publishDir  path: "${outdir}",
-                saveAs: {filename -> filename.replaceAll("-", "")},
+                saveAs: {filename -> filename == 'versions.yml' ? null : filename.replaceAll("-", "")},
                 mode: "${params.copy_mode}",
                 overwrite: "true"
 
@@ -38,6 +38,7 @@ process ESTIMATE_PCA_ELBOW {
         env(AUTO_ELBOW, emit: auto_elbow)
         path("plots/*.png")
         path("plots/*.pdf") optional true
+        path "versions.yml", emit: versions
 
     script:
         
@@ -54,5 +55,17 @@ process ESTIMATE_PCA_ELBOW {
             mv *pdf plots/ 2>/dev/null || true
             mv *png plots/ 2>/dev/null || true
             AUTO_ELBOW=\$(cat ${outfile}-auto_elbow_estimate.tsv)
+
+            cat <<-END_VERSIONS > versions.yml
+            "${task.process}":
+                python: \$(python --version | sed 's/Python //g')
+                python library argparse: \$(python -c "import argparse; print(argparse.__version__)")
+                python library csv: \$(python -c "import csv; print(csv.__version__)")
+                python library kneed: \$(python -c "import kneed; print(kneed.__version__)")
+                python library numpy: \$(python -c "import numpy; print(numpy.__version__)")
+                python library pandas: \$(python -c "import pandas; print(pandas.__version__)")
+                python library scanpy: \$(python -c "import scanpy; print(scanpy.__version__)")
+            END_VERSIONS
+
         """
 }

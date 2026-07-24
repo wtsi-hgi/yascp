@@ -29,11 +29,13 @@ workflow QC_AND_INTEGRATION {
     main:
         log.info "--- Running QC metrics --- "
         Channel.empty().set { ch_versions }
+        Channel.empty().set { ch_validation }
 
         if (params.cell_hard_filters){
             if(params.sample_qc.cell_filters.experiment.value != '' | params.sample_qc.cell_filters.all_samples.value != '' | params.sample_qc.downsample_cells_fraction.value != '' | params.sample_qc.downsample_cells_n.value != '' | params.sample_qc.downsample_feature_counts.value != ''){
                 log.info """---Flagging/filtering hard filters.----"""
                 CELL_HARD_FILTERS(file__anndata_merged,params.hard_filters_drop)
+                ch_versions = ch_versions.mix(CELL_HARD_FILTERS.out.versions)
                 file__anndata_merged = CELL_HARD_FILTERS.out.anndata
             }
         }
@@ -52,6 +54,7 @@ workflow QC_AND_INTEGRATION {
                 params.sample_qc.gt_match_based_adaptive_qc_exclusion_pattern,
                 params.sample_qc.cell_filters.filter_outliers.methods_thresholds
             )
+            ch_versions = ch_versions.mix(CELL_HARD_FILTERS.out.versions)
             OUTLIER_FILTER.out.cells_filtered.collect().set{test2}
             MERGE_OUTLIER_FILES(file__anndata_merged,test2 )
             file__anndata_merged = MERGE_OUTLIER_FILES.out.anndata
@@ -87,6 +90,7 @@ workflow QC_AND_INTEGRATION {
                 params.normalise.gene_filters.genes_at_least_in_nr_cells,
                 params.reduced_dims.vars_to_regress.value
             )
+            ch_versions = ch_versions.mix(NORMALISE_AND_PCA.out.versions)
 
             NORMALISE_AND_PCA.out.sample_QCd_adata.flatten().map{sample -> tuple("${sample}".replaceFirst(/___sample_QCd_adata.h5ad/,"").replaceFirst(/.*\//,""),sample)}.set{alt_input}
             channel_dsb2 = channel_dsb.combine(alt_input, by: 0)
@@ -94,12 +98,14 @@ workflow QC_AND_INTEGRATION {
 
             if(params.totalVi.run_process){
                 TOTAL_VI_INTEGRATION(NORMALISE_AND_PCA.out.anndata,DSB_PROCESS.out.citeseq_rsd.collect(),NORMALISE_AND_PCA.out.outdir)
+                ch_versions = ch_versions.mix(TOTAL_VI_INTEGRATION.out.versions)
             }
 
             vireo_paths_map = vireo_paths.flatten().map{row->tuple("${row}".replaceFirst(/.*vireo_/,""), row)}
             vireo_paths_map.combine(DSB_PROCESS.out.ch_for_norm, by: 0).set{norm_chanel}
             norm_chanel.combine(matched_donors).set{inp4}
             PREPROCESS_PROCESS(inp4,params.reduced_dims.vars_to_regress.value)
+            ch_versions = ch_versions.mix(PREPROCESS_PROCESS.out.versions)
 
             if(params.seurat_integration.run_process){
                 DSB_INTEGRATE(
@@ -111,15 +117,18 @@ workflow QC_AND_INTEGRATION {
                     params.reduced_dims.seurat_integration.ndim_citeBgRemoved,
                     params.reduced_dims.seurat_integration.ndim_cite_integrated
                     )
+                    ch_versions = ch_versions.mix(DSB_INTEGRATE.out.versions)
 
                 MULTIMODAL_INTEGRATION(
                     DSB_INTEGRATE.out.tmp_rds_file,
                 )
+                ch_versions = ch_versions.mix(MULTIMODAL_INTEGRATION.out.versions)
 
                 VDJ_INTEGRATION(
                     chanel_cr_outs.collect(),
                     MULTIMODAL_INTEGRATION.out.wnn_integrated_file
                 )
+                ch_versions = ch_versions.mix(VDJ_INTEGRATION.out.versions)
             }
             
             andata = NORMALISE_AND_PCA.out.anndata
@@ -134,11 +143,13 @@ workflow QC_AND_INTEGRATION {
 
         log.info """---Estimating PCA elbow.----"""
         PCA(andata,outdir,params.normalise.layer)
+        ch_validation = ch_validation.mix(PCA.out.pcs.map {path -> tuple("PCA", path)})
         ESTIMATE_PCA_ELBOW(
             PCA.out.outdir,
             PCA.out.anndata,
             params.reduced_dims.n_dims.add_n_to_estimate
         )
+        ch_versions = ch_versions.mix(ESTIMATE_PCA_ELBOW.out.versions)
 
         if (params.reduced_dims.n_dims.auto_estimate) {
             log.info "n_pcs = automatically estimated."
@@ -156,13 +167,14 @@ workflow QC_AND_INTEGRATION {
             PCA.out.param_details,
             n_pcs
         )
+        ch_versions = ch_versions.mix(SUBSET_PCS.out.versions)
         
         PLOT_STATS(file__anndata_merged,
                     file__cells_filtered,
                     SUBSET_PCS.out.outdir,
                     SUBSET_PCS.out.anndata,
                     n_pcs)
-                    
+        ch_versions = ch_versions.mix(PLOT_STATS.out.versions)            
         file__anndata_merged = PCA.out.anndata
         
         LI4 = PLOT_STATS.out.LI
@@ -187,6 +199,7 @@ workflow QC_AND_INTEGRATION {
                 Channel.fromList( params.harmony.variables_and_thetas.value)
             )
             ch_versions = ch_versions.mix(HARMONY.out.versions)
+            ch_validation = ch_validation.mix(HARMONY.out.reduced_dims.map { reduced_dims -> ['harmony', reduced_dims] })
 
             UMAP_HARMONY(
                 HARMONY.out.outdir,
@@ -203,6 +216,7 @@ workflow QC_AND_INTEGRATION {
                 params.umap.colors_categorical.value,
                 'harmony'
             )
+            ch_versions = ch_versions.mix(UMAP_HARMONY.out.versions)
 
             cluster_harmony__outdir = UMAP_HARMONY.out.outdir
             cluster_harmony__anndata = UMAP_HARMONY.out.anndata
@@ -233,6 +247,7 @@ workflow QC_AND_INTEGRATION {
                 params.umap.umap_spread.value,
                 params.sccaf.min_accuracy         
             )
+            ch_versions = ch_versions.mix(CLUSTERING_HARMONY.out.versions)
             
             lisi_input2 = HARMONY.out.reduced_dims_params.collect()
             LI14 = CLUSTERING_HARMONY.out.dummy_output.collect()
@@ -265,6 +280,7 @@ workflow QC_AND_INTEGRATION {
                 params.bbknn.batch_variable.value
             )
             ch_versions = ch_versions.mix(BBKNN.out.versions)
+            ch_validation = ch_validation.mix(BBKNN.out.reduced_dims_params.map { reduced_dims -> ['BBKNN', reduced_dims] })
 
             UMAP_BBKNN(
                 BBKNN.out.outdir,
@@ -281,6 +297,7 @@ workflow QC_AND_INTEGRATION {
                 params.umap.colors_categorical.value,
                 'bbknn'
             )
+            ch_versions = ch_versions.mix(UMAP_BBKNN.out.versions)
 
             cluster_bbknn__outdir = UMAP_BBKNN.out.outdir
             cluster_bbknn__anndata = UMAP_BBKNN.out.anndata
@@ -311,6 +328,7 @@ workflow QC_AND_INTEGRATION {
                 params.umap.umap_spread.value,
                 params.sccaf.min_accuracy
             )
+            ch_versions = ch_versions.mix(CLUSTERING_BBKNN.out.versions)
             
             lisi_input3 = BBKNN.out.reduced_dims_params.collect()
             LI2 = CLUSTERING_BBKNN.out.dummy_output.collect()
@@ -347,6 +365,7 @@ workflow QC_AND_INTEGRATION {
                 params.umap.colors_categorical.value,
                 'bbknn'
             )
+            ch_versions = ch_versions.mix(UMAP.out.versions)
             cluster_outdir = UMAP.out.outdir
             cluster_anndata = UMAP.out.anndata
             cluster_metadata = UMAP.out.metadata
@@ -374,6 +393,7 @@ workflow QC_AND_INTEGRATION {
                 params.umap.umap_spread.value,
                 params.sccaf.min_accuracy
             )
+            ch_versions = ch_versions.mix(CLUSTERING.out.versions)
         }
 
         if (params.lisi.run_process) {
@@ -399,6 +419,7 @@ workflow QC_AND_INTEGRATION {
     emit:
         LI
         file__anndata_merged
-        qc_versions = ch_versions
+        versions = ch_versions
+        output_validation = ch_validation
         
 }

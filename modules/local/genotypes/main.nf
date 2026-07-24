@@ -2,6 +2,9 @@ process MERGE_GENOTYPES_IN_ONE_VCF_IDX_PAN{
 
     label 'process_medium'
     publishDir  path: "${params.outdir}/${mode}_genotypes/${pn1}",
+          saveAs: { filename -> 
+            filename == 'versions.yml' ? null : filename 
+          },
           mode: "${params.copy_mode}",
           overwrite: "true"
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
@@ -52,6 +55,8 @@ process MERGE_GENOTYPES_IN_ONE_VCF_FREEBAYES{
               saveAs: {filename ->
                     if (filename.endsWith("vireo_${panel}")) {
                         null
+                    } else if(filename == 'versions.yml') {
+                        null
                     } else{
                         filename
                     }
@@ -63,6 +68,8 @@ process MERGE_GENOTYPES_IN_ONE_VCF_FREEBAYES{
           saveAs: {filename ->
                     if (filename.endsWith("vireo_${panel}")) {
                         filename
+                    } else if(filename == 'versions.yml') {
+                        null
                     } else{
                         null
                     }
@@ -129,6 +136,7 @@ process VIREO_ADD_SAMPLE_PREFIX{
 
     output:
       path("prefix_${vireo_fixed_vcf}"), emit: infered_vcf
+      path "versions.yml", emit: versions
 
     script:
       sorted_vcf = "${pool_id}_vireo_srt.vcf.gz"
@@ -136,6 +144,12 @@ process VIREO_ADD_SAMPLE_PREFIX{
     """
       bcftools query -l ${vireo_gt_vcf} | awk '\$0=""\$0" ${pool_id}_"\$0' > replacement_assignments.tsv
       bcftools reheader --samples replacement_assignments.tsv -o prefix_${vireo_fixed_vcf} ${vireo_gt_vcf}
+      
+      cat <<-END_VERSIONS > versions.yml
+      "${task.process}":
+          bcftools: \$(bcftools --version 2>&1 | head -n1 | sed 's/^.*bcftools //; s/ .*\$//')
+      END_VERSIONS
+
     """
 }
 
@@ -143,6 +157,9 @@ process VIREO_GT_FIX_HEADER
 {
   tag "${pool_id}"
   publishDir  path: "${params.outdir}/deconvolution/infered_genotypes/${pool_id}/",
+        saveAs: { filename -> 
+          (filename == 'versions.yml' || filename.endsWith('_infered_genotypes.counts.txt')) ? null : filename 
+        },
         mode: "${params.copy_mode}",
         overwrite: "true"
   if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
@@ -160,6 +177,8 @@ process VIREO_GT_FIX_HEADER
   output:
     tuple val(pool_id), path("${vireo_fixed_vcf}"), path("${vireo_fixed_vcf}.tbi"), emit: gt_pool
     tuple val(pool_id), path("${vireo_fixed_vcf}"), emit: infered_vcf
+    tuple val(pool_id), path("${pool_id}_infered_genotypes.counts.txt"), emit:output_check
+    path "versions.yml", emit: versions
 
   script:
   sorted_vcf = "${pool_id}_vireo_srt.vcf.gz"
@@ -191,6 +210,15 @@ process VIREO_GT_FIX_HEADER
     tabix -p vcf pre_${vireo_fixed_vcf}
     bcftools +fixref pre_${vireo_fixed_vcf} -Oz -o ${vireo_fixed_vcf} -- -d -f ${genome}/genome.fa -m flip-all
     tabix -p vcf ${vireo_fixed_vcf}
+
+    bcftools query -l ${vireo_fixed_vcf} | wc -l > ${pool_id}_infered_genotypes.counts.txt
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        bcftools: \$(bcftools --version 2>&1 | head -n1 | sed 's/^.*bcftools //; s/ .*\$//')
+        tabix: \$(tabix --version 2>&1 | head -n1 | sed 's/^.*Version: //; s/^.*(htslib) //; s/ .*\$//')
+    END_VERSIONS
+
   """
 }
 
@@ -236,6 +264,10 @@ process REPLACE_GT_DONOR_ID2{
       cat <<-END_VERSIONS > versions.yml
       "${task.process}":
           bcftools: \$(bcftools --version 2>&1 | head -n1 | sed 's/^.*bcftools //; s/ .*\$//')
+          python: \$(python --version | sed 's/Python //g')
+          python library argparse: \$(python -c "import argparse; print(argparse.__version__)")
+          python library numpy: \$(python -c "import numpy; print(numpy.__version__)")
+          python library pandas: \$(python -c "import pandas; print(pandas.__version__)")
       END_VERSIONS
     """
 }
@@ -249,6 +281,9 @@ process ENHANCE_STATS_GT_MATCH{
     }
   tag "${samplename}"
   publishDir  path: "${params.outdir}/deconvolution/gtmatch/${samplename}",
+          saveAs: { filename -> 
+            filename == 'versions.yml' ? null : filename 
+          },
           mode: "${params.copy_mode}",
           overwrite: "true"
 
@@ -260,6 +295,7 @@ process ENHANCE_STATS_GT_MATCH{
   output:
 
     path("GT_replace_${enhancement_file}"), emit: assignments
+    path "versions.yml", emit: versions
     
   script:
     if(params.genotype_phenotype_mapping_file==''){
@@ -272,6 +308,13 @@ process ENHANCE_STATS_GT_MATCH{
 
     """
       enhance_stats.py -id ${samplename} -dm ${enhancement_file} ${in} --input_file '${input_data_table}' -m ${params.genotype_input.vireo_with_gt}
+      cat <<-END_VERSIONS > versions.yml
+      "${task.process}":
+          python: \$(python --version | sed 's/Python //g')
+          python library argparse: \$(python -c "import argparse; print(argparse.__version__)")
+          python library numpy: \$(python -c "import numpy; print(numpy.__version__)")
+          python library pandas: \$(python -c "import pandas; print(pandas.__version__)")
+      END_VERSIONS
     """
 }
 
@@ -280,6 +323,9 @@ process GT_MATCH_POOL_IBD
   tag "${pool_id}_ibd"
   label 'process_small'
   publishDir  path: "${params.outdir}/deconvolution/gtmatch/${pool_id}",
+          saveAs: { filename -> 
+            filename == 'versions.yml' ? null : filename 
+          },
           mode: "${params.copy_mode}",
           overwrite: "true"
 
@@ -411,6 +457,7 @@ process ASSIGN_DONOR_FROM_PANEL
   output:
     tuple val(pool_id), path("${assignment_table_out}"), emit: gtcheck_assignments
     path("${score_table_out}", emit: gtcheck_scores)
+    path "versions.yml", emit: versions
 
   
 
@@ -421,6 +468,11 @@ process ASSIGN_DONOR_FROM_PANEL
 
   """
     gtcheck_assign.py ${pool_panel_id} ${gtcheck_output_files}
+    
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        python: \$(python --version | sed 's/Python //g')
+    END_VERSIONS
   """
 }
 
@@ -448,6 +500,7 @@ process ASSIGN_DONOR_OVERALL
     path(stats_assignment_table_out), emit: donor_match_table
     tuple val(pool_id),path(stats_assignment_table_out), emit: donor_match_table_with_pool_id
     path("*.csv")
+    path "versions.yml", emit: versions
 
   label 'process_tiny'
 
@@ -456,6 +509,13 @@ process ASSIGN_DONOR_OVERALL
   stats_assignment_table_out = "stats_${pool_id}_gt_donor_assignments.csv"
   """
     gtcheck_assign_summary.py ${donor_assignment_file} ${params.genotype_input.ZSCORE_THRESH} ${params.genotype_input.ZSCORE_DIST_THRESH} ${gtcheck_assign_files}
+    
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        python: \$(python --version | sed 's/Python //g')
+        python library csv: \$(python -c "import csv; print(csv.__version__)")
+        python library pandas: \$(python -c "import pandas; print(pandas.__version__)")
+    END_VERSIONS
   """
 }
 
@@ -464,6 +524,9 @@ process ENHANCE_STATS_FILE{
   tag "${pool_id}"
 
   publishDir  path: "${params.outdir}/deconvolution/gtmatch/${pool_id}",
+        saveAs: { filename -> 
+          filename == 'versions.yml' ? null : filename 
+        },
         mode: "${params.copy_mode}",
         overwrite: "true"
 
@@ -487,6 +550,7 @@ process ENHANCE_STATS_FILE{
     tuple val(pool_id),path("PiHAT_Stats_File_${pool_id}.csv"), emit: stats_table_PiHat_enhanced
     path ('Max_PiHAT_For_Expected*'), emit: max_PiHAT_For_Expected optional true
     path('Done.tmp'), emit: done_validation
+    path "versions.yml", emit: versions
   script:
     if (params.extra_sample_metadata==''){
       md_inp = ""
@@ -503,6 +567,14 @@ process ENHANCE_STATS_FILE{
     """
       add_PiHat_to_GT_match.py -mt ${stats_table} -ph ${ibd_table} ${mapping} -c ${condition} -e ${expected_ids} -id ${pool_id} -wpi ${withinn_pool_ibd} ${md_inp} || echo 'we dont have expected samples in this cohort'
       echo 'Done' > Done.tmp
+
+      cat <<-END_VERSIONS > versions.yml
+      "${task.process}":
+          python: \$(python --version | sed 's/Python //g')
+          python library argparse: \$(python -c "import argparse; print(argparse.__version__)")
+          python library pandas: \$(python -c "import pandas; print(pandas.__version__)")
+      END_VERSIONS
+
     """
 
 }
@@ -523,10 +595,18 @@ process ENHANCE_VIREO_METADATA_WITH_DONOR{
 
   output:
     path('replaced_vireo_exp__donor_n_cells_out.tsv'), emit: replaced_vireo_exp__donor_n_cells_out
+    path "versions.yml", emit: versions
 
   script:
     """
       enhance_vireo_with_metadata.py --Extra_Metadata_Donors ${extra_sample_metadata} --vireo_data ${donor_n_cells}
+
+      cat <<-END_VERSIONS > versions.yml
+      "${task.process}":
+          python: \$(python --version | sed 's/Python //g')
+          python library argparse: \$(python -c "import argparse; print(argparse.__version__)")
+          python library pandas: \$(python -c "import pandas; print(pandas.__version__)")
+      END_VERSIONS
     """
 }
 
@@ -545,6 +625,7 @@ process COMBINE_MATCHES_IN_EXPECTED_FORMAT{
 
   output:
     path('All_Infered_Expected.csv'), emit: all_Infered_Expected
+    path "versions.yml", emit: versions
 
   script:
     if (params.cohorts_to_drop_from_GT_Relatednes_check==''){
@@ -554,6 +635,13 @@ process COMBINE_MATCHES_IN_EXPECTED_FORMAT{
     }
     """
       combine_all_GTmatched_in_expected_format.py --files "${stats_files}" ${md_in}
+
+      cat <<-END_VERSIONS > versions.yml
+      "${task.process}":
+          python: \$(python --version | sed 's/Python //g')
+          python library argparse: \$(python -c "import argparse; print(argparse.__version__)")
+          python library pandas: \$(python -c "import pandas; print(pandas.__version__)")
+      END_VERSIONS
     """
 }
 
@@ -564,8 +652,10 @@ workflow MATCH_GT_VIREO {
 
 
   main:
+    Channel.empty().set { ch_versions }
     // now match genotypes against a panels
     GT_MATCH_POOL_AGAINST_PANEL(gt_math_pool_against_panel_input)
+    ch_versions = ch_versions.mix(GT_MATCH_POOL_AGAINST_PANEL.out.versions)
 
     // group by panel id
     GT_MATCH_POOL_AGAINST_PANEL.out.gtcheck_results.unique()
@@ -574,14 +664,17 @@ workflow MATCH_GT_VIREO {
     
 
     ASSIGN_DONOR_FROM_PANEL(gt_check_by_panel)
+    ch_versions = ch_versions.mix(ASSIGN_DONOR_FROM_PANEL.out.versions)
     ASSIGN_DONOR_FROM_PANEL.out.gtcheck_assignments.unique()
       .groupTuple()
       .set{ ch_donor_assign_panel }
 
     ASSIGN_DONOR_OVERALL(ch_donor_assign_panel)
+    ch_versions = ch_versions.mix(ASSIGN_DONOR_OVERALL.out.versions)
 
   emit:
     pool_id_donor_assignments_csv = ASSIGN_DONOR_OVERALL.out.donor_assignments
     donor_match_table = ASSIGN_DONOR_OVERALL.out.donor_match_table
     donor_match_table_with_pool_id = ASSIGN_DONOR_OVERALL.out.donor_match_table_with_pool_id
+    versions = ch_versions
 }

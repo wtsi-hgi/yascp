@@ -17,11 +17,20 @@ process DUMMY_FILTERED_CHANNEL{
         val(id_in)
     output:
         path("filtered_cell_dummy.tsv", emit: anndata_metadata)
+        path "versions.yml", emit: versions
         
     script:
         """
             echo 'lets do it' > test.txt
             dummy_filtered_channel.py --h5_anndata ${file_paths_h5ad} -id ${id_in}
+
+            cat <<-END_VERSIONS > versions.yml
+            "${task.process}":
+                python: \$(python --version | sed 's/Python //g')
+                python library argparse: \$(python -c "import argparse; print(argparse.__version__)")
+                python library pandas: \$(python -c "import pandas; print(pandas.__version__)")
+                python library scanpy: \$(python -c "import scanpy; print(scanpy.__version__)")
+            END_VERSIONS
         """
 
 }
@@ -42,7 +51,9 @@ process MERGE_SAMPLES_FROM_H5AD {
                 saveAs: {filename ->
                     if (filename.contains("pre_QC_adata")) {
                         filename = '1.annotated_deconvoluted_pre_QC_adata.h5ad'
-                    }else{
+                    } else if(filename == 'versions.yml') {
+                        null
+                    } else{
                         filename
                     }
                 },
@@ -67,6 +78,7 @@ process MERGE_SAMPLES_FROM_H5AD {
         path("1.pre_QC_adata.h5ad", emit: anndata)
         path("plots/*.png") optional true
         path("plots/*.pdf") optional true
+        path "versions.yml", emit: versions
 
     script:
 
@@ -121,6 +133,18 @@ process MERGE_SAMPLES_FROM_H5AD {
         mkdir plots
         mv *pdf plots/ 2>/dev/null || true
         mv *png plots/ 2>/dev/null || true
+
+        cat <<-END_VERSIONS > versions.yml
+        "${task.process}":
+            python: \$(python --version | sed 's/Python //g')
+            python library argparse: \$(python -c "import argparse; print(argparse.__version__)")
+            python library csv: \$(python -c "import csv; print(csv.__version__)")
+            python library distutils: \$(python -c "import distutils; print(distutils.__version__)")
+            python library numpy: \$(python -c "import numpy; print(numpy.__version__)")
+            python library pandas: \$(python -c "import pandas; print(pandas.__version__)")
+            python library scanpy: \$(python -c "import scanpy; print(scanpy.__version__)")
+            python library yaml: \$(python -c "import yaml; print(yaml.__version__)")
+        END_VERSIONS
         """
 }
 

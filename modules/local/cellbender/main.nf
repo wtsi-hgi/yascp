@@ -17,6 +17,7 @@ workflow CELLBENDER {
         
     main:
         Channel.empty().set { ch_versions }
+        Channel.empty().set { ch_validation }
         ch_experimentid_paths10x_raw.map{row -> tuple(
             row[0],
             file("${row[1]}/barcodes.tsv.gz"),
@@ -59,6 +60,7 @@ workflow CELLBENDER {
             channel__file_paths_10x_with_ncells,
             params.cellbender_rb.estimate_params_umis.value,
         )
+        ch_versions = ch_versions.mix(CELLBENDER__RB__GET_INPUT_CELLS.out.versions)
         
         // Correct counts matrix to remove ambient RNA
         // Some samples may fail with the defaults. Hence here we allow for a changes to be applied. 
@@ -112,13 +114,14 @@ workflow CELLBENDER {
             params.cellbender_rb.fpr.value
         )
         ch_versions = ch_versions.mix(CELLBENDER__REMOVE_BACKGROUND.out.versions)
+        ch_validation = ch_validation.mix(CELLBENDER__REMOVE_BACKGROUND.out.output_check)
 
         CELLBENDER__PREPROCESS_OUTPUT(
             CELLBENDER__REMOVE_BACKGROUND.out.cleanup_input,
             CELLBENDER__REMOVE_BACKGROUND.out.cb_plot_input,
             CELLBENDER__REMOVE_BACKGROUND.out.experimentid_outdir_cellbenderunfiltered_expectedcells_totaldropletsinclude,
         )
-
+        ch_versions = ch_versions.mix(CELLBENDER__PREPROCESS_OUTPUT.out.versions)
 
         CELLBENDER__PREPROCESS_OUTPUT.out.experimentid_outdir_cellbenderunfiltered_expectedcells_totaldropletsinclude
             .combine(ch_experimentid_paths10x_raw, by: 0)
@@ -130,7 +133,7 @@ workflow CELLBENDER {
             .set{input_channel_qc_plots_2}
             
             CELLBENDER__REMOVE_BACKGROUND__QC_PLOTS(input_channel_qc_plots_2,outdir)
-            
+            ch_versions = ch_versions.mix(CELLBENDER__REMOVE_BACKGROUND__QC_PLOTS.out.versions)
 
         results_list = CELLBENDER__PREPROCESS_OUTPUT.out.out_paths
         // prepeare the output channel for utilising in the deconvolution instead of barcode input.
@@ -142,7 +145,8 @@ workflow CELLBENDER {
             cellbender_path
             cellbender_downstream
             cellbender_path_raw
-            cellbender_versions = ch_versions
+            versions = ch_versions
+            output_check = ch_validation
 
             
 }

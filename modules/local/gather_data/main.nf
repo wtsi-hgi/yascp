@@ -1,6 +1,9 @@
 process GATHER_DATA{
 
     publishDir  path: "${params.outdir}/handover",
+                saveAs: { filename -> 
+                  filename == 'versions.yml' ? null : filename 
+                },
                 mode: "${params.copy_mode}",
                 overwrite: "true"
     label 'process_medium'
@@ -21,6 +24,7 @@ process GATHER_DATA{
       path("${subdir}_summary", emit:outfiles_dataset2) optional true
       path("Donor_Quantification/*/*.tsv", emit: barcodes_files) optional true
       val(outdir, emit: outdir_dataset)
+      path "versions.yml", emit: versions
 
     script:
       outdir = "${outdir_prev}/handover"
@@ -47,5 +51,17 @@ process GATHER_DATA{
           --resolution=${params.cellbender_resolution_to_use} \
           --write_h5=False \
           --experiment_name=${params.RUN} ${extra_meta}
+        
+        cat <<-END_VERSIONS > versions.yml
+        "${task.process}":
+          python: \$(python --version | sed 's/Python //g')
+          python library anndata: \$(python -c "import anndata; print(anndata.__version__)")
+          python library argparse: \$(python -c "import argparse; print(argparse.__version__)")
+          python library h5py: \$(python -c "import h5py; print(h5py.__version__)")
+          python library numpy: \$(python -c "import numpy; print(numpy.__version__)")
+          python library pandas: \$(python -c "import pandas; print(pandas.__version__)")
+          python library scanpy: \$(python -c "import scanpy; print(scanpy.__version__)")
+        END_VERSIONS
+
       """
 }

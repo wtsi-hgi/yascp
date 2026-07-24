@@ -4,7 +4,7 @@ include { CELLTYPIST } from "$projectDir/modules/local/celltypist/main"
 include { SPLIT_BATCH_H5AD } from "$projectDir/modules/local/split_batch_h5ad/main"
 include { KERAS_CELLTYPE } from "$projectDir/modules/local/keras_celltype/main"
 include { SCPRED } from "$projectDir/modules/local/scpred/main"
-include { CONVERT_MTX_TO_H5AD } from "$projectDir/modules/local/convert_h5ad_to_mtx/main"
+include { CONVERT_MTX_TO_H5AD; CONVERT_H5AD_TO_MTX } from "$projectDir/modules/local/convert_h5ad_to_mtx/main"
 
 process CELLTYPE_FILE_MERGE{
     tag "${samplename}"    
@@ -12,6 +12,10 @@ process CELLTYPE_FILE_MERGE{
     publishDir  path: "${params.outdir}/celltype_assignment/",
             saveAs: {filename ->
                     if (filename.contains("adata.h5ad")) {
+                        null
+                    } else if(filename == 'versions.yml') {
+                        null
+                    } else if(filename == 'cells_by_pool.counts.txt') {
                         null
                     } else {
                         filename
@@ -24,6 +28,10 @@ process CELLTYPE_FILE_MERGE{
             saveAs: {filename ->
                     if (filename.contains("adata.h5ad")) {
                         filename = "2.celltype_anotated_merged.h5ad"
+                    } else if(filename == 'versions.yml') {
+                        null
+                    } else if(filename == 'cells_by_pool.counts.txt') {
+                        null
                     } else {
                         null
                     }
@@ -41,6 +49,8 @@ process CELLTYPE_FILE_MERGE{
         path("All_Celltype_Assignments.tsv",emit:celltype_assignments)
         path "tranche_celltype_report.tsv"
         path "donor_celltype_report.tsv"
+        path "versions.yml", emit: versions
+        tuple val("CELLTYPE_FILE_MERGE"), path("cells_by_pool.counts.txt"), emit:output_check
 
     input:
         path(azimuth_files)
@@ -65,6 +75,15 @@ process CELLTYPE_FILE_MERGE{
 
         """
             generate_combined_celltype_anotation_file.py --all_azimuth_files ${azimuth_files_path} --all_celltypist_files ${celltypist_files_path} ${other_paths}
+
+            cat <<-END_VERSIONS > versions.yml
+            "${task.process}":
+                python: \$(python --version | sed 's/Python //g')
+                python library argparse: \$(python -c "import argparse; print(argparse.__version__)")
+                python library distutils: \$(python -c "import distutils; print(distutils.__version__)")
+                python library pandas: \$(python -c "import pandas; print(pandas.__version__)")
+                python library scanpy: \$(python -c "import scanpy; print(scanpy.__version__)")
+            END_VERSIONS
         """
 
 }
@@ -84,9 +103,20 @@ workflow CELLTYPE{
         }else{
             log.info '---Splitting the assignment for each batch---'
             SPLIT_BATCH_H5AD(file__anndata_merged,params.doublet_celltype_split_column)
+            ch_versions = ch_versions.mix(SPLIT_BATCH_H5AD.out.versions)
             SPLIT_BATCH_H5AD.out.sample_file
                 .splitCsv(header: true, sep: "\t", by: 1)
                 .map{row -> tuple(row.experiment_id, file(row.h5ad_filepath))}.set{file__anndata_merged_post}           
+            //change file__anndata_merged channel to make it work with AZIMUTH
+            file__anndata_merged_post_key = file__anndata_merged_post.map { experiment_id, h5ad_path -> 
+                [h5ad_path.baseName, experiment_id]  // Use filename without extension as key
+            }
+            h5ad_paths_only = file__anndata_merged_post.map { experiment_id, h5ad_path -> h5ad_path }
+            CONVERT_H5AD_TO_MTX(h5ad_paths_only)
+            file__anndata_merged = CONVERT_H5AD_TO_MTX.out.channel__file_paths_10x.join(file__anndata_merged_post_key)
+                .map { key, h5ad_path, experiment_id -> 
+                [experiment_id, h5ad_path] 
+            }
         }
         
         //
@@ -146,9 +176,11 @@ workflow CELLTYPE{
         }        
         all_extra_fields2 = all_extra_fields.mix(sc_out)
         CELLTYPE_FILE_MERGE(az_out.collect().unique(),ct_out.collect().unique(),all_extra_fields2.collect().unique()) 
+        ch_versions = ch_versions.mix(CELLTYPE_FILE_MERGE.out.versions)
         celltype_assignments=CELLTYPE_FILE_MERGE.out.celltype_assignments
     emit:
         celltype_assignments
-        celltype_versions = ch_versions
+        versions = ch_versions
+        output_validation = CELLTYPE_FILE_MERGE.out.output_check
 
 }

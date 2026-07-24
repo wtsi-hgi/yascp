@@ -13,7 +13,7 @@ process PCA {
     }
 
     publishDir  path: "${outdir}",
-                saveAs: {filename -> filename.replaceAll("-", "")},
+                saveAs: {filename -> filename == 'versions.yml' ? null : filename.replaceAll("-", "")},
                 mode: "${params.copy_mode}",
                 overwrite: "true"
     
@@ -23,7 +23,9 @@ process PCA {
                         filename = '4.adata-normalized_pca-counts.h5ad'
                     }else if (filename.contains("adata-normalized_pca-counts.h5ad")) {
                         filename = '4.adata-normalized_pca-counts.h5ad'
-                    }  else {
+                    } else if(filename == 'versions.yml') {
+                        null
+                    } else {
                         null
                     }
                 },
@@ -48,6 +50,7 @@ process PCA {
         val("${param_details}", emit: param_details)
         path("plots/*.pdf")
         path("plots/*.png") optional true
+        path "versions.yml", emit: versions
 
     script:
 
@@ -63,6 +66,19 @@ process PCA {
         
         mv *pdf plots/ 2>/dev/null || true
         mv *png plots/ 2>/dev/null || true
+
+        cat <<-END_VERSIONS > versions.yml
+        "${task.process}":
+            python: \$(python --version | sed 's/Python //g')
+            python library argparse: \$(python -c "import argparse; print(argparse.__version__)")
+            python library csv: \$(python -c "import csv; print(csv.__version__)")
+            python library distutils: \$(python -c "import distutils; print(distutils.__version__)")
+            python library numpy: \$(python -c "import numpy; print(numpy.__version__)")
+            python library pandas: \$(python -c "import pandas; print(pandas.__version__)")
+            python library scanpy: \$(python -c "import scanpy; print(scanpy.__version__)")
+            python library scipy: \$(python -c "import scipy; print(scipy.__version__)")
+            python library sklearn: \$(python -c "import sklearn; print(sklearn.__version__)")
+        END_VERSIONS
         """
 
 }
@@ -90,7 +106,7 @@ process NORMALISE_AND_PCA {
 
 
     publishDir  path: "${outdir}",
-                saveAs: {filename -> filename.replaceAll("-", "")},
+                saveAs: {filename -> filename == 'versions.yml' ? null : filename.replaceAll("-", "")},
                 mode: "${params.copy_mode}",
                 overwrite: "true"
 
@@ -115,7 +131,7 @@ process NORMALISE_AND_PCA {
         path("plots/*.pdf")
         path("plots/*.png") optional true
         path('donor_level_anndata_QCfiltered/*___sample_QCd_adata.h5ad',emit: sample_QCd_adata)
-
+        path "versions.yml", emit: versions
     script:
         
         analysis_mode = "${analysis_mode}"
@@ -166,5 +182,19 @@ process NORMALISE_AND_PCA {
         
         mv *pdf plots/ 2>/dev/null || true
         mv *png plots/ 2>/dev/null || true
+        
+        cat <<-END_VERSIONS > versions.yml
+        "${task.process}":
+            python: \$(python --version | sed 's/Python //g')
+            python library anndata: \$(python -c "import anndata; print(anndata.__version__)")
+            python library argparse: \$(python -c "import argparse; print(argparse.__version__)")
+            python library csv: \$(python -c "import csv; print(csv.__version__)")
+            python library distutils: \$(python -c "import distutils; print(distutils.__version__)")
+            python library numpy: \$(python -c "import numpy; print(numpy.__version__)")
+            python library pandas: \$(python -c "import pandas; print(pandas.__version__)")
+            python library scanpy: \$(python -c "import scanpy; print(scanpy.__version__)")
+            python library scipy: \$(python -c "import scipy; print(scipy.__version__)")
+            python library sklearn: \$(python -c "import sklearn; print(sklearn.__version__)")
+        END_VERSIONS
         """
 }

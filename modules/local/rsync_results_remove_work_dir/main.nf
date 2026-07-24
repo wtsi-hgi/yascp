@@ -6,6 +6,9 @@ process RSYNC_RESULTS_REMOVE_WORK_DIR {
     tag "${pool_id}"
     label 'process_low'
     publishDir  path: "${params.outdir}/deconvolution/concordances/${pool_id}",
+                saveAs: { filename -> 
+                    filename == 'versions.yml' ? null : filename 
+                },
                 mode: "copy",
                 overwrite: "true"
 

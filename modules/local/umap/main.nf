@@ -21,6 +21,7 @@ workflow UMAP {
         colors_categorical
         method
     main:
+        Channel.empty().set { ch_versions }
         UMAP_CALCULATE(
             outdir,
             anndata,
@@ -34,6 +35,7 @@ workflow UMAP {
             umap_spread,
             method
         )
+        ch_versions = ch_versions.mix(UMAP_CALCULATE.out.versions)
         UMAP_CALCULATE.out.adata_out.collect().set{all_umaps}
         UMAP_CALCULATE.out.outdir_anndata.groupTuple()
             .reduce([:]) { map, tuple ->  // 'map' is used to collect values;
@@ -62,9 +64,11 @@ workflow UMAP {
         UMAP_GATHER(
             umap_gather_input
         )
+        ch_versions = ch_versions.mix(UMAP_GATHER.out.versions)
 
         if (params.run_celltype_assignment){
             GENERATE_FINAL_UMAPS(UMAP_GATHER.out.anndata,params.outdir)
+            ch_versions = ch_versions.mix(GENERATE_FINAL_UMAPS.out.versions)
         }
 
         // Make plots
@@ -76,6 +80,7 @@ workflow UMAP {
             colors_categorical,
             '20'
         )
+        ch_versions = ch_versions.mix(UMAP_PLOT_SWARM.out.versions)
     emit:
         // Return merged input data file.
         outdir = UMAP_GATHER.out.outdir
@@ -83,5 +88,6 @@ workflow UMAP {
         metadata = UMAP_GATHER.out.metadata
         pcs = UMAP_GATHER.out.pcs
         reduced_dims = UMAP_GATHER.out.reduced_dims
+        versions = ch_versions
 
 }

@@ -4,7 +4,7 @@ include { CELLBENDER } from '../modules/local/cellbender/main'
 include { SPLIT_CITESEQ_GEX } from '../modules/local/citeseq/main'
 
 include {CAPTURE_CELLBENDER_FILES} from "$projectDir/modules/local/cellbender/functions"
-
+include {GET_CELLBENDER_NUMBERS} from '../modules/local/validate_outputs/main'
 workflow AMBIENT_RNA {
     take:
         ch_experimentid_paths10x_raw
@@ -13,6 +13,7 @@ workflow AMBIENT_RNA {
         
     main:
         Channel.empty().set { ch_versions }
+        Channel.empty().set { ch_validation }
         log.info params.input_data_table
         log.info """---Running Cellbender pipeline ---"""
         
@@ -21,7 +22,7 @@ workflow AMBIENT_RNA {
         // Capture previously processed CellBender outputs and raw input paths that were already used
 
         CAPTURE_CELLBENDER_FILES(params.cellbender_location,"${params.outdir}/preprocessing",params.input_data_table)
-        
+        ch_versions = ch_versions.mix(CAPTURE_CELLBENDER_FILES.out.versions)
         CAPTURE_CELLBENDER_FILES.out.alt_input_unfiltered.flatten()
             .map{ sample -> tuple("${sample}".replaceFirst(/.*\/captured\/unfiltered\//,"").replaceFirst(/\/.*/,""), sample) }
             .set{ ch_previously_processed_raw_inputs }
@@ -68,10 +69,12 @@ workflow AMBIENT_RNA {
             .map{ row -> tuple(row[0], row[2]) }
             .set{ ch_previously_processed_filtered_outputs }
 
+        GET_CELLBENDER_NUMBERS(ch_previously_processed_filtered_outputs)
+        ch_validation = ch_validation.mix(GET_CELLBENDER_NUMBERS.out.output_check)
         CELLBENDER(ch_new_raw_inputs,ch_new_filtered_inputs,channel__metadata)
 
-        ch_versions = ch_versions.mix(CELLBENDER.out.cellbender_versions)
-
+        ch_versions = ch_versions.mix(CELLBENDER.out.versions)
+        ch_validation = ch_validation.mix(CELLBENDER.out.output_check)
         // AMBIENTNESS_QUANTIFICATION()
 
         cellbender_path_processed = CELLBENDER.out.cellbender_path
@@ -86,5 +89,6 @@ workflow AMBIENT_RNA {
     emit:
         cellbender_path
         cellbender_path_raw
-        cellbender_versions = ch_versions
+        versions = ch_versions
+        output_check = ch_validation
 }

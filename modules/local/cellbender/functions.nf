@@ -27,6 +27,9 @@ process CELLBENDER__RB__GET_INPUT_CELLS {
  // use tmp directory
 
   publishDir  "${outdir}",
+      saveAs: { filename -> 
+          filename == 'versions.yml' ? null : filename 
+      },
       mode: "${params.cellsnp.copy_mode}",
       overwrite: "true"
 
@@ -64,6 +67,7 @@ process CELLBENDER__RB__GET_INPUT_CELLS {
     path("${outfile}-total_droplets_cutoff.tsv.gz")
     path("plots/*.png") optional true
     path("plots/*.pdf") optional true
+    path "versions.yml", emit: versions
 
   script:
 
@@ -104,6 +108,20 @@ process CELLBENDER__RB__GET_INPUT_CELLS {
     mkdir plots
     mv *pdf plots/ 2>/dev/null || true
     mv *png plots/ 2>/dev/null || true
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        python: \$(python --version | sed 's/Python //g')
+        python library distutils: \$(python -c "import distutils; print(distutils.__version__)")
+        python library kneed: \$(python -c "import kneed; print(kneed.__version__)")
+        python library matplotlib: \$(python -c "import matplotlib; print(matplotlib.__version__)")
+        python library numpy: \$(python -c "import numpy; print(numpy.__version__)")
+        python library pandas: \$(python -c "import pandas; print(pandas.__version__)")
+        python library plotnine: \$(python -c "import plotnine; print(plotnine.__version__)")
+        python library scanpy: \$(python -c "import scanpy; print(scanpy.__version__)")
+        python library scipy: \$(python -c "import scipy; print(scipy.__version__)")
+    END_VERSIONS
+
     """
 }
 
@@ -126,6 +144,8 @@ process CELLBENDER__PREPROCESS_OUTPUT{
             null
           }
           else if(filename.equalsIgnoreCase("matrix.mtx.gz")) {
+            null
+          } else if(filename == 'versions.yml') {
           null
           } else {
           filename.replaceAll("-", "")
@@ -194,6 +214,7 @@ process CELLBENDER__PREPROCESS_OUTPUT{
       val(outdir),
       emit: out_paths
     )
+    path "versions.yml", emit: versions
 
   script:
     outfile = "cellbender"
@@ -208,6 +229,19 @@ process CELLBENDER__PREPROCESS_OUTPUT{
       done
       clean_cellbender_results.py --nf_outdir_tag ${outdir} --cb_outfile_tag ${outfile} --experiment_id ${experiment_id} --fpr '${fpr}' --cb_params ${cb_params}
       cp ${outfile}-filtered_10x_mtx-file_list.tsv ${outfile}-filtered_10x_mtx-file_list.tsv || echo 'same file'
+
+      cat <<-END_VERSIONS > versions.yml
+      "${task.process}":
+          python: \$(python --version | sed 's/Python //g')
+          python library anndata: \$(python -c "import anndata; print(anndata.__version__)")
+          python library argparse: \$(python -c "import argparse; print(argparse.__version__)")
+          python library distutils: \$(python -c "import distutils; print(distutils.__version__)")
+          python library numpy: \$(python -c "import numpy; print(numpy.__version__)")
+          python library pandas: \$(python -c "import pandas; print(pandas.__version__)")
+          python library scipy: \$(python -c "import scipy; print(scipy.__version__)")
+          python library tables: \$(python -c "import tables; print(tables.__version__)")
+      END_VERSIONS
+
     """
 
 }
@@ -264,6 +298,10 @@ process CELLBENDER__REMOVE_BACKGROUND {
         } else if(filename.equalsIgnoreCase("features.tsv.gz")) {
         null
         } else if(filename.equalsIgnoreCase("matrix.mtx.gz")) {
+          null
+        } else if(filename == 'versions.yml') {
+          null
+        } else if(filename.endsWith('_cellbender.counts.txt')) {
         null
         } else {
         filename.replaceAll("-", "")
@@ -348,6 +386,7 @@ process CELLBENDER__REMOVE_BACKGROUND {
       val(outdir),
       emit: out_paths
     )
+    tuple val(experiment_id), path("${experiment_id}_cellbender.counts.txt"), emit: output_check
     path "versions.yml", emit: versions
 
   script:
@@ -436,7 +475,7 @@ process CELLBENDER__REMOVE_BACKGROUND {
     mkdir -p plots
     mv *pdf plots/ 2>/dev/null || true
     mv *png plots/ 2>/dev/null || true
-
+    wc -l ${outfile}_cell_barcodes.csv > ${experiment_id}_cellbender.counts.txt
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         cellbender: \$(pip show cellbender | grep '^Version:' | cut -d':' -f2)
@@ -452,8 +491,9 @@ process CAPTURE_CELLBENDER_FILES{
           null
         } else if (filename.contains(".h5")){
           null
-        }
-        else {
+        } else if(filename == 'versions.yml') {
+          null
+        } else {
           filename.replaceAll("tmp1234/cellbender/", "")
         }
       },
@@ -477,6 +517,7 @@ process CAPTURE_CELLBENDER_FILES{
     path("tmp1234/cellbender/*") optional true
     path("captured/unfiltered/*/*FPR_${params.cellbender_resolution_to_use}*"),emit:alt_input_unfiltered optional true
     path("captured/filtered/*/*FPR_${params.cellbender_resolution_to_use}*"),emit:alt_input_filtered optional true
+    path "versions.yml", emit: versions
 
   script:
   """
@@ -497,6 +538,13 @@ process CAPTURE_CELLBENDER_FILES{
     done
     cd ../..
     capture_res_files_cb.py -res ${params.cellbender_resolution_to_use}
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        python: \$(python --version | sed 's/Python //g')
+        python library argparse: \$(python -c "import argparse; print(argparse.__version__)")
+    END_VERSIONS
+
   """    
 
 }
@@ -532,6 +580,7 @@ process CELLBENDER__REMOVE_BACKGROUND__QC_PLOTS {
   output:
     val(outdir, emit: outdir)
     path("fpr_${fpr}/${experiment_id}/*.png"), emit: plots_png 
+    path "versions.yml", emit: versions 
 
   script:
   """
@@ -550,6 +599,22 @@ process CELLBENDER__REMOVE_BACKGROUND__QC_PLOTS {
     --n_expected_cells \"\${n_expected_cells}\" \\
     --n_total_droplets_included \"\${n_total_droplets_included}\" \\
     --out_dir \$PWD
+  
+  cat <<-END_VERSIONS > versions.yml
+  "${task.process}":
+      python: \$(python --version | sed 's/Python //g')
+      python library anndata: \$(python -c "import anndata; print(anndata.__version__)")
+      python library argparse: \$(python -c "import argparse; print(argparse.__version__)")
+      python library click: \$(python -c "import click; print(click.__version__)")
+      python library distutils: \$(python -c "import distutils; print(distutils.__version__)")
+      python library logging: \$(python -c "import logging; print(logging.__version__)")
+      python library numpy: \$(python -c "import numpy; print(numpy.__version__)")
+      python library pandas: \$(python -c "import pandas; print(pandas.__version__)")
+      python library scanpy: \$(python -c "import scanpy; print(scanpy.__version__)")
+      python library scipy: \$(python -c "import scipy; print(scipy.__version__)")
+      python library tables: \$(python -c "import tables; print(tables.__version__)")
+  END_VERSIONS
+
   """
 }
 
