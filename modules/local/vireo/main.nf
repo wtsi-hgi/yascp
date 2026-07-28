@@ -307,7 +307,7 @@ process POSTPROCESS_SUMMARY{
 
 process CAPTURE_VIREO{
   label 'process_tiny'
-  publishDir "${params.outdir}/deconvolution/vireo_raw/",  mode: "${params.copy_mode}", overwrite: true,
+  publishDir "${params.outdir}/deconvolution/vireo/vireo_raw/",  mode: "${params.copy_mode}", overwrite: true,
   saveAs: {filename -> filename == 'versions.yml' ? null : filename.replaceFirst("vireo_/","") }
 
   input:

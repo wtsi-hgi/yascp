@@ -225,9 +225,9 @@ def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res
             print('dir exists')    
         if os.path.exists(f'{directory}/deconvolution/vireo/vireo_raw'):
             try:
-                copyfile(f'{directory}/deconvolution/vireo_raw/correlations.png', f'{name_dir}/Deconvolution/correlations.png')
-                copyfile(f'{directory}/deconvolution/vireo_raw/matched_donors.txt', f'{name_dir}/Deconvolution/csv/matched_donors.tsv')
-                copyfile(f'{directory}/deconvolution/vireo_raw/donor_corelations_matrix.tsv', f'{name_dir}/Deconvolution/csv/donor_corelations_matrix.tsv')
+                copyfile(f'{directory}/deconvolution/vireo/vireo_raw/correlations.png', f'{name_dir}/Deconvolution/correlations.png')
+                copyfile(f'{directory}/deconvolution/vireo/vireo_raw/matched_donors.txt', f'{name_dir}/Deconvolution/csv/matched_donors.tsv')
+                copyfile(f'{directory}/deconvolution/vireo/vireo_raw/donor_corelations_matrix.tsv', f'{name_dir}/Deconvolution/csv/donor_corelations_matrix.tsv')
             except:
                 _='corelations not performed'
         else:

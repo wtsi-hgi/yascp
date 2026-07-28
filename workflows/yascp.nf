@@ -241,8 +241,8 @@ workflow YASCP {
                 assignments_all_pools = Channel.from("$projectDir/assets/fake_file.fq")
 
                 vireo_paths = params.outdir
-                    ? Channel.fromPath("${params.outdir}/deconvolution/vireo_raw/*/vireo_*", checkIfExists:true, type: 'dir')
-                    : Channel.fromPath("${launchDir}/${params.outdir}/deconvolution/vireo_raw/*/vireo_*", type: 'dir')
+                    ? Channel.fromPath("${params.outdir}/deconvolution/vireo/vireo_raw/*/vireo_*", checkIfExists:true, type: 'dir')
+                    : Channel.fromPath("${launchDir}/${params.outdir}/deconvolution/vireo/vireo_raw/*/vireo_*", type: 'dir')
 
                 GENOTYPE_MATCHER(vireo_paths.collect())
                 ch_versions = ch_versions.mix(GENOTYPE_MATCHER.out.versions)

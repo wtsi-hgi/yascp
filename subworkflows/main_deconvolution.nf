@@ -24,7 +24,7 @@ include { ENHANCE_STATS_GT_MATCH } from "$projectDir/modules/local/genotypes/mai
 include { SUBSET_WORKF } from "$projectDir/modules/local/subset_genotype/main"
 include { REPLACE_GT_DONOR_ID2 } from "$projectDir/modules/local/genotypes/main"
 include { STAGE_FILE } from "$projectDir/modules/local/retrieve_resources/retrieve_resources"
-include { GT_MATCH_POOL_IBD } from "$projectDir/modules/local/genotypes/main"
+include { PLINK_INDEP_PAIRWISE; PLINK_EXTRACT_PRUNED; GT_MATCH_POOL_IBD } from "$projectDir/modules/local/genotypes/main"
 include {VIREO_GT_FIX_HEADER;
          VIREO_ADD_SAMPLE_PREFIX; 
          MERGE_GENOTYPES_IN_ONE_VCF_IDX_PAN; 
@@ -77,7 +77,13 @@ workflow  MAIN_DECONVOLUTION {
             ch_versions = ch_versions.mix(SUBSET_WORKF.out.versions)
             merged_expected_genotypes = SUBSET_WORKF.out.merged_expected_genotypes
             merged_expected_genotypes2 = merged_expected_genotypes.combine(vcf_candidate_snps)
-            GT_MATCH_POOL_IBD(SUBSET_WORKF.out.samplename_subsetvcf_ibd,'Withing_expected','Expected')
+            
+            PLINK_INDEP_PAIRWISE(SUBSET_WORKF.out.samplename_subsetvcf_ibd)
+            ch_versions = ch_versions.mix(PLINK_INDEP_PAIRWISE.out.versions)
+            PLINK_EXTRACT_PRUNED(PLINK_INDEP_PAIRWISE.out.prune_in)
+            ch_versions = ch_versions.mix(PLINK_EXTRACT_PRUNED.out.versions)
+            GT_MATCH_POOL_IBD(PLINK_EXTRACT_PRUNED.out.ldpruned_vcf,'Withing_expected','Expected')
+            //GT_MATCH_POOL_IBD(SUBSET_WORKF.out.samplename_subsetvcf_ibd,'Withing_expected','Expected')
             ch_versions = ch_versions.mix(GT_MATCH_POOL_IBD.out.versions)
 
             if (params.use_bam_derived_cellsnp_panel){
@@ -358,7 +364,7 @@ workflow  MAIN_DECONVOLUTION {
 
             ENHANCE_STATS_GT_MATCH(MATCH_GENOTYPES.out.donor_match_table_enhanced,params.input_data_table)
             ch_versions = ch_versions.mix(ENHANCE_STATS_GT_MATCH.out.versions)
-            COLLECT_FILE5(ENHANCE_STATS_GT_MATCH.out.assignments.collect(),"assignments_all_pools.tsv",params.outdir+'/deconvolution/vireo_processed',1,'')
+            COLLECT_FILE5(ENHANCE_STATS_GT_MATCH.out.assignments.collect(),"assignments_all_pools.tsv",params.outdir+'/deconvolution/vireo/vireo_processed',1,'')
             ch_versions = ch_versions.mix(COLLECT_FILE5.out.versions)
             COLLECT_FILE6(ENHANCE_STATS_GT_MATCH.out.assignments.collect(),"assignments_all_pools.tsv",params.outdir+'/deconvolution/gtmatch',1,'')
             ch_versions = ch_versions.mix(COLLECT_FILE6.out.versions)

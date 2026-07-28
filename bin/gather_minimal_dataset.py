@@ -822,7 +822,7 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
     except:
         _='cant validate reasoning'        
     try:
-        Summary_check = pd.read_csv(f'{args.results_dir}/deconvolution/vireo_raw/{expid}/vireo_{expid}/summary.tsv',sep='\t')
+        Summary_check = pd.read_csv(f'{args.results_dir}/deconvolution/vireo/vireo_raw/{expid}/vireo_{expid}/summary.tsv',sep='\t')
     except:
         Summary_check =pd.DataFrame()
         

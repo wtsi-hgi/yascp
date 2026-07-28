@@ -1,7 +1,6 @@
 // match deconvoluted donors by genotype to a reference panel
 
-include { MATCH_GT_VIREO; 
-          GT_MATCH_POOL_IBD } from "$projectDir/modules/local/genotypes/main"
+include { MATCH_GT_VIREO; PLINK_INDEP_PAIRWISE; PLINK_EXTRACT_PRUNED; GT_MATCH_POOL_IBD } from "$projectDir/modules/local/genotypes/main"
 include { COMBINE_MATCHES_IN_EXPECTED_FORMAT } from "$projectDir/modules/local/genotypes/main"
 include { RELATIONSHIPS_BETWEEN_INFERED_EXPECTED; 
           RELATIONSHIPS_BETWEEN_INFERED_EXPECTED as RELATIONSHIPS_BETWEEN_INFERED_GT_MATCHED } from '../modules/local/infered_expected_relationship/main'
@@ -47,7 +46,13 @@ workflow MATCH_GENOTYPES {
     
     // «««««««««
     // compare genotypes within a pool (identity by descent)
-    GT_MATCH_POOL_IBD(vireo_out_sample_donor_vcf,'Withing_pool','InferedOnly')
+
+    PLINK_INDEP_PAIRWISE(vireo_out_sample_donor_vcf)
+    ch_versions = ch_versions.mix(PLINK_INDEP_PAIRWISE.out.versions)
+    PLINK_EXTRACT_PRUNED(PLINK_INDEP_PAIRWISE.out.prune_in)
+    ch_versions = ch_versions.mix(PLINK_EXTRACT_PRUNED.out.versions)
+    GT_MATCH_POOL_IBD(PLINK_EXTRACT_PRUNED.out.ldpruned_vcf,'Withing_pool','InferedOnly')
+    //GT_MATCH_POOL_IBD(vireo_out_sample_donor_vcf,'Withing_pool','InferedOnly')
     ch_versions = ch_versions.mix(GT_MATCH_POOL_IBD.out.versions)
     GT_MATCH_POOL_IBD.out.plink_ibd.set{idb_pool}
     // compare genotypes with the expected/matched genotypes to estimate the relationship between matches.

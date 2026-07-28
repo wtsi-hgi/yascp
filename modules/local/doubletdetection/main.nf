@@ -8,7 +8,7 @@ process DOUBLET_DETECTION {
         container "${params.yascp_container_docker}"
     }
     
-    publishDir  path: "${params.outdir}/doublet_detection/multiplet.method=doubletdetection",
+    publishDir  path: "${params.outdir}/doublet_detection/multiplet_doubletdetection",
                 saveAs: { filename -> 
                     filename == 'versions.yml' ? null : filename 
                 },
@@ -29,9 +29,8 @@ process DOUBLET_DETECTION {
 
     script:
         
-        outdir = "${params.outdir}/doublet_detection/multiplet"
-        outdir = "${outdir}.method=doubletdetection"
-        outfile = "${experiment_id}"
+        //outdir = "${params.outdir}/doublet_detection/multiplet_doubletdetection"
+        //outfile = "${experiment_id}"
 
         """
             DoubletDetection.py --tenxdata_dir ${gex_h5ad} --n_iterations 100

@@ -64,7 +64,7 @@ process MERGE_GENOTYPES_IN_ONE_VCF_FREEBAYES{
           mode: "${params.copy_mode}",
           overwrite: "true"
 
-    publishDir  path: "${params.outdir}/deconvolution/vireo_raw",
+    publishDir  path: "${params.outdir}/deconvolution/vireo/vireo_raw",
           saveAs: {filename ->
                     if (filename.endsWith("vireo_${panel}")) {
                         filename
@@ -317,7 +317,67 @@ process ENHANCE_STATS_GT_MATCH{
       END_VERSIONS
     """
 }
+////////////////////////////////////////
+process PLINK_INDEP_PAIRWISE
+{
+  tag "${pool_id}_indep_pairwise"
+  label 'indep_pairwise'
 
+  if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
+      container "${params.yascp_container}"
+  } else {
+      container "${params.yascp_container_docker}"
+  }
+
+  input:
+    tuple val(pool_id), path(vireo_gt_vcf)
+
+  output:
+    tuple val(pool_id), path(vireo_gt_vcf), path("${pool_id}.prune.in"), emit: prune_in
+    path "versions.yml", emit: versions
+
+  script:
+    """
+      plink --vcf ${vireo_gt_vcf} --indep-pairwise 50 5 0.2 --allow-extra-chr --double-id --out ${pool_id}
+
+      cat <<-END_VERSIONS > versions.yml
+      "${task.process}":
+          plink: \$(echo \$(plink --version) | sed 's/^PLINK v//;s/64.*//')
+      END_VERSIONS
+    """
+}
+
+process PLINK_EXTRACT_PRUNED
+{
+  tag "${pool_id}_extract_pruned"
+  label 'extract_pruned'
+
+  if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
+      container "${params.yascp_container}"
+  } else {
+      container "${params.yascp_container_docker}"
+  }
+
+  input:
+    tuple val(pool_id), path(vireo_gt_vcf), path(prune_in)
+
+  output:
+    tuple val(pool_id), path("*.ldpruned.vcf.gz"), emit: ldpruned_vcf
+    path "versions.yml", emit: versions
+
+  script:
+    def prefix = vireo_gt_vcf.simpleName
+    """
+      plink --vcf ${vireo_gt_vcf} --extract ${prune_in} --recode vcf --allow-extra-chr --double-id --out ${prefix}.ldpruned
+      bgzip ${prefix}.ldpruned.vcf
+      cat <<-END_VERSIONS > versions.yml
+      "${task.process}":
+          plink: \$(echo \$(plink --version) | sed 's/^PLINK v//;s/64.*//')
+          bgzip: \$(echo \$(bgzip -h 2>&1) | head -n 1 | sed 's/^Version: //; s/Usage:.*//')
+      END_VERSIONS
+    """
+}
+/////////////////////////////////////////
 process GT_MATCH_POOL_IBD
 {
   tag "${pool_id}_ibd"
