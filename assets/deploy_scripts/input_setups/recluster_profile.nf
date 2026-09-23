@@ -3,23 +3,20 @@ params {
     lisi{
         run_process=true
     }
-    replace_genotype_ids=false
-    cluster_validate_resolution_keras = true
-    filter_outliers = false
-    extra_sample_metadata =""
-    output_dir = outdir= "${launchDir}/recluster_resolutions"
-    cellex_cluster_markers=true 
-    cluster_markers = false
-    normalise_andata = false
-    skip_handover = true
-    split_ad_per_bach=true //if not splitting the celltype assignment will be run on full tranche
-    skip_preprocessing = true
+    cluster_validate_resolution_keras.value = true
+    filter_outliers.run_process = false
+    extra_sample_metadata.value =""
+    output_dir = outdir.value= "${launchDir}/recluster_resolutions"
+    cellex_cluster_markers.value=true 
+    cluster_markers.value = false
+    normalise_andata.value = false
+    skip_handover.value = true
+    skip_preprocessing.value = true
 
     harmony{
         run_process= true
     }
     umap{
-        run_process = true
         colors_quantitative{
             description = 'Comma separated string of quantitative variables that will be used to color points.'
             value = 'n_cells,total_counts,pct_counts_gene_group__mito_transcript,prob_doublet,pct_counts_gene_group__ribo_rna,Azimuth:predicted.celltype.l2.score,Azimuth:mapping.score,log10_ngenes_by_count'
@@ -30,7 +27,7 @@ params {
         }
     }
 
-    mads_categories ='pct_counts_gene_group__mito_transcript,pct_counts_gene_group__mito_protein,pct_counts_gene_group__ribo_protein,pct_counts_gene_group__ribo_rna,total_counts,n_genes_by_counts,log10_ngenes_by_count'
+    mads_categories.value ='pct_counts_gene_group__mito_transcript,pct_counts_gene_group__mito_protein,pct_counts_gene_group__ribo_protein,pct_counts_gene_group__ribo_rna,total_counts,n_genes_by_counts,log10_ngenes_by_count'
 
     cluster{
         description = """Parameters for clustering. All pairwise combinations of
@@ -77,10 +74,10 @@ params {
     }
 
     celltype_assignment{
-        run_celltype_assignment=false
-        run_azimuth=true
-        run_keras=false
-        run_celltypist=true
+        run_celltype_assignment.value=false
+        run_azimuth.value=true
+        run_keras.value=false
+        run_celltypist.value=true
     }
     reduced_dims{
         vars_to_regress{

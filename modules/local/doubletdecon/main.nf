@@ -8,11 +8,11 @@ process DOUBLET_DECON{
         container "${params.yascp_container_docker}"
     }
     
-    publishDir  path: "${params.outdir}/doublet_detection/DoubletDecon",
+    publishDir  path: "${params.outdir.value}/doublet_detection/DoubletDecon",
                 saveAs: { filename -> 
                     filename == 'versions.yml' ? null : filename 
                 },
-                mode: "${params.copy_mode}",
+                mode: "${params.copy_mode.value}",
                 overwrite: "true"
     memory { 
             sizeInGB = h5ad.size() / 1e9 * 5 * task.attempt
@@ -33,7 +33,7 @@ process DOUBLET_DECON{
 
     script:
         
-        outdir = "${params.outdir}/doublet_detection/"
+        outdir = "${params.outdir.value}/doublet_detection/"
         outdir = "${outdir}DoubletDecon"
         outfile = "${experiment_id}"
 

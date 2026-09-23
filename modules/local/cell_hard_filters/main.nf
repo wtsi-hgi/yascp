@@ -9,7 +9,7 @@ process CELL_HARD_FILTERS{
     }
 
 
-    publishDir  path: "${params.outdir}/handover/merged_h5ad/",
+    publishDir  path: "${params.outdir.value}/handover/merged_h5ad/",
                 saveAs: {filename ->
                     if (filename.contains("hard_filters_")) {
                         filename = '2.hard_filters_annotated_h5ad.h5ad'
@@ -19,7 +19,7 @@ process CELL_HARD_FILTERS{
                         filename
                     }
                 },
-                mode: "${params.copy_mode}",
+                mode: "${params.copy_mode.value}",
                 overwrite: "true"
 
 
@@ -79,7 +79,7 @@ process CELL_HARD_FILTERS{
             --number_cpu ${task.cpus} \
             --output_file hard_filters_adata \
             --h5addata_file ${file_paths_h5ad} \
-            --anndata_compression_opts ${params.anndata_compression_opts} \
+            --anndata_compression_opts ${params.anndata_compression_opts.value} \
             --drop ${drop}
 
         cat <<-END_VERSIONS > versions.yml

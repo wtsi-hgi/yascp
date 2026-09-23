@@ -8,11 +8,11 @@ process SCDS {
         container "${params.yascp_container_docker}"
     }
     
-    publishDir  path: "${params.outdir}/doublet_detection/SCDS",
+    publishDir  path: "${params.outdir.value}/doublet_detection/SCDS",
                 saveAs: { filename -> 
                     filename == 'versions.yml' ? null : filename 
                 },
-                mode: "${params.copy_mode}",
+                mode: "${params.copy_mode.value}",
                 overwrite: "true"
 
     input:
@@ -28,7 +28,7 @@ process SCDS {
 
     script:
         
-        outdir = "${params.outdir}/"
+        outdir = "${params.outdir.value}/"
         outdir = "${outdir}SCDS"
         outfile = "${experiment_id}"
 

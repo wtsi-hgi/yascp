@@ -1,6 +1,6 @@
 process TOTAL_VI_INTEGRATION{
     
-    if (params.utilise_gpu){
+    if (params.utilise_gpu.value){
         label 'process_low'
     }else{
         label 'process_medium'
@@ -14,7 +14,7 @@ process TOTAL_VI_INTEGRATION{
                 saveAs: { filename -> 
                     filename == 'versions.yml' ? null : filename 
                 },
-                mode: "${params.copy_mode}",
+                mode: "${params.copy_mode.value}",
                 overwrite: "true"
 
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {

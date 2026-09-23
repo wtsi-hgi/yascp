@@ -37,7 +37,7 @@ process CLUSTER {
                         filename.replaceAll("-", "")
                     }
                 },
-                mode: "${params.copy_mode}",
+                mode: "${params.copy_mode.value}",
                 overwrite: "true"
 
     input:
@@ -114,7 +114,7 @@ process PLOT_PHENOTYPE_ACROSS_CLUSTERS {
 
     publishDir  path: "${outdir}",
                 saveAs: {filename -> filename == 'versions.yml' ? null : filename.replaceAll("-", "")},
-                mode: "${params.copy_mode}",
+                mode: "${params.copy_mode.value}",
                 overwrite: "true"
 
     input:
@@ -210,7 +210,7 @@ process PLOT_KNOWN_MARKERS {
 
     publishDir  path: "${outdir}",
                 saveAs: {filename -> filename == 'versions.yml' ? null : filename.replaceAll("-", "")},
-                mode: "${params.copy_mode}",
+                mode: "${params.copy_mode.value}",
                 overwrite: "true"
 
     input:
@@ -286,7 +286,7 @@ process CLUSTER_VALIDATE_RESOLUTION_KERAS {
                     def parts = filename.split("___")
                     return (parts.length > 1) ? parts[1] : filename
                 },
-                mode: "${params.copy_mode}",
+                mode: "${params.copy_mode.value}",
                 overwrite: "true"
 
     input:
@@ -411,7 +411,7 @@ process PLOT_RESOLUTION_VALIDATE {
                         filename.replaceAll("-", "")
                     }
                 },
-                mode: "${params.copy_mode}",
+                mode: "${params.copy_mode.value}",
                 overwrite: "true"
 
     input:
@@ -504,7 +504,7 @@ process CLUSTER_MARKERS {
                         filename.replaceAll("-", "")
                     }
                 },
-                mode: "${params.copy_mode}",
+                mode: "${params.copy_mode.value}",
                 overwrite: "true"
 
     input:
@@ -595,7 +595,7 @@ process CELLEX_CLUSTER_MARKERS {
 
     publishDir  path: "${outdir}",
                 saveAs: {filename -> filename == 'versions.yml' ? null : filename.replaceAll("-", "")},
-                mode: "${params.copy_mode}",
+                mode: "${params.copy_mode.value}",
                 overwrite: "true"
 
     input:
@@ -611,7 +611,7 @@ process CELLEX_CLUSTER_MARKERS {
         )
         path "versions.yml", emit: versions
     when:
-        params.cellex_cluster_markers
+        params.cellex_cluster_markers.value
 
         
     script:
@@ -670,7 +670,7 @@ process PREP_CELLXGENE {
                         filename.replaceAll("-", "")
                     }
                 },
-                mode: "${params.copy_mode}",
+                mode: "${params.copy_mode.value}",
                 overwrite: "true"
 
     input:
@@ -724,7 +724,7 @@ process CONVERT_SEURAT {
 
     publishDir  path: "${outdir}",
                 saveAs: {filename -> filename == 'versions.yml' ? null : filename.replaceAll("-", "")},
-                mode: "${params.copy_mode}",
+                mode: "${params.copy_mode.value}",
                 overwrite: "true"
 
     input:

@@ -39,7 +39,7 @@ def parseVcfTsv(tsv_path) {
 
 workflow MAIN {
     // Determine Output Directory Channel
-    def outdir_path = params.outdir ?: "${launchDir}/${outdir}"
+    def outdir_path = params.outdir.value ?: "${launchDir}/${outdir}"
     out_ch = Channel.fromPath(outdir_path, checkIfExists: true)
 
     // Input Handling: Test vs. Production
@@ -50,7 +50,7 @@ workflow MAIN {
             .splitCsv(header: true, sep: '\t')
             .map { row -> tuple(row.label, file(row.vcf_file_path), file("${row.vcf_file_path}.csi")) }
     } else {
-        input_channel = Channel.fromPath(params.input_data_table, followLinks: true, checkIfExists: true)
+        input_channel = Channel.fromPath(params.input_data_table.value, followLinks: true, checkIfExists: true)
         
         vcf_inputs = params.genotype_input.run_with_genotype_input
             ? parseVcfTsv(params.genotype_input.tsv_donor_panel_vcfs)
@@ -58,7 +58,7 @@ workflow MAIN {
     }
 
     // Log tracking
-    input_channel.collectFile(name: "${params.outdir}/yascp_inputs.tsv")
+    input_channel.collectFile(name: "${params.outdir.value}/yascp_inputs.tsv")
     
     // Execute Core Workflow
     YASCP('default', input_channel, vcf_inputs)
@@ -76,30 +76,30 @@ workflow {
 */
 
 workflow JUST_CELLTYPES {
-    CELLTYPE(Channel.fromPath(params.file__anndata_merged), 'celltype_mode')
+    CELLTYPE(Channel.fromPath(params.file__anndata_merged.value), 'celltype_mode')
 }
 
 workflow JUST_CELLBENDER {
     // Override params for lean execution
-    params.do_deconvolution = false
-    params.celltype_assignment.run_celltype_assignment = false
-    params.skip_qc = true
-    params.skip_handover = true
-    params.skip_merge = true
+    params.do_deconvolution.value = false
+    params.celltype_assignment.run_celltype_assignment.value = false
+    params.skip_qc.value = true
+    params.skip_handover.value = true
+    //params.skip_merge = true
     MAIN()
 }
 
 workflow JUST_DOUBLETS {
-    MULTIPLET(Channel.fromPath(params.file__anndata_merged), 'doublet_mode')
+    MULTIPLET(Channel.fromPath(params.file__anndata_merged.value), 'doublet_mode')
 }
 
 workflow JUST_RECLUSTER {
-    ch_merged = Channel.fromPath(params.file__anndata_merged)
+    ch_merged = Channel.fromPath(params.file__anndata_merged.value)
     
     // Optimization: Using empty list instead of "fake_file" assets where applicable
     gt_outlier_input = Channel.value([]) 
     
-    DUMMY_FILTERED_CHANNEL(ch_merged, params.id_in)
+    DUMMY_FILTERED_CHANNEL(ch_merged, params.id_in.value)
     QC_AND_INTEGRATION(ch_merged, DUMMY_FILTERED_CHANNEL.out.anndata_metadata, gt_outlier_input)
 }
 
@@ -107,17 +107,17 @@ workflow GT_MATCH {
     // Standardizing GT matching logic
     parseVcfTsv(params.genotype_input.tsv_donor_panel_vcfs)
         .map { label, vcf, csi -> 
-            tuple(params.file_name, file(params.vcf), file("${params.vcf}.tbi"), label, vcf, csi) 
+            tuple(params.file_name.value, file(params.vcf.value), file("${params.vcf.value}.tbi"), label, vcf, csi)
         }
         .set { gt_match_input }
 
     MATCH_GT_VIREO(gt_match_input)
-    ENHANCE_STATS_GT_MATCH(MATCH_GT_VIREO.out.donor_match_table_with_pool_id, params.input_data_table)
+    ENHANCE_STATS_GT_MATCH(MATCH_GT_VIREO.out.donor_match_table_with_pool_id, params.input_data_table.value)
 }
 
 workflow WORK_DIR_REMOVAL {
-    def outdir_path = params.outdir ?: "${launchDir}/${outdir}"
-    RSYNC_RESULTS_REMOVE_WORK_DIR(Channel.fromPath(outdir_path, checkIfExists: true), params.tmpdir)
+    def outdir_path = params.outdir.value ?: "${launchDir}/${outdir}"
+    RSYNC_RESULTS_REMOVE_WORK_DIR(Channel.fromPath(outdir_path, checkIfExists: true), params.tmpdir.value)
 }
 
 /*
@@ -137,8 +137,8 @@ workflow.onComplete {
     exit status : ${workflow.exitStatus}
     """
     
-    if (workflow.success && params.remove_work_dir) {
-        log.info "Cleaning up work directory: ${params.tmpdir}"
-        "bash ${projectDir}/bin/del_work_dirs.sh ${params.tmpdir}".execute().waitFor()
+    if (workflow.success && params.remove_work_dir.value) {
+        log.info "Cleaning up work directory: ${params.tmpdir.value}"
+        "bash ${projectDir}/bin/del_work_dirs.sh ${params.tmpdir.value}".execute().waitFor()
     }
 }

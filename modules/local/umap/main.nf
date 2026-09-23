@@ -66,8 +66,8 @@ workflow UMAP {
         )
         ch_versions = ch_versions.mix(UMAP_GATHER.out.versions)
 
-        if (params.run_celltype_assignment){
-            GENERATE_FINAL_UMAPS(UMAP_GATHER.out.anndata,params.outdir)
+        if (params.run_celltype_assignment.value){
+            GENERATE_FINAL_UMAPS(UMAP_GATHER.out.anndata,params.outdir.value)
             ch_versions = ch_versions.mix(GENERATE_FINAL_UMAPS.out.versions)
         }
 

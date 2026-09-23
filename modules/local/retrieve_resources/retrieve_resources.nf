@@ -1,15 +1,15 @@
 process RETRIEVE_RECOURSES{
   label 'process_tiny'
-  publishDir "${params.outdir}/preprocessing/resources",
+  publishDir "${params.outdir.value}/preprocessing/resources",
     saveAs: { filename -> 
         filename == 'versions.yml' ? null : filename 
     }, 
-    mode: "${params.copy_mode}", overwrite: true  
+    mode: "${params.copy_mode.value}", overwrite: true  
   output:
     path("10x_reference_assembly"),emit:reference_assembly, optional: true
     path("Done.tmp"),emit:done
   script:
-    if (params.reference_assembly_fasta_dir=='https://yascp.cog.sanger.ac.uk/public/10x_reference_assembly'){
+    if (params.reference_assembly_fasta_dir.value=='https://yascp.cog.sanger.ac.uk/public/10x_reference_assembly'){
         get_genome = 'mkdir 10x_reference_assembly && wget https://yascp.cog.sanger.ac.uk/public/10x_reference_assembly/genome.fa && wget https://yascp.cog.sanger.ac.uk/public/10x_reference_assembly/genome.fa.fai && mv genome.fa 10x_reference_assembly/genome.fa && mv genome.fa.fai 10x_reference_assembly/genome.fa.fai'
     }else{
         get_genome = ""
@@ -25,11 +25,11 @@ process RETRIEVE_RECOURSES{
 
 process RETRIEVE_RECOURSES_TEST_DATASET{
   label 'process_tiny'
-  publishDir "${params.outdir}/preprocessing/resources",
+  publishDir "${params.outdir.value}/preprocessing/resources",
     saveAs: { filename -> 
         filename == 'versions.yml' ? null : filename 
     }, 
-    mode: "${params.copy_mode}", overwrite: true  
+    mode: "${params.copy_mode.value}", overwrite: true  
 
   input:
     val(outdir)
@@ -53,7 +53,7 @@ process RETRIEVE_RECOURSES_TEST_DATASET{
         $get_full_test_data
         cd \$cwd1
         wget -c ${params.genotype_input.tsv_donor_panel_vcfs} -O  input_test_vcf_file.tsv
-        wget -c ${params.input_data_table} -O input_test_data_file.tsv
+        wget -c ${params.input_data_table.value} -O input_test_data_file.tsv
         sed -i "s#/path/to/replace/pointing/to/downloaded/files#\$cwd1/full_test_dataset/smaller_dataset/genotypes#" input_test_vcf_file.tsv
         sed -i "s#/path/to/replace/pointing/to/downloaded/files#\$cwd1/full_test_dataset#" input_test_data_file.tsv
 

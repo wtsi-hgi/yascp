@@ -19,21 +19,21 @@ workflow PLOT_STATS {
         Channel.empty().set { ch_versions }
         // Plot the filtered cells per sample.
         PLOT_FILTERED_CELLS(
-            params.outdir,
+            params.outdir.value,
             file__cells_filtered
         )
         ch_versions = ch_versions.mix(PLOT_FILTERED_CELLS.out.versions)
 
         // Predict sex from gene expression and check against phenotypes.
         PLOT_PREDICTED_SEX(
-            params.outdir,
+            params.outdir.value,
             file__anndata_merged
         )
         ch_versions = ch_versions.mix(PLOT_PREDICTED_SEX.out.versions)
 
         // Make QC plots of the merged data.
         PLOT_QC(
-            params.outdir,
+            params.outdir.value,
             file__anndata_merged,
             params.plots_qc.facet_columns.value
         )
@@ -41,7 +41,7 @@ workflow PLOT_STATS {
 
         // Plot Distributions
         PLOT_DISTRIBUTIONS(
-            params.outdir,
+            params.outdir.value,
             file__anndata_merged,
             params.plots_qc.facet_columns.value,
             params.plots_qc.variable_columns_distribution_plots.value
@@ -49,7 +49,7 @@ workflow PLOT_STATS {
         ch_versions = ch_versions.mix(PLOT_DISTRIBUTIONS.out.versions)
 
         PLOT_PCS(
-            params.outdir,
+            params.outdir.value,
             anndata,
             n_pcs,
             params.umap.colors_quantitative.value,

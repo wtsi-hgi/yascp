@@ -11,7 +11,7 @@ process PLOT_DONOR_CELLS {
         container "${params.yascp_container_docker}"
     }
 
-    publishDir "${params.outdir}/plots/", mode: "${params.plot_donor_ncells.copy_mode}", overwrite: true,
+    publishDir "${params.outdir.value}/plots/", mode: "${params.plot_donor_ncells.copy_mode}", overwrite: true,
         saveAs: { filename -> 
             if (filename == 'versions.yaml') {
                 null

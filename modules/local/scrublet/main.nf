@@ -20,7 +20,7 @@ process SCRUBLET {
         container "${params.yascp_container_docker}"
     }
     
-    publishDir  path: "${params.outdir}/doublet_detection/scrublet",
+    publishDir  path: "${params.outdir.value}/doublet_detection/scrublet",
                 saveAs: {filename ->
                     if (filename.endsWith("multiplet_calls_published.txt")) {
                         null
@@ -35,7 +35,7 @@ process SCRUBLET {
                         filename.replaceAll("-", "")
                     }
                 },
-                mode: "${params.copy_mode}",
+                mode: "${params.copy_mode.value}",
                 overwrite: "true"
 
     input:
@@ -64,7 +64,7 @@ process SCRUBLET {
 
     script:
         
-        outdir = "${params.outdir}/doublet_detection/"
+        outdir = "${params.outdir.value}/doublet_detection/"
         outdir = "${outdir}scrublet"
         outfile = "${experiment_id}"
         // Check to see if we should use use log10 of the doublet simulations

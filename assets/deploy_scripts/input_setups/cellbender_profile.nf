@@ -1,8 +1,7 @@
 params {
-    do_deconvolution = false
-    celltype_assignment.run_celltype_assignment = false
-    skip_qc = true
-    skip_handover = true
-    skip_merge = true
-    filter_multiplets.run_process = false
+    do_deconvolution.value = false
+    celltype_assignment.run_celltype_assignment.value = false
+    skip_qc.value = true
+    skip_handover.value = true
+    filter_multiplets.run_process.value = false
 }

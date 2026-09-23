@@ -182,8 +182,8 @@ process CELLBENDER__PREPROCESS_OUTPUT{
 
 
   output:
-    tuple(val(experiment_id),path("cellbender-FPR_${params.cellbender_resolution_to_use}-filtered_10x_mtx"), emit: alternative_input)
-    tuple(val(experiment_id),path("cellbender-FPR_${params.cellbender_resolution_to_use}-unfiltered_10x_mtx"), emit: alternative_input_raw)
+    tuple(val(experiment_id),path("cellbender-FPR_${params.cellbender_resolution_to_use.value}-filtered_10x_mtx"), emit: alternative_input)
+    tuple(val(experiment_id),path("cellbender-FPR_${params.cellbender_resolution_to_use.value}-unfiltered_10x_mtx"), emit: alternative_input_raw)
     path("*filtered_10x_mtx/barcodes.tsv.gz", emit: tenx_barcodes)
     path("*filtered_10x_mtx/features.tsv.gz", emit: tenx_features)
     path("*filtered_10x_mtx/matrix.mtx.gz", emit: tenx_matrix)
@@ -255,7 +255,7 @@ process CELLBENDER__REMOVE_BACKGROUND {
 
   tag "${experiment_id}_cb"
   if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-    if (params.cellbender_v == '0.3.2'){
+    if (params.cellbender_v.value == '0.3.2'){
       container "${params.nf_cellbender_container_032}"
     }else{
       container "${params.nf_cellbender_container}"
@@ -265,7 +265,7 @@ process CELLBENDER__REMOVE_BACKGROUND {
 	  cpus = 1
 
   } else {
-    if (params.cellbender_v == '0.3.2'){
+    if (params.cellbender_v.value == '0.3.2'){
       container "${params.nf_cellbender_container_032_docker}"
     }else{
       container "${params.nf_cellbender_container_docker}"
@@ -278,7 +278,7 @@ process CELLBENDER__REMOVE_BACKGROUND {
   // containerOptions '--env LD_PRELOAD=/opt/conda/envs/conda_cellbender/lib/libmkl_core.so:/opt/conda/envs/conda_cellbender/lib/libmkl_sequential.so'
 
   //     // use GPU
-  if (params.utilise_gpu){
+  if (params.utilise_gpu.value){
     label 'gpu'
 
 	// only one label here, otherwise bsub -R -M will be doubled..
@@ -341,7 +341,7 @@ process CELLBENDER__REMOVE_BACKGROUND {
       path("*.h5"),val(cb_params),
       emit: cleanup_input
     )
-    tuple(val(experiment_id),path("cellbender_FPR_${params.cellbender_resolution_to_use.replaceAll('pt', '.')}_filtered.h5"),emit: cb_to_use_downstream)
+    tuple(val(experiment_id),path("cellbender_FPR_${params.cellbender_resolution_to_use.value.replaceAll('pt', '.')}_filtered.h5"),emit: cb_to_use_downstream)
 
     tuple(
       val(outdir),
@@ -391,16 +391,16 @@ process CELLBENDER__REMOVE_BACKGROUND {
 
   script:
 
-    if (params.cellbender_v == '0.3.1'){
+    if (params.cellbender_v.value == '0.3.1'){
         option1='--checkpoint-mins 100'
-        if (params.utilise_gpu){
+        if (params.utilise_gpu.value){
             gpu_text_info = '--cuda'
         }else{
             gpu_text_info = "--cpu-threads ${task.cpus}"
         }
     }else{
         option1=''
-        if (params.utilise_gpu){
+        if (params.utilise_gpu.value){
             gpu_text_info = '--cuda'
         }else{
             gpu_text_info = ""
@@ -497,7 +497,7 @@ process CAPTURE_CELLBENDER_FILES{
           filename.replaceAll("tmp1234/cellbender/", "")
         }
       },
-        mode: "${params.copy_mode}",
+        mode: "${params.copy_mode.value}",
     overwrite: "true"
   label 'process_tiny'
 
@@ -515,8 +515,8 @@ process CAPTURE_CELLBENDER_FILES{
     path(input_file)
   output:
     path("tmp1234/cellbender/*") optional true
-    path("captured/unfiltered/*/*FPR_${params.cellbender_resolution_to_use}*"),emit:alt_input_unfiltered optional true
-    path("captured/filtered/*/*FPR_${params.cellbender_resolution_to_use}*"),emit:alt_input_filtered optional true
+    path("captured/unfiltered/*/*FPR_${params.cellbender_resolution_to_use.value}*"),emit:alt_input_unfiltered optional true
+    path("captured/filtered/*/*FPR_${params.cellbender_resolution_to_use.value}*"),emit:alt_input_filtered optional true
     path "versions.yml", emit: versions
 
   script:
@@ -537,7 +537,7 @@ process CAPTURE_CELLBENDER_FILES{
         fi        
     done
     cd ../..
-    capture_res_files_cb.py -res ${params.cellbender_resolution_to_use}
+    capture_res_files_cb.py -res ${params.cellbender_resolution_to_use.value}
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

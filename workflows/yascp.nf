@@ -47,14 +47,14 @@ workflow YASCP {
         }
         PREPARE_INPUTS(input_channel)
         ch_versions = ch_versions.mix(PREPARE_INPUTS.out.versions)
-        if (!params.input_data_table.contains('fake_file')){
-            log.info " ---- Genome used: ${params.reference_assembly_fasta_dir} ---"
+        if (!params.input_data_table.value.contains('fake_file')){
+            log.info " ---- Genome used: ${params.reference_assembly_fasta_dir.value} ---"
             input_channel = PREPARE_INPUTS.out.channel_input_data_table
-            if (params.reference_assembly_fasta_dir=='https://yascp.cog.sanger.ac.uk/public/10x_reference_assembly'){
+            if (params.reference_assembly_fasta_dir.value=='https://yascp.cog.sanger.ac.uk/public/10x_reference_assembly'){
                 RETRIEVE_RECOURSES()  
                 genome1 = RETRIEVE_RECOURSES.out.reference_assembly
             }else{
-                genome1 = "${params.reference_assembly_fasta_dir}"
+                genome1 = "${params.reference_assembly_fasta_dir.value}"
             }
 
             PREPROCESS_GENOME(genome1)
@@ -68,13 +68,13 @@ workflow YASCP {
         matched_donors = Channel.from("$projectDir/assets/fake_file.fq")
         ch_poolid_csv_donor_assignments = Channel.empty()
         bam_split_channel = Channel.of()
-        out_ch = params.outdir
-            ? Channel.fromPath(params.outdir, checkIfExists:true)
-            : Channel.from("${launchDir}/${params.outdir}")
+        out_ch = params.outdir.value
+            ? Channel.fromPath(params.outdir.value, checkIfExists:true)
+            : Channel.from("${launchDir}/${params.outdir.value}")
                  
-        if(!params.just_reports){
-            // sometimes we just want to rerun report generation as a result of alterations, hence if we set params.just_reports =True pipeline will use the results directory and generate a new reports.
-            if (!params.skip_preprocessing){
+        if(!params.just_reports.value){
+            // sometimes we just want to rerun report generation as a result of alterations, hence if we set params.just_reports.value =True pipeline will use the results directory and generate a new reports.
+            if (!params.skip_preprocessing.value){
                 // The input table should contain the folowing columns - experiment_id	n_pooled	donor_vcf_ids	data_path_10x_format
                 // CITESEQ and other data modality seperation
                 // Split citeseq if available
@@ -86,8 +86,8 @@ workflow YASCP {
                 ch_validation = ch_validation.mix(SPLIT_CITESEQ_GEX.out.output_check)
 
                 // Either run ambient RNA removal with cellbender or use cellranger filtered reads (cellbender|cellranger)
-                if (params.input == 'cellbender'){
-                    if (params.cellbender_with_citeseq){                          // here we run CB with citeseq
+                if (params.input.value == 'cellbender'){
+                    if (params.cellbender_with_citeseq.value){                          // here we run CB with citeseq
                         log.info ' ---- Running cellbender with citeseq ---'
                         ch_experimentid_paths10x_raw = PREPARE_INPUTS.out.ch_experimentid_paths10x_raw
                     }else{
@@ -112,7 +112,7 @@ workflow YASCP {
                     ch_experiment_filth5= AMBIENT_RNA.out.cellbender_path
 
                 }
-                else if (params.input == 'cellranger'){
+                else if (params.input.value == 'cellranger'){
                     // This is where we skip the cellbender and use the cellranger filtered datasets.
                     log.info '--- using cellranger filtered data instead of cellbender (skipping cellbender)---'
                     channel__file_paths_10x = SPLIT_CITESEQ_GEX_FILTERED.out.gex_data
@@ -141,7 +141,7 @@ workflow YASCP {
                     .ifEmpty { "$projectDir/assets/fake_file1.fq" }
                 
 
-                if (params.doublets_and_celltypes_on_cellbender_corrected_counts && params.input == 'cellbender'){
+                if (params.doublets_and_celltypes_on_cellbender_corrected_counts.value && params.input.value == 'cellbender'){
                     channel__file_paths_10x_gex = SPLIT_CITESEQ_GEX_FILTERED_NOCB.out.gex_data
                 }
                 else{
@@ -154,7 +154,7 @@ workflow YASCP {
                 // Curently contains only Scrublet, but we are also adding DoubletDetect
                 // ###################################
                 // ###################################
-                if (params.filter_multiplets.run_process){
+                if (params.filter_multiplets.run_process.value){
                     log.info '---Running doublet assignment ----'
                     MULTIPLET(channel__file_paths_10x_gex,'yascp_full')
                     doublet_paths = MULTIPLET.out.scrublet_paths
@@ -173,7 +173,7 @@ workflow YASCP {
                 doublet_labels = DOUBLET_FILE_MERGE.out.results
                     .ifEmpty { "$projectDir/assets/fake_file2.fq" }
 
-                if (params.celltype_assignment.run_celltype_assignment){
+                if (params.celltype_assignment.run_celltype_assignment.value){
                     log.info '---Running celltype assignment ----'
                     CELLTYPE(channel__file_paths_10x_gex,'yascp_full')
                     celltype_assignments=CELLTYPE.out.celltype_assignments
@@ -193,7 +193,7 @@ workflow YASCP {
                 // ###################################
                 // ###################################
                 
-                if (params.do_deconvolution){
+                if (params.do_deconvolution.value){
                     log.info '--- Performing Deconvolution ---'
                     MAIN_DECONVOLUTION(
                         ch_experiment_bam_bai_barcodes,
@@ -212,7 +212,7 @@ workflow YASCP {
                     ch_poolid_csv_donor_assignments = MAIN_DECONVOLUTION.out.ch_poolid_csv_donor_assignments
                     bam_split_channel = MAIN_DECONVOLUTION.out.sample_possorted_bam_vireo_donor_ids
                     assignments_all_pools = MAIN_DECONVOLUTION.out.assignments_all_pools
-                    if (!params.atac){
+                    if (!params.atac.value){
                         MERGE_SAMPLES(MAIN_DECONVOLUTION.out.out_h5ad,MAIN_DECONVOLUTION.out.vireo_out_sample__exp_summary_tsv,celltype_assignments,hastag_labels,doublet_labels,'h5ad')
                         ch_versions = ch_versions.mix(MERGE_SAMPLES.out.versions)
                     }
@@ -227,9 +227,9 @@ workflow YASCP {
                     matched_donors = Channel.from("$projectDir/assets/fake_file.fq")
                 }
                 
-                if (!params.atac){
+                if (!params.atac.value){
                     file__anndata_merged = MERGE_SAMPLES.out.file__anndata_merged
-                    DUMMY_FILTERED_CHANNEL(file__anndata_merged,params.id_in)
+                    DUMMY_FILTERED_CHANNEL(file__anndata_merged,params.id_in.value)
                     ch_versions = ch_versions.mix(DUMMY_FILTERED_CHANNEL.out.versions)
                     file__cells_filtered = DUMMY_FILTERED_CHANNEL.out.anndata_metadata
                 }
@@ -237,12 +237,12 @@ workflow YASCP {
             }else{
                 // This option skips all the deconvolution and and takes a preprocessed yascp h5ad file to run the downstream clustering and celltype annotation.
                 log.info '''----Skipping Preprocessing since we already have prepeared h5ad input file----'''
-                file__anndata_merged = Channel.from(params.file__anndata_merged)
+                file__anndata_merged = Channel.from(params.file__anndata_merged.value)
                 assignments_all_pools = Channel.from("$projectDir/assets/fake_file.fq")
 
-                vireo_paths = params.outdir
-                    ? Channel.fromPath("${params.outdir}/deconvolution/vireo/vireo_raw/*/vireo_*", checkIfExists:true, type: 'dir')
-                    : Channel.fromPath("${launchDir}/${params.outdir}/deconvolution/vireo/vireo_raw/*/vireo_*", type: 'dir')
+                vireo_paths = params.outdir.value
+                    ? Channel.fromPath("${params.outdir.value}/deconvolution/vireo/vireo_raw/*/vireo_*", checkIfExists:true, type: 'dir')
+                    : Channel.fromPath("${launchDir}/${params.outdir.value}/deconvolution/vireo/vireo_raw/*/vireo_*", type: 'dir')
 
                 GENOTYPE_MATCHER(vireo_paths.collect())
                 ch_versions = ch_versions.mix(GENOTYPE_MATCHER.out.versions)
@@ -253,19 +253,19 @@ workflow YASCP {
                     // Here we have rerun GT matching upstream - done for freeze1
                     assignments_all_pools = mode
                 }else{
-                    if (params.file__anndata_merged !=''){
-                        assignments_all_pools = Channel.from(params.gt_match_file)
+                    if (params.file__anndata_merged.value !=''){
+                        assignments_all_pools = Channel.from(params.gt_match_file.value)
                     }else{
                         assignments_all_pools = Channel.from("$projectDir/assets/fake_file.fq")
                     }
                 }
                 
-                if (params.file__cells_filtered =='' && !params.atac){
+                if (params.file__cells_filtered.value =='' && !params.atac.value){
                     log.info '''--- No cells filtered input ----'''
-                    DUMMY_FILTERED_CHANNEL(file__anndata_merged,params.id_in)
+                    DUMMY_FILTERED_CHANNEL(file__anndata_merged,params.id_in.value)
                     file__cells_filtered = DUMMY_FILTERED_CHANNEL.out.anndata_metadata
                 }else{
-                    file__cells_filtered = Channel.from(params.skip_preprocessing.file__cells_filtered)
+                    file__cells_filtered = Channel.from(params.skip_preprocessing.value.file__cells_filtered)
                 }
                 CREATE_ARTIFICIAL_BAM_CHANNEL(input_channel)
                 bam_split_channel = CREATE_ARTIFICIAL_BAM_CHANNEL.out.ch_experiment_bam_bai_barcodes
@@ -280,8 +280,8 @@ workflow YASCP {
             // ###################################
             // ###################################
 
-            if (!params.skip_qc && !params.atac){
-                if(params.gt_match_based_adaptive_qc_exclusion_pattern !=''){
+            if (!params.skip_qc.value && !params.atac.value){
+                if(params.gt_match_based_adaptive_qc_exclusion_pattern.value !=''){
                     gt_outlier_input = assignments_all_pools
                 }else{
                     gt_outlier_input = Channel.from("$projectDir/assets/fake_file.fq")
@@ -310,7 +310,7 @@ workflow YASCP {
         // ###################################
         // ###################################
 
-        if (!params.skip_handover || !params.skip_qc ){
+        if (!params.skip_handover.value || !params.skip_qc.value ){
             DATA_HANDOVER(out_ch,input_channel,
                             process_finish_check_channel,
                             ch_poolid_csv_donor_assignments,
@@ -323,7 +323,7 @@ workflow YASCP {
    output validation
 ========================================================================================
 */
-        VALIDATE_YASCP_OUTPUTS( ch_validation.map { val, path -> path }.collect(), params.celltype_assignment.run_azimuth, params.celltype_assignment.run_celltypist, params.celltype_assignment.run_scpred )
+        VALIDATE_YASCP_OUTPUTS( ch_validation.map { val, path -> path }.collect(), params.celltype_assignment.run_azimuth.value, params.celltype_assignment.run_celltypist.value, params.celltype_assignment.run_scpred.value )
 
 /*
 ========================================================================================
@@ -333,7 +333,7 @@ workflow YASCP {
         version_yaml = Channel.empty()
         ch_versions=ch_versions.filter { file -> file.exists() && file.size() > 0 }
         version_yaml = softwareVersionsToYAML(ch_versions)
-            .collectFile(storeDir: "${params.outdir}", name: 'yascp_software_versions.yml', sort: true, newLine: true)
+            .collectFile(storeDir: "${params.outdir.value}", name: 'yascp_software_versions.yml', sort: true, newLine: true)
 }
 
 /*

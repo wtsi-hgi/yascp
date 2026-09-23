@@ -8,11 +8,11 @@ process CONCORDANCE_CALCLULATIONS {
         container "${params.yascp_container_docker}"
     }
 
-    publishDir  path: "${params.outdir}/deconvolution/concordances/${pool_id}",
+    publishDir  path: "${params.outdir.value}/deconvolution/concordances/${pool_id}",
                 saveAs: { filename -> 
                     filename == 'versions.yml' ? null : filename 
                  },
-                mode: "${params.copy_mode}",
+                mode: "${params.copy_mode.value}",
                 overwrite: "true"
 
     input:
@@ -24,7 +24,7 @@ process CONCORDANCE_CALCLULATIONS {
         path(cell_vcf),
         path(donor_table),path(cell_assignments),path(set2_informative_sites), path(set1_uninformative_sites),path(variants_description))
     when:
-        params.concordance_calculations
+        params.concordance_calculations.value
     output:
         tuple val(pool_id), path('discordant_sites_in_other_donors_noA2G.tsv'), emit: concordances
         path("*--each_cells_comparison_with_other_donor.tsv"), emit: each_cells_comparison optional true
@@ -65,11 +65,11 @@ process COMBINE_FILES{
         container "${params.yascp_container_docker}"
     }
 
-    publishDir  path: "${params.outdir}/deconvolution/concordances/${pool_id}",
+    publishDir  path: "${params.outdir.value}/deconvolution/concordances/${pool_id}",
                 saveAs: { filename -> 
                     filename == 'versions.yml' ? null : filename 
                 },
-                mode: "${params.copy_mode}",
+                mode: "${params.copy_mode.value}",
                 overwrite: "true"
 
 
@@ -87,7 +87,7 @@ process COMBINE_FILES{
     script:
 
         """
-           combine_concordance.py -cc ${concordance_table} -sq ${subsampling_table} -name ${pool_id} --run ${params.RUN}
+           combine_concordance.py -cc ${concordance_table} -sq ${subsampling_table} -name ${pool_id} --run ${params.RUN.value}
 
             cat <<-END_VERSIONS > versions.yml
             "${task.process}":
@@ -112,11 +112,11 @@ process PLOT_CONCORDANCES_ALL{
         container "${params.yascp_container_docker}"
     }
 
-    publishDir  path: "${params.outdir}/deconvolution/concordances",
+    publishDir  path: "${params.outdir.value}/deconvolution/concordances",
                 saveAs: { filename -> 
                     filename == 'versions.yml' ? null : filename 
                 },
-                mode: "${params.copy_mode}",
+                mode: "${params.copy_mode.value}",
                 overwrite: "true"
 
     output:

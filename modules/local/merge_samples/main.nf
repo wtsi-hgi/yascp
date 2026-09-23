@@ -4,7 +4,7 @@ params.file_cellmetadata    = "no_file__file_cellmetadata"
 params.metadata_key_column = [
     value: "experiment_id"
 ]
-params.anndata_compression_opts = 9
+params.anndata_compression_opts.value = 9
 
 process HASTAG_FILE_MERGE{
     tag "${samplename}"    

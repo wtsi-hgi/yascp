@@ -47,7 +47,7 @@ process MERGE_SAMPLES_FROM_H5AD {
     label 'process_medium_single_CPU' 
     label 'process_medium_memory'
 
-    publishDir  path: "${params.outdir}/handover/merged_h5ad",
+    publishDir  path: "${params.outdir.value}/handover/merged_h5ad",
                 saveAs: {filename ->
                     if (filename.contains("pre_QC_adata")) {
                         filename = '1.annotated_deconvoluted_pre_QC_adata.h5ad'
@@ -57,7 +57,7 @@ process MERGE_SAMPLES_FROM_H5AD {
                         filename
                     }
                 },
-                mode: "${params.copy_mode}",
+                mode: "${params.copy_mode.value}",
                 overwrite: "true"
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "${params.yascp_container}"
@@ -94,14 +94,14 @@ process MERGE_SAMPLES_FROM_H5AD {
             doublet = "--hastag ${doublet_labels}"
         }
 
-        if (params.extra_metadata!=''){
-            extra_metadata = "--extra_metadata ${params.extra_metadata}"
+        if (params.extra_metadata.value!=''){
+            extra_metadata = "--extra_metadata ${params.extra_metadata.value}"
         }else{
             extra_metadata = ""
         }
 
-        if (params.extra_sample_metadata!=''){
-            extra_sample_metadata = "add_extra_sample_metadata.py --vireo ${file_metadata} --extra_sample_metadata ${params.extra_sample_metadata} --metadata_key ${metadata_key}"
+        if (params.extra_sample_metadata.value!=''){
+            extra_sample_metadata = "add_extra_sample_metadata.py --vireo ${file_metadata} --extra_sample_metadata ${params.extra_sample_metadata.value} --metadata_key ${metadata_key}"
         }else{
             extra_sample_metadata = "ln -s ${file_metadata} Vireo_metadata.csv"
         }
@@ -127,7 +127,7 @@ process MERGE_SAMPLES_FROM_H5AD {
             --metadata_key ${metadata_key} \
             --number_cpu ${task.cpus} \
             --output_file 1.pre_QC_adata \
-            --anndata_compression_opts ${params.anndata_compression_opts} --celltype ${celltype} ${hastag} ${doublet} \
+            --anndata_compression_opts ${params.anndata_compression_opts.value} --celltype ${celltype} ${hastag} ${doublet} \
             ${cmd__params} \
             ${cmd__cellmetadata} ${extra_metadata}
         mkdir plots

@@ -18,7 +18,7 @@ process COLLECT_FILE{
                       filename
                   }
               },
-              mode: "${params.copy_mode}",
+              mode: "${params.copy_mode.value}",
               overwrite: "true"
 
   input:
@@ -36,7 +36,7 @@ process COLLECT_FILE{
   script:
 
     if ("${outpath}" == "0") {
-        outpath2="${params.outdir}"
+        outpath2="${params.outdir.value}"
     }else {
         outpath2=outpath
     }

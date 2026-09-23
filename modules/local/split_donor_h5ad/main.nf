@@ -2,7 +2,7 @@ process PREP_ASSIGNMENTS_FILE{
     tag "${sample}"
     
     label 'process_low'
-    publishDir "${params.outdir}/deconvolution/split_donor_h5ad/${sample}/", mode: "${params.copy_mode}", overwrite: true,
+    publishDir "${params.outdir.value}/deconvolution/split_donor_h5ad/${sample}/", mode: "${params.copy_mode.value}", overwrite: true,
 	  saveAs: {filename -> filename.replaceFirst("outputs/","") }
     
 
@@ -58,7 +58,7 @@ process SPLIT_DONOR_H5AD {
     tag "${sample}"
     
     label 'process_low'
-    publishDir "${params.outdir}/deconvolution/split_donor_h5ad/${sample}/", mode: "${params.copy_mode}", overwrite: true,
+    publishDir "${params.outdir.value}/deconvolution/split_donor_h5ad/${sample}/", mode: "${params.copy_mode.value}", overwrite: true,
 	  saveAs: {filename -> filename == 'versions.yml' ? null : filename.replaceFirst("outputs/","") }
     
 

@@ -43,7 +43,7 @@ process REMOVE_DUPLICATED_DONORS_FROM_GT{
 process VIREO_SUBSAMPLING {
     // This module is used to make sure that no cells that there are no cells assigned to the wrong donor.
     // We subsample the cellsnp files to the 80% of random SNPs and run vireo with this.
-    publishDir "${params.outdir}/deconvolution/vireo/vireo_subsampling_cellsnp/${samplename}/vireo_____${itteration}/",
+    publishDir "${params.outdir.value}/deconvolution/vireo/vireo_subsampling_cellsnp/${samplename}/vireo_____${itteration}/",
       saveAs: { filename -> 
         filename == 'versions.yml' ? null : filename 
       }, 
@@ -173,7 +173,7 @@ process VIREO_SUBSAMPLING {
 process GENOTYPE_MATCHER{
     tag "${samplename}"
     label 'process_low'
-    publishDir "${params.outdir}/deconvolution/gtmatch/",
+    publishDir "${params.outdir.value}/deconvolution/gtmatch/",
       saveAs: { filename -> 
         (filename == 'versions.yml' || filename == 'donors.counts.txt') ? null : filename 
       }, 
@@ -221,7 +221,7 @@ process GENOTYPE_MATCHER{
 process VIREO {
     tag "${samplename}"
     label 'medium_cpus'
-    publishDir "${params.outdir}/deconvolution/vireo/vireo_raw/${samplename}/",  mode: "${params.vireo.copy_mode}", overwrite: true,
+    publishDir "${params.outdir.value}/deconvolution/vireo/vireo_raw/${samplename}/",  mode: "${params.vireo.copy_mode}", overwrite: true,
 	  saveAs: {filename -> filename == 'versions.yml' ? null : filename.replaceFirst("vireo_${samplename}/","") }
 
 
@@ -307,7 +307,7 @@ process POSTPROCESS_SUMMARY{
 
 process CAPTURE_VIREO{
   label 'process_tiny'
-  publishDir "${params.outdir}/deconvolution/vireo/vireo_raw/",  mode: "${params.copy_mode}", overwrite: true,
+  publishDir "${params.outdir.value}/deconvolution/vireo/vireo_raw/",  mode: "${params.copy_mode.value}", overwrite: true,
   saveAs: {filename -> filename == 'versions.yml' ? null : filename.replaceFirst("vireo_/","") }
 
   input:
@@ -334,11 +334,11 @@ process CAPTURE_VIREO{
 process VIREO_SUBSAMPLING_PROCESSING{
     tag "${samplename}"
     label 'medium_cpus'
-    publishDir  path: "${params.outdir}/deconvolution/concordances/${samplename}",
+    publishDir  path: "${params.outdir.value}/deconvolution/concordances/${samplename}",
                 saveAs: { filename -> 
                   filename == 'versions.yml' ? null : filename 
                 },
-                mode: "${params.copy_mode}",
+                mode: "${params.copy_mode.value}",
                 overwrite: "true"
 
 

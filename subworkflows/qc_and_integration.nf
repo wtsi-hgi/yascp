@@ -31,10 +31,10 @@ workflow QC_AND_INTEGRATION {
         Channel.empty().set { ch_versions }
         Channel.empty().set { ch_validation }
 
-        if (params.cell_hard_filters){
+        if (params.cell_hard_filters.value){
             if(params.sample_qc.cell_filters.experiment.value != '' | params.sample_qc.cell_filters.all_samples.value != '' | params.sample_qc.downsample_cells_fraction.value != '' | params.sample_qc.downsample_cells_n.value != '' | params.sample_qc.downsample_feature_counts.value != ''){
                 log.info """---Flagging/filtering hard filters.----"""
-                CELL_HARD_FILTERS(file__anndata_merged,params.hard_filters_drop)
+                CELL_HARD_FILTERS(file__anndata_merged,params.hard_filters_drop.value)
                 ch_versions = ch_versions.mix(CELL_HARD_FILTERS.out.versions)
                 file__anndata_merged = CELL_HARD_FILTERS.out.anndata
             }
@@ -44,14 +44,14 @@ workflow QC_AND_INTEGRATION {
         if (params.sample_qc.cell_filters.filter_outliers.run_process) {
             log.info """---Running automatic outlier cell filtering.----"""
             OUTLIER_FILTER(
-                params.outdir,
+                params.outdir.value,
                 file__anndata_merged,
                 file__cells_filtered,
                 params.sample_qc.cell_filters.filter_outliers.outliers_fraction,
                 params.sample_qc.cell_filters.filter_outliers.max_samples,
-                params.anndata_compression_opts,
+                params.anndata_compression_opts.value,
                 gt_outlier_input,
-                params.sample_qc.gt_match_based_adaptive_qc_exclusion_pattern,
+                params.sample_qc.gt_match_based_adaptive_qc_exclusion_pattern.value,
                 params.sample_qc.cell_filters.filter_outliers.methods_thresholds
             )
             ch_versions = ch_versions.mix(CELL_HARD_FILTERS.out.versions)
@@ -64,7 +64,7 @@ workflow QC_AND_INTEGRATION {
         }
         
         
-        if (params.normalise_andata){
+        if (params.normalise_andata.value){
             log.info """---Normalising data For data clustering and integration.----"""
 
             if(params.normalise.gene_filters.genes_exclude == ''){
@@ -136,7 +136,7 @@ workflow QC_AND_INTEGRATION {
 
         }else{
             andata = file__anndata_merged
-            outdir = "${params.outdir}"
+            outdir = "${params.outdir.value}"
             LI4 = Channel.of([1, 'dummy_lisi'])
         }
 
@@ -339,7 +339,7 @@ workflow QC_AND_INTEGRATION {
         }
 
 
-        if (params.dont_integrate_just_cluster){
+        if (params.dont_integrate_just_cluster.value){
             DONT_INTEGRATE(
                 PCA.out.outdir,
                 PCA.out.anndata,

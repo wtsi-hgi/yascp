@@ -93,11 +93,11 @@ process SUBSET_BAM_PER_BARCODES{
         container "${params.yascp_container_docker}"
     }
 
-    publishDir  path: "${params.outdir}/handover/Donor_Quantification/${sample}",
+    publishDir  path: "${params.outdir.value}/handover/Donor_Quantification/${sample}",
                 saveAs: { filename -> 
                     filename == 'versions.yml' ? null : filename 
                 },
-                mode: "${params.copy_mode}",
+                mode: "${params.copy_mode.value}",
                 overwrite: "true"
 
     input:

@@ -15,7 +15,7 @@ process SCCAF_ASSESS_CLUSTERING {
               saveAs: { filename -> 
                 filename == 'versions.yml' ? null : filename 
               },
-             mode: "${params.copy_mode}",
+             mode: "${params.copy_mode.value}",
              overwrite: "true"
 
   when:
@@ -71,7 +71,7 @@ process SCCAF_OPTIMIZE_CLUSTERING {
 
   publishDir path: "${outdir}",
              saveAs: {filename -> filename == 'versions.yml' ? null : outfil_prfx.plus(filename)},
-             mode: "${params.copy_mode}",
+             mode: "${params.copy_mode.value}",
              overwrite: "true"
              //saveAs: {filename -> outfil_prfx.plus(filename)},
 

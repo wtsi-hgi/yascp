@@ -101,7 +101,7 @@ process GENERATE_FINAL_UMAPS{
             saveAs: { filename -> 
                 filename == 'versions.yml' ? null : filename 
             },
-              mode: "${params.copy_mode}",
+              mode: "${params.copy_mode.value}",
               overwrite: "true"
   input:
     path(file__anndata)
@@ -158,7 +158,7 @@ process UMAP_GATHER {
                         filename.replaceAll("-", "")
                     }
                 },
-                mode: "${params.copy_mode}",
+                mode: "${params.copy_mode.value}",
                 overwrite: "true"
 
     input:
@@ -217,7 +217,7 @@ process UMAP_PLOT_SWARM {
                 saveAs: { filename -> 
                     filename == 'versions.yml' ? null : filename 
                 },
-                mode: "${params.copy_mode}",
+                mode: "${params.copy_mode.value}",
                 overwrite: "true"
 
     input:
@@ -280,7 +280,7 @@ process UMAP_CALCULATE_AND_PLOT {
                 saveAs: { filename -> 
                     filename == 'versions.yml' ? null : filename 
                 },
-                mode: "${params.copy_mode}",
+                mode: "${params.copy_mode.value}",
                 overwrite: "true"
 
     input:

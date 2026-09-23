@@ -14,14 +14,14 @@ workflow AMBIENT_RNA {
     main:
         Channel.empty().set { ch_versions }
         Channel.empty().set { ch_validation }
-        log.info params.input_data_table
+        log.info params.input_data_table.value
         log.info """---Running Cellbender pipeline ---"""
         
         // LOGIC TO capture CELLBENDER THAT HAS ALREADY BEEN PERFORMED AND ONLY PROCESS NEW SAMPLES
         // NEEDED SINCE CELLBENDER IS A LONG PROCESS AND QUITE OFTEN THIS IS REDUNDANT IF 50/100 SAMPLES HAVE ALREADY PERFORMED THIS PROCESS.
         // Capture previously processed CellBender outputs and raw input paths that were already used
 
-        CAPTURE_CELLBENDER_FILES(params.cellbender_location,"${params.outdir}/preprocessing",params.input_data_table)
+        CAPTURE_CELLBENDER_FILES(params.cellbender_location.value,"${params.outdir.value}/preprocessing",params.input_data_table.value)
         ch_versions = ch_versions.mix(CAPTURE_CELLBENDER_FILES.out.versions)
         CAPTURE_CELLBENDER_FILES.out.alt_input_unfiltered.flatten()
             .map{ sample -> tuple("${sample}".replaceFirst(/.*\/captured\/unfiltered\//,"").replaceFirst(/\/.*/,""), sample) }

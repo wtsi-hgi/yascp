@@ -63,7 +63,7 @@ workflow CLUSTERING {
         )
         ch_versions = ch_versions.mix(PLOT_KNOWN_MARKERS.out.versions)
         
-        if (params.cluster_validate_resolution_keras){
+        if (params.cluster_validate_resolution_keras.value){
             CLUSTER_VALIDATE_RESOLUTION_KERAS( 
                 CLUSTER.out.outdir,
                 CLUSTER.out.anndata,
@@ -105,7 +105,7 @@ workflow CLUSTERING {
         ch_versions = ch_versions.mix(UMAP_CALCULATE_AND_PLOT.out.versions)
         dummy_output=UMAP_CALCULATE_AND_PLOT.out.dummy_output
         // // Find marker genes for clusters
-        if (params.cluster_markers){
+        if (params.cluster_markers.value){
             CLUSTER_MARKERS(
                 CLUSTER.out.outdir,
                 CLUSTER.out.anndata,

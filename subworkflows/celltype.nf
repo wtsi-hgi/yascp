@@ -9,7 +9,7 @@ include { CONVERT_MTX_TO_H5AD; CONVERT_H5AD_TO_MTX } from "$projectDir/modules/l
 process CELLTYPE_FILE_MERGE{
     tag "${samplename}"    
     label 'process_high'
-    publishDir  path: "${params.outdir}/celltype_assignment/",
+    publishDir  path: "${params.outdir.value}/celltype_assignment/",
             saveAs: {filename ->
                     if (filename.contains("adata.h5ad")) {
                         null
@@ -21,10 +21,10 @@ process CELLTYPE_FILE_MERGE{
                         filename
                     }
                 },
-            mode: "${params.copy_mode}",
+            mode: "${params.copy_mode.value}",
             overwrite: "true"  
 
-    publishDir  path: "${params.outdir}/handover/merged_h5ad/",
+    publishDir  path: "${params.outdir.value}/handover/merged_h5ad/",
             saveAs: {filename ->
                     if (filename.contains("adata.h5ad")) {
                         filename = "2.celltype_anotated_merged.h5ad"
@@ -36,7 +36,7 @@ process CELLTYPE_FILE_MERGE{
                         null
                     }
                 },
-            mode: "${params.copy_mode}",
+            mode: "${params.copy_mode.value}",
             overwrite: "true"  
 
 
@@ -102,7 +102,7 @@ workflow CELLTYPE{
             file__anndata_merged_post = CONVERT_MTX_TO_H5AD(file__anndata_merged).gex_h5ad
         }else{
             log.info '---Splitting the assignment for each batch---'
-            SPLIT_BATCH_H5AD(file__anndata_merged,params.doublet_celltype_split_column)
+            SPLIT_BATCH_H5AD(file__anndata_merged,params.doublet_celltype_split_column.value)
             ch_versions = ch_versions.mix(SPLIT_BATCH_H5AD.out.versions)
             SPLIT_BATCH_H5AD.out.sample_file
                 .splitCsv(header: true, sep: "\t", by: 1)
@@ -125,7 +125,7 @@ workflow CELLTYPE{
 
 
         // Keras celltype assignemt
-        if (params.celltype_assignment.run_keras){
+        if (params.celltype_assignment.run_keras.value){
             KERAS_CELLTYPE(ch_experiment_filth5,params.celltype_prediction.keras.keras_model,params.celltype_prediction.keras.keras_weights_df) 
             ch_versions = ch_versions.mix(KERAS_CELLTYPE.out.versions)
             all_extra_fields3 = KERAS_CELLTYPE.out.predicted_celltype_labels.collect()
@@ -135,14 +135,14 @@ workflow CELLTYPE{
         }
         
         // AZIMUTH
-        if (params.celltype_assignment.run_azimuth){
-            if (params.atac){
+        if (params.celltype_assignment.run_azimuth.value){
+            if (params.atac.value){
                 // Comented out here because its failing with a missing index file issue caused by software versions - 
                 // fixed it by installing a previous version of Seurat and Signac https://github.com/satijalab/azimuth/issues/211. But the container has to be updated to work.
-                // AZIMUTH_ATAC(file__anndata_merged,params.mapping_file,Channel.fromList( params.azimuth.celltype_atac_refsets))
+                // AZIMUTH_ATAC(file__anndata_merged,params.mapping_file.value,Channel.fromList( params.azimuth.celltype_atac_refsets))
                 az_out = Channel.from("$projectDir/assets/fake_file1.fq")
             }else{
-                AZIMUTH(file__anndata_merged,params.mapping_file,Channel.fromList( params.azimuth.celltype_refsets))
+                AZIMUTH(file__anndata_merged,params.mapping_file.value,Channel.fromList( params.azimuth.celltype_refsets))
                 ch_versions = ch_versions.mix(AZIMUTH.out.versions)
                 az_out = AZIMUTH.out.predicted_celltype_labels
                     .ifEmpty { "$projectDir/assets/fake_file1.fq" }
@@ -154,7 +154,7 @@ workflow CELLTYPE{
         }
         
         // CELLTYPIST
-        if (params.celltype_assignment.run_celltypist){
+        if (params.celltype_assignment.run_celltypist.value){
             Channel.fromList(params.celltypist.models)
                 .set{ch_celltypist_models}
             CELLTYPIST(ch_experiment_filth5.combine(ch_celltypist_models))
@@ -166,7 +166,7 @@ workflow CELLTYPE{
         }
 
         // // SCPRED
-        if (params.celltype_assignment.run_scpred){
+        if (params.celltype_assignment.run_scpred.value){
             SCPRED(ch_experiment_filth5,params.scpred.reference)
             ch_versions = ch_versions.mix(SCPRED.out.versions)
             sc_out2 = SCPRED.out.predicted_celltype_labels.collect()

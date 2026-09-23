@@ -1,11 +1,11 @@
 process KERAS_CELLTYPE {
 
     tag { "${experiment_id}" }
-    publishDir  path: "${params.outdir}/celltype_assignment/keras_celltype/${experiment_id}/",
+    publishDir  path: "${params.outdir.value}/celltype_assignment/keras_celltype/${experiment_id}/",
         saveAs: { filename -> 
             filename == 'versions.yml' ? null : filename 
         },
-        mode: "${params.copy_mode}",
+        mode: "${params.copy_mode.value}",
         overwrite: "true"
 
     label 'process_high_memory'
@@ -47,7 +47,7 @@ process KERAS_CELLTYPE {
             --keras_model_cluster_labels \"${params.celltype_prediction.keras.keras_model_cluster_labels}\" \\
             --filter_top_cell_probabilities \"${params.celltype_prediction.keras.filter_top_cell_probabilities}\" \\
             ${params.celltype_prediction.keras.save_all_probabilities} \\
-            --output_file \"${experiment_id}___cellbender_fpr${params.cellbender_resolution_to_use}-scrublet-ti_freeze003_prediction\" 
+            --output_file \"${experiment_id}___cellbender_fpr${params.cellbender_resolution_to_use.value}-scrublet-ti_freeze003_prediction\" 
 
             cat <<-END_VERSIONS > versions.yml
             "${task.process}":

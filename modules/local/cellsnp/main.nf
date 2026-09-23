@@ -1,6 +1,6 @@
 process CAPTURE_CELLSNP_FILES{
 
-  publishDir  path: "${params.outdir}/deconvolution/",
+  publishDir  path: "${params.outdir.value}/deconvolution/",
         saveAs: {filename ->
         File file = new File(filename)
         if (filename == "output_cellsnp.csv" || filename == "existing_cellsnp_do_not_save") {
@@ -20,7 +20,7 @@ process CAPTURE_CELLSNP_FILES{
     path(cellsnp_location) optional true
   script:
   """
-    echo '${params.cellsnp_recapture}'
+    echo '${params.cellsnp_recapture.value}'
     echo "deconvolution_test"
     for OUTPUT in \$(ls ${cellsnp_location}); do
         if [ ${cellsnp_location} == "existing_cellsnp" ] && [ -d ${cellsnp_location} ]; then
@@ -49,8 +49,8 @@ process DYNAMIC_DONOR_EXCLUSIVE_SNP_SELECTION{
     } else {
         container "${params.yascp_container_docker}"
     }
-    publishDir "${params.outdir}/deconvolution/cellsnp/cellsnp_${samplename}",
-      mode: "${params.copy_mode}", pattern: "cellsnp_${samplename}", overwrite: true
+    publishDir "${params.outdir.value}/deconvolution/cellsnp/cellsnp_${samplename}",
+      mode: "${params.copy_mode.value}", pattern: "cellsnp_${samplename}", overwrite: true
     
     input: 
         val(add_dynamic_sites_or_not_to_panel)
@@ -96,7 +96,7 @@ process DYNAMIC_DONOR_EXCLUSIVE_SNP_SELECTION{
 
 process MPILEUP {
     label 'deduplication'
-    publishDir "${params.outdir}/deconvolution/mpileup",
+    publishDir "${params.outdir.value}/deconvolution/mpileup",
       saveAs: { filename -> 
         filename == 'versions.yml' ? null : filename 
       }, 
@@ -125,7 +125,7 @@ process MPILEUP {
         
         bcftools mpileup \
         -f "\$ref_fa" \
-        -q 20 -Q 20 ${params.mpileup_extra_options} \
+        -q 20 -Q 20 ${params.mpileup_extra_options.value} \
         -Ou ${bam} | \
         bcftools call -mv -V indels --ploidy 2 -Ov -o ${sample_id}__piled_up_reads.vcf
 
@@ -183,8 +183,8 @@ process CELLSNP {
     
     label 'many_cores_small_mem'
     
-    publishDir "${params.outdir}/deconvolution/cellsnp/",
-      mode: "${params.copy_mode}", pattern: "cellsnp_${samplename}", overwrite: true
+    publishDir "${params.outdir.value}/deconvolution/cellsnp/",
+      mode: "${params.copy_mode.value}", pattern: "cellsnp_${samplename}", overwrite: true
 
     
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
@@ -213,7 +213,7 @@ process CELLSNP {
         MAF="${params.cellsnp.min_maf}"
       }
 
-      if (params.atac){
+      if (params.atac.value){
         umi_tag=' --UMItag None '
       }else{
         umi_tag="${params.cellsnp.UMItag}"

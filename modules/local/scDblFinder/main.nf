@@ -8,7 +8,7 @@ process SC_DBLFINDER {
         container "${params.yascp_container_docker}"
     }
     
-    publishDir  path: "${params.outdir}/doublet_detection/scDblFinder",
+    publishDir  path: "${params.outdir.value}/doublet_detection/scDblFinder",
                 saveAs: { filename ->
                     if (filename.endsWith("scDblFinder_doublets_singlets.tsv")) {
                         return null
@@ -18,7 +18,7 @@ process SC_DBLFINDER {
                         return filename
                     }
                 },
-                mode: "${params.copy_mode}",
+                mode: "${params.copy_mode.value}",
                 overwrite: "true"
 
     input:
@@ -34,10 +34,10 @@ process SC_DBLFINDER {
         path("scDblFinder_${experiment_id}")
     script:
         
-        outdir = "${params.outdir}/"
+        outdir = "${params.outdir.value}/"
         outdir = "${outdir}scDblFinder"
         outfile = "${experiment_id}"
-        if (params.atac){
+        if (params.atac.value){
             atac = '--atac'
         }else{
             atac = ""

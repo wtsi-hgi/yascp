@@ -18,7 +18,7 @@ workflow DATA_HANDOVER{
         ch_versions = ch_versions.mix(GATHER_DATA.out.versions)
         gh_out  = GATHER_DATA.out.outfiles_dataset
 
-        if (params.split_bam){
+        if (params.split_bam.value){
             GATHER_DATA.out.barcodes_files.flatten().map{sample -> tuple("${sample}".replaceFirst(/.*\//,"").replaceFirst(/\..*/,""),"${sample}".replaceFirst(/.*\//,"").replaceFirst(/\.tsv.*/,""),sample)}.set{barcodes}
             barcodes.combine(sample_possorted_bam_vireo_donor_ids, by: 0).set{full_split_chanel_input}
 
@@ -28,9 +28,9 @@ workflow DATA_HANDOVER{
             ch_versions = ch_versions.mix(SUBSET_BAM_PER_BARCODES.out.versions)
         }
 
-        SUMMARY_STATISTICS_PLOTS(outdir,gh_out,params.input_data_table)
+        SUMMARY_STATISTICS_PLOTS(outdir,gh_out,params.input_data_table.value)
         ch_versions = ch_versions.mix(SUMMARY_STATISTICS_PLOTS.out.versions)
-        TRANSFER(SUMMARY_STATISTICS_PLOTS.out.summary_plots,params.rsync_to_web_file,outdir)
+        TRANSFER(SUMMARY_STATISTICS_PLOTS.out.summary_plots,params.rsync_to_web_file.value,outdir)
 
     emit:
         versions = ch_versions

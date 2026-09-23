@@ -7,7 +7,7 @@ include {
 } from "./functions.nf"
 
 // Set default parameters.
-outdir           = "${params.outdir}/preprocessing"
+outdir           = "${params.outdir.value}/preprocessing"
 
 workflow CELLBENDER {
     take:
@@ -30,7 +30,7 @@ workflow CELLBENDER {
 
         outdir =  outdir+'/cellbender'
 
-        bc_in = Channel.fromList( params.cellbender_rb.per_sample_thresholds)
+        bc_in = Channel.fromList( params.cellbender_rb.per_sample_thresholds.value)
         bc_in.map{row -> tuple(
             row.name,
             row.total_droplets_included == "" ? '0' : row.total_droplets_included ,
@@ -72,7 +72,7 @@ workflow CELLBENDER {
         low_count_threshold_to_use = params.cellbender_rb.low_count_threshold.value
 
 
-        bc_in = Channel.fromList( params.cellbender_rb.per_sample_thresholds)
+        bc_in = Channel.fromList( params.cellbender_rb.per_sample_thresholds.value)
         bc_in.map{row -> tuple(
             row.name,
             row.low_count_threshold == "" ? params.cellbender_rb.low_count_threshold.value : row.low_count_threshold ,
@@ -104,7 +104,7 @@ workflow CELLBENDER {
         
         filteredChan = cellbender_ambient_rna_input
         .filter { tuple ->
-            !params.cellbender_ignore_list.contains(tuple[0])
+            !params.cellbender_ignore_list.value.contains(tuple[0])
         }
 
 

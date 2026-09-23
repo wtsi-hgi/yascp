@@ -279,10 +279,10 @@ class NfcoreSchema {
                                     schema_value = params_value
                                 }
                             }
-                            if (schema_value.contains('$params.outdir') || schema_value.contains('${params.outdir}')) {
-                                def sub_string = schema_value.replace('\$params.outdir', '')
-                                sub_string     = sub_string.replace('\${params.outdir}', '')
-                                if ("${params.outdir}${sub_string}" == params_value) {
+                            if (schema_value.contains('$params.outdir.value') || schema_value.contains('${params.outdir.value}')) {
+                                def sub_string = schema_value.replace('\$params.outdir.value', '')
+                                sub_string     = sub_string.replace('\${params.outdir.value}', '')
+                                if ("${params.outdir.value}${sub_string}" == params_value) {
                                     schema_value = params_value
                                 }
                             }

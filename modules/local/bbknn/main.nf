@@ -45,7 +45,7 @@ process BBKNN{
                         filename.replaceAll("-", "")
                     }
                 },
-                mode: "${params.copy_mode}",
+                mode: "${params.copy_mode.value}",
                 overwrite: "true"
 
     input:

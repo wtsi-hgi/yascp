@@ -10,22 +10,22 @@ workflow DECONV_INPUTS{
         PREPARE_INPUTS
     main:
         cellbender_path
-            .map{row->tuple(row[0], file("${row[1]}".replaceFirst(/.*results/,"${params.outdir}")))}
+            .map{row->tuple(row[0], file("${row[1]}".replaceFirst(/.*results/,"${params.outdir.value}")))}
             .set{ch_experiment_filth5} // this channel is used for task 'split_donor_h5ad'
             
         PREPARE_INPUTS.out.ch_experiment_bam_bai_barcodes.map { experiment, bam, bai, barcodes -> tuple(experiment,
                             bam,
                             bai)}.set{pre_ch_experiment_bam_bai_barcodes}
 
-        cellbender_path.map{row->tuple(row[0], file("${row[1]}".replaceFirst(/.*results/,"${params.outdir}")+'/barcodes.tsv.gz'))}.set{barcodes}
+        cellbender_path.map{row->tuple(row[0], file("${row[1]}".replaceFirst(/.*results/,"${params.outdir.value}")+'/barcodes.tsv.gz'))}.set{barcodes}
 
         channel__file_paths_10x= cellbender_path.map{row->tuple(row[0],
-                                                    file("${row[1]}".replaceFirst(/.*results/,"${params.outdir}")+'/barcodes.tsv.gz'),
-                                                    file("${row[1]}".replaceFirst(/.*results/,"${params.outdir}")+'/features.tsv.gz'),
-                                                    file("${row[1]}".replaceFirst(/.*results/,"${params.outdir}")+'/matrix.mtx.gz'))}
+                                                    file("${row[1]}".replaceFirst(/.*results/,"${params.outdir.value}")+'/barcodes.tsv.gz'),
+                                                    file("${row[1]}".replaceFirst(/.*results/,"${params.outdir.value}")+'/features.tsv.gz'),
+                                                    file("${row[1]}".replaceFirst(/.*results/,"${params.outdir.value}")+'/matrix.mtx.gz'))}
 
         channel__file_paths_10x_single = cellbender_path.map{row->tuple(row[0],
-                                                    file("${row[1]}".replaceFirst(/.*results/,"${params.outdir}"))
+                                                    file("${row[1]}".replaceFirst(/.*results/,"${params.outdir.value}"))
                                                     )}
         pre_ch_experiment_bam_bai_barcodes.combine(barcodes, by: 0).set{ch_experiment_bam_bai_barcodes}
     emit:
@@ -48,16 +48,16 @@ workflow PREPARE_INPUTS {
         
 
         channel_input_data_table
-            .splitCsv(header: true, sep: params.input_tables_column_delimiter)
+            .splitCsv(header: true, sep: params.input_tables_column_delimiter.value)
             .map{row->tuple(row.experiment_id, row.n_pooled)}
             .set{ch_experiment_npooled}
 
         chanel_cr_outs = channel_input_data_table
-            .splitCsv(header: true, sep: params.input_tables_column_delimiter)
+            .splitCsv(header: true, sep: params.input_tables_column_delimiter.value)
             .map{row -> file(row.data_path_10x_format)}
 
         channel_input_data_table
-            .splitCsv(header: true, sep: params.input_tables_column_delimiter)
+            .splitCsv(header: true, sep: params.input_tables_column_delimiter.value)
             .map{ row ->
                 def bam_file = file("${row.data_path_10x_format}/possorted_genome_bam.bam")
                 def bam_file_atac = file("${row.data_path_10x_format}/gex_possorted_bam.bam")
@@ -73,7 +73,7 @@ workflow PREPARE_INPUTS {
             .set{pre_ch_experiment_bam_barcodes}
 
         channel__file_paths_10x =  channel_input_data_table
-            .splitCsv(header: true, sep: params.input_tables_column_delimiter)
+            .splitCsv(header: true, sep: params.input_tables_column_delimiter.value)
             .map{row -> tuple(
             row.experiment_id,
             file("${row.data_path_10x_format}/filtered_feature_bc_matrix/barcodes.tsv.gz"),
@@ -82,7 +82,7 @@ workflow PREPARE_INPUTS {
         )}
 
         channel__metadata = channel_input_data_table
-            .splitCsv(header: true, sep: params.input_tables_column_delimiter)
+            .splitCsv(header: true, sep: params.input_tables_column_delimiter.value)
             .map { row -> 
                 def metrics_csv = file("${row.data_path_10x_format}/metrics_summary.csv")
                 def fallback_tsv = file("${row.data_path_10x_format}/summary.csv")
@@ -94,7 +94,7 @@ workflow PREPARE_INPUTS {
             }
 
         channel_dsb = channel_input_data_table
-            .splitCsv(header: true, sep: params.input_tables_column_delimiter)
+            .splitCsv(header: true, sep: params.input_tables_column_delimiter.value)
             .map{row -> tuple(row.experiment_id, file(row.data_path_10x_format+'/raw_feature_bc_matrix'),file(row.data_path_10x_format+'/filtered_feature_bc_matrix'))}
 
         PREP_COLLECTMETADATA(channel__metadata)
@@ -103,18 +103,18 @@ workflow PREPARE_INPUTS {
         channel__metadata=MERGE_METADATA.out.metadata
 
         channel_input_data_table
-            .splitCsv(header: true, sep: params.input_tables_column_delimiter)
+            .splitCsv(header: true, sep: params.input_tables_column_delimiter.value)
             .map{row -> tuple(row.experiment_id, file(row.data_path_10x_format+'/raw_feature_bc_matrix'))}.set{ch_experimentid_paths10x_raw}
 
         channel_input_data_table
-            .splitCsv(header: true, sep: params.input_tables_column_delimiter)
+            .splitCsv(header: true, sep: params.input_tables_column_delimiter.value)
             .map{row -> tuple(row.experiment_id, file(row.data_path_10x_format+'/filtered_feature_bc_matrix'))}.set{ch_experimentid_paths10x_filtered}
 
 
         if (params.split_h5ad_per_donor.run) {
-            log.info "params.split_h5ad_per_donor.run=true: create pre_ch_experiment_filth5 from params.input_tables_column_delimiter"
+            log.info "params.split_h5ad_per_donor.run=true: create pre_ch_experiment_filth5 from params.input_tables_column_delimiter.value"
             channel_input_data_table
-                .splitCsv(header: true, sep: params.input_tables_column_delimiter)
+                .splitCsv(header: true, sep: params.input_tables_column_delimiter.value)
             .map{row->tuple(row.experiment_id, "${row.data_path_10x_format}/filtered_feature_bc_matrix")}
             .set{pre_ch_experiment_filth5} // this channel is used for task 'split_donor_h5ad'
         }
@@ -125,12 +125,12 @@ workflow PREPARE_INPUTS {
         }
 
         if (params.genotype_input.run_with_genotype_input) {
-            log.info "You have selected params.vireo.run_with_genotype_input=true -> will run Vireo with genotype input. Input VCF and list of donors per experiment_id gathered from params.input_n_pooled_table)"
+            log.info "You have selected params.genotype_input.run_with_genotype_input=true -> will run Vireo with genotype input. Input VCF gathered from params.genotype_input.full_vcf_file; donors per experiment_id gathered from the donor_vcf_ids / n_pooled columns of params.input_data_table.value"
             if (params.genotype_input.subset_genotypes){
                 log.info("----We will subset genotypes to the donors listed in the donor_vcf_ids for use in the Deconvolution----")
                 // If we subset the genotypes, th ids in the donor_vcf_ids will be used to generate an individual vcf per pool.
                 channel_input_data_table
-                    .splitCsv(header: true, sep: params.input_tables_column_delimiter)
+                    .splitCsv(header: true, sep: params.input_tables_column_delimiter.value)
                     .map{row->tuple(row.experiment_id, params.genotype_input.full_vcf_file,params.genotype_input.full_vcf_file+'.csi', row.donor_vcf_ids)}
                     .set{pre_ch_experiment_donorsvcf_donorslist}
             }else{
@@ -138,7 +138,7 @@ workflow PREPARE_INPUTS {
                 // When we do not subset the genotypes, a full vcf will be fed in Vireo and soupocell assignments, but the number of pooled individuals will be used to detect the correct number of individuals in pool.
                 // in this case we have to be aware that the last number is a number of donors pooled instead of IDs as per above
                 channel_input_data_table
-                    .splitCsv(header: true, sep: params.input_tables_column_delimiter)
+                    .splitCsv(header: true, sep: params.input_tables_column_delimiter.value)
                     .map{row->tuple(row.experiment_id, params.genotype_input.full_vcf_file,params.genotype_input.full_vcf_file+'.csi', row.n_pooled)}
                     .set{pre_ch_experiment_donorsvcf_donorslist}
             }

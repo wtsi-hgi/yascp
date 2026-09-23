@@ -24,7 +24,7 @@ process ESTIMATE_PCA_ELBOW {
 
     publishDir  path: "${outdir}",
                 saveAs: {filename -> filename == 'versions.yml' ? null : filename.replaceAll("-", "")},
-                mode: "${params.copy_mode}",
+                mode: "${params.copy_mode.value}",
                 overwrite: "true"
 
     input:

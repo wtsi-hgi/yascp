@@ -59,8 +59,8 @@ process AGGREGATE_QTL_RESULTS{
     }    
     
 
-    publishDir  path: "${params.outdir}/Limix_eQTLS/${group1}__${group0}/${group2}",
-                mode: "${params.copy_mode}",
+    publishDir  path: "${params.outdir.value}/Limix_eQTLS/${group1}__${group0}/${group2}",
+                mode: "${params.copy_mode.value}",
                 overwrite: "true"
 
     input:
@@ -242,7 +242,7 @@ process CHUNK_GENOME{
 process SUBSET_GENOTYPE {
     tag "${samplename}.${sample_subset_file}"
     label 'process_medium'
-    // publishDir "${params.outdir}/subset_genotype/", mode: "${params.copy_mode}", pattern: "${samplename}.${sample_subset_file}.subset.vcf.gz"
+    // publishDir "${params.outdir.value}/subset_genotype/", mode: "${params.copy_mode.value}", pattern: "${samplename}.${sample_subset_file}.subset.vcf.gz"
     
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "${params.eqtl_container}"
@@ -280,8 +280,8 @@ process BGEN_CONVERT{
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "${params.eqtl_container}"
 
-    publishDir  path: "${params.outdir}/genotypes",
-                mode: "${params.copy_mode}",
+    publishDir  path: "${params.outdir.value}/genotypes",
+                mode: "${params.copy_mode.value}",
                 overwrite: "true"        
         
     } else {
@@ -317,8 +317,8 @@ process PLINK_CONVERT{
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "${params.eqtl_container}"
 
-    publishDir  path: "${params.outdir}/genotypes",
-                mode: "${params.copy_mode}",
+    publishDir  path: "${params.outdir.value}/genotypes",
+                mode: "${params.copy_mode.value}",
                 overwrite: "true"        
         
     } else {
@@ -359,8 +359,8 @@ process PGEN_CONVERT{
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "${params.eqtl_container}"
 
-    publishDir  path: "${params.outdir}/genotypes",
-                mode: "${params.copy_mode}",
+    publishDir  path: "${params.outdir.value}/genotypes",
+                mode: "${params.copy_mode.value}",
                 overwrite: "true"        
         
     } else {
@@ -417,14 +417,14 @@ process PREPROCESS_SAMPLE_MAPPING{
     
 }-e 
 ===== /lustre/scratch124/humgen/projects_v2/cardinal_analysis/analysis/mo11/mo11_tmp_work/qtlight_tests/v7__add_jax/QTLight_v1.80/modules/local/tensorqtl/processes.nf =====
-tensor_label = params.utilise_gpu ? 'gpu' : "process_medium"   
+tensor_label = params.utilise_gpu.value ? 'gpu' : "process_medium"   
 
 process TENSORQTL {  
     label "${tensor_label}"
     tag "$condition, $interaction, $nr_phenotype_pcs"
     // cache false
     
-    publishDir  path: "${params.outdir}/TensorQTL_eQTLS/${condition}/",
+    publishDir  path: "${params.outdir.value}/TensorQTL_eQTLS/${condition}/",
                 overwrite: "true"
   
 
@@ -521,7 +521,7 @@ process TENSORQTL {
     """
 }-e 
 ===== /lustre/scratch124/humgen/projects_v2/cardinal_analysis/analysis/mo11/mo11_tmp_work/qtlight_tests/v7__add_jax/QTLight_v1.80/modules/local/tensorqtl/main.nf =====
-tensor_label = params.utilise_gpu ? 'gpu' : "process_medium"   
+tensor_label = params.utilise_gpu.value ? 'gpu' : "process_medium"   
 
 include { TENSORQTL as TENSORQTL } from './processes.nf'
 include { TENSORQTL as TENSORQTL_OPTIM } from './processes.nf'
@@ -563,8 +563,8 @@ process OPTIMISE_PCS{
     errorStrategy 'ignore'
 
 
-    publishDir  path: "${params.outdir}/TensorQTL_eQTLS/${condition}/",
-                mode: "${params.copy_mode}",
+    publishDir  path: "${params.outdir.value}/TensorQTL_eQTLS/${condition}/",
+                mode: "${params.copy_mode.value}",
                 overwrite: "true"
 
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
@@ -584,7 +584,7 @@ process OPTIMISE_PCS{
         
 
     script:
-        sumstats_path = "${params.outdir}/TensorQTL_eQTLS/${condition}/"
+        sumstats_path = "${params.outdir.value}/TensorQTL_eQTLS/${condition}/"
         if ("${interaction}" != 'base') {
             interaction_file = "${interaction}.tsv"
             outpath_end = "interaction_output__${interaction}"
@@ -615,8 +615,8 @@ process TRANS_BY_CIS {
       container "${params.eqtl_docker}"
     }
 
-    publishDir  path: "${params.outdir}/TensorQTL_eQTLS/${condition}/OPTIM_pcs",
-                mode: "${params.copy_mode}",
+    publishDir  path: "${params.outdir.value}/TensorQTL_eQTLS/${condition}/OPTIM_pcs",
+                mode: "${params.copy_mode.value}",
                 overwrite: "true"
 
     input:
@@ -693,8 +693,8 @@ process TRANS_OF_CIS {
       container "${params.eqtl_docker}"
     }
 
-    publishDir  path: "${params.outdir}/TensorQTL_eQTLS/${condition}/TRANS_BY_CIS",
-                mode: "${params.copy_mode}",
+    publishDir  path: "${params.outdir.value}/TensorQTL_eQTLS/${condition}/TRANS_BY_CIS",
+                mode: "${params.copy_mode.value}",
                 overwrite: "true"
 
     input:
@@ -791,7 +791,7 @@ process RUN_GSEA {
     tag "$condition, $interaction"
     // cache false
 
-    publishDir  path: "${params.outdir}/TensorQTL_eQTLS/${condition}/OPTIM_pcs/interaction_output/${interaction}/fgsea",
+    publishDir  path: "${params.outdir.value}/TensorQTL_eQTLS/${condition}/OPTIM_pcs/interaction_output/${interaction}/fgsea",
                 overwrite: "true"
 
     input:
@@ -918,7 +918,7 @@ workflow TENSORQTL_eqtls{
 process KINSHIP_CALCULATION {
     tag "${samplename}.${sample_subset_file}"
     label 'process_medium'
-    publishDir "${params.outdir}/subset_genotype/", mode: "${params.copy_mode}", pattern: "${samplename}.${sample_subset_file}.subset.vcf.gz"
+    publishDir "${params.outdir.value}/subset_genotype/", mode: "${params.copy_mode.value}", pattern: "${samplename}.${sample_subset_file}.subset.vcf.gz"
     
     
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
@@ -1064,8 +1064,8 @@ process PREPROCESS_GENOTYPES{
         container "${params.eqtl_docker}"
     }
 
-    publishDir  path: "${params.outdir}/genotypes",
-                mode: "${params.copy_mode}",
+    publishDir  path: "${params.outdir.value}/genotypes",
+                mode: "${params.copy_mode.value}",
                 overwrite: "true"       
                 
     input:
@@ -1092,8 +1092,8 @@ process SUBSET_PCS{
     scratch false      // use tmp directory
     label 'process_medium'
 
-    publishDir  path: "${params.outdir}/norm_data/${condition}",
-                mode: "${params.copy_mode}",
+    publishDir  path: "${params.outdir.value}/norm_data/${condition}",
+                mode: "${params.copy_mode.value}",
                 overwrite: "true"
 
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
@@ -1153,7 +1153,7 @@ process SPLIT_AGGREGATION_ADATA {
 
 process ORGANISE_AGGREGATED_FILES{
 
-  publishDir  path: "${params.outdir}/aggregated_counts/${sanitized_columns}",mode: "${params.copy_mode}",
+  publishDir  path: "${params.outdir.value}/aggregated_counts/${sanitized_columns}",mode: "${params.copy_mode.value}",
               overwrite: "true"
     label 'process_medium'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
@@ -1183,7 +1183,7 @@ process ORGANISE_AGGREGATED_FILES{
 }
 
 process AGGREGATE_UMI_COUNTS {
-  publishDir  path: "${params.outdir}/aggregated_counts/${sanitized_columns}",mode: "${params.copy_mode}",
+  publishDir  path: "${params.outdir.value}/aggregated_counts/${sanitized_columns}",mode: "${params.copy_mode.value}",
               overwrite: "true"
     label 'process_medium'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
@@ -1221,7 +1221,7 @@ process AGGREGATE_UMI_COUNTS {
 
 
 process NORMALISE_ANNDATA {
-    publishDir  path: "${params.outdir}/normalise_anndata/${sanitized_columns}",mode: "${params.copy_mode}",
+    publishDir  path: "${params.outdir.value}/normalise_anndata/${sanitized_columns}",mode: "${params.copy_mode.value}",
                 overwrite: "true"
     if ("${params.dMean_norm_method}"=='NONE'){
       label 'process_low'
@@ -1260,7 +1260,7 @@ process NORMALISE_ANNDATA {
 
 
 process REMAP_GENOTPE_ID{
-    publishDir  path: "${params.outdir}/norm_data/${sanitized_columns}_${prefix}",
+    publishDir  path: "${params.outdir.value}/norm_data/${sanitized_columns}_${prefix}",
                 overwrite: "true"
     label 'process_low'
 
@@ -1290,7 +1290,7 @@ process REMAP_GENOTPE_ID{
 process GENOTYPE_PC_CALCULATION {
     tag "${samplename}.${sample_subset_file}"
     label 'process_medium'
-    publishDir "${params.outdir}/subset_genotype/", mode: "${params.copy_mode}", pattern: "${samplename}.${sample_subset_file}.subset.vcf.gz"
+    publishDir "${params.outdir.value}/subset_genotype/", mode: "${params.copy_mode.value}", pattern: "${samplename}.${sample_subset_file}.subset.vcf.gz"
     
     
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
@@ -1390,8 +1390,8 @@ process NORMALISE_and_PCA_PHENOTYPE{
     scratch false      // use tmp directory
     label 'process_medium'
 
-    publishDir  path: "${params.outdir}/norm_data/${condition}__${prefix}",
-                mode: "${params.copy_mode}",
+    publishDir  path: "${params.outdir.value}/norm_data/${condition}__${prefix}",
+                mode: "${params.copy_mode.value}",
                 overwrite: "true"
 
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
@@ -1437,8 +1437,8 @@ process AGGREGATE_QTL_RESULTS{
     }    
     
 
-    publishDir  path: "${params.outdir}/JAX_eQTLS/${group0}__${group1}__${group2}/${group4}",
-                mode: "${params.copy_mode}",
+    publishDir  path: "${params.outdir.value}/JAX_eQTLS/${group0}__${group1}__${group2}/${group4}",
+                mode: "${params.copy_mode.value}",
                 overwrite: "true"
 
     input:
@@ -1473,8 +1473,8 @@ process OPTIM_PCS{
     }    
     
 
-    publishDir  path: "${params.outdir}/JAX_eQTLS/${condition}/OPTIM_PCs",
-                mode: "${params.copy_mode}",
+    publishDir  path: "${params.outdir.value}/JAX_eQTLS/${condition}/OPTIM_PCs",
+                mode: "${params.copy_mode.value}",
                 overwrite: "true"
 
     input:
@@ -1607,7 +1607,7 @@ process JAXQTL {
     }
 
 
-    publishDir path: { "${params.outdir}/JAX_eQTLS/${group0}__${group1}__${group2}/OPTIM_PCs/${mode1}" },
+    publishDir path: { "${params.outdir.value}/JAX_eQTLS/${group0}__${group1}__${group2}/OPTIM_PCs/${mode1}" },
             saveAs: {filename ->
                 if (filename.contains("cis_score.tsv.gz")) {
                     null
@@ -1615,7 +1615,7 @@ process JAXQTL {
                     filename
                 }
             },
-            mode: "${params.copy_mode}",
+            mode: "${params.copy_mode.value}",
             overwrite: true
 
     input:
@@ -2074,8 +2074,8 @@ process AGGREGATE_ACAT_RESULTS{
     }    
     
 
-    publishDir  path: "${params.outdir}/Saige_eQTLS/${exp}",
-                mode: "${params.copy_mode}",
+    publishDir  path: "${params.outdir.value}/Saige_eQTLS/${exp}",
+                mode: "${params.copy_mode.value}",
                 overwrite: "true"
 
     input:
@@ -2104,8 +2104,8 @@ process AGGREGATE_QTL_RESULTS{
     }    
     
 
-    publishDir  path: "${params.outdir}/Saige_eQTLS/${exp}",
-                mode: "${params.copy_mode}",
+    publishDir  path: "${params.outdir.value}/Saige_eQTLS/${exp}",
+                mode: "${params.copy_mode.value}",
                 overwrite: "true"
 
 
@@ -2135,8 +2135,8 @@ process AGGREGATE_QTL_ALLVARS{
     }    
     
 
-    publishDir  path: "${params.outdir}/Saige_eQTLS/${exp}",
-                mode: "${params.copy_mode}",
+    publishDir  path: "${params.outdir.value}/Saige_eQTLS/${exp}",
+                mode: "${params.copy_mode.value}",
                 overwrite: "true"
 
     input:
@@ -2205,7 +2205,7 @@ process H5AD_TO_SAIGE_FORMAT {
         sizeInGB = adata.size() / 1e9 * 1.25 * task.attempt
         return (sizeInGB ).toString() + 'GB' 
     }   
-    publishDir  path: "${params.outdir}/Saige_eQTLS",
+    publishDir  path: "${params.outdir.value}/Saige_eQTLS",
         saveAs: { filename ->
             if (filename.contains("covariates.txt")) {
                 return null
@@ -2222,7 +2222,7 @@ process H5AD_TO_SAIGE_FORMAT {
                 return null
             }
         },
-        mode: "${params.copy_mode}",
+        mode: "${params.copy_mode.value}",
         overwrite: "true"
     input:
         each path(h5ad)  

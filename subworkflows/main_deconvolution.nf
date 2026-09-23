@@ -63,7 +63,7 @@ workflow  MAIN_DECONVOLUTION {
             // Therefore we create 2 channels:
             // 1) All the expected vcf ids listed in the donor table
             log.info "# selecting SNPs and subsetting GT #"
-            Channel.fromPath(params.input_data_table,      
+            Channel.fromPath(params.input_data_table.value,      
                 followLinks: true,
                 checkIfExists: true
                 ).splitCsv(header: true, sep: '\t').map { row -> tuple(row.experiment_id, row.donor_vcf_ids) }
@@ -86,16 +86,16 @@ workflow  MAIN_DECONVOLUTION {
             //GT_MATCH_POOL_IBD(SUBSET_WORKF.out.samplename_subsetvcf_ibd,'Withing_expected','Expected')
             ch_versions = ch_versions.mix(GT_MATCH_POOL_IBD.out.versions)
 
-            if (params.use_bam_derived_cellsnp_panel){
+            if (params.use_bam_derived_cellsnp_panel.value){
                 // Here should add an option to derive panel from actual bam files as different technologies has different coverages and ceirtain panels may not work. 
-                MPILEUP(ch_experiment_bam_bai_barcodes,params.reference_assembly_fasta_dir)
+                MPILEUP(ch_experiment_bam_bai_barcodes,params.reference_assembly_fasta_dir.value)
                 mpileup_out_chanel = MPILEUP.out.pileup
 
             }
 
 
             // This takes the subset genotypes expected in the pool and select informative SNPs between them and adds them to the panel. 
-            DYNAMIC_DONOR_EXCLUSIVE_SNP_SELECTION(params.add_snps_to_pile_up_based_on_genotypes_provided,merged_expected_genotypes2)
+            DYNAMIC_DONOR_EXCLUSIVE_SNP_SELECTION(params.add_snps_to_pile_up_based_on_genotypes_provided.value,merged_expected_genotypes2)
             ch_versions = ch_versions.mix(DYNAMIC_DONOR_EXCLUSIVE_SNP_SELECTION.out.versions)
             cellsnp_panels = DYNAMIC_DONOR_EXCLUSIVE_SNP_SELECTION.out.cellsnp_pool_panel
 
@@ -113,7 +113,7 @@ workflow  MAIN_DECONVOLUTION {
         if (params.genotype_input.run_with_genotype_input) {
             // Here we provide sites to pile up the snps within the pool. 
             // As a starting point instead of the default cellsnp panel users are encouraged to:
-            if (params.provide_within_pool_donor_specific_sites_for_pilup){
+            if (params.provide_within_pool_donor_specific_sites_for_pilup.value){
                 log.info """---Running with provide_within_pool_donor_specific_sites_for_pilup ---"""
                 cellsnp_with_npooled_pre = cellsnp_with_npooled.join(cellsnp_panels, remainder: true)
                 // 
@@ -123,7 +123,7 @@ workflow  MAIN_DECONVOLUTION {
             }
             
             cellsnp_with_npooled_pre2 = cellsnp_with_npooled_pre.combine(vcf_candidate_snps)
-            if (params.use_bam_derived_cellsnp_panel){
+            if (params.use_bam_derived_cellsnp_panel.value){
                 cellsnp_with_npooled_pre = cellsnp_with_npooled.combine(mpileup_out_chanel, by: 0)
                 cellsnp_with_npooled_pre2 = cellsnp_with_npooled_pre.combine(vcf_candidate_snps)
                 cellsnp_with_npooled_pre2.subscribe { println "cellsnp_with_npooled_pre2: $it" }
@@ -146,7 +146,7 @@ workflow  MAIN_DECONVOLUTION {
         }
 
         log.info('Capturing some of the existing CELLSNP files')
-        CAPTURE_CELLSNP_FILES(params.existing_cellsnp)
+        CAPTURE_CELLSNP_FILES(params.existing_cellsnp.value)
         CAPTURE_CELLSNP_FILES.out.cellsnp_loc.splitCsv(header: false, sep: ' ')
             .map{row->tuple(row[0], "${row[1]}")}
             .set{cellsnp_output_dir1}
@@ -169,7 +169,7 @@ workflow  MAIN_DECONVOLUTION {
             CELLSNP.out.cell_vcfs.combine(DYNAMIC_DONOR_EXCLUSIVE_SNP_SELECTION.out.informative_uninformative_sites, by: 0).set{assess_call_rate_input}
             ASSESS_CALL_RATE(assess_call_rate_input)
             ch_versions = ch_versions.mix(ASSESS_CALL_RATE.out.versions)
-            COLLECT_FILE4(ASSESS_CALL_RATE.out.variants_description.collect(),"all_variants_description.tsv",params.outdir+'/deconvolution/concordances',1,'')
+            COLLECT_FILE4(ASSESS_CALL_RATE.out.variants_description.collect(),"all_variants_description.tsv",params.outdir.value+'/deconvolution/concordances',1,'')
             ch_versions = ch_versions.mix(COLLECT_FILE4.out.versions)
         }
         for_bam_pileups = CELLSNP.out.for_bam_pileups
@@ -193,8 +193,8 @@ workflow  MAIN_DECONVOLUTION {
             // log.info "---We are using subset genotypes running Vireo----"
             // We need to make sure that the expected genotypes dont contain repeated genotypes - donors sequenced twice.
 
-            if (params.genotype_phenotype_mapping_file!=''){
-                REMOVE_DUPLICATED_DONORS_FROM_GT(merged_expected_genotypes,params.genotype_phenotype_mapping_file,params.input_data_table)
+            if (params.genotype_phenotype_mapping_file.value!=''){
+                REMOVE_DUPLICATED_DONORS_FROM_GT(merged_expected_genotypes,params.genotype_phenotype_mapping_file.value,params.input_data_table.value)
                 ch_versions = ch_versions.mix(REMOVE_DUPLICATED_DONORS_FROM_GT.out.versions)
                 merged_expected_genotypes2= REMOVE_DUPLICATED_DONORS_FROM_GT.out.merged_expected_genotypes
             }else{
@@ -216,7 +216,7 @@ workflow  MAIN_DECONVOLUTION {
         }
 
 
-        CAPTURE_VIREO(params.existing_vireo)
+        CAPTURE_VIREO(params.existing_vireo.value)
         CAPTURE_VIREO.out.output_dir.flatten().map{row->tuple("${row}".replaceFirst(/.*vireo_/,""), "${row}/donor_ids.tsv")}
             .set{vireo_out_sample_donor_ids_cap}  
         CAPTURE_VIREO.out.output_dir.flatten().map{row->tuple("${row}")}
@@ -293,7 +293,7 @@ workflow  MAIN_DECONVOLUTION {
 
         split_channel5 = split_channel4.map{
             val_sample, val_donor_ids_tsv, val_filtered_matrix_h5 ->
-            [  val_sample,file(val_donor_ids_tsv),file(val_filtered_matrix_h5),params.outdir]
+            [  val_sample,file(val_donor_ids_tsv),file(val_filtered_matrix_h5),params.outdir.value]
         }
 
         SPLIT_DONOR_H5AD(split_channel5)
@@ -301,7 +301,7 @@ workflow  MAIN_DECONVOLUTION {
         PREP_ASSIGNMENTS_FILE(split_channel5)
         ch_versions = ch_versions.mix(PREP_ASSIGNMENTS_FILE.out.versions)
         cell_assignments = PREP_ASSIGNMENTS_FILE.out.cell_assignments
-        if (params.bam_pileup_per_donor){
+        if (params.bam_pileup_per_donor.value){
             bam_subset_chanel = SPLIT_DONOR_H5AD.out.sample_donor_level_barcodes.transpose().combine(for_bam_pileups_3, by: 0)
             SUBSET_BAM_PER_BARCODES_AND_VARIANTS(bam_subset_chanel)  // This process subsets the ba
             ch_versions = ch_versions.mix(SUBSET_BAM_PER_BARCODES_AND_VARIANTS.out.versions)
@@ -362,11 +362,11 @@ workflow  MAIN_DECONVOLUTION {
             gt_matches = MATCH_GENOTYPES.out.donor_match_table.collect()
 
 
-            ENHANCE_STATS_GT_MATCH(MATCH_GENOTYPES.out.donor_match_table_enhanced,params.input_data_table)
+            ENHANCE_STATS_GT_MATCH(MATCH_GENOTYPES.out.donor_match_table_enhanced,params.input_data_table.value)
             ch_versions = ch_versions.mix(ENHANCE_STATS_GT_MATCH.out.versions)
-            COLLECT_FILE5(ENHANCE_STATS_GT_MATCH.out.assignments.collect(),"assignments_all_pools.tsv",params.outdir+'/deconvolution/vireo/vireo_processed',1,'')
+            COLLECT_FILE5(ENHANCE_STATS_GT_MATCH.out.assignments.collect(),"assignments_all_pools.tsv",params.outdir.value+'/deconvolution/vireo/vireo_processed',1,'')
             ch_versions = ch_versions.mix(COLLECT_FILE5.out.versions)
-            COLLECT_FILE6(ENHANCE_STATS_GT_MATCH.out.assignments.collect(),"assignments_all_pools.tsv",params.outdir+'/deconvolution/gtmatch',1,'')
+            COLLECT_FILE6(ENHANCE_STATS_GT_MATCH.out.assignments.collect(),"assignments_all_pools.tsv",params.outdir.value+'/deconvolution/gtmatch',1,'')
             ch_versions = ch_versions.mix(COLLECT_FILE6.out.versions)
             assignments_all_pools = COLLECT_FILE5.out.output_collection
             gt_matches = Channel.from("$projectDir/assets/fake_file.fq")
@@ -393,10 +393,10 @@ workflow  MAIN_DECONVOLUTION {
         ch_versions = ch_versions.mix(COLLECT_FILE3.out.versions)
 
         if (params.genotype_input.run_with_genotype_input & params.genotype_input.posterior_assignment) {
-            if (params.extra_sample_metadata!=''){
+            if (params.extra_sample_metadata.value!=''){
                 // Here we have sample level metadata but we have chosen to keep the donor ids.
                 // in this scenario we enhance the donor level vireo metadata file to add the donor metadata to the h5ads and eventually to the donor and teanche report
-                ENHANCE_VIREO_METADATA_WITH_DONOR(params.extra_sample_metadata,vireo_out_sample__exp_summary_tsv,REPLACE_GT_DONOR_ID.out.assignments.collect())
+                ENHANCE_VIREO_METADATA_WITH_DONOR(params.extra_sample_metadata.value,vireo_out_sample__exp_summary_tsv,REPLACE_GT_DONOR_ID.out.assignments.collect())
                 ch_versions = ch_versions.mix(ENHANCE_VIREO_METADATA_WITH_DONOR.out.versions)
                 vireo_out_sample__exp_summary_tsv = ENHANCE_VIREO_METADATA_WITH_DONOR.out.replaced_vireo_exp__donor_n_cells_out
             }

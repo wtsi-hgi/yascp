@@ -20,12 +20,12 @@ process MERGE_DOUBLET_RESULTS{
         container "wtsihgi/nf_scrna_qc:6bb6af5"
     }
 
-    publishDir path: "${params.outdir}/doublet_detection/droplet_type_distribution", 
-               mode: "${params.copy_mode}", 
+    publishDir path: "${params.outdir.value}/doublet_detection/droplet_type_distribution", 
+               mode: "${params.copy_mode.value}", 
                pattern: "*.png",
                overwrite: "true"
-    publishDir path: "${params.outdir}/doublet_detection/doublet_results_combined", 
-               mode: "${params.copy_mode}", 
+    publishDir path: "${params.outdir.value}/doublet_detection/doublet_results_combined", 
+               mode: "${params.copy_mode.value}", 
                pattern: "*.tsv",
                overwrite: "true"
 
@@ -75,7 +75,7 @@ workflow MULTIPLET {
             gex_h5ad = CONVERT_MTX_TO_H5AD(channel__file_paths_10x).gex_h5ad
         }else{
             log.info '---Splitting the assignment for each batch---'
-            SPLIT_BATCH_H5AD(channel__file_paths_10x,params.doublet_celltype_split_column)
+            SPLIT_BATCH_H5AD(channel__file_paths_10x,params.doublet_celltype_split_column.value)
             ch_versions = ch_versions.mix(SPLIT_BATCH_H5AD.out.versions)
             SPLIT_BATCH_H5AD.out.sample_file
                 .splitCsv(header: true, sep: "\t", by: 1)
@@ -94,7 +94,7 @@ workflow MULTIPLET {
         if (params.filter_multiplets.scrublet.run_process){
             SCRUBLET(
                 channel__file_paths_10x,
-                params.filter_multiplets.expected_multiplet_rate,
+                params.filter_multiplets.expected_multiplet_rate.value,
                 params.filter_multiplets.scrublet.n_simulated_multiplet,
                 params.filter_multiplets.scrublet.multiplet_threshold_method,
                 params.filter_multiplets.scrublet.scale_log10
@@ -139,7 +139,7 @@ workflow MULTIPLET {
         }
 
         if (params.filter_multiplets.doubletFinder.run_process){
-            DOUBLET_FINDER(gex_h5ad,params.filter_multiplets.expected_multiplet_rate) //Done
+            DOUBLET_FINDER(gex_h5ad,params.filter_multiplets.expected_multiplet_rate.value) //Done
             ch_versions = ch_versions.mix(DOUBLET_FINDER.out.versions)
             input_channel = input_channel.mix(DOUBLET_FINDER.out.result)
             

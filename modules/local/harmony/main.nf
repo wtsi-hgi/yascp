@@ -49,7 +49,7 @@ process HARMONY{
                         filename.replaceAll("${runid}-", "")
                     }
                 },
-                mode: "${params.copy_mode}",
+                mode: "${params.copy_mode.value}",
                 overwrite: "true"
 
     input:

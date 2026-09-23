@@ -25,7 +25,7 @@ process SUBSET_GENOTYPE {
       path('*_mapping.tsv'), emit: mapping optional true
       path "versions.yml", emit: versions
     script:
-      if (params.genotype_phenotype_mapping_file==''){
+      if (params.genotype_phenotype_mapping_file.value==''){
          g_p_map = " "
       }else{
         g_p_map = " -b ${gp_map}"
@@ -57,7 +57,7 @@ process SUBSET_GENOTYPE {
 process JOIN_CHROMOSOMES{
     tag "${samplename}"
     label 'process_medium'
-    publishDir "${params.outdir}/preprocessing/subset_genotypes/", mode: "${params.copy_mode}", pattern: "${samplename}.${sample_subset_file}.subset.vcf.gz"
+    publishDir "${params.outdir.value}/preprocessing/subset_genotypes/", mode: "${params.copy_mode.value}", pattern: "${samplename}.${sample_subset_file}.subset.vcf.gz"
 
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "${params.yascp_container}"
@@ -107,7 +107,7 @@ process JOIN_CHROMOSOMES{
 
 process RESOLVE_POOL_VCFS{
     tag "${samplename}"
-    publishDir "${params.outdir}/preprocessing/subset_genotypes", mode: "${params.copy_mode}",
+    publishDir "${params.outdir.value}/preprocessing/subset_genotypes", mode: "${params.copy_mode.value}",
     saveAs: {filename ->
           if (filename.contains("AllExpectedGT")) {
             if (filename.contains("Data_Pipeline___")) {
@@ -177,7 +177,7 @@ process JOIN_STUDIES_MERGE{
 
         
         
-        if (params.just_overlapping_positions_for_study_merge){
+        if (params.just_overlapping_positions_for_study_merge.value){
           cmd__run = "overlapping_positions_vcfs.py -vcfs '${study_vcf_files}'"
           cmd="bcftools view -R Bed_File_record.bed pre_${mode}_${mode2}_\${vcf_name}__vcf.vcf.gz -Oz -o ${mode}_${mode2}_\${vcf_name}_out.vcf.gz && bcftools index ${mode}_${mode2}_\${vcf_name}_out.vcf.gz"
         }else{
@@ -236,10 +236,10 @@ workflow SUBSET_WORKF{
         grouped_chrs_poolComps.map { row -> tuple( row[0], row[1]) }.set { pools_utilising_same_subset } // Here we have a mapping file of which pools should use which genotypes.
 
         
-        if (params.genotype_phenotype_mapping_file==''){
+        if (params.genotype_phenotype_mapping_file.value==''){
           g_p_map  = Channel.from("$projectDir/assets/fake_file2.fq")
         }else{
-          g_p_map = Channel.from(params.genotype_phenotype_mapping_file)
+          g_p_map = Channel.from(params.genotype_phenotype_mapping_file.value)
         }
 
         // combined_pool_subset.subscribe {println "combined_pool_subset:= ${it}\n"}
@@ -267,7 +267,7 @@ workflow SUBSET_WORKF{
       pools_panels = RESOLVE_POOL_VCFS.out.pipeline_data
 
       if (mode=='AllExpectedGT'){
-        COLLECT_FILE(RESOLVE_POOL_VCFS.out.user_data.collect(),"Genotypes_all_pools.tsv",params.outdir+'/preprocessing/subset_genotypes',1,'')
+        COLLECT_FILE(RESOLVE_POOL_VCFS.out.user_data.collect(),"Genotypes_all_pools.tsv",params.outdir.value+'/preprocessing/subset_genotypes',1,'')
         ch_versions = ch_versions.mix(COLLECT_FILE.out.versions)
       }
       pools_panels.splitCsv(header: true, sep: '\t').map { row -> tuple(row['Pool_id'], file(row.vcf), file(row.vcf_csi)) }

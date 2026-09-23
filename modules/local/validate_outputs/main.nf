@@ -1,5 +1,5 @@
 process VALIDATE_YASCP_OUTPUTS{
-    publishDir  "${params.outdir}/validation_test/", mode: 'copy'
+    publishDir  "${params.outdir.value}/validation_test/", mode: 'copy'
     label 'process_tiny'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "${params.yascp_container}"

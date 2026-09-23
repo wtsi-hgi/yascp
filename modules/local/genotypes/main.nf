@@ -1,11 +1,11 @@
 process MERGE_GENOTYPES_IN_ONE_VCF_IDX_PAN{
 
     label 'process_medium'
-    publishDir  path: "${params.outdir}/${mode}_genotypes/${pn1}",
+    publishDir  path: "${params.outdir.value}/${mode}_genotypes/${pn1}",
           saveAs: { filename -> 
             filename == 'versions.yml' ? null : filename 
           },
-          mode: "${params.copy_mode}",
+          mode: "${params.copy_mode.value}",
           overwrite: "true"
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "${params.yascp_container}"
@@ -51,7 +51,7 @@ process MERGE_GENOTYPES_IN_ONE_VCF_IDX_PAN{
 process MERGE_GENOTYPES_IN_ONE_VCF_FREEBAYES{
 
     label 'process_medium'
-    publishDir  path: "${params.outdir}/${mode}_genotypes",
+    publishDir  path: "${params.outdir.value}/${mode}_genotypes",
               saveAs: {filename ->
                     if (filename.endsWith("vireo_${panel}")) {
                         null
@@ -61,10 +61,10 @@ process MERGE_GENOTYPES_IN_ONE_VCF_FREEBAYES{
                         filename
                     }
                 },
-          mode: "${params.copy_mode}",
+          mode: "${params.copy_mode.value}",
           overwrite: "true"
 
-    publishDir  path: "${params.outdir}/deconvolution/vireo/vireo_raw",
+    publishDir  path: "${params.outdir.value}/deconvolution/vireo/vireo_raw",
           saveAs: {filename ->
                     if (filename.endsWith("vireo_${panel}")) {
                         filename
@@ -74,7 +74,7 @@ process MERGE_GENOTYPES_IN_ONE_VCF_FREEBAYES{
                         null
                     }
                 },
-          mode: "${params.copy_mode}",
+          mode: "${params.copy_mode.value}",
           overwrite: "true"
     
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
@@ -156,11 +156,11 @@ process VIREO_ADD_SAMPLE_PREFIX{
 process VIREO_GT_FIX_HEADER
 {
   tag "${pool_id}"
-  publishDir  path: "${params.outdir}/deconvolution/infered_genotypes/${pool_id}/",
+  publishDir  path: "${params.outdir.value}/deconvolution/infered_genotypes/${pool_id}/",
         saveAs: { filename -> 
           (filename == 'versions.yml' || filename.endsWith('_infered_genotypes.counts.txt')) ? null : filename 
         },
-        mode: "${params.copy_mode}",
+        mode: "${params.copy_mode.value}",
         overwrite: "true"
   if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
       container "${params.yascp_container}"
@@ -224,9 +224,9 @@ process VIREO_GT_FIX_HEADER
 
 process REPLACE_GT_DONOR_ID2{
     tag "${samplename}"
-    publishDir  path: "${params.outdir}/deconvolution/vireo/vireo_processed/${samplename}/",
+    publishDir  path: "${params.outdir.value}/deconvolution/vireo/vireo_processed/${samplename}/",
           pattern: "GT_replace_*",
-          mode: "${params.copy_mode}",
+          mode: "${params.copy_mode.value}",
           overwrite: "true"
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "${params.yascp_container}"
@@ -256,7 +256,7 @@ process REPLACE_GT_DONOR_ID2{
 
     """
       bcftools query -l ${gt_donors} > ${mode}_donors_in_vcf.tsv
-      replace_donors.py -id ${samplename} ${in} --input_file "${params.input_data_table}" -m ${mode}
+      replace_donors.py -id ${samplename} ${in} --input_file "${params.input_data_table.value}" -m ${mode}
       bcftools view ${gt_donors} | bcftools reheader --samples replacement_assignments_${mode}.tsv -o GT_replace_GT_donors.vireo_${mode}.vcf.gz
       mkdir -p "vireo_gt_rep_${samplename}"
       ln -sf "\$(realpath "GT_replace_GT_donors.vireo_${mode}.vcf.gz")" "vireo_gt_rep_${samplename}/GT_replace_GT_donors.vireo_${mode}.vcf.gz"
@@ -280,11 +280,11 @@ process ENHANCE_STATS_GT_MATCH{
         container "${params.yascp_container_docker}"
     }
   tag "${samplename}"
-  publishDir  path: "${params.outdir}/deconvolution/gtmatch/${samplename}",
+  publishDir  path: "${params.outdir.value}/deconvolution/gtmatch/${samplename}",
           saveAs: { filename -> 
             filename == 'versions.yml' ? null : filename 
           },
-          mode: "${params.copy_mode}",
+          mode: "${params.copy_mode.value}",
           overwrite: "true"
 
   label 'process_medium'
@@ -298,10 +298,10 @@ process ENHANCE_STATS_GT_MATCH{
     path "versions.yml", emit: versions
     
   script:
-    if(params.genotype_phenotype_mapping_file==''){
+    if(params.genotype_phenotype_mapping_file.value==''){
       in=""
-    }else if (params.use_phenotype_ids_for_gt_match){
-      in="--genotype_phenotype_mapping ${params.genotype_phenotype_mapping_file}"
+    }else if (params.use_phenotype_ids_for_gt_match.value){
+      in="--genotype_phenotype_mapping ${params.genotype_phenotype_mapping_file.value}"
     }else{
       in=""
     }
@@ -382,11 +382,11 @@ process GT_MATCH_POOL_IBD
 {
   tag "${pool_id}_ibd"
   label 'process_small'
-  publishDir  path: "${params.outdir}/deconvolution/gtmatch/${pool_id}",
+  publishDir  path: "${params.outdir.value}/deconvolution/gtmatch/${pool_id}",
           saveAs: { filename -> 
             filename == 'versions.yml' ? null : filename 
           },
-          mode: "${params.copy_mode}",
+          mode: "${params.copy_mode.value}",
           overwrite: "true"
 
   if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
@@ -501,9 +501,9 @@ process ASSIGN_DONOR_FROM_PANEL
   // sum gtcheck discrepancy scores from multiple ouputput files of the same panel
   tag "${pool_panel_id}"
   label 'process_medium'
-  publishDir  path: "${params.outdir}/deconvolution/gtmatch/${pool_id}",
+  publishDir  path: "${params.outdir.value}/deconvolution/gtmatch/${pool_id}",
           pattern: "*.csv",
-          mode: "${params.copy_mode}",
+          mode: "${params.copy_mode.value}",
           overwrite: "true"
   if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
       container "${params.yascp_container}"
@@ -541,9 +541,9 @@ process ASSIGN_DONOR_OVERALL
   // decide final donor assignment across different panels from per-panel donor assignments
   tag "${pool_id}"
 
-  publishDir  path: "${params.outdir}/deconvolution/gtmatch/${pool_id}",
+  publishDir  path: "${params.outdir.value}/deconvolution/gtmatch/${pool_id}",
           pattern: "*.csv",
-          mode: "${params.copy_mode}",
+          mode: "${params.copy_mode.value}",
           overwrite: "true"
 
   if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
@@ -583,11 +583,11 @@ process ENHANCE_STATS_FILE{
 
   tag "${pool_id}"
 
-  publishDir  path: "${params.outdir}/deconvolution/gtmatch/${pool_id}",
+  publishDir  path: "${params.outdir.value}/deconvolution/gtmatch/${pool_id}",
         saveAs: { filename -> 
           filename == 'versions.yml' ? null : filename 
         },
-        mode: "${params.copy_mode}",
+        mode: "${params.copy_mode.value}",
         overwrite: "true"
 
 
@@ -612,16 +612,16 @@ process ENHANCE_STATS_FILE{
     path('Done.tmp'), emit: done_validation
     path "versions.yml", emit: versions
   script:
-    if (params.extra_sample_metadata==''){
+    if (params.extra_sample_metadata.value==''){
       md_inp = ""
     }else{
-      md_inp = "-md ${params.extra_sample_metadata}"
+      md_inp = "-md ${params.extra_sample_metadata.value}"
     }
 
-    if (params.genotype_phenotype_mapping_file==''){
+    if (params.genotype_phenotype_mapping_file.value==''){
       mapping=""
     }else{
-      mapping="-m ${params.genotype_phenotype_mapping_file} "
+      mapping="-m ${params.genotype_phenotype_mapping_file.value} "
     }
 
     """
@@ -688,10 +688,10 @@ process COMBINE_MATCHES_IN_EXPECTED_FORMAT{
     path "versions.yml", emit: versions
 
   script:
-    if (params.cohorts_to_drop_from_GT_Relatednes_check==''){
+    if (params.cohorts_to_drop_from_GT_Relatednes_check.value==''){
       md_in = ""
     }else{
-      md_in = "-dr ${params.cohorts_to_drop_from_GT_Relatednes_check}"
+      md_in = "-dr ${params.cohorts_to_drop_from_GT_Relatednes_check.value}"
     }
     """
       combine_all_GTmatched_in_expected_format.py --files "${stats_files}" ${md_in}

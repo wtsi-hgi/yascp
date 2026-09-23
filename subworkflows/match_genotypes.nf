@@ -38,7 +38,7 @@ workflow MATCH_GENOTYPES {
     // «««««««««
     // This channel creates an input that contains the expected vcfs as per input
     // «««««««««
-    Channel.fromPath(params.input_data_table,      
+    Channel.fromPath(params.input_data_table.value,      
       followLinks: true,
       checkIfExists: true
     ).splitCsv(header: true, sep: '\t').map { row -> tuple(row.experiment_id, row.donor_vcf_ids) }
@@ -87,7 +87,7 @@ workflow MATCH_GENOTYPES {
 
 
 
-    if (params.concordance_calculations){
+    if (params.concordance_calculations.value){
         log.info "-----running CONCORDANCE calculations----"
 
         input4 = input32.combine(cellsnp_cell_vcfs2, by: 0)
@@ -101,7 +101,7 @@ workflow MATCH_GENOTYPES {
         COMBINE_FILES(ch_combine) //This step plots scatter plots for each of the pools individually.
         ch_versions = ch_versions.mix(COMBINE_FILES.out.versions)
         // Now we want to combined all the above files together and make one overall plot for all the tranches.
-        COLLECT_FILE(COMBINE_FILES.out.file_joined_df_for_plots.collect(),"joined_df_for_plots.tsv",params.outdir+'/deconvolution/concordances',1,'')
+        COLLECT_FILE(COMBINE_FILES.out.file_joined_df_for_plots.collect(),"joined_df_for_plots.tsv",params.outdir.value+'/deconvolution/concordances',1,'')
         ch_versions = ch_versions.mix(COLLECT_FILE.out.versions)
         PLOT_CONCORDANCES_ALL(COLLECT_FILE.out.output_collection)
         ch_versions = ch_versions.mix(PLOT_CONCORDANCES_ALL.out.versions)

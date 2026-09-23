@@ -7,11 +7,11 @@ process SPLIT_CITESEQ_GEX {
         container "${params.yascp_container_docker}"
     }
 
-    publishDir  path: "${params.outdir}/preprocessing/data_modalities_split/${mode}/${sample_name}",
+    publishDir  path: "${params.outdir.value}/preprocessing/data_modalities_split/${mode}/${sample_name}",
         saveAs: { filename -> 
         (filename == 'versions.yml' || filename.endsWith('_barcodes.counts.txt')) ? null : filename 
         },
-    mode: "${params.copy_mode}",
+    mode: "${params.copy_mode.value}",
     overwrite: "true"
 
     input:
@@ -107,11 +107,11 @@ process HASTAG_DEMULTIPLEX {
         container "${params.yascp_container_docker}"
     }
 
-    publishDir  path: "${params.outdir}/deconvolution/hastag_demultiplex/${sample_name}",
+    publishDir  path: "${params.outdir.value}/deconvolution/hastag_demultiplex/${sample_name}",
     saveAs: { filename -> 
             filename == 'versions.yml' ? null : filename 
         }, 
-        mode: "${params.copy_mode}",
+        mode: "${params.copy_mode.value}",
       overwrite: "true"
 
     input:
@@ -144,11 +144,11 @@ process DSB_INTEGRATE{
         container "${params.yascp_container_docker}"
     }
 
-    publishDir  path: "${params.outdir}/citeseq/all_data_integrated",
+    publishDir  path: "${params.outdir.value}/citeseq/all_data_integrated",
     saveAs: { filename -> 
             filename == 'versions.yml' ? null : filename 
         }, 
-        mode: "${params.copy_mode}",
+        mode: "${params.copy_mode.value}",
       overwrite: "true"
     
     output:
@@ -201,11 +201,11 @@ process MULTIMODAL_INTEGRATION{
         container "${params.yascp_container_docker}"
     }
 
-    publishDir  path: "${params.outdir}/citeseq/all_data_integrated",
+    publishDir  path: "${params.outdir.value}/citeseq/all_data_integrated",
     saveAs: { filename -> 
             filename == 'versions.yml' ? null : filename 
         }, 
-        mode: "${params.copy_mode}",
+        mode: "${params.copy_mode.value}",
       overwrite: "true"
     
     output:
@@ -246,11 +246,11 @@ process VDJ_INTEGRATION{
         container "${params.yascp_container_docker}"
     }
 
-    publishDir  path: "${params.outdir}/citeseq/all_data_integrated",
+    publishDir  path: "${params.outdir.value}/citeseq/all_data_integrated",
     saveAs: { filename -> 
             filename == 'versions.yml' ? null : filename 
         }, 
-        mode: "${params.copy_mode}",
+        mode: "${params.copy_mode.value}",
       overwrite: "true"
     
     output:
@@ -294,7 +294,7 @@ process PREPROCESS_PROCESS {
         container "${params.yascp_container_docker}"
     }
 
-    publishDir  path: "${params.outdir}/citeseq/DSB/${sample_name}",      
+    publishDir  path: "${params.outdir.value}/citeseq/DSB/${sample_name}",      
         saveAs: {filename ->
         if (filename.contains("tmp_rds_files__")) {
             null
@@ -303,7 +303,7 @@ process PREPROCESS_PROCESS {
         } else {
             filename
         }
-      }, mode: "${params.copy_mode}",
+      }, mode: "${params.copy_mode.value}",
       overwrite: "true"
 
     input:
@@ -345,7 +345,7 @@ process DSB_PROCESS {
         container "${params.yascp_container_docker}"
     }
 
-    publishDir  path: "${params.outdir}/citeseq/DSB/${sample_name}",      
+    publishDir  path: "${params.outdir.value}/citeseq/DSB/${sample_name}",      
         saveAs: {filename ->
         if (filename.contains("tmp_rds_files__")) {
             null
@@ -354,7 +354,7 @@ process DSB_PROCESS {
         } else {
             filename
         }
-      }, mode: "${params.copy_mode}",
+      }, mode: "${params.copy_mode.value}",
       overwrite: "true"
 
     input:

@@ -18,7 +18,7 @@ process PLOT_FILTERED_CELLS {
                 saveAs: { filename -> 
                     filename == 'versions.yml' ? null : filename 
                 },
-                mode: "${params.copy_mode}",
+                mode: "${params.copy_mode.value}",
                 overwrite: "true"
 
     input:
@@ -67,7 +67,7 @@ process PLOT_PCS {
                 saveAs: { filename -> 
                     filename == 'versions.yml' ? null : filename 
                 },
-                mode: "${params.copy_mode}",
+                mode: "${params.copy_mode.value}",
                 overwrite: "true"
 
     input:
@@ -131,7 +131,7 @@ process PLOT_PREDICTED_SEX {
                 saveAs: { filename -> 
                     filename == 'versions.yml' ? null : filename 
                 },
-                mode: "${params.copy_mode}",
+                mode: "${params.copy_mode.value}",
                 overwrite: "true"
 
     input:
@@ -181,7 +181,7 @@ process PLOT_QC {
                 saveAs: { filename -> 
                     filename == 'versions.yml' ? null : filename 
                 },
-                mode: "${params.copy_mode}",
+                mode: "${params.copy_mode.value}",
                 overwrite: "true"
 
     input:
@@ -220,7 +220,7 @@ process PLOT_QC {
                 ${cmd__facet_columns}
             calculate_mads.py \
                 --h5_anndata ${file__anndata} \
-                --qc_key ${params.mads_categories} \
+                --qc_key ${params.mads_categories.value} \
                 --output_file mads
 
         cat <<-END_VERSIONS > versions.yml
@@ -253,7 +253,7 @@ process PLOT_DISTRIBUTIONS {
                 saveAs: { filename -> 
                     filename == 'versions.yml' ? null : filename 
                 },
-                mode: "${params.copy_mode}",
+                mode: "${params.copy_mode.value}",
                 overwrite: "true"
 
     input:

@@ -1,11 +1,11 @@
 process SUMMARY_STATISTICS_PLOTS {
         
     label 'process_low'
-    publishDir  path: "${params.outdir}/handover",
+    publishDir  path: "${params.outdir.value}/handover",
             saveAs: { filename -> 
               filename == 'versions.yml' ? null : filename 
             },
-            mode: "${params.copy_mode}",
+            mode: "${params.copy_mode.value}",
             overwrite: "true"
 
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
@@ -25,7 +25,7 @@ process SUMMARY_STATISTICS_PLOTS {
 
     
     script:
-      if ("${params.input}" == 'cellranger'){
+      if ("${params.input.value}" == 'cellranger'){
           cellbender_input='cellranger'
         }else {
           cellbender_input='cellbender'
@@ -34,12 +34,12 @@ process SUMMARY_STATISTICS_PLOTS {
       """ 
           echo "${gather_dummy_input}" >dummy.out 
           transfer_data.py    --results_dir ${outdir_prev} \
-                              --cb_res ${params.cellbender_resolution_to_use} \
+                              --cb_res ${params.cellbender_resolution_to_use.value} \
                               --cellbender ${cellbender_input} \
                               --input_table ${input_data_table} \
-                              --web_transfer ${params.webtransfer} \
-                              --project_name ${params.project_name}
-          cp ${params.extra_sample_metadata} Summary_plots/*/Summary || echo 'not available'
+                              --web_transfer ${params.webtransfer.value} \
+                              --project_name ${params.project_name.value}
+          cp ${params.extra_sample_metadata.value} Summary_plots/*/Summary || echo 'not available'
           cohort_report.py -d ${outdir_prev} 
           
           cat <<-END_VERSIONS > versions.yml
@@ -64,10 +64,10 @@ process TRANSFER {
 
 
     when:
-        params.webtransfer
+        params.webtransfer.value
     script:
 
       """ 
-        ./rsync_to_web.sh ${params.project_name} ${results_dir}       
+        ./rsync_to_web.sh ${params.project_name.value} ${results_dir}       
       """
 }

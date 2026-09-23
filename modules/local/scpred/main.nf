@@ -8,9 +8,9 @@ process SCPRED{
         container "${params.yascp_container_docker}"
     }
 
-    publishDir  path: "${params.outdir}/celltype_assignment/scpred/",
+    publishDir  path: "${params.outdir.value}/celltype_assignment/scpred/",
             saveAs: {filename -> filename == 'versions.yml' ? null : "${outfil_prfx}_" + filename},
-            mode: "${params.copy_mode}",
+            mode: "${params.copy_mode.value}",
             overwrite: "true"
     stageInMode 'copy'
 
@@ -18,7 +18,7 @@ process SCPRED{
         tuple val(exp_id), path(file_h5ad_batch)
         path(reference)
     when:
-        params.celltype_assignment.run_scpred
+        params.celltype_assignment.run_scpred.value
     output:
         path("${outfil_prfx}___scpred_prediction.tsv"), emit:predicted_celltype_labels
         path "versions.yml", emit: versions

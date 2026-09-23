@@ -8,11 +8,11 @@ process DOUBLET_FINDER {
         container "${params.yascp_container_docker}"
     }
     
-    publishDir  path: "${params.outdir}/doublet_detection/DoubletFinder",
+    publishDir  path: "${params.outdir.value}/doublet_detection/DoubletFinder",
                 saveAs: { filename -> 
                     filename == 'versions.yml' ? null : filename 
                 },
-                mode: "${params.copy_mode}",
+                mode: "${params.copy_mode.value}",
                 overwrite: "true"
 
     input:
@@ -30,7 +30,7 @@ process DOUBLET_FINDER {
 
     script:
         
-        outdir = "${params.outdir}/doublet_detection/"
+        outdir = "${params.outdir.value}/doublet_detection/"
         outdir = "${outdir}doubletFinder"
         outfile = "${experiment_id}"
 

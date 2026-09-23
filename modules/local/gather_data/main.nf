@@ -1,10 +1,10 @@
 process GATHER_DATA{
 
-    publishDir  path: "${params.outdir}/handover",
+    publishDir  path: "${params.outdir.value}/handover",
                 saveAs: { filename -> 
                   filename == 'versions.yml' ? null : filename 
                 },
-                mode: "${params.copy_mode}",
+                mode: "${params.copy_mode.value}",
                 overwrite: "true"
     label 'process_medium'
 
@@ -29,14 +29,14 @@ process GATHER_DATA{
     script:
       outdir = "${outdir_prev}/handover"
       subdir = "Donor_Quantification"
-      if ("${params.input}" == 'cellranger'){
+      if ("${params.input.value}" == 'cellranger'){
         cellbender_input='cellranger'
       }else{
         cellbender_input='cellbender'
       }
 
-      if ("${params.extra_sample_metadata}" != ''){
-        extra_meta = "--extra_meta=${params.extra_sample_metadata}"
+      if ("${params.extra_sample_metadata.value}" != ''){
+        extra_meta = "--extra_meta=${params.extra_sample_metadata.value}"
       }else{
         extra_meta = ""
       }
@@ -48,9 +48,9 @@ process GATHER_DATA{
           --results_dir=${outdir_prev} \
           --input_table=${input_data_table} \
           --cellbender=${cellbender_input} \
-          --resolution=${params.cellbender_resolution_to_use} \
+          --resolution=${params.cellbender_resolution_to_use.value} \
           --write_h5=False \
-          --experiment_name=${params.RUN} ${extra_meta}
+          --experiment_name=${params.RUN.value} ${extra_meta}
         
         cat <<-END_VERSIONS > versions.yml
         "${task.process}":

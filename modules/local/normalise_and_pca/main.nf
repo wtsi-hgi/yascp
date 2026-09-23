@@ -14,10 +14,10 @@ process PCA {
 
     publishDir  path: "${outdir}",
                 saveAs: {filename -> filename == 'versions.yml' ? null : filename.replaceAll("-", "")},
-                mode: "${params.copy_mode}",
+                mode: "${params.copy_mode.value}",
                 overwrite: "true"
     
-    publishDir  path: "${params.outdir}/handover/merged_h5ad/",
+    publishDir  path: "${params.outdir.value}/handover/merged_h5ad/",
             saveAs: {filename ->
                     if (filename.contains("adata-normalized_pca-counts.h5ad")) {
                         filename = '4.adata-normalized_pca-counts.h5ad'
@@ -29,7 +29,7 @@ process PCA {
                         null
                     }
                 },
-            mode: "${params.copy_mode}",
+            mode: "${params.copy_mode.value}",
             overwrite: "true"  
 
     input:
@@ -61,7 +61,7 @@ process PCA {
             --overwrite_x_with_layer ${layer} \
             --output_file adata \
             --number_cpu ${task.cpus} \
-            --drop_cell_passes_qc_from_clustering ${params.drop_cell_passes_qc_from_clustering}
+            --drop_cell_passes_qc_from_clustering ${params.normalise.drop_cell_passes_qc_from_clustering}
         mkdir plots
         
         mv *pdf plots/ 2>/dev/null || true
@@ -107,7 +107,7 @@ process NORMALISE_AND_PCA {
 
     publishDir  path: "${outdir}",
                 saveAs: {filename -> filename == 'versions.yml' ? null : filename.replaceAll("-", "")},
-                mode: "${params.copy_mode}",
+                mode: "${params.copy_mode.value}",
                 overwrite: "true"
 
     input:
@@ -147,7 +147,7 @@ process NORMALISE_AND_PCA {
             cmd__vars_to_regress = "--vars_to_regress ${vars_to_regress}"
         }
 
-        outdir = "${params.outdir}/clustering_and_integration/normalize=total_count.${param_details}"
+        outdir = "${params.outdir.value}/clustering_and_integration/normalize=total_count.${param_details}"
 
         cmd__genes_exclude_hvg = ""
         if (!"${file__genes_exclude_hvg}".contains('fake_file')){

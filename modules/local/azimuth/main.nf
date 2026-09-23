@@ -8,9 +8,9 @@ process AZIMUTH{
         container "${params.yascp_container_docker}"
     }
 
-    publishDir  path: "${params.outdir}/celltype_assignment/azimuth/${refset.name}",
+    publishDir  path: "${params.outdir.value}/celltype_assignment/azimuth/${refset.name}",
             saveAs: {filename -> filename == 'versions.yml' ? null : "${outfil_prfx}_" + filename},
-            mode: "${params.copy_mode}",
+            mode: "${params.copy_mode.value}",
             overwrite: "true"
     stageInMode 'copy'
     // stageInMode 'copy' is needed because SeuratDisk:::Convert()
@@ -38,13 +38,13 @@ process AZIMUTH{
         // output file prefix: strip random hex number form beginning of file name
         outfil_prfx = "${file_h5ad_batch}".minus(".h5ad")
         //outfil_prfx = "${file_h5ad_batch}".minus(".h5ad")
-        if (refset.refset =='PBMC' && params.mapping_file!='' && params.remap_celltypes){
+        if (refset.refset =='PBMC' && params.mapping_file.value!='' && params.remap_celltypes.value){
             com="remap_azimuth_l2.R --out_file ${samplename}___predicted_celltype_l2.tsv --mapping ${mapping_file} --az_file ${samplename}___predicted_celltype_l2.tsv"
         }else{
             com=""
         }
 
-        if (params.atac){
+        if (params.atac.value){
             atac = '--atac'
         }else{
             atac = ""
@@ -80,9 +80,9 @@ process AZIMUTH_ATAC{
         container "${params.yascp_container_docker}"
     }
 
-    publishDir  path: "${params.outdir}/celltype_assignment/azimuth/${refset.name}",
+    publishDir  path: "${params.outdir.value}/celltype_assignment/azimuth/${refset.name}",
             saveAs: {filename -> filename == 'versions.yml' ? null : "${outfil_prfx}_" + filename},
-            mode: "${params.copy_mode}",
+            mode: "${params.copy_mode.value}",
             overwrite: "true"
     input:
         tuple val(samplename),path(file_h5ad_batch)
