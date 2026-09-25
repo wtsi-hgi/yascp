@@ -89,14 +89,14 @@ process COMBINE_FILES{
         """
            combine_concordance.py -cc ${concordance_table} -sq ${subsampling_table} -name ${pool_id} --run ${params.RUN.value}
 
-            cat <<-END_VERSIONS > versions.yml
-            "${task.process}":
-                python: \$(python --version | sed 's/Python //g')
-                python library argparse: \$(python -c "import argparse; print(argparse.__version__)")
-                python library matplotlib: \$(python -c "import matplotlib; print(matplotlib.__version__)")
-                python library pandas: \$(python -c "import pandas; print(pandas.__version__)")
-                python library seaborn: \$(python -c "import seaborn; print(seaborn.__version__)")
-            END_VERSIONS
+           cat <<-END_VERSIONS > versions.yml
+           "${task.process}":
+               python: \$(python --version | sed 's/Python //g')
+               python library argparse: \$(python -c "import argparse; print(argparse.__version__)")
+               python library matplotlib: \$(python -c "import matplotlib; print(matplotlib.__version__)")
+               python library pandas: \$(python -c "import pandas; print(pandas.__version__)")
+               python library seaborn: \$(python -c "import seaborn; print(seaborn.__version__)")
+           END_VERSIONS
         """
 
 }
