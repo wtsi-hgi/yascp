@@ -100,18 +100,23 @@ process VIREO_SUBSAMPLING {
             # Update the coordinates matrix
             cellsnp_update.R ${cell_data} ./subset_${params.vireo.rate} ./subset_${params.vireo.rate}/cellSNP.base.vcf.gz
         """
+        // NOTE: kept flush-left on purpose. This heredoc lives in an interpolated string,
+        // not in the task script block, so Nextflow strips the OUTER block's indent from
+        // it - any indentation here survives, END_VERSIONS stops matching, and the literal
+        // terminator ends up in versions.yml, breaking the YAML parse in
+        // subworkflows/utils.nf. At column 0 it matches whatever the outer strip removes.
         versions_cmd="""
-            cat <<-END_VERSIONS > versions.yml
-            "${task.process}":
-                bcftools: \$(bcftools --version 2>&1 | head -n1 | sed 's/^.*bcftools //; s/ .*\$//')
-                python: \$(python --version | sed 's/Python //g')
-                python library argparse: \$(python -c "import argparse; print(argparse.__version__)")
-                python library pandas: \$(python -c "import pandas; print(pandas.__version__)")
-                r-base: \$(R --version | sed -n '1p' | sed 's/R version //; s/ (.*//')
-                r library Matrix: \$(Rscript -e "cat(as.character(packageVersion('Matrix')))")
-                vireo: \$(vireo | sed '1!d ; s/Welcome to vireoSNP //; s/!//')
-            END_VERSIONS
-        """
+cat <<-END_VERSIONS > versions.yml
+"${task.process}":
+    bcftools: \$(bcftools --version 2>&1 | head -n1 | sed 's/^.*bcftools //; s/ .*\$//')
+    python: \$(python --version | sed 's/Python //g')
+    python library argparse: \$(python -c "import argparse; print(argparse.__version__)")
+    python library pandas: \$(python -c "import pandas; print(pandas.__version__)")
+    r-base: \$(R --version | sed -n '1p' | sed 's/R version //; s/ (.*//')
+    r library Matrix: \$(Rscript -e "cat(as.character(packageVersion('Matrix')))")
+    vireo: \$(vireo | sed '1!d ; s/Welcome to vireoSNP //; s/!//')
+END_VERSIONS
+"""
       }else{
          vcf = ""
          vcf_file = donors_gt_vcf
@@ -132,17 +137,18 @@ process VIREO_SUBSAMPLING {
             # Update the coordinates matrix
             cellsnp_update.R ${cell_data} ./subset_${params.vireo.rate} ./subset_${params.vireo.rate}/cellSNP.base.vcf.gz
           """
+          // NOTE: kept flush-left for the same reason as the branch above - see that comment.
           versions_cmd="""
-              cat <<-END_VERSIONS > versions.yml
-              "${task.process}":
-                  python: \$(python --version | sed 's/Python //g')
-                  python library argparse: \$(python -c "import argparse; print(argparse.__version__)")
-                  python library pandas: \$(python -c "import pandas; print(pandas.__version__)")
-                  r-base: \$(R --version | sed -n '1p' | sed 's/R version //; s/ (.*//')
-                  r library Matrix: \$(Rscript -e "cat(as.character(packageVersion('Matrix')))")
-                  vireo: \$(vireo | sed '1!d ; s/Welcome to vireoSNP //; s/!//')
-              END_VERSIONS
-          """
+cat <<-END_VERSIONS > versions.yml
+"${task.process}":
+    python: \$(python --version | sed 's/Python //g')
+    python library argparse: \$(python -c "import argparse; print(argparse.__version__)")
+    python library pandas: \$(python -c "import pandas; print(pandas.__version__)")
+    r-base: \$(R --version | sed -n '1p' | sed 's/R version //; s/ (.*//')
+    r library Matrix: \$(Rscript -e "cat(as.character(packageVersion('Matrix')))")
+    vireo: \$(vireo | sed '1!d ; s/Welcome to vireoSNP //; s/!//')
+END_VERSIONS
+"""
 
       }
 
