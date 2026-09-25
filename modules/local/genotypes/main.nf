@@ -100,7 +100,11 @@ process MERGE_GENOTYPES_IN_ONE_VCF_FREEBAYES{
 
       if [ \$(cat fofn_vcfs.txt | wc -l) -gt 1 ]; then
           echo 'yes'
-          bcftools merge --force-samples -file-list ${vireo_gt_vcf}  -Ou | bcftools sort -Oz -o ${mode}.${panel}.vcf.gz
+          # -file-list is not a bcftools option (it is -l/--file-list, and getopt parses
+          # -file-list as -f ile-list, i.e. --apply-filters ile-list), and it was being
+          # handed the VCFs themselves rather than the fofn built above.
+          # bcftools merge --force-samples -file-list ${vireo_gt_vcf}  -Ou | bcftools sort -Oz -o ${mode}.${panel}.vcf.gz
+          bcftools merge --force-samples -l fofn_vcfs.txt -Ou | bcftools sort -Oz -o ${mode}.${panel}.vcf.gz
           bcftools index ${mode}.${panel}.vcf.gz
       else
         echo 'no'

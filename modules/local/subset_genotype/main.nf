@@ -191,7 +191,11 @@ process JOIN_STUDIES_MERGE{
         if [ \$(cat fofn_vcfs.txt | wc -l) -gt 1 ]; then
             echo 'yes'
             ${cmd__run}
-            bcftools merge -file-list ${study_vcf_files} -Ou | bcftools sort -T ./bcftools_tmp_XXXXXX -Oz -o pre_${mode}_${mode2}_\${vcf_name}__vcf.vcf.gz
+            # -file-list is not a bcftools option (it is -l/--file-list, and getopt parses
+            # -file-list as -f ile-list, i.e. --apply-filters ile-list), and it was being
+            # handed the VCFs themselves rather than the fofn built above.
+            # bcftools merge -file-list ${study_vcf_files} -Ou | bcftools sort -T ./bcftools_tmp_XXXXXX -Oz -o pre_${mode}_${mode2}_\${vcf_name}__vcf.vcf.gz
+            bcftools merge -l fofn_vcfs.txt -Ou | bcftools sort -T ./bcftools_tmp_XXXXXX -Oz -o pre_${mode}_${mode2}_\${vcf_name}__vcf.vcf.gz
             bcftools index pre_${mode}_${mode2}_\${vcf_name}__vcf.vcf.gz
             ${cmd}
         else
