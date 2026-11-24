@@ -170,6 +170,6 @@ process CELLSNP {
         -O cellsnp_${samplename} \\
         -R region_vcf_no_MHC.vcf.gz \\
         -p ${task.cpus} \\
-        --minCOUNT ${params.cellsnp.min_count} ${MAF} --gzip ${genotype_file} ${umi_tag}
+        --minCOUNT ${params.cellsnp.min_count} ${params.cellsnp.options} ${MAF} --gzip ${genotype_file} ${umi_tag}
     """
 }
